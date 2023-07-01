@@ -1,0 +1,56 @@
+{
+	"name":"vlib",
+	"source":"$SOURCE",
+	"version":"1.1.19",
+	"author": {
+		"name":"Daan van den Bergh",
+		"email":"vandenberghinc@gmail.com",
+	},
+	"git": {
+		"main": "origin git@github.com:vandenberghinc/$NAME.git",
+	},
+	"ssh": {
+		"vinc":"/vserver/storages/vinc/$NAME/",
+        "vinc.wan":"/vserver/storages/vinc/$NAME/",
+        "dev.vinc":"/Volumes/persistance/private/vinc/$NAME/",
+        "dev.vinc.wan":"/Volumes/persistance/private/vinc/$NAME/",
+        "paperspace":"vinc/$NAME/",
+        "vandenberghinc.com":"vinc/$NAME/",
+        "vfin":"/home/administrator/vinc/$NAME/",
+	},
+	"build": {
+   		"release": {
+            "compiler": "clang++",
+    	    "input": "$SOURCE/dev/test.cpp",
+            "output": "$SOURCE/bin/build",
+            "std": "c++2a",
+            "include_paths": ["/opt/vinc/include/", "/opt/homebrew/opt/openssl@3.1/include/", "/opt/homebrew/opt/binutils/include/"],
+            "library_paths": ["/opt/homebrew/opt/openssl@3.1/lib/", "/opt/homebrew/opt/binutils/lib/"],
+    	    "linked_libraries": ["-lssl", "-lcrypto", "-lz"],
+            "other_flags": ["-O3"],
+        },
+    	"debug": {
+    	    "compiler": "g++",
+            "input": "$SOURCE/test.cpp",
+    	    "output": "$SOURCE/bin/build",
+            "std": "c++2b",
+            "include_paths": ["/opt/vinc/include/", "/opt/homebrew/opt/openssl@3.1/include/", "/opt/homebrew/opt/binutils/include/"],
+    	    "library_paths": ["/opt/homebrew/opt/openssl@3.1/lib/", "/opt/homebrew/opt/binutils/lib/"],
+            "linked_libraries": {
+                "macos": ["-lssl", "-lcrypto", "-lz"],
+                "linux": ["-lssl", "-lcrypto", "-lz", "-lcrypt"],
+            },
+    	    "other_flags": ["-g", "-rdynamic", "-ldl", "-fno-inline"],
+            //, "-fsanitize=undefined"
+        },
+	},
+	"install": {
+    	"prefix": "/opt/vinc/",
+    	"compiler": "clang++",
+    	"std": "c++2a",
+    	"include_paths": ["/opt/vinc/include/", "/opt/homebrew/opt/openssl@3.1/include/"],
+    	"library_paths": ["/opt/homebrew/opt/openssl@3.1/lib/"],
+    	"linked_libraries": ["-lssl", "-lcrypto", "-lz"],
+    	"other_flags": ["-O3", "-g"],
+	},
+}

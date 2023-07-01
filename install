@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# Stop on error.
+set -e
+
+# Settings.
+PACKAGE=$(readlink -f $(dirname $0))
+PACKAGE_NAME=$(basename -- $PACKAGE)
+PREFIX="/opt/vinc/"
+
+# Logs.
+echo "Installing $PACKAGE_NAME."
+
+# Check package.
+if [[ ! -d $PACKAGE ]] ; then
+	echo "Error: library path \"$PACKAGE\" does not exist."
+fi
+
+# Check dirs.
+if [[ ! -d "$PREFIX" ]] ; then
+	echo "Creating directory $PREFIX."
+	sudo mkdir -p $PREFIX
+	sudo chown $USER $PREFIX
+	sudo chmod 770 $PREFIX
+fi
+if [[ ! -d "$PREFIX/lib/" ]] ; then
+	echo "Creating directory $PREFIX/lib/."
+	sudo mkdir -p $PREFIX/lib/
+	sudo chown $USER $PREFIX/lib/
+	sudo chmod 770 $PREFIX/lib/
+fi
+if [[ ! -d "$PREFIX/bin/" ]] ; then
+	echo "Creating directory $PREFIX/bin/."
+	sudo mkdir -p $PREFIX/bin/
+	sudo chown $USER $PREFIX/bin/
+	sudo chmod 770 $PREFIX/bin/
+fi
+if [[ ! -d "$PREFIX/include/" ]] ; then
+	echo "Creating directory $PREFIX/include/."
+	sudo mkdir -p $PREFIX/include/
+	sudo chown $USER $PREFIX/include/
+	sudo chmod 770 $PREFIX/include/
+fi
+
+# Install library.
+rm -fr $PREFIX/$PACKAGE_NAME
+cp -r $PACKAGE $PREFIX/$PACKAGE_NAME
+rm -fr $PREFIX/include/$PACKAGE_NAME
+ln -s $PREFIX/$PACKAGE_NAME/include/$PACKAGE_NAME $PREFIX/include/$PACKAGE_NAME
+
+# Finish.
+echo "Successfully installed $PACKAGE_NAME"
