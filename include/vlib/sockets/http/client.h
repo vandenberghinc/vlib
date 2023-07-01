@@ -19,16 +19,15 @@ namespace http {
 // - GET request parameters are by default passed in the payload body.
 //   You can use the "Request" functions seperately to create a request that conforms to your wishes.
 //
-/* @docs {
-	@chapter: http
-	@name: Client
-	@title: Client
-	@description:
-		HTTP client type.
-	@usage:
-		#include <vlib/sockets/http.h>
-		vlib::http::Client client;
-} */
+/*  @docs {
+ *	@chapter: http
+ *	@title: Client
+ *	@description:
+ *		HTTP client type.
+ *	@usage:
+ *		#include <vlib/sockets/http.h>
+ *		vlib::http::Client client;
+ } */
 
 template <
 	uchar	family = 		sockets::family::ipv4,
@@ -41,7 +40,7 @@ template <
 	family == sockets::family::ipv4 ||
 	family == sockets::family::ipv6
 )
-struct Client : public http::ClientTemplate<sockets::Socket<family, type, protocol, buff_len, blocking>, http_version> {
+struct Client : public vlib::http::ClientTemplate<sockets::Socket<family, type, protocol, buff_len, blocking>, http_version> {
 
 	// ---------------------------------------------------------
 	// Aliases.
@@ -133,7 +132,7 @@ struct Client : public http::ClientTemplate<sockets::Socket<family, type, protoc
 	
 	// Constructor from args.
 	constexpr
-	Client (http::ClientTemplate_args x) :
+	Client (http::ClientTemplateArgs x) :
 	Base(move(x)) {}
 
 };

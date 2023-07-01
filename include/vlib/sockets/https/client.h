@@ -135,7 +135,7 @@ struct Client : public http::ClientTemplate<tls::Client<family, type, protocol, 
 	
 	// Constructor from args.
 	constexpr
-	Client (http::ClientTemplate_args x) :
+	Client (http::ClientTemplateArgs x) :
 	Base(move(x)) {}
 
 };

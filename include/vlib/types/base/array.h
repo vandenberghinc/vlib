@@ -53,8 +53,26 @@ static inline bool  zero_padding = 		true;
  *		@description: The numerical type for the length, index and capacity variables. The default type is `unsigned long long`.
  *	}
  *	@usage:
- *		Array<int> x ({1, 2, 3});
- *		String y = "Hello World!";
+ *		Array<Int> x = {1, 2, 3};
+} */
+/*  @docs {
+ *	@name: String
+ *	@chapter: types
+ *	@title: String
+ *	@description:
+ *		Dynamic string.
+ *
+ *		`String` is a type definition of `Array<char>` so some documented functions may describe the `Array` object. These documented functions are exactly the same for `String`.
+ *	@template: {
+ *		@name: Type
+ *		@ignore: true
+ *	}
+ *	@template: {
+ *		@name: Length
+ *		@ignore: true
+ *	}
+ *	@usage:
+ *		String x = "Hello World!";
 } */
 // @TODO fix docs with String and Array since I cant test now.
 template <
@@ -340,11 +358,12 @@ struct Array {
     
 	// Constructor from initializer list.
 	/*  @docs {
-		@title: Constructor
-		@description:
-			Construct an `Array` object.
-		@usage:
-			Array<int> x ({1, 2, 3});
+	 *	@parent: vlib::Array
+	 *	@title: Constructor
+	 *	@description:
+	 *		Construct an `Array` object.
+	 *	@usage:
+	 *		Array<int> x ({1, 2, 3});
 	} */
 	constexpr
 	Array (const std::initializer_list<Type>& x) :
@@ -374,6 +393,14 @@ struct Array {
 	}
 
 	// Constructor from a char array.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Construct
+	 *	@description:
+	 *		Construct a `String` object from a char array without length.
+	 *	@usage:
+	 *		String x ("Hello World!");
+	 } */
 	constexpr
 	Array (const Type* arr) requires (is_char<Type>::value) :
 	m_arr(nullptr),
@@ -387,6 +414,15 @@ struct Array {
 	}
 
 	// Construct a char array from a bool / char / numeric.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Cast Construct
+	 *	@description:
+	 *		Construct a `String` from an integral type cast.
+	 *	@usage:
+	 *		String x (1);
+	 *		x => "1";
+	 } */
 	template <typename Cast> requires (is_char<Type>::value && is_integral<Cast>::value)
 	explicit constexpr
 	Array (const Cast& cast) :
@@ -412,7 +448,7 @@ struct Array {
 	}
 	
 	// Copy constructor from CString / Pipe.
-	template <typename Template> requires (is_char<Type>::value && (is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)) constexpr
+	template <typename Template> requires (is_char<Type>::value && (is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)) constexpr
 	Array (const Template& obj) :
 	m_arr(nullptr),
 	m_len(obj.len()),
@@ -438,7 +474,7 @@ struct Array {
 	}
 
 	// Move constructor from CString / Pipe.
-	template <typename Template> requires (is_char<Type>::value && (is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)) constexpr
+	template <typename Template> requires (is_char<Type>::value && (is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)) constexpr
 	Array (Template&& obj) :
 	m_arr(nullptr),
 	m_len(obj.len()),
@@ -566,7 +602,7 @@ struct Array {
 	  @description:
 			Check if the object is undefined.
 	  @usage:
-			String x;
+			Array<Int> x;
 			x.is_undefined(); ==> true;
 	} */
     constexpr
@@ -580,7 +616,7 @@ struct Array {
 	  @description:
 			Check if the object is defined.
 	  @usage:
-			String x;
+			Array<Int> x;
 			x.is_defined(); ==> false;
 	} */
 	constexpr
@@ -621,7 +657,7 @@ struct Array {
 	 
 			The start and end indexes of a reversed iteration are just like a normal iteration, so index `0` is the first index.
 		@usage:
-			Array<int> x ({0, 1, 2, 3});
+			Array<Int> x ({0, 1, 2, 3});
 			for (auto& i: x.iterate(1, 2)) { ... }
 		@funcs: 2
 	} */
@@ -664,7 +700,7 @@ struct Array {
 	 
 			The start and end indexes of a reversed iteration are just like a normal iteration, so index `0` is the first index.
 		@usage:
-			Array<int> x ({0, 1, 2, 3});
+			Array<Int> x ({0, 1, 2, 3});
 			for (auto& i: x.iterate(1, 2)) { ... }
 		@funcs: 2
 	} */
@@ -692,6 +728,23 @@ struct Array {
     // Iterate lines.
     // End line should be 1 higher than the actual line to end with.
     // Just like with the default end index from iterating.
+	/* 	@docs {
+	 * 	@title: Indexes
+	 * 	@description:
+	 * 		Iterate the lines of a string with a handler function.
+	 *
+	 *	@parameter: {
+	 *		@name: handler
+	 *		@description:
+	 *			The handler function takes the arguments `(const char*, ullong)`. The `const char*` is null terminated.
+	 *	}
+	 * 	@usage:
+	 * 		String x = "Line 1\n Line 2";
+	 * 		x.iterate_lines([](const char* data, ullong len) {
+	 *			print(data);
+	 *		});
+	 *	@funcs: 2
+	 } */
     template <typename Func> constexpr
     auto&   iterate_lines(Func&& handler) {
         return iterate_lines(0, 0, handler);
@@ -702,9 +755,12 @@ struct Array {
         for (auto& c: *this) {
             switch (c) {
                 case '\n': {
-                    if (line >= start_line && (end_line == 0 || line < end_line))
-                    func(data() + sindex, index - sindex);
-                    ++line;
+					if (line >= start_line && (end_line == 0 || line < end_line)) {
+						char* arr = data() + sindex;
+						arr[index - sindex] = '\0';
+						func(arr, index - sindex);
+					}
+					++line;
                     sindex = index + 1;
                     break;
                     
@@ -714,7 +770,9 @@ struct Array {
             }
             ++index;
         }
-        func(data() + sindex, index - sindex);
+		char* arr = data() + sindex;
+		arr[index - sindex] = '\0';
+        func(arr, index - sindex);
         return *this;
     }
 
@@ -760,11 +818,11 @@ struct Array {
 	// - The array may never be shrinked if the req_len is lower then m_capacity, ...
 	//   This would break other types such as but not limited to restapi::Server & restapi::Endpoint.
 	/*  @docs {
-		@title: Resize
-		@description:
-			Resize the array to a required capacity.
-	 
-			Does not edit the attribute, only the capactity.
+	 *  @title: Resize
+	 *  @description:
+	 *  	Resize the array to a required capacity.
+	 *
+	 *  	Does not edit the attribute, only the capactity.
 	} */
 	constexpr
 	This&	resize(const Length req_len = 1) {
@@ -780,11 +838,11 @@ struct Array {
 
 	// Expand the array.
 	/*  @docs {
-		@title: Expand
-		@description:
-			Expand the array with a capacity.
-	 
-			Does not edit the length, only the capactity.
+	 *  @title: Expand
+	 *  @description:
+	 *  	Expand the array with a capacity.
+	 *
+	 *  	Does not edit the length, only the capactity.
 	} */
 	constexpr
 	This&	expand(const Length with_len) {
@@ -801,20 +859,20 @@ struct Array {
 	// Equals.
 	// - Give len_x and len_y the same value to check if the first n items of the array are equal.
 	/*  @docs {
-		@title: Equals
-		@description:
-			Check if the array equals another array of pointer.
-	 
-			Give `len_x` and `len_y` the same value to check if the first n items of the array are equal.
-		@funcs: 7
+	 *  @title: Equals
+	 *  @description:
+	 *  	Check if the array equals another array of pointer.
+	 *
+	 *  	Give `len_x` and `len_y` the same value to check if the first n items of the array are equal.
+	 *  @funcs: 7
 	} */
 	constexpr
 	bool 	eq(const This& obj) const {
 		return array_h::eq(m_arr, m_len, obj.m_arr, obj.m_len);
 	}
 	constexpr
-	bool 	eq(const This& obj, const Length Leno_check) const {
-		return array_h::eq(m_arr, Leno_check, obj.m_arr, Leno_check);
+	bool 	eq(const This& obj, const Length len_to_check) const {
+		return array_h::eq(m_arr, len_to_check, obj.m_arr, len_to_check);
 	}
 	constexpr
 	bool 	eq(const CString& obj) const requires (is_char<Type>::value) {
@@ -843,21 +901,32 @@ struct Array {
 	}
 	
 	// Equals first characters.
+	/*  @docs {
+	 *  @title: Equals first
+	 *  @description:
+	 *  	Check if the first items of the array are equal to another array.
+	 *  @funcs: 3
+	} */
 	constexpr
-	bool 	eq_first(const Type* arr, const Length Leno_check) const requires (is_char<Type>::value) {
-		if (m_len < Leno_check) { return false; }
-		return array_h::eq(m_arr, Leno_check, arr, Leno_check);
+	bool 	eq_first(const Type* arr, const Length len_to_check) const requires (is_char<Type>::value) {
+		if (m_len < len_to_check) { return false; }
+		return array_h::eq(m_arr, len_to_check, arr, len_to_check);
+	}
+	constexpr
+	bool 	eq_first(const Array& obj, const Length len_to_check) const requires (is_char<Type>::value) {
+		if (m_len < len_to_check) { return false; }
+		return array_h::eq(m_arr, len_to_check, obj.data(), len_to_check);
 	}
 	template <typename String> requires (
 		is_String_h<String>() ||
 		is_CString<String>::value ||
 		is_Pipe<String>::value ||
-        internal::is_BaseArray<Array>::value
+        internal::is_BaseArray<String>::value
 	)
 	constexpr
-	bool 	eq_first(const String& obj, const Length Leno_check) const requires (is_char<Type>::value) {
-		if (m_len < Leno_check) { return false; }
-		return array_h::eq(m_arr, Leno_check, obj.data(), Leno_check);
+	bool 	eq_first(const String& obj, const Length len_to_check) const requires (is_char<Type>::value) {
+		if (m_len < len_to_check) { return false; }
+		return array_h::eq(m_arr, len_to_check, obj.data(), len_to_check);
 	}
 
 	// First element.
@@ -1108,7 +1177,7 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concat_r(const Template& obj) {
 		expand(obj.len());
@@ -1118,7 +1187,7 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concat_r(Template&& obj) {
 		expand(obj.len());
@@ -1136,7 +1205,7 @@ struct Array {
 		!is_floating<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Array>::value
+        !internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concat_r(const Template& x) {
 		Pipe pipe;
@@ -1189,7 +1258,7 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concat_no_resize_r(const Template& obj) {
 		array_h::copy(m_arr + m_len, obj.data(), obj.len());
@@ -1198,7 +1267,7 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concat_no_resize_r(Template&& obj) {
 		array_h::move(m_arr + m_len, obj.m_arr, obj.m_len);
@@ -1215,7 +1284,7 @@ struct Array {
 		!is_floating<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Array>::value
+        !internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concat_no_resize_r(const Template& x) {
 		Pipe pipe;
@@ -1265,18 +1334,19 @@ struct Array {
     }
 
 	// Generate random items.
-	/* @docs {
-			@title: Random
-			@description:
-				Append random items to the array.
-
-				Function `random_r` updates the current array, while `random` creates a new object that will be filled with random items.
-			@usage:
-				Array<short>().random_r(3) ==> {3, 2, 9};
-				Array<int>().random_r(3) ==> {2893, ...};
-				Array<double>().random_r(3) ==> {0.378223, ...};
-				Array<ullong>().random_r(3) ==> {37838394932256345.0, ...};
-	} */
+	/*  @docs {
+	 *	@title: Random
+	 *	@description:
+	 *		Append random items to the array.
+	 *
+	 *		Function `random_r` updates the current array, while `random` creates a new object that will be filled with random items.
+	 *	@usage:
+	 *		Array<short>().random_r(3) ==> {3, 2, 9};
+	 *		Array<int>().random_r(3) ==> {2893, ...};
+	 *		Array<double>().random_r(3) ==> {0.378223, ...};
+	 *		Array<ullong>().random_r(3) ==> {37838394932256345.0, ...};
+	 *	@funcs: 2
+	 } */
 	template <typename... Args> constexpr
 	This& 	random_r(const Length len, Args&&... args) {
 		Length u_len = len;
@@ -1293,17 +1363,17 @@ struct Array {
 	}
 
 	// Find the index of an item.
-	/* @docs {
-			@title: Find
-			@description:
-				Find the index of an item.
-			@usage:
-				Array<int> x = {1, 2, 3};
-				x.find(3) ==> 2;
-				x.find(3, 2) ==> 2;
-				x.find(3, 0, 2) ==> 2;
-				x.find(3, 0, 1) ==> npos;
-				x.find<Backwards>(3) ==> 2;
+	/* 	@docs {
+	 *	@title: Find
+	 *	@description:
+	 *		Find the index of an item.
+	 *	@usage:
+	 *		Array<int> x = {1, 2, 3};
+	 *		x.find(3) ==> 2;
+	 *		x.find(3, 2) ==> 2;
+	 *		x.find(3, 0, 2) ==> 2;
+	 *		x.find(3, 0, 1) ==> npos;
+	 *		x.find<Backwards>(3) ==> 2;
 	} */
 	template <typename Iter = Forwards, typename... Args> requires (
 		// !is_char<Type>::value &&
@@ -1346,20 +1416,19 @@ struct Array {
 	// }
 
 	// Find the index of the first occurence of one of the chars.
-	/* @docs {
-			@parent: String
-			@title: Find first
-			@description:
-				Find the index of an item.
-			@usage:
-                String x = "123";
-				x.find_first('3') ==> 2;
-				x.find_first('3', 2) ==> 2;
-				x.find_first('3', 0, 3) ==> 2;
-				x.find_first('3', 0, 2) ==> npos;
-				x.find_first<Backwards>('3') ==> 2;
-	} */
-	// @TODO docs different from Array.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Find first
+	 *	@description:
+	 *		Find the index of an item.
+	 *	@usage:
+	 *		String x = "123";
+	 *		x.find_first('3') ==> 2;
+	 *		x.find_first('3', 2) ==> 2;
+	 *		x.find_first('3', 0, 3) ==> 2;
+	 *		x.find_first('3', 0, 2) ==> npos;
+	 *		x.find_first<Backwards>('3') ==> 2;
+	 } */
 	template <typename Iter = Forwards, typename... Args> requires (
 		is_char<Type>::value &&
 		(is_Forwards<Iter>::value || is_Backwards<Iter>::value)
@@ -1379,17 +1448,16 @@ struct Array {
 	}
     
     // Find the index of the first occurence of a char that is not one of the chars.
-    /* @docs {
-            @parent: String
-            @title: Find First Not Of
-            @description:
-                Find the index of the first occurence of a char that is not one of the chars.
-            @usage:
-                String x = "12A3B4";
-                x.find_first_not_of("1234") ==> 2;
-                x.find_first_not_of<Backwards>("123") ==> 4;
-    } */
-    // @TODO docs different from Array.
+    /*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Find First Not Of
+	 *	@description:
+	 *		Find the index of the first occurence of a char that is not one of the chars.
+	 *	@usage:
+	 *		String x = "12A3B4";
+	 *		x.find_first_not_of("1234") ==> 2;
+	 *		x.find_first_not_of<Backwards>("123") ==> 4;
+     } */
     template <typename Iter = Forwards, typename... Args> requires (
         is_char<Type>::value &&
         (is_Forwards<Iter>::value || is_Backwards<Iter>::value)
@@ -1414,10 +1482,20 @@ struct Array {
         }
         return internal::npos;
     }
-
+	
 	// Find the index of a substring.
 	// @TODO create a single func with len, and another func with len, sindex, eindex = internal::npos so you can provide a len for the to_find.
-	// @TODO docs different from Array.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Find substring
+	 *	@description:
+	 *		Find the index of the first occurence of substring.
+	 *
+	 *		Returns `NPos::npos` when the substring is not found.
+	 *	@usage:
+	 *		String x = "12A3B4";
+	 *		x.find("A3");
+	 } */
 	template <typename Iter = Forwards, typename... Args> requires (
 		is_char<Type>::value &&
 		(is_Forwards<Iter>::value || is_Backwards<Iter>::value)
@@ -1466,13 +1544,25 @@ struct Array {
 	}
 
 	// Find the index of the first occurence of one of the CString's.
-	// - Warning: the array must be initialized inside the function call, otherwise the CString's will be dangling.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Find first of substrings
+	 *	@description:
+	 *		Find the index of the first occurence of one of the substrings.
+	 *
+	 *		Returns `NPos::npos` when the substring is not found.
+	 *	@warning:
+	 *		the array must be initialized inside the function call, otherwise the CString's will be dangling.
+	 *	@usage:
+	 *		String x = "12A3B4";
+	 *		x.find_first({"A3", "B4"});
+	 } */
 	template <typename Iter = Forwards, typename... Args> requires (
 		is_char<Type>::value &&
 		(is_Forwards<Iter>::value || is_Backwards<Iter>::value)
 	) constexpr
 	auto 	find_first(
-		const Array<const char*>& 	to_find, 	// the array with substrings to find.
+		const Array<const char*>& 	to_find, 	    // the array with substrings to find.
 		Args&&...						args		// the arguments for "indexes()".
 	) const {
 		const Type* str = m_arr;
@@ -1494,7 +1584,7 @@ struct Array {
 		delete[] lens;
 		return internal::npos;
 	}
-
+	
 	// Contains an item.
 	/* 	@docs {
 		@title: Contains
@@ -1568,15 +1658,16 @@ struct Array {
 
 	// Replace item in array.
 	/* 	@docs {
-		@title: Replace
-		@description:
-			Replace an item with another item.
-	 
-			Function `replace_r` updates the current array, while `replace` creates a copy.
-		@usage:
-			Array<int> x = {1, 4, 3};
-			x.replace_r(4, 2); x ==> {1, 2, 3};
-		@funcs: 2
+	 *	@parent: vlib::String
+	 *	@title: Replace
+	 *	@description:
+	 * 		Replace an item with another item.
+	 *
+	 *		Function `replace_r` updates the current array, while `replace` creates a copy.
+	 *	@usage:
+	 *		Array<int> x = {1, 4, 3};
+	 * 		x.replace_r(4, 2); x ==> {1, 2, 3};
+	 *	@funcs: 2
 	} */
 	template <typename... Args> requires (!is_char<Type>::value) constexpr
 	This& 	replace_r(
@@ -1622,12 +1713,12 @@ struct Array {
 	}
 
 	// Replace the chars from the start index till the end index with new chars of any length.
-	/* @docs {
-			@title: Replace Indexes
-			@description:
-				Replace the chars from the start index till the end index with new chars of any length.
-			@dangerous: Does not check any indexes.
-	} */
+	/*  @docs {
+	 *	@title: Replace Indexes
+	 *	@description:
+	 *		Replace the chars from the start index till the end index with new chars of any length.
+	 *	@warning: Does not check any indexes.
+	 } */
 	constexpr
 	This& 	replace_h(
 		const Length		sindex,						// the start index.
@@ -1661,15 +1752,16 @@ struct Array {
 
 	// Replace substring in string.
 	/* 	@docs {
-		@title: Replace
-		@description:
-			Replace a substring with another substring.
-	 
-			Function `replace_r` updates the current array, while `replace` creates a copy.
-		@usage:
-			String x = "Hello Universe!";
-			x.replace_r("Universe", "World"); x ==> "Hello World!";
-		@funcs: 4
+	 *	@parent: vlib::String
+	 *	@title: Replace
+	 *	@description:
+	 *		Replace a substring with another substring.
+	 *
+	 *		Function `replace_r` updates the current array, while `replace` creates a copy.
+	 *	@usage:
+	 *		String x = "Hello Universe!";
+	 *		x.replace_r("Universe", "World"); x ==> "Hello World!";
+	 *	@funcs: 4
 	} */
 	constexpr
 	This& 	replace_r(
@@ -1769,17 +1861,18 @@ struct Array {
 	}
 	// Replace multiple chars at the start of the string.
 	/* 	@docs {
-		@title: Replace start
-		@description:
-			Replace multiple chars at the start of the string.
-			
-			The replacement loop breaks if the first character is not one of the replacements characters.
-	 
-			Function `replace_start_r` updates the current array, while `replace_start` creates a copy.
-		@usage:
-			String x = "? !Hello World!";
-			x.replace_start_r(" !?"); x ==> "Hello World!";
-		@funcs: 2
+	 *	@parent: vlib::String
+	 *	@title: Replace start
+	 *	@description:
+	 *		Replace multiple chars at the start of the string.
+	 *
+	 *		The replacement loop breaks if the first character is not one of the replacements characters.
+	 *
+	 *		Function `replace_start_r` updates the current array, while `replace_start` creates a copy.
+	 *	@usage:
+	 *		String x = "? !Hello World!";
+	 *		x.replace_start_r(" !?"); x ==> "Hello World!";
+	 *	@funcs: 2
 	} */
 	constexpr
 	This& 	replace_start_r(const char* replacements) requires (is_char<Type>::value) {
@@ -1809,17 +1902,18 @@ struct Array {
 
 	// Replace multiple chars at the end of the string.
 	/* 	@docs {
-		@title: Replace end
-		@description:
-			Replace multiple chars at the end of the string.
-			
-			The replacement loop breaks if the last character is not one of the replacements characters.
-	 
-			Function `replace_end_r` updates the current array, while `replace_end` creates a copy.
-		@usage:
-			String x = "Hello World!?> ";
-			x.replace_end_r(" >?"); x ==> "Hello World!";
-		@funcs: 2
+	 *	@parent: vlib::String
+	 *	@title: Replace end
+	 *	@description:
+	 *		Replace multiple chars at the end of the string.
+	 *
+	 *		The replacement loop breaks if the last character is not one of the replacements characters.
+	 *
+	 *		Function `replace_end_r` updates the current array, while `replace_end` creates a copy.
+	 *	@usage:
+	 *		String x = "Hello World!?> ";
+	 *		x.replace_end_r(" >?"); x ==> "Hello World!";
+	 *	@funcs: 2
 	} */
 	constexpr
 	This& 	replace_end_r(const char*	replacements) requires (is_char<Type>::value) {
@@ -1847,19 +1941,19 @@ struct Array {
 
 	// Slice the array by indexes.
 	/* 	@docs {
-		@title: Slice
-		@description:
-			Slice the array by indexes.
-	 
-			Function `slice_r` updates the current array, while `slice` creates a copy.
-		@notes:
-			Leave parameter `eindex` `0` to use the value of the length attribute.
-	 
-			Slices nothing when eiter `sindex` / `eindex` is out of range.
-		@usage:
-			Array<int> x = {1, 2, 3};
-			x.slice_r(1); x ==> {2, 3};
-		@funcs: 4
+	 *	@title: Slice
+	 *	@description:
+	 *		Slice the array by indexes.
+	 *
+	 *		Function `slice_r` updates the current array, while `slice` creates a copy.
+	 *	@notes:
+	 *		Leave parameter `eindex` `0` to use the value of the length attribute.
+	 *
+	 *		Slices nothing when eiter `sindex` / `eindex` is out of range.
+	 *	@usage:
+	 *		Array<int> x = {1, 2, 3};
+	 *		x.slice_r(1); x ==> {2, 3};
+	 *	@funcs: 4
 	} */
 	constexpr
 	This& 	slice_r(const Length sindex, const Length eindex) {
@@ -1910,37 +2004,31 @@ struct Array {
 	}
 
 	// Slice by different delimiters.
-	/* @docs {
-		@title: Slice
-		@description:
-			Slice the array by different delimiters.
-	 
-			Function `slice_r` updates the current array, while `slice` creates a copy.
-		@parameter: {
-			@name: dstart
-			@description: The start delimiter, example `&cob;`.
-		}
-		@parameter: {
-			@name: dend
-			@description: The end delimiter, example `&ccb;`.
-		}
-		@parameter: {
-			@name: depth
-			@description:
-				Leave `-1` to include everything inside the specified `depth`.
-				Specify an index like `0` to slice by delimiters inside `depth`.
-		}
-		@parameter: {
-			@name: inside_depth
-			@description: X
-		}
-		@usage:
-			String x = "Something before {Hello World!} {Hi {Hello Universe!} There} {Hello Earth!} something after.";
-			x.slice_r<copy>('{', '}', 0) => "Hello World!"
-			x.slice_r<copy>('{', '}', 1) => "Hi {Hello Universe!} There"
-			x.slice_r<copy>('{', '}', 2) => "Hello Earth!"
-			x.slice_r<copy>('{', '}', 2, true) => "{Hello Earth!}"
-		@funcs: 2
+	/*  @docs {
+	 *	@title: Slice
+	 *	@description:
+	 *		Slice the array by different delimiters.
+	 *
+	 *		Function `slice_r` updates the current array, while `slice` creates a copy.
+	 *	@parameter: {
+	 *		@name: dstart
+	 *		@description: The start delimiter, example `&cob;`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: dend
+	 *		@description: The end delimiter, example `&ccb;`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: depth
+	 *		@description: The depth of the occurences.
+	 *	}
+	 *	@usage:
+	 *		String x = "Something before {Hello World!} {Hi {Hello Universe!} There} {Hello Earth!} something after.";
+	 *		x.slice_r('{', '}', 0) => "Hello World!"
+	 *		x.slice_r('{', '}', 1) => "Hi {Hello Universe!} There"
+	 *		x.slice_r('{', '}', 2) => "Hello Earth!"
+	 *		x.slice_r('{', '}', 2, true) => "{Hello Earth!}"
+	 *	@funcs: 2
 	}*/
 	constexpr
 	This& 	slice_r(
@@ -1948,7 +2036,7 @@ struct Array {
 		Type 			dend,					// the start delimiter.
 		uint			depth,					// the delmiter depth.
 		Length 			sindex = 0,				// the start index.
-		Length 			eindex = internal::npos,	// the end index.
+		Length 			eindex = internal::npos,// the end index.
 		bool 			include = false			// include the delimiters.
 	) requires (is_char<Type>::value) {
 		This str;
@@ -1961,7 +2049,7 @@ struct Array {
 		Type 			dend,					// the start delimiter.
 		uint			depth,					// the delmiter depth.
 		Length 			sindex = 0,				// the start index.
-		Length 			eindex = internal::npos,	// the end index.
+		Length 			eindex = internal::npos,// the end index.
 		bool 			include = false			// include the delimiters.
 	) {
 		This str;
@@ -1975,7 +2063,7 @@ struct Array {
 		Type 			dend,					// the start delimiter.
 		uint			depth,					// the delmiter depth.
 		Length 			sindex = 0,				// the start index.
-		Length 			eindex = internal::npos,	// the end index.
+		Length 			eindex = internal::npos,// the end index.
 		bool 			include = false			// include the delimiters.
 	) requires (is_char<Type>::value) {
 		if (dstart == dend) { throw InvalidUsageError("Not yet supported."); }
@@ -2015,12 +2103,13 @@ struct Array {
 	}
 
 	// Split by delimiter.
-	/* @docs {
-		@title: Split
-		@description: Split the array by a delimiter.
-		@usage:
-			String("Hello???World!").split("???").first() => "Hello";
-			String("Hello???World!").split("???").last() => "World!";
+	/*  @docs {
+	 *	@parent: vlib::String,
+	 *	@title: Split
+	 *	@description: Split the array by a delimiter.
+	 *	@usage:
+	 *		String("Hello???World!").split("???").first() => "Hello";
+	 *		String("Hello???World!").split("???").last() => "World!";
 	}*/
 	constexpr
 	Array<String> 	split(const Type* delimiter) const requires (is_char<Type>::value) {
@@ -2052,15 +2141,15 @@ struct Array {
 
 	// Sort the array.
 	/* 	@docs {
-		@title: Sort
-		@description:
-			Sort the array.
-	 
-			Function `sort_r` updates the current array, while `sort` creates a copy.
-		@usage:
-			Array<int> x = {2, 1, 4, 3};
-			x.sort_r(); x ==> {1, 2, 3, 4};
-		@funcs: 2
+	 *	@title: Sort
+	 *	@description:
+	 *		Sort the array.
+	 *
+	 *		Function `sort_r` updates the current array, while `sort` creates a copy.
+	 *	@usage:
+	 *		Array<int> x = {2, 1, 4, 3};
+	 *		x.sort_r(); x ==> {1, 2, 3, 4};
+	 *	@funcs: 2
 	} */
 	constexpr
 	This& 	sort_r() {
@@ -2117,23 +2206,23 @@ struct Array {
 
 	// Reverse the array.
 	/* 	@docs {
-		@title: Reverse
-		@description:
-			Reverse the array.
-	 
-			Function `reverse_r` updates the current array, while `reverse` creates a copy.
-		@usage:
-
-			// Reverse an array.
-			Array<int> x = {2, 1, 4, 3};
-			x.sort_r().reverse_r(); x ==> {4, 3, 2, 1};
-
-			// Do not use reverse_r for iterations.
-			// Since this is quite inefficient.
-			// Use "iterate<Backwards>()" instead.
-			for (auto& i: x.reverse_r()) {}	 			<-- Incorrect
-			for (auto& i: x.iterate<Backwards>()) {} 	<-- Correct.
-		@funcs: 2
+	 *	@title: Reverse
+	 *	@description:
+	 *		Reverse the array.
+	 *
+	 *		Function `reverse_r` updates the current array, while `reverse` creates a copy.
+	 *	@usage:
+	 *
+	 *		// Reverse an array.
+	 *		Array<int> x = {1, 2, 3, 4};
+	 *		x.reverse_r(); x ==> {4, 3, 2, 1};
+	 *
+	 *		// Do not use reverse_r for iterations.
+	 *		// Since this is quite inefficient.
+	 *		// Use "iterate<Backwards>()" instead.
+	 *		for (auto& i: x.reverse_r()) {}	 			<-- Incorrect
+	 *		for (auto& i: x.iterate<Backwards>()) {} 	<-- Correct.
+	 *	@funcs: 2
 	} */
 	constexpr
 	This& 	reverse_r() {
@@ -2159,15 +2248,15 @@ struct Array {
 
 	// Remove items from the array.
 	/* 	@docs {
-		@title: Remove
-		@description:
-			Remove one or multiple items from the array.
-	 
-			Function `remove_r` updates the current array, while `remove` creates a copy.
-		@usage:
-			Array<int> x = {0, 1, 2, 3, 4, 5};
-			x.remove_r(1, 3, 5); x ==> {0, 2, 4};
-		@funcs: 2
+	 *	@title: Remove
+	 *	@description:
+	 *		Remove one or multiple items from the array.
+	 *
+	 *		Function `remove_r` updates the current array, while `remove` creates a copy.
+	 *	@usage:
+	 *		Array<int> x = {0, 1, 2, 3, 4, 5};
+	 *		x.remove_r(1, 3, 5); x ==> {0, 2, 4};
+	 *	@funcs: 2
 	} */
 	template <typename... Args> constexpr
 	This& 	remove_r(const Type& item, Args&&... items) {
@@ -2214,15 +2303,15 @@ struct Array {
 
 	// Multipy an array.
 	/* 	@docs {
-		@title: Multiply
-		@description:
-			Multiply the array.
-	 
-			Function `mult_r` updates the current array, while `mult` creates a copy.
-		@usage:
-			Array<int> x = {0};
-			x.mult_r(3); x ==> {0, 0, 0};
-		@funcs: 2
+	 *	@title: Multiply
+	 *	@description:
+	 *		Multiply the array.
+	 *
+	 *		Function `mult_r` updates the current array, while `mult` creates a copy.
+	 *	@usage:
+	 *		Array<int> x = {0};
+	 *		x.mult_r(3); x ==> {0, 0, 0};
+	 *	@funcs: 2
 	} */
 	constexpr
 	This& 	mult_r(const Length x) {
@@ -2251,12 +2340,12 @@ struct Array {
 
 	// Divide an array.
 	/* 	@docs {
-		@title: Divide
-		@description:
-			Divide the array into an array with arrays.
-		@usage:
-			Array<int> x = {0, 0};
-			x.div(2); x ==> {{0}, {0}};
+	 *	@title: Divide
+	 *	@description:
+	 *		Divide the array into an array with arrays.
+	 *	@usage:
+	 *		Array<int> x = {0, 0};
+	 *		x.div(2); x ==> {{0}, {0}};
 	} */
 	constexpr
 	Array<This>	div(const Length x) const {
@@ -2291,15 +2380,15 @@ struct Array {
 
 	// mod of array.
 	/* 	@docs {
-		@title: Modulo
-		@description:
-			Get the modulo of the array.
-	 
-			Function `mod_r` updates the current array, while `mod` creates a copy.
-		@usage:
-			Array<int> x = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-			x.mod_r(3); x ==> {0};
-		@funcs: 2
+	 *	@title: Modulo
+	 *	@description:
+	 *		Get the modulo of the array.
+	 *
+	 *		Function `mod_r` updates the current array, while `mod` creates a copy.
+	 *	@usage:
+	 *		Array<int> x = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	 *		x.mod_r(3); x ==> {0};
+	 *	@funcs: 2
 	} */
 	constexpr
 	This&	mod_r(const Length x) {
@@ -2322,190 +2411,14 @@ struct Array {
 		return obj;
 	}
 
-	// Quote.
-	/* 	@docs {
-		@title: Quote
-		@description:
-			Quote the char array.
-	 
-			Function `quote_r` updates the current array, while `quote` creates a copy.
-		@usage:
-			String x = "/tmp/";
-			x.quote_r(); x ==> "\"/tmp/\"";
-		@funcs: 2
-	} */
-	constexpr
-	This& 	quote_r() requires (is_char<Type>::value) {
-		insert(0, '"');
-		append('"');
-		return *this;
-	}
-	constexpr
-	This 	quote() requires (is_char<Type>::value) {
-		return copy().quote_r();
-	}
-
-	// Unquote.
-	/* 	@docs {
-		@title: Unquote
-		@description:
-			Unquote the char array.
-	 
-			Function `unquote_r` updates the current array, while `unquote` creates a copy.
-		@usage:
-			String x = "\"/tmp/\"";
-			x.unquote_r(); x ==> "/tmp/";
-		@funcs: 2
-	} */
-	constexpr
-	This& 	unquote_r() requires (is_char<Type>::value) {
-		if (m_len > 0) {
-			if (m_arr[0] == '"') {
-				--m_len;
-				array_h::move(m_arr, m_arr + 1, m_len);
-			}
-			if (m_arr[m_len - 1] == '"') {
-				--m_len;
-			}
-			null_terminate_h();
-		}
-		return *this;
-	}
-	This& 	unquote() requires (is_char<Type>::value) {
-		return copy().unquote_r();
-	}
-    
-    // To uppercase.
-    /*  @docs {
-        @title: Uppercase
-        @description:
-            Create an uppercase `String` from the `String`.
-            
-            Function `uppercase_r` updates the `String`, while `uppercase` creates a new `String`.
-        @usage:
-            String x = "hello";
-            String y = x.uppercase(); y ==> "HELLO";
-        @funcs: 2
-    } */
-    constexpr
-    This     uppercase() requires (is_char<Type>::value) {
-        This up;
-        up.resize(m_len);
-        for (auto& c: *this) {
-            up.append_no_resize(::toupper(c));
-        }
-        return up;
-    }
-    constexpr
-    This&     uppercase_r() requires (is_char<Type>::value) {
-        for (auto& c: *this) {
-            c = ::toupper(c);
-        }
-        return *this;
-    }
-    
-    // To lowercase.
-    /*  @docs {
-        @title: Lowercase
-        @description:
-            Create a lowercase `String` from the `String`.
-            
-            Function `uppercase_r` updates the `String`, while `uppercase` creates a new `String`.
-        @usage:
-            String x = "hello";
-            String y = x.uppercase(); y ==> "HELLO";
-        @funcs: 2
-    } */
-    constexpr
-    This     lowercase() requires (is_char<Type>::value) {
-        This up;
-        up.resize(m_len);
-        for (auto& c: *this) {
-            up.append_no_resize(::tolower(c));
-        }
-        return up;
-    }
-    constexpr
-    This&     lowercase_r() requires (is_char<Type>::value) {
-        for (auto& c: *this) {
-            c = ::toupper(c);
-        }
-        return *this;
-    }
-
-	// Ensure start / end padding to a required length.
-	/* 	@docs {
-		@title: Ensure start padding
-		@description:
-			Ensure start padding to a required full length.
-	 
-			Function `ensure_start_padding_r` updates the current array, while `ensure_start_padding` creates a copy.
-		@notes:
-			The minus (`-`) from a `tostr(-1)` is also included in the required length.
-		@usage:
-			String x = "1";
-			x.ensure_start_padding_r('0', 2); x ==> "01";
-			String y = "1";
-			y.ensure_start_padding_r('0', 1); x ==> "1";
-		@funcs: 2
-	} */
-	constexpr
-	This& 	ensure_start_padding_r(char padding, const Length req_len) {
-		if (m_len >= req_len) { return *this; }
-		Length padding_len = req_len - m_len;
-		expand(padding_len);
-		if (m_arr[0] == '-') {
-			array_h::move(m_arr + padding_len + 1, m_arr + 1, m_len - 1);
-			++padding_len;
-			while (padding_len-- > 1) { m_arr[padding_len] = padding; }
-		} else {
-			array_h::move(m_arr + padding_len, m_arr, m_len);
-			while (padding_len-- > 0) { m_arr[padding_len] = padding; }
-		}
-		m_len = req_len;
-		null_terminate_h();
-		return *this;
-	}
-	constexpr
-	This	ensure_start_padding(char padding, const Length req_len) {
-		return copy().ensure_start_padding_r(padding, req_len);
-	}
-	/* 	@docs {
-		@title: Ensure end padding
-		@description:
-			Ensure end padding to a required full length.
-	 
-			Function `ensure_end_padding_r` updates the current array, while `ensure_end_padding` creates a copy.
-		@notes:
-			The minus (`-`) from a `tostr(-1)` is also included in the required length.
-		@usage:
-			String x = "1";
-			x.ensure_end_padding_r(' ', 2); x ==> "1 ";
-			String y = "1";
-			y.ensure_end_padding_r(' ', 1); x ==> "1";
-		@funcs: 2
-	} */
-	constexpr
-	This& 	ensure_end_padding_r(char padding, const Length req_len) {
-		if (m_len >= req_len) { return *this; }
-		Length padding_len = req_len - m_len;
-		expand(padding_len);
-		while (padding_len-- > 0) { m_arr[m_len] = padding; ++m_len; }
-		null_terminate_h();
-		return *this;
-	}
-	constexpr
-	This 	ensure_end_padding(char padding, const Length req_len) {
-		return copy().ensure_end_padding_r(padding, req_len);
-	}
-
 	// Load a file.
 	/* 	@docs {
-		@title: Load
-		@description: Load a file.
-		@usage:
-			Array<...> x = Array<...>::load("./myfile.txt");
-		@funcs: 2
+	 *	@parent: vlib::Array
+	 *	@title: Load
+	 *	@description: Load a file.
+	 *	@usage:
+	 *		Array<...> x = Array<...>::load("./myarray.txt");
+	 *	@funcs: 2
 	}*/
 	SICE
 	auto 	load(const char* path) requires (!is_char<Type>::value) {
@@ -2530,6 +2443,14 @@ struct Array {
 	auto 	load(const String& path) requires (!is_char<Type>::value) {
 		return load(path.c_str());
 	}
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Load
+	 *	@description: Load a file.
+	 *	@usage:
+	 *		String x = String::load("./myfile.txt");
+	 *	@funcs: 2
+	}*/
     SICE
 	auto 	load(const char* path) requires (is_char<Type>::value) {
         This obj;
@@ -2551,13 +2472,14 @@ struct Array {
 	
 	// Save a file.
 	/* 	@docs {
-		@title: Save
-		@description: Save data to a file.
-		@usage:
-			Array<...> x = ...;
-			x.save("./myfile.txt");
-		@funcs: 2
-	}*/
+	 *	@parent: vlib::Array
+	 *	@title: Save
+	 *	@description: Save data to a file.
+	 *	@usage:
+	 *		Array<...> x = ...;
+	 *		x.save("./myarray.txt");
+	 *	@funcs: 2
+	 }*/
 	constexpr
 	auto& 	save(const char* path) const requires (!is_char<Type>::value) {
 		Pipe pipe;
@@ -2576,6 +2498,15 @@ struct Array {
 	auto& 	save(const String& path) const requires (!is_char<Type>::value) {
 		return save(path.c_str());
 	}
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Save
+	 *	@description: Save data to a file.
+	 *	@usage:
+	 *		String x = "Hello World!";
+	 *		x.save("./myfile.txt");
+	 *	@funcs: 2
+	 }*/
 	constexpr
 	auto& 	save(const char* path) const requires (is_char<Type>::value) {
 		switch (vlib::save(path, c_str(), m_len)) {
@@ -2592,74 +2523,24 @@ struct Array {
 	auto& 	save(const String& path) const requires (is_char<Type>::value) {
 		return save(path.c_str());
 	}
-
-    // Set default.
-    /*  @docs {
-     *  @title: Set Default
-     *  @description:
-     *      Set default value if the object is undefined.
-     *
-     *      Function `concats_r` updates the current array, while `concats` creates a copy.
-     *  @usage:
-     *      String x, y = "Hello World!";
-     *      x.def_r("Hello Universe!"); x ==> "Hello Universe!"
-     *      y.def_r("Hello World!"); y ==> "Hello World!"
-     *  @funcs: 2
-     }*/
-    constexpr
-    This     def(const This& def) const {
-        if (is_undefined()) {
-            return def;
-        }
-        return *this;
-    }
-    This&     def_r(const This& def) {
-        if (is_undefined()) {
-            copy(def);
-        }
-        return *this;
-    }
-    
-	// Null terminate.
-	/* 	@docs {
-		@title: Null terminate
-		@description:
-			Null terminate the char array.
-			
-			Function `null_terminate()` always updates the current array.
-		@usage:
-			String x;
-			x.null_terminate();
-	}*/
-	constexpr
-	This& 	null_terminate() requires (!is_char<Type>::value) { return *this; }
-	constexpr
-	This& 	null_terminate() requires (is_char<Type>::value) {
-		if (m_arr == nullptr) { expand(1); }
-		m_arr[m_len] = '\0';
-		return *this;
-	}
-	constexpr
-	void	null_terminate_h() requires (!is_char<Type>::value) {}
-	constexpr
-	void	null_terminate_h() requires (is_char<Type>::value) {
-		m_arr[m_len] = '\0';
-	}
-	constexpr
-	void 	null_terminate_safe_h() requires (!is_char<Type>::value) {}
-	constexpr
-	void 	null_terminate_safe_h() requires (is_char<Type>::value) {
-		if (m_arr != nullptr) {
-			m_arr[m_len] = '\0';
-		}
-	}
     
     // ---------------------------------------------------------
     // String only functions.
     // Not all string only functions are here.
     
     // As variable name.
-    // Only catches special characters ' ' and '-'.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: As variable name.
+	 *	@description:
+	 *		Convert the string to a variable name style.
+	 *
+	 *		Only catches special characters ' ' and '-'.
+	 *	@usage:
+	 *		String x = "Hello World";
+	 *		String y = x.variable_name();
+	 *		y ==> "hello_world"
+	 }*/
     constexpr
     This    variable_name() const requires (is_char<Type>::value) {
         This name;
@@ -2687,6 +2568,252 @@ struct Array {
         }
         return name;
     }
+	
+	// Quote.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Quote
+	 *	@description:
+	 *		Quote the char array.
+	 *
+	 *		Function `quote_r` updates the current array, while `quote` creates a copy.
+	 *	@usage:
+	 *		String x = "/tmp/";
+	 *		x.quote_r(); x ==> "\"/tmp/\"";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This& 	quote_r() requires (is_char<Type>::value) {
+		insert(0, '"');
+		append('"');
+		return *this;
+	}
+	constexpr
+	This 	quote() requires (is_char<Type>::value) {
+		return copy().quote_r();
+	}
+
+	// Unquote.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Unquote
+	 *	@description:
+	 *		Unquote the char array.
+	 *
+	 *		Function `unquote_r` updates the current array, while `unquote` creates a copy.
+	 *	@usage:
+	 *		String x = "\"/tmp/\"";
+	 *		x.unquote_r(); x ==> "/tmp/";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This& 	unquote_r() requires (is_char<Type>::value) {
+		if (m_len > 0) {
+			if (m_arr[0] == '"') {
+				--m_len;
+				array_h::move(m_arr, m_arr + 1, m_len);
+			}
+			if (m_arr[m_len - 1] == '"') {
+				--m_len;
+			}
+			null_terminate_h();
+		}
+		return *this;
+	}
+	This& 	unquote() requires (is_char<Type>::value) {
+		return copy().unquote_r();
+	}
+	
+	// To uppercase.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Uppercase
+	 *	@description:
+	 *	    Create an uppercase `String` from the `String`.
+	 *
+	 *	    Function `uppercase_r` updates the `String`, while `uppercase` creates a new `String`.
+	 *	@usage:
+	 *	    String x = "hello";
+	 *	    String y = x.uppercase(); y ==> "HELLO";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This     uppercase() requires (is_char<Type>::value) {
+		This up;
+		up.resize(m_len);
+		for (auto& c: *this) {
+			up.append_no_resize(::toupper(c));
+		}
+		return up;
+	}
+	constexpr
+	This&     uppercase_r() requires (is_char<Type>::value) {
+		for (auto& c: *this) {
+			c = ::toupper(c);
+		}
+		return *this;
+	}
+	
+	// To lowercase.
+	/*  @docs {
+	 *	@parent: vlib::String
+	 *	@title: Lowercase
+	 *	@description:
+	 *	    Create a lowercase `String` from the `String`.
+	 *
+	 *	    Function `uppercase_r` updates the `String`, while `uppercase` creates a new `String`.
+	 *	@usage:
+	 *	    String x = "hello";
+	 *	    String y = x.uppercase(); y ==> "HELLO";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This     lowercase() requires (is_char<Type>::value) {
+		This up;
+		up.resize(m_len);
+		for (auto& c: *this) {
+			up.append_no_resize(::tolower(c));
+		}
+		return up;
+	}
+	constexpr
+	This&     lowercase_r() requires (is_char<Type>::value) {
+		for (auto& c: *this) {
+			c = ::toupper(c);
+		}
+		return *this;
+	}
+
+	// Ensure start / end padding to a required length.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Ensure start padding
+	 *	@description:
+	 *		Ensure start padding to a required full length.
+	 *
+	 *		Function `ensure_start_padding_r` updates the current array, while `ensure_start_padding` creates a copy.
+	 *	@notes:
+	 *		The minus (`-`) from a `tostr(-1)` is also included in the required length.
+	 *	@usage:
+	 *		String x = "1";
+	 *		x.ensure_start_padding_r('0', 2); x ==> "01";
+	 *		String y = "1";
+	 *		y.ensure_start_padding_r('0', 1); x ==> "1";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This& 	ensure_start_padding_r(char padding, const Length req_len) {
+		if (m_len >= req_len) { return *this; }
+		Length padding_len = req_len - m_len;
+		expand(padding_len);
+		if (m_arr[0] == '-') {
+			array_h::move(m_arr + padding_len + 1, m_arr + 1, m_len - 1);
+			++padding_len;
+			while (padding_len-- > 1) { m_arr[padding_len] = padding; }
+		} else {
+			array_h::move(m_arr + padding_len, m_arr, m_len);
+			while (padding_len-- > 0) { m_arr[padding_len] = padding; }
+		}
+		m_len = req_len;
+		null_terminate_h();
+		return *this;
+	}
+	constexpr
+	This	ensure_start_padding(char padding, const Length req_len) {
+		return copy().ensure_start_padding_r(padding, req_len);
+	}
+	/* 	@docs {
+	 *	@title: Ensure end padding
+	 *	@parent: vlib::String
+	 *	@description:
+	 *		Ensure end padding to a required full length.
+	 *
+	 *		Function `ensure_end_padding_r` updates the current array, while `ensure_end_padding` creates a copy.
+	 *	@notes:
+	 *		The minus (`-`) from a `tostr(-1)` is also included in the required length.
+	 *	@usage:
+	 *		String x = "1";
+	 *		x.ensure_end_padding_r(' ', 2); x ==> "1 ";
+	 *		String y = "1";
+	 *		y.ensure_end_padding_r(' ', 1); x ==> "1";
+	 *	@funcs: 2
+	} */
+	constexpr
+	This& 	ensure_end_padding_r(char padding, const Length req_len) {
+		if (m_len >= req_len) { return *this; }
+		Length padding_len = req_len - m_len;
+		expand(padding_len);
+		while (padding_len-- > 0) { m_arr[m_len] = padding; ++m_len; }
+		null_terminate_h();
+		return *this;
+	}
+	constexpr
+	This 	ensure_end_padding(char padding, const Length req_len) {
+		return copy().ensure_end_padding_r(padding, req_len);
+	}
+
+	// Set default.
+	/*  @docs {
+	 *  @title: Set Default
+	 *  @description:
+	 *      Set default value if the object is undefined.
+	 *
+	 *      Function `concats_r` updates the current array, while `concats` creates a copy.
+	 *  @usage:
+	 *      String x, y = "Hello World!";
+	 *      x.def_r("Hello Universe!"); x ==> "Hello Universe!"
+	 *      y.def_r("Hello Universe!"); y ==> "Hello World!"
+	 *  @funcs: 2
+	 }*/
+	constexpr
+	This     def(const This& def) const {
+		if (is_undefined()) {
+			return def;
+		}
+		return *this;
+	}
+	This&    def_r(const This& def) {
+		if (is_undefined()) {
+			copy(def);
+		}
+		return *this;
+	}
+	
+	// Null terminate.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Null terminate
+	 *	@description:
+	 *		Null terminate the char array.
+	 *
+	 *		Function `null_terminate()` always updates the current array.
+	 *	@usage:
+	 *		String x;
+	 *		x.null_terminate();
+	 }*/
+	constexpr
+	This& 	null_terminate() requires (!is_char<Type>::value) { return *this; }
+	constexpr
+	This& 	null_terminate() requires (is_char<Type>::value) {
+		if (m_arr == nullptr) { expand(1); }
+		m_arr[m_len] = '\0';
+		return *this;
+	}
+	constexpr
+	void	null_terminate_h() requires (!is_char<Type>::value) {}
+	constexpr
+	void	null_terminate_h() requires (is_char<Type>::value) {
+		m_arr[m_len] = '\0';
+	}
+	constexpr
+	void 	null_terminate_safe_h() requires (!is_char<Type>::value) {}
+	constexpr
+	void 	null_terminate_safe_h() requires (is_char<Type>::value) {
+		if (m_arr != nullptr) {
+			m_arr[m_len] = '\0';
+		}
+	}
+	
 
 	// ---------------------------------------------------------
 	// Parsing.
@@ -3048,7 +3175,7 @@ struct Array {
 	// Concats with CString / Pipe.
 	template <typename Template, typename... Args>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concats_r(const Template& x, Args&&... args) {
 		concat_r(x);
@@ -3057,7 +3184,7 @@ struct Array {
 	}
 	template <typename Template, typename... Args>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concats_r(Template&& x, Args&&... args) {
 		concat_r(x);
@@ -3076,7 +3203,7 @@ struct Array {
 		!is_floating<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Array>::value
+        !internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concats_r(const Template& x, Args&&... args) {
 		Pipe pipe;
@@ -3180,7 +3307,7 @@ struct Array {
 	// Concats with CString / Pipe / bArray without resizing.
 	template <typename Template, typename... Args>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concats_no_resize_r(const Template& x, Args&&... args) {
 		concat_r(x);
@@ -3189,7 +3316,7 @@ struct Array {
 	}
 	template <typename Template, typename... Args>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This&	concats_no_resize_r(Template&& x, Args&&... args) {
 		concat_no_resize_r(x);
@@ -3208,7 +3335,7 @@ struct Array {
 		!is_floating<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Array>::value
+        !internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concats_no_resize_r(const Template& x, Args&&... args) {
 		Pipe pipe;
@@ -3373,10 +3500,10 @@ struct Array {
 
 	// As const char*.
 	/* 	@docs {
-		@parent: String
-		@title: C string.
-		@description:
-			Get as null terminated `const char*`
+	 *	@parent: vlib::String
+	 *	@title: C string.
+	 *	@description:
+	 *		Get as null terminated `const char*`
 	}*/
 	constexpr
 	const char*	c_str() requires(is_char<Type>::value) {
@@ -3404,9 +3531,9 @@ struct Array {
 
 	// As json formatted String.
 	/* 	@docs {
-		@title: JSON
-		@description:
-			Get json formatted string.
+	 *	@title: JSON
+	 *	@description:
+	 *		Get json formatted string.
 	}*/
 	constexpr
 	String 	json() const requires (!is_char<Type>::value) {
@@ -3421,10 +3548,10 @@ struct Array {
 
 	// As String.
 	/* 	@docs {
-		@parent: Array
-		@title: String
-		@description:
-			Get as string.
+	 *	@parent: vlib::Array
+	 *	@title: String
+	 *	@description:
+	 *		Get as string.
 	}*/
 	constexpr
 	String 	str() const requires(!is_char<Type>::value) {
@@ -3435,7 +3562,7 @@ struct Array {
 
 	// As bool.
 	/* 	@docs {
-		@parent: String
+		@parent: vlib::String
 		@title: As bool
 		@description:
 			Get as bool.
@@ -3453,10 +3580,10 @@ struct Array {
 	
 	// As numeric.
 	/* 	@docs {
-		@parent: String
-		@title: As numeric
-		@description:
-			Get as numeric.
+	 *	@parent: vlib::String
+	 *	@title: As numeric
+	 *	@description:
+	 *		Get as numeric.
 	}*/
 	template <typename As> requires (
 		is_char<Type>::value &&
@@ -3683,14 +3810,14 @@ struct Array {
 	// Operators "+, +=" with CString / Pipe.
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr friend
 	This	operator +(const This obj, const Template& x) {
 		return obj.copy().concat_r(x);
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Array>::value)
+		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
 	) constexpr
 	This& 	operator +=(const Template& x) {
 		return concat_r(x);

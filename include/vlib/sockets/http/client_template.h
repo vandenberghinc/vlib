@@ -15,7 +15,7 @@ namespace http {
 // HTTP client template type.
 
 // Constructor args.
-struct ClientTemplate_args {
+struct ClientTemplateArgs {
 	String				host;
 	String				ip;
 	uint				port = 0;
@@ -25,6 +25,16 @@ struct ClientTemplate_args {
 	http::Headers		headers;
 	Compression			compression;
 };
+
+/*  @docs {
+ *	@chapter: http
+ *	@title: Client
+ *	@description:
+ *		HTTP client type.
+ *	@usage:
+ *		#include <vlib/sockets/http.h>
+ *		vlib::http::Client client;
+ } */
 
 template <
 	typename Socket,									// the tcp / tls socket.
@@ -94,7 +104,7 @@ public:
 	
 	// Constructor from args.
 	constexpr
-	ClientTemplate (ClientTemplate_args x) :
+	ClientTemplate (ClientTemplateArgs x) :
 	m_sock(move(x.host), move(x.ip), x.port),
 	m_api_key(move(x.api_key)),
 	m_api_secret(move(x.api_secret)),
@@ -133,6 +143,14 @@ public:
 	// Functions.
 
 	// Create and send a request.
+	/*  @docs {
+	 *	@parent: vlib::http::Client
+	 *	@title: Request
+	 *	@description:
+	 *		Make a http request.
+	 *	@usage:
+	 *		...
+	 } */
 	constexpr
 	Response	request(
 		short			method,
