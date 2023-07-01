@@ -71,7 +71,7 @@ public:
 
 	// Parse from a const char*.
 	SICE
-	This	parse(const char*, const ullong&) {
+	This	parse(const char*, ullong) {
 		return Null();
 	}
 

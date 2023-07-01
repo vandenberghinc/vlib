@@ -26,9 +26,9 @@ struct wrapper {
 	void	add_header(
 		SPtr<String>& 				m_data,
 		const char* 				key,
-		const Length& 				key_len,
+		const Length 				key_len,
 		const char* 				value,
-		const Length&		 		value_len
+		const Length		 		value_len
 	) {
 		m_data->expand(key_len + value_len + 3);
 		m_data->concat_no_resize_r(key, key_len);
@@ -41,9 +41,9 @@ struct wrapper {
 	// Add a body to the data pointer.
 	SICE
 	void	add_body(
-		SPtr<String>& 				m_data,
-		const char* 				body,
-		const ullong& 	len
+		SPtr<String>& 	m_data,
+		const char* 	body,
+		ullong 			len
 	) {
 		m_data->expand(len + 2);
 		m_data->append_no_resize('\r');
@@ -54,7 +54,7 @@ struct wrapper {
 
 	// Get a char from the data safely, without causing a segfault.
 	SICE
-	auto&	safe_get(char*& data, const Length& index, const Length& len) {
+	auto&	safe_get(char*& data, const Length index, const Length len) {
 		if (index >= len) { return out_of_range_char; }
 		return data[index];
 	}
@@ -64,7 +64,7 @@ struct wrapper {
 	void 	parse_method(
 		short& 			m_method,
 		char*&			data,
-		const Length&	len,
+		const Length	len,
 		Length&			start_index
 	) {
 		switch (data[start_index]) {
@@ -91,7 +91,7 @@ struct wrapper {
 	void 	parse_version(
 		short& 			m_version,
 		char*&			data,
-		const Length&	len,
+		const Length	len,
 		Length&			start_index
 	) {
 		switch (safe_get(data, start_index + 5, len)) {
@@ -115,7 +115,7 @@ struct wrapper {
 	void 	parse_status(
 		short& 			m_status,
 		char*&			data,
-		const Length&	len,
+		const Length	len,
 		Length&			start_index
 	) {
 		switch (data[start_index]) {
@@ -369,7 +369,7 @@ struct wrapper {
 	 int 	parse_uri_query(
 		Json& 			params,				// a reference to the json parameters.
 		const char*			data,				// the entire uri or the sliced query string (must contain with a '?' though).
-		const Length&		len				// the length of the data.
+		const Length		len				// the length of the data.
 	) {
 
 		// Variables.

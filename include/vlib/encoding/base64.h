@@ -70,7 +70,7 @@ struct Base64 {
         return encode(input.data(), input.len());
     }
     SICE
-    String     encode(const char* input, const Length& len) {
+    String     encode(const char* input, const Length len) {
         unsigned char *out, *pos;
         const unsigned char *end, *in;
         size_t olen;
@@ -134,7 +134,7 @@ struct Base64 {
         return decode(input.data(), input.len());
     }
     SICE
-    String        decode(const char* input, const Length& len) {
+    String        decode(const char* input, const Length len) {
         unsigned char* p = (unsigned char*)input;
         int pad = len > 0 && (len % 4 || p[len - 1] == '=');
         const size_t L = ((len + 3) / 4 - pad) * 4;

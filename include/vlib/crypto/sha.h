@@ -80,7 +80,7 @@ public:
             vlib::String output = vlib::SHA256::generate_key(output, 32);
     } */
 	static inline
-	String 	generate_key(const ullong& len) {
+	String 	generate_key(ullong len) {
 		uchar* key = new uchar [len];
 		if(!RAND_bytes(key, (uint) len)) {
 			delete[] key;
@@ -114,10 +114,10 @@ public:
     }
 	static inline
 	String  hmac(
-		const char* 		key,
-		const ullong&		klen,
-		const char* 		data,
-		const ullong& 		dlen
+		const char* 	key,
+		ullong			klen,
+		const char* 	data,
+		ullong			dlen
 	) {
 		uchar*	result = new uchar [EVP_MAX_MD_SIZE];
 		uint 	len = 0;
@@ -157,7 +157,7 @@ public:
         return hash;
     }
     static
-    String  hash(const char* data, const ullong& dlen) requires (Mode == crypto::mode::sha1) {
+    String  hash(const char* data, ullong dlen) requires (Mode == crypto::mode::sha1) {
         String hash;
         hash.resize(SHA_DIGEST_LENGTH);
         hash.len() = SHA_DIGEST_LENGTH;
@@ -174,7 +174,7 @@ public:
         return hash;
     }
     static
-    String  hash(const char* data, const ullong& dlen) requires (Mode == crypto::mode::sha256) {
+    String  hash(const char* data, ullong dlen) requires (Mode == crypto::mode::sha256) {
         String hash;
         hash.resize(SHA256_DIGEST_LENGTH);
         hash.len() = SHA256_DIGEST_LENGTH;
@@ -191,7 +191,7 @@ public:
         return hash;
     }
     static
-    String  hash(const char* data, const ullong& dlen) requires (Mode == crypto::mode::sha512) {
+    String  hash(const char* data, ullong dlen) requires (Mode == crypto::mode::sha512) {
         String hash;
         hash.resize(SHA512_DIGEST_LENGTH);
         hash.len() = SHA512_DIGEST_LENGTH;
@@ -223,10 +223,7 @@ public:
         return digest(data.data(), data.len());
     }
     static inline
-    String     digest(
-        const char*           data,
-        const ullong&         dlen
-    ) {
+    String     digest(const char* data, ullong dlen) {
         
         BIO * p_bio_md  = nullptr;
         BIO * p_bio_mem = nullptr;

@@ -137,7 +137,7 @@ struct Compression {
     String  compress(const String& data) const {
         return compress(data.data(), data.len());
     }
-    String  compress(const char* data, const Length& len, const int window_bits = 31, const int mem_level = 8) const {
+    String  compress(const char* data, Length len, int window_bits = 31, int mem_level = 8) const {
         
         // The windowBits parameter is the base two logarithm of the window size (the size of the history buffer).
         // It should be in the range 8..15 for this version of the library.
@@ -297,7 +297,7 @@ struct Compression {
     String  decompress(const String& data) const {
         return decompress(data.data(), data.len());
     }
-	String  decompress(const char* data, const Length& len, const int window_bits = 47) const {
+	String  decompress(const char* data, Length len, int window_bits = 47) const {
         
         // The windowBits parameter is the base two logarithm of the window size (the size of the history buffer).
         // It should be in the range 8..15 for this version of the library.
@@ -445,7 +445,7 @@ struct Compression {
         return is_compressed(obj.data(), obj.len());
     }
 	constexpr
-	bool 	is_compressed(const char* data, const Length& len) const {
+	bool 	is_compressed(const char* data, const Length len) const {
 		return len > 2 && (
 		   // zlib
 		   (
@@ -495,7 +495,7 @@ int& level = compressor.m_level;
 String  compress(const String& data) {
     return compression::compressor.compress(data.data(), data.len());
 }
-String  compress(const char* data, const ullong& len) {
+String  compress(const char* data, ullong len) {
 	return compression::compressor.compress(data, len);
 }
 
@@ -516,7 +516,7 @@ String  compress(const char* data, const ullong& len) {
 String  decompress(const String& data) {
     return compression::compressor.decompress(data.data(), data.len());
 }
-String  decompress(const char* data, const ullong& len) {
+String  decompress(const char* data, ullong len) {
 	return compression::compressor.decompress(data, len);
 }
 
@@ -541,7 +541,7 @@ bool     is_compressed(const String& obj) {
     return compression::compressor.is_compressed(obj.data(), obj.len());
 }
 constexpr
-bool 	is_compressed(const char* data, const ullong& len) {
+bool 	is_compressed(const char* data, ullong len) {
 	return compression::compressor.is_compressed(data, len);
 }
 

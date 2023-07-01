@@ -46,7 +46,7 @@ struct desc {
 
 // Convert the error number to a string description.
 inline constexpr
-auto& tostr(const int& status) {
+auto& tostr(int status) {
 	switch (status) {
 		case content_types::undefined:
 			return desc::undefined;

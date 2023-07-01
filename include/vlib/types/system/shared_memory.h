@@ -42,16 +42,10 @@ struct SharedMemory {
     
     // Constructor.
     constexpr
-    SharedMemory(const Type& data, const int& prot = PROT_READ|PROT_WRITE, const int& flags = MAP_SHARED|MAP_ANONYMOUS)
+    SharedMemory(Type data, int prot = PROT_READ|PROT_WRITE, int flags = MAP_SHARED|MAP_ANONYMOUS)
     {
         m_data = (Type*) mmap(NULL, sizeof(Type), prot, flags, -1, 0);
-        *m_data = data;
-    }
-    constexpr
-    SharedMemory(Type&& data, const int& prot = PROT_READ|PROT_WRITE, const int& flags = MAP_SHARED|MAP_ANONYMOUS)
-    {
-        m_data = (Type*) mmap(NULL, sizeof(Type), prot, flags, -1, 0);
-        *m_data = data;
+        *m_data = move(data);
     }
     
     // Constructor.

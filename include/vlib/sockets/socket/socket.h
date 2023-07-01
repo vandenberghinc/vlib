@@ -1187,11 +1187,11 @@ public:
 	}
     SICE
     ullong  send(
-        const Int&         fd,
+        const Int          fd,
         const char*        data,
-        const Length&      len,
-        const Int&         timeout,
-        const Int&         flags = 0
+		const Length       len,
+        const Int          timeout,
+        const Int          flags = 0
     ) {
         set_sigpipe_action();
         ullong full_sent = 0;

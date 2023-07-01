@@ -32,7 +32,7 @@ struct sleep {
 			vlib::sleep::sec(1);
 	} */
 	static inline
-	void sec(const uint& seconds) {
+	void sec(uint seconds) {
 		::usleep(seconds * 1000000);
 	}
 
@@ -45,7 +45,7 @@ struct sleep {
 			vlib::sleep::msec(1);
 	} */
 	static inline
-	void msec(const uint& ms) {
+	void msec(uint ms) {
 		::usleep(ms * 1000);
 	}
 
@@ -58,7 +58,7 @@ struct sleep {
 			vlib::sleep::usec(1);
 	} */
 	static inline
-	void usec(const uint& us) {
+	void usec(uint us) {
 		::usleep(us);
 	}
 

@@ -10,7 +10,7 @@ namespace vlib {
 
 // Convert a char to uppercase.
 constexpr
-char	uppercase(const char& c) {
+char	uppercase(char c) {
 	switch (c) {
 	case 'a': return 'A';
 	case 'b': return 'B';
@@ -44,7 +44,7 @@ char	uppercase(const char& c) {
 
 // Convert a char to lowercase.
 constexpr
-char	lowercase(const char& c) {
+char	lowercase(char c) {
 	switch (c) {
 	case 'A': return 'a';
 	case 'B': return 'b';
@@ -77,19 +77,19 @@ char	lowercase(const char& c) {
 }
 
 // Converts a hex character to its integer value.
-char 	from_hex(const char& ch) {
+char 	from_hex(char ch) {
   return isdigit(ch) ? ch - '0' : lowercase(ch) - 'a' + 10;
 }
 
 /* Converts an integer value to its hex character*/
-char    to_hex(const char& code) {
+char    to_hex(char code) {
   static constexpr const char hex[] = "0123456789abcdef";
   return hex[code & 15];
 }
 
 // Hexadecimal string to numeric.
 constexpr
-llong   from_hex(const char* hex, const ullong& len) {
+llong   from_hex(const char* hex, ullong len) {
 	ullong base = 1;
 	ullong dec_val = 0;
 	for (llong i = len - 1; i >= 0; i--) {
@@ -107,7 +107,7 @@ llong   from_hex(const char* hex, const ullong& len) {
 }
 
 // Is lowercase.
-bool    is_lowercase(const char& c) {
+bool    is_lowercase(char c) {
 	switch (c) {
 	case 'a': case 'b': case 'c': case 'd':
 	case 'e': case 'f': case 'g': case 'h':
@@ -123,7 +123,7 @@ bool    is_lowercase(const char& c) {
 }
 
 // Is uppercase.
-bool    is_uppercase(const char& c) {
+bool    is_uppercase(char c) {
 	switch (c) {
 	case 'A': case 'B': case 'C': case 'D':
 	case 'E': case 'F': case 'G': case 'H':
@@ -139,7 +139,7 @@ bool    is_uppercase(const char& c) {
 }
 
 // Is alphabetical.
-bool    is_alphabetical(const char& c) {
+bool    is_alphabetical(char c) {
 	switch (c) {
 	case 'a': case 'b': case 'c': case 'd':
 	case 'e': case 'f': case 'g': case 'h':
@@ -160,7 +160,7 @@ bool    is_alphabetical(const char& c) {
 		return false;
 	}
 }
-bool    is_alphabetical_or_digit(const char& c) {
+bool    is_alphabetical_or_digit(char c) {
 	switch (c) {
 	case 'a': case 'b': case 'c': case 'd':
 	case 'e': case 'f': case 'g': case 'h':
@@ -186,7 +186,7 @@ bool    is_alphabetical_or_digit(const char& c) {
 }
 
 // Is escape sequence.
-bool    is_escape_sequence(const char& c) {
+bool    is_escape_sequence(char c) {
     switch (c) {
         case '\a':
         case '\b':

@@ -816,7 +816,7 @@ public:
        @title: Signal
        @description: Signal the process.
     } */
-    int     signal(const int& signal = 0) {
+    int     signal(int signal = 0) {
         if (::kill(m_pid, signal) < 0) {
             m_errno = errno;
             return proc::error::kill;
@@ -832,7 +832,7 @@ public:
             - Always calls `close()` after a kill signal is send.
             - Automatically calls `::waitpid` after a successfull kill.
     } */
-    int     kill(const int& signal = SIGTERM) {
+    int     kill(int signal = SIGTERM) {
         if (!running()) { return 0; }
         if (::kill(m_pid, signal) < 0) {
             m_errno = errno;
@@ -921,10 +921,10 @@ constexpr
 void     User::create(
     const char*     name,
     const char*     realname,
-    const String&    pass,
-    const int&         uid,
-    const int&         gid,
-    const bool&        superuser,
+    const String&   pass,
+	int         	uid,
+	int         	gid,
+    bool        	superuser,
     const char*     homes,
     const char*     shell
 ) {
@@ -958,9 +958,9 @@ void     User::set_pass(
 // Define the "Group::create" function.
 constexpr
 void     Group::create(
-    const char*     name,
+    const char*      name,
     const String&    pass,
-    const int&         gid
+    int		         gid
 ) {
     Group::create_h<Proc, Script>(
         name,

@@ -11,10 +11,10 @@ namespace vlib {
 // Create exception macro.
 #define CREATE_EXCEPTION(name, strname) \
 struct name : public vlib::Exception { \
-    static excid_t type_id; \
+    static const excid_t type_id; \
     \
     constexpr \
-    name(const ullong& err_id) : \
+    name(const ullong err_id) : \
     vlib::Exception(type_id, err_id) {} \
     \
     constexpr \
@@ -47,7 +47,7 @@ struct name : public vlib::Exception { \
     name(name&& obj) : \
     vlib::Exception(static_cast<Exception&&>(obj)) {} \
 }; \
-excid_t name::type_id = vlib::exceptions::add_type(strname); \
+const excid_t name::type_id = vlib::exceptions::add_type(strname); \
 
 // template <typename Arg1, typename Arg2> \
 // name(const Arg1& arg1, const Arg2& arg2) : \

@@ -44,7 +44,7 @@ void backtrace_handler(int sig) {
 // Set backtrace for signal.
 //  - Only works when the program is compiled without optimization.
 //  - Example: backtrace(SIGSEGV);
-void backtrace(const int& sig) {
+void backtrace(int sig) {
     ::signal(sig, backtrace_handler);
 }
 

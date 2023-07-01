@@ -110,7 +110,7 @@ public:
 
 	// Special constructor with file descriptor.
 	constexpr
-	Pipe	(const int& fd) :
+	Pipe	(int fd) :
 	m_arr(nullptr),
 	m_len(0),
 	m_capacity(0),
@@ -250,7 +250,7 @@ public:
 	
 	// Check if the pipe's array will overflow when length is added.
 	constexpr
-	bool 	overflow(const ullong& len) {
+	bool 	overflow(ullong len) {
 		return m_len + len > limits<ullong>::max;
 	}
 
@@ -279,7 +279,7 @@ public:
 		return dump(msg, vlib::len(msg));
 	}
 	constexpr
-	int		dump(const char& msg){
+	int		dump(char msg){
 		return dump(&msg, 1);
 	}
     constexpr
@@ -315,7 +315,7 @@ public:
 
 	// With char.
 	constexpr
-	This&	operator <<(const char& x) {
+	This&	operator <<(char x) {
 		dump(&x, 1);
 		return *this;
 	}

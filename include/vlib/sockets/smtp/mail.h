@@ -43,7 +43,7 @@ struct Address {
  *
  *      The mail supports HTML format.
  *
- *      Addresses can contain of a single email addres or a name and email address.
+ *      Addresses can contain a single email addres or a name and email address.
  *
  *      The function `Mail::build()` is automatically called in `SMTP::Client::send()`.
  *  @usage:
@@ -164,7 +164,7 @@ private:
             // "Content-Transfer-Encoding: 8bit\r\n"
             "\r\n", body, "\r\n"
         );
-	}	
+	}
 	
 	// Build attachments.
 	void    build_attachments(String& output) const {

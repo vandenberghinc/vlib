@@ -31,7 +31,7 @@ enum types {
 
 // String representation of type.
 constexpr
-String	strtype(const short& type) {
+String	strtype(short type) {
 	switch (type) {
 		case types::null:
 			return "null";
@@ -125,7 +125,7 @@ private:
 	
 	// Initialize a new df array.
 	constexpr
-	void 	init_new_df_array(This& obj, const short& dim, const ullong& capacity = 0) {
+	void 	init_new_df_array(This& obj, short dim, ullong capacity = 0) {
 		obj.m_type = df::types::df;
 		obj.m_vals.init();
 		obj.m_dim = dim;
@@ -1363,7 +1363,7 @@ public:
 		return m_vals->begin();
 	}
 	constexpr
-	auto 	begin(const ullong& index) const {
+	auto 	begin(ullong index) const {
 		expect_df(__FUNCTION__);
 		return m_vals->begin(index);
 	}
@@ -1376,7 +1376,7 @@ public:
 		return m_vals->end();
 	}
 	constexpr
-	auto 	end(const ullong& index) const {
+	auto 	end(ullong index) const {
 		expect_df(__FUNCTION__);
 		return m_vals->end(index);
 	}
@@ -1389,7 +1389,7 @@ public:
 		return m_vals->iterate<Iter>();
 	}
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value || is_Backwards<Iter>::value) constexpr
-	auto 	iterate(const ullong& sindex, const ullong& eindex = internal::npos) const {
+	auto 	iterate(ullong sindex, ullong eindex = internal::npos) const {
 		expect_df(__FUNCTION__);
 		return m_vals->iterate<Iter>(sindex, eindex);
 	}
@@ -1402,7 +1402,7 @@ public:
 		return m_vals->indexes<Iter>();
 	}
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value || is_Backwards<Iter>::value) constexpr
-	auto 	indexes(const ullong& sindex, const ullong& eindex = internal::npos) const {
+	auto 	indexes(ullong sindex, ullong eindex = internal::npos) const {
 		expect_df(__FUNCTION__);
 		return m_vals->indexes<Iter>(sindex, eindex);
 	}
@@ -1485,7 +1485,7 @@ public:
 			Function `init` will cause a memory leak when the already assigned type is not `vlib::df::types::null`.
 	} */
 	constexpr
-	This& 	init(const short& type, const int& dim = 1) {
+	This& 	init(short type, int dim = 1) {
 		switch (type) {
             case df::types::null:
                 break;
@@ -1542,7 +1542,7 @@ public:
 			Function `init_children` will cause a memory leak when the already assigned type is not `vlib::df::types::null`.
 	} */
 	constexpr
-	This& 	init_children(const short& type, const int& dim = 1) {
+	This& 	init_children(short type, int dim = 1) {
 		expect_df(__FUNCTION__);
 		for (auto& i: *m_vals) {
 			i.init(type, dim);
@@ -1567,7 +1567,7 @@ public:
         }
     } */
 	// constexpr
-	// This& 	set_type(const short& type, const int& dim = 1) {
+	// This& 	set_type(short type, int dim = 1) {
 	// 	reset();
 	// 	return init(type, dim);
 	// }
@@ -1586,7 +1586,7 @@ public:
         }
     } */
 	constexpr
-	This&	convert_type(const short& type) {
+	This&	convert_type(short type) {
 		switch (m_type) {
 		case df::types::null:
 			init(type);
@@ -1780,7 +1780,7 @@ public:
         }
     } */
 	constexpr
-	This&	resize(const ullong& req_len) {
+	This&	resize(ullong req_len) {
 		expect_df(__FUNCTION__);
 		m_vals->resize(req_len);
 		return *this;
@@ -1799,7 +1799,7 @@ public:
         }
     } */
 	constexpr
-	This&	expand(const ullong& with_len) {
+	This&	expand(ullong with_len) {
 		expect_df(__FUNCTION__);
 		m_vals->expand(with_len);
 		return *this;
@@ -1894,12 +1894,12 @@ public:
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
     } */
 	constexpr
-	This&	get(const ullong& index) {
+	This&	get(ullong index) {
 		expect_df(__FUNCTION__);
 		return m_vals->get(index);
 	}
 	constexpr
-	This&	get(const ullong& index) const {
+	This&	get(ullong index) const {
 		expect_df(__FUNCTION__);
 		return m_vals->get(index);
 	}
@@ -1931,7 +1931,7 @@ public:
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 	} */
 	constexpr
-	This&	fill(const ullong& len, const This& obj) {
+	This&	fill(ullong len, const This& obj) {
 		expect_df(__FUNCTION__);
 		m_vals->m_len = 0;
 		resize(len);
@@ -2191,7 +2191,7 @@ public:
 		Code data = Code::load(path);
 		
 		// Funcs.
-		auto append_value = [&](DataFrame& df, const char* data, const ullong& start, const ullong& len) {
+		auto append_value = [&](DataFrame& df, const char* data, ullong start, ullong len) {
 			switch (len) {
 			case 0:
 				df.append(DataFrame());
@@ -2334,7 +2334,7 @@ public:
 		@funcs: 4
 	} */
 	constexpr
-	This&	concat_r(const This& obj, const int& axis = 0) {
+	This&	concat_r(const This& obj, int axis = 0) {
 		expect_df(__FUNCTION__);
 		obj.expect_df(__FUNCTION__);
 		switch (m_dim) {
@@ -2364,7 +2364,7 @@ public:
 		}
 	}
 	constexpr
-	This&	concat_r(This&& obj, const int& axis = 0) {
+	This&	concat_r(This&& obj, int axis = 0) {
 		expect_df(__FUNCTION__);
 		obj.expect_df(__FUNCTION__);
 		switch (m_dim) {
@@ -2447,7 +2447,7 @@ public:
 		@funcs: 2
 	} */
 	constexpr
-	This	sort(const String& column, const bool& reversed = false) const {
+	This	sort(const String& column, bool reversed = false) const {
 		expect_2d(__FUNCTION__);
 		DataFrame& df = operator[](column);
 		Dict<ullong, DataFrame> dict;
@@ -2477,7 +2477,7 @@ public:
 		return sorted;
 	}
 	constexpr
-	This&	sort_r(const String& column, const bool& reversed = false) {
+	This&	sort_r(const String& column, bool reversed = false) {
 		DataFrame x = sort(column, reversed);
 		return swap(x);
 	}
@@ -2494,7 +2494,7 @@ public:
 		@funcs: 2
 	} */
 	constexpr
-	This	drop_null(const int& axis = 0) const {
+	This	drop_null(int axis = 0) const {
 		expect_df(__FUNCTION__);
 		DataFrame dropped;
 		dropped.init(df::types::df, m_dim);
@@ -2621,16 +2621,16 @@ public:
 		
 	}
     constexpr
-    This    dropna(const int& axis = 0) const {
+    This    dropna(int axis = 0) const {
         return drop_null(axis);
     }
 	constexpr
-	This&	drop_null_r(const int& axis = 0) {
+	This&	drop_null_r(int axis = 0) {
 		DataFrame x = drop_null(axis);
 		return swap(x);
 	}
     constexpr
-    This&    dropna_r(const int& axis = 0) {
+    This&    dropna_r(int axis = 0) {
         DataFrame x = drop_null(axis);
         return swap(x);
     }
@@ -4464,7 +4464,7 @@ public:
         return sum(window.value());
     }
 	constexpr
-	This	sum(const ullong& window) {
+	This	sum(ullong window) {
 		expect_1d(__FUNCTION__);
 		DataFrame df;
 		df.init(df::types::df);
@@ -4493,7 +4493,7 @@ public:
 		return sum(window).div_r(window);
 	}
     constexpr
-    This    mean(const ullong& window) {
+    This    mean(ullong window) {
         return sum(window).div_r(window);
     }
 	
@@ -4539,7 +4539,7 @@ public:
         return sum(window).div_r(window);
     }
 	constexpr
-	This	ma(const ullong& window) {
+	This	ma(ullong window) {
 		return sum(window).div_r(window);
 	}
 	
@@ -4589,11 +4589,11 @@ public:
         return ema(window.value(), alpha.value());
     }
 	constexpr
-	This	ema(const ullong& window) {
+	This	ema(ullong window) {
 		return ema(window, 2.0 / ((float) window + 1.0));
 	}
 	constexpr
-	This	ema(const ullong& window, const ldouble& alpha) {
+	This	ema(ullong window, const ldouble& alpha) {
 		expect_1d(__FUNCTION__);
 		DataFrame ema;
 		ema.init(vlib::df::types::df);
@@ -4664,7 +4664,7 @@ public:
 		*/
 	}
     constexpr
-    This    ema_slice(const ullong& start, const ullong& end, const ldouble& alpha) {
+    This    ema_slice(ullong start, ullong end, const ldouble& alpha) {
         expect_1d(__FUNCTION__);
         ldouble prev_alpha = 1.0 - alpha;
         DataFrame null_df;
@@ -4750,7 +4750,7 @@ public:
         return wma(window.value());
     }
 	constexpr
-	This	wma(const ullong& window) {
+	This	wma(ullong window) {
 		expect_1d(__FUNCTION__);
 		DataFrame df;
 		df.init(df::types::df);
@@ -4886,7 +4886,7 @@ public:
         return std(window.value());
 	}
     constexpr
-    This    std(const ullong& window) {
+    This    std(ullong window) {
         expect_1d(__FUNCTION__);
         DataFrame std;
         std.init(df::types::df);
@@ -5850,12 +5850,12 @@ public:
 	
 	// Operator [] with index.
 	constexpr
-	This&	operator [](const ullong& index) {
+	This&	operator [](ullong index) {
 		// expect_df(__FUNCTION__);
 		return m_vals->get(index);
 	}
 	constexpr
-	This&	operator [](const ullong& index) const {
+	This&	operator [](ullong index) const {
 		// expect_df(__FUNCTION__);
 		return m_vals->get(index);
 	}

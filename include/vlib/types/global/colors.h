@@ -43,7 +43,7 @@ public:
 
 	// Constructor Type* with length.
 	inline constexpr
-	color_t(const Type* arr, const Length& len) : m_arr(arr), m_len(len) {}
+	color_t(const Type* arr, const Length len) : m_arr(arr), m_len(len) {}
 
 	// Copy constructor.
 	inline constexpr

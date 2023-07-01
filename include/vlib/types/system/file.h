@@ -312,7 +312,7 @@ public:
 			vlib::File file("/tmp/myfile.txt");
 			file.create();
 	} */
-	void 	create(const ushort& permission = 0740) {
+	void 	create(ushort permission = 0740) {
         m_attr->path.touch(permission);
 	}
 
@@ -332,7 +332,7 @@ public:
         m_attr->path.remove();
 	}
 	static inline
-    void 	remove(const char* path, const ullong& len) {
+    void 	remove(const char* path, ullong len) {
         Path::remove(path, len);
 	}
 	static inline
@@ -437,13 +437,13 @@ public:
 	void 	write(const String& data) {
 		return write(data.data(), data.len());
 	}
-    void 	write(const char* data, const Length& len) {
+    void 	write(const char* data, const Length len) {
         reopen(file::mode::write);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
             throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\"."));
 		}
 	}
-    void     write(const uchar* data, const Length& len) {
+    void     write(const uchar* data, const Length len) {
         reopen(file::mode::write);
         if (fwrite(data, len, 1, m_attr->file) != 1) {
             throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\"."));
@@ -469,7 +469,7 @@ public:
 	void 	append(const String& data) {
 		return append(data.data(), data.len());
 	}
-    void 	append(const char* data, const Length& len) {
+    void 	append(const char* data, const Length len) {
         reopen(file::mode::append);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
             throw WriteError(tostr("Unable to append to file \"", m_attr->path, "\"."));

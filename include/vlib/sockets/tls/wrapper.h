@@ -36,7 +36,7 @@ struct wrapper {
 
 	// Convert ssl error.
 	static inline
-	int 	convert_ssl_err(SSL*& ssl, const int& status) {
+	int 	convert_ssl_err(SSL*& ssl, int status) {
 		switch (SSL_get_error(ssl, status)) {
 			case SSL_ERROR_NONE:
 				return vlib::sockets::error::success;
@@ -63,7 +63,7 @@ struct wrapper {
 
 	// Set the minimum tls version.
 	SICE
-	void 	set_min_tls_version(SSL_CTX*& m_ctx, const int& version) {
+	void 	set_min_tls_version(SSL_CTX*& m_ctx, int version) {
 		switch (version) {
 			case tls::version::any:
                 break;
@@ -97,11 +97,11 @@ struct wrapper {
 	static inline
 	bool 	handle_want_read_write(
 		SSL*& 				ssl,
-		const int& 			status,
+		int 			status,
 		struct pollfd& 		pfd,
-		const int& 			rfd,
-		const int& 			wfd,
-		const int& 			timeout
+		int 			rfd,
+		int 			wfd,
+		int 			timeout
 	) {
 		int pollstatus;
 		switch (SSL_get_error(ssl, status)) {
@@ -183,15 +183,15 @@ struct wrapper {
 	void 	receive(
 		String& 		received,
 		SSL*& 		    ssl,
-		const int& 		timeout = -1,
-		const int& 		buff_len = 1024
+		int 			timeout = -1,
+		int 			buff_len = 1024
 	) {
 
 		// Variables.
 		char buff[buff_len];
 		int bytes = 0;
-		const int& rfd = SSL_get_rfd(ssl);
-		const int& wfd = SSL_get_wfd(ssl);
+		auto rfd = SSL_get_rfd(ssl);
+		auto wfd = SSL_get_wfd(ssl);
 		struct pollfd pfd;
 
 		// Loop.
@@ -227,8 +227,8 @@ struct wrapper {
 	ullong  send(
 		SSL*&	        ssl,
 		const char* 	data,
-		const ullong& 	len,
-		const int& 		timeout
+		ullong 			len,
+		int 			timeout
 	) {
         
         /* V2 send in chunks.
@@ -288,7 +288,7 @@ struct wrapper {
     ullong  send(
 		SSL*& 			ssl,
 		const String& 	data,
-		const int& 		timeout = -1
+		int 		timeout = -1
 	) {
 		return send(ssl, data.data(), (uint) data.len(), timeout);
 	}
@@ -405,7 +405,7 @@ struct wrapper {
     
     // Get error.
     static inline
-    String  get_err(SSL*& ssl, const int& ret) {
+    String  get_err(SSL*& ssl, int ret) {
         int err_code = SSL_get_error(ssl, ret);
         String err;
         err.resize(256);

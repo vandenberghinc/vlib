@@ -125,7 +125,7 @@ public:
         
         // Equals by offset.
         constexpr friend
-        bool    operator == (const Entry& x, const uint64_t& offset) {
+        bool    operator == (const Entry& x, uint64_t offset) {
             return x.offset == offset;
         }
         
@@ -220,7 +220,7 @@ private:
     
     // Compute CRC-32.
     static
-    uint32_t calc_crc32(const char* data, const ullong& len) {
+    uint32_t calc_crc32(const char* data, ullong len) {
         uLong crc = crc32(0L, Z_NULL, 0);
         crc = crc32(crc, (uchar*) data, (uint32_t) len);
         return (uint32_t) crc;
@@ -432,7 +432,7 @@ private:
     // The start parameter should be the start idnex of the signature.
     // Returns the amount of readed bytes.
     constexpr
-    ullong  read_fheader(Entry& entry, const char* data, const ullong& start) {
+    ullong  read_fheader(Entry& entry, const char* data, ullong start) {
         
         // Vars.
         ullong pos = start;
@@ -498,7 +498,7 @@ private:
     // The start parameter should be the start idnex of the signature.
     // Returns the amount of readed bytes.
     constexpr
-    ullong  read_cdheader(Entry& entry, const char* data, const ullong& start) {
+    ullong  read_cdheader(Entry& entry, const char* data, ullong start) {
         
         // Vars.
         ullong pos = start;
@@ -577,7 +577,7 @@ private:
     
     // Read the EOCD64.
     constexpr
-    ullong  read_eocd64(Archive& archive, const char* data, const ullong& start) {
+    ullong  read_eocd64(Archive& archive, const char* data, ullong start) {
         
         // Vars.
         ullong pos = start;
@@ -638,7 +638,7 @@ private:
     
     // Read the EOCL64.
     constexpr
-    ullong  read_eocl64(Archive& archive, const char* data, const ullong& start) {
+    ullong  read_eocl64(Archive& archive, const char* data, ullong start) {
         
         // Vars.
         ullong pos = start;
@@ -664,7 +664,7 @@ private:
     
     // Read the EOCD.
     constexpr
-    ullong  read_eocd(Archive& archive, const char* data, const ullong& start) {
+    ullong  read_eocd(Archive& archive, const char* data, ullong start) {
         
         // Vars.
         ullong pos = start;
@@ -726,7 +726,7 @@ private:
     // Read extra fields.
     // The start parameter indicates the start index of the extra fields.
     constexpr
-    void    read_extra_fields(Entry& entry, const char* data, const ullong& start, const uint& extra_field_len) {
+    void    read_extra_fields(Entry& entry, const char* data, ullong start, uint extra_field_len) {
         
         // Vars.
         ullong pos = start;
@@ -953,10 +953,10 @@ public:
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.find_entry_by_offset(0);
      } */
-    auto&   find_entry_by_offset(const uint64_t& offset) {
+    auto&   find_entry_by_offset(uint64_t offset) {
         return find_entry(m_archive, offset);
     }
-    auto&   find_entry_by_offset(const uint64_t& offset) const {
+    auto&   find_entry_by_offset(uint64_t offset) const {
         return find_entry(m_archive, offset);
     }
     
@@ -1277,7 +1277,7 @@ public:
         // Load data.
         String file = path.load();
         const char* data = file.data();
-        const ullong& len = file.len();
+        ullong& len = file.len();
         
         // Iterate.
         ullong pos = 0;

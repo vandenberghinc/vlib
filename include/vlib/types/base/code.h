@@ -82,7 +82,7 @@ public:
 
 	// Constructor from an array with length and alloc length.
 	constexpr
-	Code (const Type* arr, const Length& len, const Length& capacity)
+	Code (const Type* arr, const Length len, const Length capacity)
 	: String(arr, len, capacity) {}
 
 	// Constructor from an array with length.
@@ -102,7 +102,7 @@ public:
             vlib::Code code("Hello World!", 12);
     } */
 	constexpr
-	Code (const Type* arr, const Length& len)
+	Code (const Type* arr, const Length len)
 	: String(arr, len) {}
 
 	// Constructor from a char array.

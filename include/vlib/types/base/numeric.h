@@ -585,11 +585,11 @@ public:
 		@funcs: 2
 	} */
 	constexpr
-	This	round(const int& precision = 0) const requires (is_floating<Type>::value) {
+	This	round(short precision = 0) const requires (is_floating<Type>::value) {
 		return vlib::round<Type>(m_numeric, precision);
 	}
 	constexpr
-	This&	round_r(const int& precision = 0) const requires (is_floating<Type>::value) {
+	This&	round_r(short precision = 0) const requires (is_floating<Type>::value) {
 		m_numeric = vlib::round<Type>(m_numeric, precision);
 		return *this;
 	}
@@ -634,13 +634,13 @@ public:
 		return m_numeric;
 	}
 	template <typename Num> requires (is_unsigned<Type>::value && is_any_numeric<Num>::value) constexpr
-	ullong 	subscript(const Num& x, const ullong& def) const {
+	ullong 	subscript(const Num& x, ullong def) const {
 		if (m_numeric == NPos::npos) { return def; }
 		else if (greater(x)) { return def; }
 		return m_numeric;
 	}
 	template <typename Num> requires (is_unsigned<Type>::value && is_any_numeric<typename Num::value_type>::value) constexpr
-	ullong 	subscript(const Num& x, const ullong& def) const {
+	ullong 	subscript(const Num& x, ullong def) const {
 		if (m_numeric == NPos::npos) { return def; }
 		else if (greater(x.m_numeric)) { return def; }
 		return m_numeric;
@@ -656,7 +656,7 @@ public:
 			Parse from a `const char*`.
 	} */
 	SICE
-	This	parse(const char* arr, const ullong& len) {
+	This	parse(const char* arr, ullong len) {
 		return tonumeric<Type>(arr, len);
 	}
 

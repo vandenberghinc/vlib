@@ -38,7 +38,7 @@ private:
 	// Wrapper function for getgrgid.
 	// - Causes undefined behaviour when the wrapper function is called for another group then the initialized group.
 	static inline
-	int 	getgrgid_wrapper(const uint& gid, struct group& gr, char* buff, const bool& throw_exceptions = false) {
+	int 	getgrgid_wrapper(uint gid, struct group& gr, char* buff, bool throw_exceptions = false) {
 		struct group* result;
 		long bufsize;
 		int s;
@@ -64,7 +64,7 @@ private:
 	// Wrapper function for getgrnam.
 	// - Causes undefined behaviour when the wrapper function is called for another group then the initialized group.
 	static inline
-	int 	getgrnam_wrapper(const char* name, struct group& gr, char* buff, const bool& throw_exceptions = false) {
+	int 	getgrnam_wrapper(const char* name, struct group& gr, char* buff, bool throw_exceptions = false) {
 		endgrent();
 		struct group* result;
 		long bufsize;
@@ -383,7 +383,7 @@ public:
 		return s;
 	}
 	static inline
-	bool 	exists(const uint& gid) {
+	bool 	exists(uint gid) {
 		struct group gr;
 		char* buff = nullptr;
 		bool s = getgrgid_wrapper(gid, gr, buff) == 0;
@@ -418,7 +418,7 @@ public:
     void 	create(
 		const char* 	name,								// the group name.
 		const String& 	pass = 				"*",			// the group's password (use "*" for no password).
-		const int& 		gid = 				-1				// the group id (leave -1 to assign automatically).
+		int 			gid = 				-1				// the group id (leave -1 to assign automatically).
 	);
 
 	// Delete a group.
@@ -527,7 +527,7 @@ public:
 	void 	create_h(
 		const char* 	name,						// the group name.
 		const String&	pass = 		"*",			// the group's password.
-		const int& 		gid = 		-1				// the group id (leave -1 to ignore).
+		int 			gid = 		-1				// the group id (leave -1 to ignore).
 	) {
 		int status;
 		
@@ -580,7 +580,7 @@ public:
 	void 	create_h(
 		const char* 	name,						// the group name.
 		const String& 	pass = 		"*",			// the group's password (use "*" for no password).
-		const int& 		gid = 		-1				// the group id (leave -1 to assign automatically).
+		int 			gid = 		-1				// the group id (leave -1 to assign automatically).
 	) {
 
 		// Vars.

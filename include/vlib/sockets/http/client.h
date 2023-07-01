@@ -70,14 +70,10 @@ struct Client : public http::ClientTemplate<sockets::Socket<family, type, protoc
 		}
 		@usage:
 			vlib::http::Client client("127.0.0.1", 9000);
-        @funcs: 2
 	} */
 	constexpr
-	Client (const String& ip, const uint& port) :
-	Base(ip, port) {}
-	constexpr
-	Client (String&& ip, const uint& port) :
-	Base(ip, port) {}
+	Client (String ip, uint port) :
+	Base(move(ip), port) {}
 	/*  @docs {
 		@title: Constructor
 		@description:
@@ -96,14 +92,10 @@ struct Client : public http::ClientTemplate<sockets::Socket<family, type, protoc
 		}
 		@usage:
 			vlib::http::Client client("127.0.0.1", 9000);
-		@funcs: 2
 	} */
 	constexpr
-	Client (const String& ip, const uint& port, const Headers& headers) :
-	Base(ip, port, headers) {}
-	constexpr
-	Client (String&& ip, const uint& port, Headers&& headers) :
-	Base(ip, port, headers) {}
+	Client (String ip, uint port, Headers headers) :
+	Base(move(ip), port, move(headers)) {}
 
 	// Constructor from hostname.
     /*  @docs {
@@ -116,14 +108,10 @@ struct Client : public http::ClientTemplate<sockets::Socket<family, type, protoc
      *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     *  @funcs: 2
      *} */
 	constexpr
-	Client (const String& host) :
-	Base(host) {}
-	constexpr
-	Client (String&& host) :
-	Base(host) {}
+	Client (String host) :
+	Base(move(host)) {}
     /*  @docs {
      *  @title: Constructor
      *  @description:
@@ -138,22 +126,15 @@ struct Client : public http::ClientTemplate<sockets::Socket<family, type, protoc
      *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     *  @funcs: 2
      *} */
 	constexpr
-	Client (const String& host, const Headers& headers) :
-	Base(host, headers) {}
-	constexpr
-	Client (String&& host, Headers&& headers) :
-	Base(host, headers) {}
+	Client (String host, Headers headers) :
+	Base(move(host), move(headers)) {}
 	
 	// Constructor from args.
 	constexpr
-	Client (const http::ClientTemplate_args& x) :
-	Base(x) {}
-	constexpr
-	Client (http::ClientTemplate_args&& x) :
-	Base(x) {}
+	Client (http::ClientTemplate_args x) :
+	Base(move(x)) {}
 
 };
 

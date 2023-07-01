@@ -83,9 +83,9 @@ int 	load(
 // - Max size of "len" is the max of a "ulong".
 inline
 int 	save(
-	const char* 				path, 	// the file path.
-	const char*					data, 	// the data to save.
-	const ullong&	len		// the data length.
+	const char* 	path, 	// the file path.
+	const char*		data, 	// the data to save.
+	ullong			len		// the data length.
 ) {
 	FILE *f = open(path, file::write);
 	if (!f) {

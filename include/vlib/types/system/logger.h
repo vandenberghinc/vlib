@@ -185,7 +185,7 @@ public:
     void 	log(const String& msg, const Bool& console = true) {
         return log(msg.data(), msg.len(), console);
     }
-    void    log(const char* msg, const ullong& len, const Bool& console = true) {
+    void    log(const char* msg, ullong len, const Bool& console = true) {
         if (console) {
             vlib::out.dump(msg, len);
         }

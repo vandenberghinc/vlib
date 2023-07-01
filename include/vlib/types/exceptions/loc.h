@@ -52,12 +52,8 @@ public:
 
 	// Constructor.
 	inline constexpr
-	Loc(
-		  const int& line,
-		  const int& column,
-		  const char* path,
-		  const char* func
-	) : m_line(line), m_column(column), m_path(path), m_func(func), m_code(""), m_parsed(false) {}
+	Loc(int line, int column, const char* path, const char* func) :
+	m_line(line), m_column(column), m_path(path), m_func(func), m_code(""), m_parsed(false) {}
 
 	// Copy constructor.
 	inline constexpr
@@ -211,26 +207,26 @@ public:
 			Construct a `Loc` object.
 	} */
 	inline static constexpr Loc get(
-		 const int& line = __builtin_LINE(),
-		 const int& column = __builtin_COLUMN(),
+		int line = __builtin_LINE(),
+		int column = __builtin_COLUMN(),
 		 const char* path = __builtin_FILE(),
 		 const char* func = __builtin_FUNCTION()
 	) noexcept
 	{ return Loc(line, column, path, func); }
 	#elif defined(__GNUC__) and (__GNUC__ > 4 or (__GNUC__ == 4 and __GNUC_MINOR__ >= 8))
 	inline static constexpr Loc get(
-		 const int& line = __builtin_LINE(),
-		 const int& column = -1,
-		 const char* path = __builtin_FILE(),
-		 const char* func = __builtin_FUNCTION()
+		int line = __builtin_LINE(),
+		int column = -1,
+		const char* path = __builtin_FILE(),
+		const char* func = __builtin_FUNCTION()
 	) noexcept
 	{ return Loc(line, column, path, func); }
 	#else
 	inline static constexpr Loc get(
-		 const int& line = -1,
-		 const int& column = -1,
-		 const char* path = "Unknown",
-		 const char* func = "Unknown"
+		int line = -1,
+		int column = -1,
+		const char* path = "Unknown",
+		const char* func = "Unknown"
 	) noexcept
 	{ return Loc(line, column, path, func); }
 	#endif

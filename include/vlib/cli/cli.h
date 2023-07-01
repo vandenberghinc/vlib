@@ -47,7 +47,7 @@ struct CLI {
 			}
 	} */
 	constexpr
-	CLI(const int& argc = 0, char** argv = nullptr)
+	CLI(int argc = 0, char** argv = nullptr)
 	{
 		if (argv) {
 			for (auto& i: Range<>(argc)) {
@@ -116,7 +116,7 @@ public: //@TODO
 	// Cast to a bool.
 	template <typename As> requires (is_bool<As>::value)
 	SICE
-	As	cast(const char* data, const ullong& sindex, const ullong&) {
+	As	cast(const char* data, ullong sindex, ullong) {
 		switch (data[sindex]) {
 			case 'T':
 			case 't':
@@ -135,7 +135,7 @@ public: //@TODO
 	// Cast to any integer or floating.
 	template <typename As> requires (is_any_integer<As>::value || is_floating<As>::value)
 	SICE
-	As	cast(const char* data, const ullong& sindex, const ullong& eindex) {
+	As	cast(const char* data, ullong sindex, ullong eindex) {
 		return tonumeric<As>(data + sindex, eindex - sindex);
 	}
 	template <typename As> requires (is_any_integer<As>::value || is_floating<As>::value)
@@ -144,7 +144,7 @@ public: //@TODO
 	}
 	
 	// Cast to a non integral type.
-	// - The type requires the function "parse(const char*, const ullong&)" to parse from a string.
+	// - The type requires the function "parse(const char*, ullong)" to parse from a string.
 	template <typename As> requires (
 		!is_integral<As>::value &&
 		(is_String<As>::value || !is_Array<As>::value) &&
@@ -152,7 +152,7 @@ public: //@TODO
 		!is_Json<As>::value
 	)
 	SICE
-	As	cast(const char* data, const ullong& sindex, const ullong& eindex) {
+	As	cast(const char* data, ullong sindex, ullong eindex) {
 		return As::parse(data + sindex, eindex - sindex);
 	}
 	template <typename As> requires (
@@ -256,7 +256,7 @@ public:
 	//
 	// By id.
 	constexpr
-	bool	present(const char* id, const ullong& len) {
+	bool	present(const char* id, ullong len) {
 		for (auto& i: m_args) {
 			if (i.eq(id, len)) { return true; }
 		}
@@ -350,12 +350,12 @@ public:
 			String arg = cli.get(0);
 	} */
 	constexpr
-	auto&	get(const ullong& index) {
+	auto&	get(ullong index) {
 		return m_args.get(index);
 	}
 	// Get by id.
 	constexpr
-	auto	get_h(const char* id, const ullong& len, const String& def = null) {
+	auto	get_h(const char* id, ullong len, const String& def = null) {
 		ullong index = 0;
 		for (auto& i: m_args) {
 			if (i.eq(id, len)) {
@@ -464,13 +464,13 @@ public:
 			Int arg = cli.get<Int>(0);
 	} */
 	template <typename As> constexpr
-	As		get(const ullong& index) {
+	As		get(ullong index) {
 		return cast<As>(m_args.get(index));
 	}
 	//
 	// Get by id.
 	template <typename As> constexpr
-	As		get_h(const char* id, const ullong& len) {
+	As		get_h(const char* id, ullong len) {
 		ullong index = 0;
 		for (auto& i: m_args) {
 			if (i.eq(id, len)) {
@@ -485,7 +485,7 @@ public:
 		return As();
 	}
 	template <typename As> constexpr
-	As		get_h(const char* id, const ullong& len, const As& def) {
+	As		get_h(const char* id, ullong len, const As& def) {
 		ullong index = 0;
 		for (auto& i: m_args) {
 			if (i.eq(id, len)) {
@@ -666,7 +666,7 @@ public:
 		@usage:
 			cli.throw_invalid();
 	} */
-	void 	throw_invalid(const String& chapter = null, const int& status = 1) {
+	void 	throw_invalid(const String& chapter = null, int status = 1) {
 		if (m_docs.is_defined()) {
 			vlib::out << docs(chapter) << "\n";
 		}
@@ -700,7 +700,7 @@ public:
 		@usage:
 			cli.throw_define_arg("--hello-world");
 	} */
-	void 	throw_define_arg(const String& arg, const String& chapter = null, const int& status = 1) {
+	void 	throw_define_arg(const String& arg, const String& chapter = null, int status = 1) {
 		if (m_docs.is_defined()) {
 			vlib::out << docs(chapter) << "\n";
 		}

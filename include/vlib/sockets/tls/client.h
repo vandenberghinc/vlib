@@ -313,8 +313,8 @@ public:
 	}
 	void 	send(
 		const char*		data,
-		const uint& 	len,
-		const Int&      timeout
+		uint 			len,
+		Int      		timeout
 	) {
         m_attr->sock.set_sigpipe_action();
 		wrapper::send(m_attr->ssl, data, len, timeout.value());

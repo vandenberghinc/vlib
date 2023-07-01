@@ -25,20 +25,20 @@ struct array {
     
     // Alloc.
 	SICE
-	Type*	alloc(const Length& req_len = 1) {
+	Type*	alloc(Length req_len = 1) {
 		if (req_len + 1 > limit) {
 			throw std::overflow_error("Buffer overflow.");
 		}
 		return new Type [req_len + 1];
 	}
     SICE
-    void 	alloc(Type*& m_arr, const Length& req_len = 1) {
+    void 	alloc(Type*& m_arr, Length req_len = 1) {
         m_arr = alloc(req_len);
     }
     
     // Realloc.
     SICE
-    void 	realloc(Type*& m_arr, Length& m_len, const Length& req_len) {
+    void 	realloc(Type*& m_arr, Length& m_len, Length req_len) {
         Type* arr = alloc(req_len);
         move(arr, m_arr, m_len);
         delete[] m_arr;
@@ -88,7 +88,7 @@ struct array {
     
     // Copy arrays.
     SICE
-    void 	copy(Type*& m_arr, Length& m_len, Length& m_capacity, const Type* arr, const Length& len, const Length& capacity) {
+    void 	copy(Type*& m_arr, Length& m_len, Length& m_capacity, const Type* arr, Length len, Length capacity) {
         if (m_arr == arr) { return ; }
         destruct_when_array(m_arr);
         resize(m_arr, m_len, m_capacity, capacity);
@@ -105,7 +105,7 @@ struct array {
     
     // Swap arrays.
     SICE
-    void 	swap(Type*& m_arr, Length& m_len, Length& m_capacity, Type*& arr, const Length& len, const Length& capacity) {
+    void 	swap(Type*& m_arr, Length& m_len, Length& m_capacity, Type*& arr, Length len, Length capacity) {
         destruct(m_arr);
         m_arr = arr;
         m_len = len;
@@ -115,7 +115,7 @@ struct array {
     
     // Resize the array.
     SICE
-    int		resize(Type*& m_arr, Length& m_len, Length& m_capacity, const Length& req_len = 1) {
+    int		resize(Type*& m_arr, Length& m_len, Length& m_capacity, Length req_len = 1) {
         if (m_arr == nullptr) {
             m_capacity = req_len;
             alloc(m_arr, m_capacity);
@@ -128,7 +128,7 @@ struct array {
     
     // Expand the array.
     SICE
-    int		expand(Type*& m_arr, Length& m_len, Length& m_capacity, const Length& with_len, const uint& increaser = 4) {
+    int		expand(Type*& m_arr, Length& m_len, Length& m_capacity, Length with_len, uint increaser = 4) {
         if (m_arr == nullptr) {
             m_capacity = with_len;
             alloc(m_arr, m_capacity);
@@ -141,7 +141,7 @@ struct array {
     
     // Concat to the array.
     SICE
-    int     concat(Type*& m_arr, Length& m_len, Length& m_capacity, const Type* arr, const Length& len, const uint& increaser = 4) {
+    int     concat(Type*& m_arr, Length& m_len, Length& m_capacity, const Type* arr, Length len, uint increaser = 4) {
         int status;
         if (m_len + len > m_capacity) {
             if ((status = expand(m_arr, m_len, m_capacity, len, increaser)) != 0) {
@@ -157,7 +157,7 @@ struct array {
     
     // Equals.
     SICE
-    bool 	eq(const Type* arr_x, const Length& len_x, const Type* arr_y, const Length& len_y) {
+    bool 	eq(const Type* arr_x, Length len_x, const Type* arr_y, Length len_y) {
         if (len_x != len_y) { return false; }
         Length len = len_y;
         while (len-- > 0) { if (*arr_x++ != *arr_y++) { return false; }}
@@ -170,13 +170,13 @@ struct array {
     
     // Append an item to the array.
     SICE
-    void	append(Type*& m_arr, Length& m_len, Length& m_capacity, const Type& x, const uint& increaser = 4) {
+    void	append(Type*& m_arr, Length& m_len, Length& m_capacity, const Type& x, uint increaser = 4) {
         expand(m_arr, m_len, m_capacity, 1, increaser);
         m_arr[m_len] = x;
         ++m_len;
     }
     SICE
-    void	append(Type*& m_arr, Length& m_len, Length& m_capacity, Type&& x, const uint& increaser = 4) {
+    void	append(Type*& m_arr, Length& m_len, Length& m_capacity, Type&& x, uint increaser = 4) {
         expand(m_arr, m_len, m_capacity, 1, increaser);
         m_arr[m_len] = x;
         ++m_len;
@@ -191,9 +191,9 @@ struct array {
         m_arr[m_len] = '\0';
     }
     SICE
-    void 	null_terminate_safe(Type*&, const Length&) requires (!is_char<Type>::value) {}
+    void 	null_terminate_safe(Type*&, Length) requires (!is_char<Type>::value) {}
     SICE
-    void 	null_terminate_safe(Type*& m_arr, const Length& m_len) requires (is_char<Type>::value) {
+    void 	null_terminate_safe(Type*& m_arr, Length m_len) requires (is_char<Type>::value) {
         if (m_arr != nullptr) {
             m_arr[m_len] = '\0';
         }
@@ -228,7 +228,7 @@ struct BaseArray {
     
     // Copy array.
     constexpr
-    BaseArray(const Type* arr, const Length& len) {
+    BaseArray(const Type* arr, Length len) {
         wrapper::copy(m_arr, m_len, m_cap, arr, len, len);
     }
     
@@ -283,7 +283,7 @@ struct BaseArray {
         return m_arr;
     }
     constexpr
-    auto     begin(const Length& index) const {
+    auto     begin(Length index) const {
         return m_arr + index;
     }
 
@@ -293,7 +293,7 @@ struct BaseArray {
         return m_arr + m_len;
     }
     constexpr
-    auto     end(const Length& index) const {
+    auto     end(Length index) const {
         return m_arr + index;
     }
     
@@ -302,7 +302,7 @@ struct BaseArray {
     
     // Resize.
     constexpr
-    auto&   resize(const Length& to) {
+    auto&   resize(Length to) {
         wrapper::resize(m_arr, m_len, m_cap, to);
         return *this;
     }
@@ -316,7 +316,7 @@ struct BaseArray {
     
     // Concat.
     constexpr
-    auto&   concat_r(const Type* x, const Length& len) {
+    auto&   concat_r(const Type* x, Length len) {
         resize(m_len + len);
         wrapper::copy(m_arr + m_len, x, len);
         m_len += len;
@@ -333,7 +333,7 @@ struct BaseArray {
     
     // Equal to operator.
     constexpr
-    bool    eq_first(const Type* arr, const Length& len) {
+    bool    eq_first(const Type* arr, Length len) {
         if (m_len < len) { return false; }
         return wrapper::eq(m_arr, len, arr, len);
     }
@@ -418,7 +418,7 @@ struct BaseArray {
     
     // Get.
     constexpr
-    auto&   operator[](const Length& index) {
+    auto&   operator[](Length index) {
         return m_arr[index];
     }
     

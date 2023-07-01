@@ -322,7 +322,7 @@ struct Dict {
 	} */
 	constexpr
 	auto&		resize(
-		const Length&	req_len = 1   		// the required alloc length.
+		const Length	req_len = 1   		// the required alloc length.
 	) {
 		m_keys->resize(req_len);
 		m_values->resize(req_len);
@@ -339,7 +339,7 @@ struct Dict {
 	} */
 	constexpr
 	auto&		expand(
-		const Length& 	with_len   			// the arrays length by reference. to expand alloc length with.
+		const Length 	with_len   			// the arrays length by reference. to expand alloc length with.
 	) {
 		m_keys->expand(with_len);
 		m_values->expand(with_len);
@@ -405,11 +405,11 @@ struct Dict {
 			Get a key by index.
 	} */
 	constexpr
-	Key& 	key(const Length& index) {
+	Key& 	key(const Length index) {
 		return m_keys->get(index);
 	}
 	constexpr
-	Key& 	key(const Length& index) const {
+	Key& 	key(const Length index) const {
 		return m_keys->get(index);
 	}
 
@@ -420,11 +420,11 @@ struct Dict {
 			Get a value by index.
 	} */
 	constexpr
-	Value& 	value(const Length& index) requires (!is_any_integer<Key>::value) {
+	Value& 	value(const Length index) requires (!is_any_integer<Key>::value) {
 		return m_values->get(index);
 	}
 	constexpr
-	Value& 	value(const Length& index) const requires (!is_any_integer<Key>::value) {
+	Value& 	value(const Length index) const requires (!is_any_integer<Key>::value) {
 		return m_values->get(index);
 	}
 
@@ -444,7 +444,7 @@ struct Dict {
 		return m_values->last();
 	}
 	constexpr
-	Value& 	value(const char* key, const Length& len) requires (is_CString<Key>::value || is_String<Key>::value) {
+	Value& 	value(const char* key, const Length len) requires (is_CString<Key>::value || is_String<Key>::value) {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i).eq(key, len)) { return m_values->get(i); }
 		}
@@ -460,7 +460,7 @@ struct Dict {
         throw KeyError(tostr("Key \"", key, "\" does not exist."));
 	}
 	constexpr
-	const Value& 		value(const char* key, const Length& len) const requires (is_CString<Key>::value || is_String<Key>::value) {
+	const Value& 		value(const char* key, const Length len) const requires (is_CString<Key>::value || is_String<Key>::value) {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i).eq(key, len)) { return m_values->get(i); }
 		}
@@ -487,7 +487,7 @@ struct Dict {
 	} */
 	constexpr
 	This&	set(
-		const Length& 		index,				// the requested index.
+		const Length 		index,				// the requested index.
 		const Key&			key,				// the key to assign.
 		const Value&		value				// the value to assign.
 	) {
@@ -497,7 +497,7 @@ struct Dict {
 	}
 	constexpr
 	This&	set(
-		const Length& 		index,				// the requested index.
+		const Length 		index,				// the requested index.
 		Key&&				key,				// the key to assign.
 		const Value&		value				// the value to assign.
 	) {
@@ -507,7 +507,7 @@ struct Dict {
 	}
 	constexpr
 	This&	set(
-		const Length& 		index,				// the requested index.
+		const Length 		index,				// the requested index.
 		const Key&			key,				// the key to assign.
 		Value&&				value				// the value to assign.
 	) {
@@ -517,7 +517,7 @@ struct Dict {
 	}
 	constexpr
 	This&	set(
-		const Length& 		index,				// the requested index.
+		const Length 		index,				// the requested index.
 		Key&&				key,				// the key to assign.
 		Value&&				value				// the value to assign.
 	) {
@@ -645,12 +645,12 @@ struct Dict {
 		@funcs: 2
 	} */
 	constexpr
-	Value 	pop(const ullong& index) requires (!is_ullong<Key>::value) {
+	Value 	pop(ullong index) requires (!is_ullong<Key>::value) {
 		m_keys->pop(index);
 		return m_values->pop(index);
 	}
 	constexpr
-	Value	pop(const ullong& index, const Value& def) requires (!is_ullong<Key>::value) {
+	Value	pop(ullong index, const Value& def) requires (!is_ullong<Key>::value) {
 		m_keys->pop(index);
 		return m_values->pop(index, def);
 	}
@@ -702,7 +702,7 @@ struct Dict {
 		return m_keys->find(key);
 	}
 	constexpr
-	ullong 	find(const char* key, const Length& len) const requires (is_CString<Key>::value || is_String<Key>::value) {
+	ullong 	find(const char* key, const Length len) const requires (is_CString<Key>::value || is_String<Key>::value) {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i).eq(key, len)) { return i; }
 		}
@@ -720,7 +720,7 @@ struct Dict {
 		return m_values->find(value);
 	}
 	constexpr
-	ullong 	find_value(const char* value, const Length& len) const requires (is_CString<Value>::value || is_String<Value>::value) {
+	ullong 	find_value(const char* value, const Length len) const requires (is_CString<Value>::value || is_String<Value>::value) {
 		for (auto& i: indexes()) {
 			if (m_values->get(i).eq(value, len)) { return i; }
 		}
@@ -745,7 +745,7 @@ struct Dict {
 		return m_keys->find(key) != NPos::npos;
 	}
 	constexpr
-	bool 	contains(const char* key, const Length& len) const requires (is_CString<Key>::value || is_String<Key>::value) {
+	bool 	contains(const char* key, const Length len) const requires (is_CString<Key>::value || is_String<Key>::value) {
 		return find(key, len) != NPos::npos;
 	}
 
@@ -767,7 +767,7 @@ struct Dict {
 		return m_values->find(value) != NPos::npos;
 	}
 	constexpr
-	bool 	contains_value(const char* value, const Length& len) const requires (is_CString<Value>::value || is_String<Value>::value) {
+	bool 	contains_value(const char* value, const Length len) const requires (is_CString<Value>::value || is_String<Value>::value) {
 		return find_value(value, len) != NPos::npos;
 	}
 	
@@ -785,13 +785,13 @@ struct Dict {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	slice_r(const ullong& sindex, const ullong& eindex = NPos::npos) {
+	This& 	slice_r(ullong sindex, ullong eindex = NPos::npos) {
 		m_keys->slice_r(sindex, eindex);
 		m_values->slice_r(sindex, eindex);
 		return *this;
 	}
 	constexpr
-	This 	slice(const ullong& sindex, const ullong& eindex = NPos::npos) {
+	This 	slice(ullong sindex, ullong eindex = NPos::npos) {
 		return copy().slice_r(sindex, eindex);
 	}
 	
@@ -824,7 +824,7 @@ struct Dict {
 
 	// Sort helper.
 	template <bool by_keys> constexpr
-	void 		sort_h(This& obj, const bool& reversed = false) {
+	void 		sort_h(This& obj, bool reversed = false) {
 
 		// Create a new temporary string.
 		obj.resize(m_keys->len());
@@ -883,13 +883,13 @@ struct Dict {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	sort_r(const bool& reversed = false) {
+	This& 	sort_r(bool reversed = false) {
 		This obj;
 		sort_h<true>(obj, reversed);
 		return swap(obj);
 	}
 	constexpr
-	This 	sort(const bool& reversed = false) {
+	This 	sort(bool reversed = false) {
 		This obj;
 		sort_h<true>(obj, reversed);
 		return obj;
@@ -905,13 +905,13 @@ struct Dict {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	sort_values_r(const bool& reversed = false) {
+	This& 	sort_values_r(bool reversed = false) {
 		This obj;
 		sort_h<false>(obj, reversed);
 		return swap(obj);
 	}
 	constexpr
-	This 	sort_values(const bool& reversed = false) {
+	This 	sort_values(bool reversed = false) {
 		This obj;
 		sort_h<false>(obj, reversed);
 		return obj;
@@ -1197,7 +1197,7 @@ struct Dict {
 		@description:
 			Parse a json formatted dictionary from a `const char*`.
 	}*/
-	auto 	parse(const char* arr, const ullong& len) {
+	auto 	parse(const char* arr, ullong len) {
 		
 		// Checks.
 		if (!arr || len < 2 || arr[0] != '{' || arr[len-1] != '}') {
@@ -1388,12 +1388,12 @@ struct Dict {
         m_keys(keys),
         m_values(values)
         {}
-        constexpr Iter (Key* keys, Value* values, const ullong& start) :
+        constexpr Iter (Key* keys, Value* values, ullong start) :
         m_keys(keys),
         m_values(values),
         m_start(start)
         {}
-        constexpr Iter (Key* keys, Value* values, const ullong& start, const ullong& end) :
+        constexpr Iter (Key* keys, Value* values, ullong start, ullong end) :
         m_keys(keys),
         m_values(values),
         m_start(start),
@@ -1739,7 +1739,7 @@ struct Dict {
 			x[0] ==> my_key
 	} */
 	constexpr
-	auto& 	operator [](const Length& index) requires (!is_any_integer<Key>::value) {
+	auto& 	operator [](const Length index) requires (!is_any_integer<Key>::value) {
 		return m_values->operator[](index);
 	}
 

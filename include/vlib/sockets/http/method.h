@@ -53,7 +53,7 @@ struct desc {
 
 // Convert the enum to a string description.
 inline constexpr
-auto& tostr(const short& version) {
+auto& tostr(short version) {
 	switch (version) {
 		case methods::undefined:
 			return desc::undefined;

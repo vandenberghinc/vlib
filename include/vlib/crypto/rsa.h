@@ -162,10 +162,7 @@ public:
         return sign<Algorithm>(data.data(), data.len());
     }
     template <int Algorithm = crypto::mode::sha256>
-	String  sign(
-		const char* 		data,
-		const ullong& 		dlen
-	) const {
+	String  sign(const char* data, ullong dlen) const {
         
         // Initialize context.
         EVP_MD_CTX* ctx = EVP_MD_CTX_new();

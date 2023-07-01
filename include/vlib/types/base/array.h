@@ -95,7 +95,7 @@ struct Array {
 
 	// Shift the array 1 pos to the right.
 	constexpr
-	This& 	rshift_h(const Length& sindex = 0, const Length& eindex = internal::npos) {
+	This& 	rshift_h(const Length sindex = 0, const Length eindex = internal::npos) {
 		const Length shift = 1;
 		Length sum = shift + sindex;
 		Length i;
@@ -123,7 +123,7 @@ struct Array {
 
 	// Shift the array 1 pos to the left.
 	constexpr
-	This& 	lshift_h(const Length& sindex = 0, const Length& eindex = internal::npos) {
+	This& 	lshift_h(const Length sindex = 0, const Length eindex = internal::npos) {
 		const Length shift = 1;
 		switch (eindex) {
 			case internal::npos: {
@@ -150,7 +150,7 @@ struct Array {
 
 	// Reconstruct an array from another array with alloc length.
 	constexpr
-	This& 	reconstruct(const Type* arr, const Length& len, const Length& capacity) {
+	This& 	reconstruct(const Type* arr, const Length len, const Length capacity) {
 		destruct_when_array_h();
 		resize(capacity);
 		m_len = len;
@@ -161,7 +161,7 @@ struct Array {
 
 	// Reconstruct an array from another array without alloc length.
 	constexpr
-	This& 	reconstruct(const Type* arr, const Length& len) {
+	This& 	reconstruct(const Type* arr, const Length len) {
 		destruct_when_array_h();
 		resize(len);
 		m_len = len;
@@ -227,7 +227,7 @@ struct Array {
 
 	// Copy array.
 	constexpr
-	This& 	copy(const Type*& arr, const Length& len, const Length& capacity) {
+	This& 	copy(const Type*& arr, const Length len, const Length capacity) {
 		array_h::copy(m_arr, m_len, m_capacity, arr, len, capacity);
 		return *this;
 	}
@@ -251,7 +251,7 @@ struct Array {
 
 	// Swap array.
 	constexpr
-	This& 	swap(Type*&	arr, const Length& len, const Length& capacity) {
+	This& 	swap(Type*&	arr, const Length len, const Length capacity) {
 		array_h::swap(m_arr, m_len, m_capacity, arr, len, capacity);
 		return *this;
 	}
@@ -312,7 +312,7 @@ struct Array {
 
 	// Constructor from an array with length and alloc length.
 	constexpr
-	Array (const Type* arr, const Length& len, const Length& capacity) :
+	Array (const Type* arr, const Length len, const Length capacity) :
 	m_arr(nullptr),
 	m_len(len),
 	m_capacity(capacity)
@@ -326,7 +326,7 @@ struct Array {
 
 	// Constructor from an array with length.
 	constexpr
-	Array (const Type* arr, const Length& len) :
+	Array (const Type* arr, const Length len) :
 	m_arr(nullptr),
 	m_len(len),
 	m_capacity(len)
@@ -597,7 +597,7 @@ struct Array {
 		return m_arr;
 	}
 	constexpr
-	auto 	begin(const Length& index) const {
+	auto 	begin(const Length index) const {
 		return m_arr + index;
 	}
 
@@ -607,7 +607,7 @@ struct Array {
 		return m_arr + m_len;
 	}
 	constexpr
-	auto 	end(const Length& index) const {
+	auto 	end(const Length index) const {
 		return m_arr + index;
 	}
 
@@ -639,7 +639,7 @@ struct Array {
 		is_Forwards<Iter>::value ||
 		is_Backwards<Iter>::value
 	) constexpr
-	auto 	iterate(const Length& sindex, const Length& eindex = internal::npos) const {
+	auto 	iterate(const Length sindex, const Length eindex = internal::npos) const {
 		switch (eindex) {
 			case internal::npos:
 				return vlib::internal::array::iter_t<Iter, Type, Length>(
@@ -679,7 +679,7 @@ struct Array {
 		is_Forwards<Iter>::value ||
 		is_Backwards<Iter>::value
 	) constexpr
-	auto 	indexes(const Length& sindex, const Length& eindex = internal::npos) const {
+	auto 	indexes(const Length sindex, const Length eindex = internal::npos) const {
 		switch (eindex) {
 			case internal::npos:
 				return Range<Iter, Length>(sindex, m_len);
@@ -697,7 +697,7 @@ struct Array {
         return iterate_lines(0, 0, handler);
     }
     template <typename Func> constexpr
-    auto&   iterate_lines(const ullong& start_line, const ullong& end_line, Func&& func) {
+    auto&   iterate_lines(ullong start_line, ullong end_line, Func&& func) {
         ullong sindex = 0, index = 0, line = 0;
         for (auto& c: *this) {
             switch (c) {
@@ -767,7 +767,7 @@ struct Array {
 			Does not edit the attribute, only the capactity.
 	} */
 	constexpr
-	This&	resize(const Length& req_len = 1) {
+	This&	resize(const Length req_len = 1) {
 		if (array_h::resize(m_arr, m_len, m_capacity, req_len) < 0) {
 			throw AllocError("The allocated length has already reached the maximum size.");
 		}
@@ -787,7 +787,7 @@ struct Array {
 			Does not edit the length, only the capactity.
 	} */
 	constexpr
-	This&	expand(const Length& with_len) {
+	This&	expand(const Length with_len) {
 		if (array_h::expand(m_arr, m_len, m_capacity, with_len, m_increaser) < 0) {
 			throw AllocError("The allocated length has already reached the maximum size.");
 		}
@@ -813,7 +813,7 @@ struct Array {
 		return array_h::eq(m_arr, m_len, obj.m_arr, obj.m_len);
 	}
 	constexpr
-	bool 	eq(const This& obj, const Length& Leno_check) const {
+	bool 	eq(const This& obj, const Length Leno_check) const {
 		return array_h::eq(m_arr, Leno_check, obj.m_arr, Leno_check);
 	}
 	constexpr
@@ -821,7 +821,7 @@ struct Array {
 		return array_h::eq(m_arr, m_len, obj.data(), obj.len());
 	}
 	constexpr
-	bool 	eq(const Type* arr, const Length& len) const {
+	bool 	eq(const Type* arr, const Length len) const {
 		return array_h::eq(m_arr, m_len, arr, len);
 	}
 	constexpr
@@ -835,16 +835,16 @@ struct Array {
 	SICE
 	bool 	eq(
 		const Type* 			arr_x,		// the first array of the comparison.
-		const Length& 			len_x,		// the length of the first array.
+		const Length 			len_x,		// the length of the first array.
 		const Type* 			arr_y,		// the second array of the comparison.
-		const Length& 			len_y		// the length to check.
+		const Length 			len_y		// the length to check.
 	) {
 		return array_h::eq(arr_x, len_x, arr_y, len_y);
 	}
 	
 	// Equals first characters.
 	constexpr
-	bool 	eq_first(const Type* arr, const Length& Leno_check) const requires (is_char<Type>::value) {
+	bool 	eq_first(const Type* arr, const Length Leno_check) const requires (is_char<Type>::value) {
 		if (m_len < Leno_check) { return false; }
 		return array_h::eq(m_arr, Leno_check, arr, Leno_check);
 	}
@@ -855,7 +855,7 @@ struct Array {
         internal::is_BaseArray<Array>::value
 	)
 	constexpr
-	bool 	eq_first(const String& obj, const Length& Leno_check) const requires (is_char<Type>::value) {
+	bool 	eq_first(const String& obj, const Length Leno_check) const requires (is_char<Type>::value) {
 		if (m_len < Leno_check) { return false; }
 		return array_h::eq(m_arr, Leno_check, obj.data(), Leno_check);
 	}
@@ -911,7 +911,7 @@ struct Array {
 		@warning: Will cause a segfault if the index is higher or equal to the array's length attribute.
 	} */
 	constexpr
-	auto& 	get(const Length& index) const {
+	auto& 	get(const Length index) const {
         if (index >= m_len) {
             throw IndexError("Index is out of range.");
         }
@@ -931,7 +931,7 @@ struct Array {
 		@warning: Will cause a segfault if the index is higher or equal to the array's length attribute.
 	} */
 	constexpr
-	auto& 	rget(const Length& index) const {
+	auto& 	rget(const Length index) const {
         if (index > m_len) {
             throw IndexError("Index is out of range.");
         }
@@ -948,13 +948,13 @@ struct Array {
 		@warning: Will cause a segfault if the index is higher than the array's length attribute.
 	} */
 	constexpr
-	auto& 	set(const Length& index, const Type& item) {
+	auto& 	set(const Length index, const Type& item) {
 		m_arr[index] = item;
 		if (index == m_len) { ++m_len; }
 		return *this;
 	}
 	constexpr
-	auto& 	set(const Length& index, Type&& item) {
+	auto& 	set(const Length index, Type&& item) {
 		m_arr[index] = item;
 		if (index == m_len) { ++m_len; }
 		return *this;
@@ -969,7 +969,7 @@ struct Array {
 		@funcs: 2
 	} */
 	constexpr
-	auto	pop(const Length& index) {
+	auto	pop(const Length index) {
 		if (m_len == 0 || index == internal::npos || index >= m_len) {
 			return Type();
 		} else if (index + 1 == m_len) {
@@ -985,7 +985,7 @@ struct Array {
 		return Type();
 	}
 	constexpr
-	auto	pop(const Length& index, const Type& def) {
+	auto	pop(const Length index, const Type& def) {
 		if (m_len == 0 || index == internal::npos || index >= m_len) {
 			return def;
 		} else if (index + 1 == m_len) {
@@ -1009,7 +1009,7 @@ struct Array {
 		@warning: Will cause a segfault if the index is higher or equal to the array's length attribute.
 	} */
 	constexpr
-	This&	insert(const Length& index, const Type& item) {
+	This&	insert(const Length index, const Type& item) {
 		if (index == internal::npos) { return *this; }
 		rshift_h(index);
 		m_arr[index] = item;
@@ -1091,7 +1091,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This&	concat_r(const Type* arr, const Length& len) {
+	This&	concat_r(const Type* arr, const Length len) {
 		expand(len);
 		array_h::copy(m_arr + m_len, arr, len);
 		m_len += len;
@@ -1173,7 +1173,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This&	concat_no_resize_r(const Type* arr, const Length& len) {
+	This&	concat_no_resize_r(const Type* arr, const Length len) {
 		array_h::copy(m_arr + m_len, arr, len);
 		m_len += len;
 		return *this;
@@ -1278,7 +1278,7 @@ struct Array {
 				Array<ullong>().random_r(3) ==> {37838394932256345.0, ...};
 	} */
 	template <typename... Args> constexpr
-	This& 	random_r(const Length& len, Args&&... args) {
+	This& 	random_r(const Length len, Args&&... args) {
 		Length u_len = len;
 		expand(u_len);
 		while (u_len-- > 0) {
@@ -1288,7 +1288,7 @@ struct Array {
 		return *this;
 	}
 	template <typename... Args> SICE
-	This 	random(const Length& len, Args&&... args) {
+	This 	random(const Length len, Args&&... args) {
 		return This().random_r(len, args...);
 	}
 
@@ -1424,7 +1424,7 @@ struct Array {
 	) constexpr
 	auto 	find(
 		const char*			to_find,			// the substr to find.
-		// const Length&		len, 				// the length of the array with chars to find.
+		// const Length		len, 				// the length of the array with chars to find.
 		Args&&... 			args 				// the arguments for "indexes()".
 	) const {
 		Length len = vlib::len(to_find);
@@ -1538,9 +1538,9 @@ struct Array {
 	} */
 	constexpr
 	ullong 	count(
-		const Type&			to_find,
-		const ullong& 		sindex = 0,
-		const ullong& 		eindex = NPos::npos
+		const Type&		to_find,
+		ullong 			sindex = 0,
+		ullong 			eindex = NPos::npos
 	) const {
 		ullong count;
 		ullong pos = sindex;
@@ -1553,9 +1553,9 @@ struct Array {
 	// @TODO docs different from Array.
 	constexpr
 	ullong 	count(
-		const Type*			to_find,
-		const ullong& 		sindex = 0,
-		const ullong& 		eindex = NPos::npos
+		const Type*		to_find,
+		ullong 			sindex = 0,
+		ullong 			eindex = NPos::npos
 	) const {
 		ullong count;
 		ullong pos = sindex;
@@ -1630,10 +1630,10 @@ struct Array {
 	} */
 	constexpr
 	This& 	replace_h(
-		const Length&		sindex,						// the start index.
-		const Length&		eindex,						// the end index (not included).
+		const Length		sindex,						// the start index.
+		const Length		eindex,						// the end index (not included).
 		const Type*			to,							// the new substr.
-		const Length&		to_len = internal::npos		// the new substr length (leave default to parse).
+		const Length		to_len = internal::npos		// the new substr length (leave default to parse).
 	) requires (is_char<Type>::value) {
 		// if (sindex == npos) { return *this; }
 		// if (eindex == npos) { return *this; }
@@ -1675,8 +1675,8 @@ struct Array {
 	This& 	replace_r(
 		const String&		from,					// the from item.
 		const String&		to,						// the to item.
-		const Length& 		sindex = 0,				// the start index.
-		const Length& 		eindex = internal::npos	// the end index.
+		const Length 		sindex = 0,				// the start index.
+		const Length 		eindex = internal::npos	// the end index.
 	) requires (is_char<Type>::value) {
 		return replace_r(
 			from.data(),
@@ -1689,11 +1689,11 @@ struct Array {
 	constexpr
 	This& 	replace_r(
 		const Type*			from,					// the from item.
-		const Length&		nfrom,
+		const Length		nfrom,
 		const Type*			to,						// the to item.
-		const Length&		nto,
-		const Length& 		sindex,				// the start index.
-		const Length& 		eindex = internal::npos	// the end index.
+		const Length		nto,
+		const Length 		sindex,				// the start index.
+		const Length 		eindex = internal::npos	// the end index.
 	) requires (is_char<Type>::value) {
 		if (m_len == 0) { return *this; }
 
@@ -1745,8 +1745,8 @@ struct Array {
 	This 	replace(
 		const String&		from,					// the from item.
 		const String&		to,						// the to item.
-		const Length& 		sindex = 0,				// the start index.
-		const Length& 		eindex = internal::npos	// the end index.
+		const Length 		sindex = 0,				// the start index.
+		const Length 		eindex = internal::npos	// the end index.
 	) const requires (is_char<Type>::value) {
 		return copy().replace_r(
 			from.data(),
@@ -1759,11 +1759,11 @@ struct Array {
 	constexpr
 	This 	replace(
 		const Type*			from,					// the from item.
-		const Length&		nfrom,
+		const Length		nfrom,
 		const Type*			to,						// the to item.
-		const Length&		nto,
-		const Length& 		sindex,				// the start index.
-		const Length& 		eindex = internal::npos	// the end index.
+		const Length		nto,
+		const Length 		sindex,				// the start index.
+		const Length 		eindex = internal::npos	// the end index.
 	) const requires (is_char<Type>::value) {
 		return copy().replace_r(from, nfrom, to, nto, sindex, eindex);
 	}
@@ -1862,7 +1862,7 @@ struct Array {
 		@funcs: 4
 	} */
 	constexpr
-	This& 	slice_r(const Length& sindex, const Length& eindex) {
+	This& 	slice_r(const Length sindex, const Length eindex) {
 		if (m_len == 0) { return *this; }
 		else if (sindex > eindex) {
 			throw IndexError(String().concats_r(
@@ -1882,11 +1882,11 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This& 	slice_r(const Length& sindex) {
+	This& 	slice_r(const Length sindex) {
 		return slice_r(sindex, m_len);
 	}
 	constexpr
-	This 	slice(const Length& sindex, const Length& eindex) const {
+	This 	slice(const Length sindex, const Length eindex) const {
 		This obj;
 		if (m_len == 0) { return *this; }
 		else if (sindex > eindex) {
@@ -1905,7 +1905,7 @@ struct Array {
 		return obj;
 	}
 	constexpr
-	This 	slice(const Length& sindex) const {
+	This 	slice(const Length sindex) const {
 		return slice(sindex, m_len);
 	}
 
@@ -1944,12 +1944,12 @@ struct Array {
 	}*/
 	constexpr
 	This& 	slice_r(
-		const Type& 			dstart,					// the start delimiter.
-		const Type& 			dend,					// the start delimiter.
-		const uint&				depth,					// the delmiter depth.
-		const Length& 			sindex = 0,				// the start index.
-		const Length& 			eindex = internal::npos,	// the end index.
-		const bool& 			include = false			// include the delimiters.
+		Type 			dstart,					// the start delimiter.
+		Type 			dend,					// the start delimiter.
+		uint			depth,					// the delmiter depth.
+		Length 			sindex = 0,				// the start index.
+		Length 			eindex = internal::npos,	// the end index.
+		bool 			include = false			// include the delimiters.
 	) requires (is_char<Type>::value) {
 		This str;
 		slice_h(str, dstart, dend, depth, sindex, eindex, include);
@@ -1957,12 +1957,12 @@ struct Array {
 	}
 	constexpr
 	This 	slice(
-		const Type& 			dstart,					// the start delimiter.
-		const Type& 			dend,					// the start delimiter.
-		const uint&				depth,					// the delmiter depth.
-		const Length& 			sindex = 0,				// the start index.
-		const Length& 			eindex = internal::npos,	// the end index.
-		const bool& 			include = false			// include the delimiters.
+		Type 			dstart,					// the start delimiter.
+		Type 			dend,					// the start delimiter.
+		uint			depth,					// the delmiter depth.
+		Length 			sindex = 0,				// the start index.
+		Length 			eindex = internal::npos,	// the end index.
+		bool 			include = false			// include the delimiters.
 	) {
 		This str;
 		slice_h(str, dstart, dend, depth, sindex, eindex, include);
@@ -1970,13 +1970,13 @@ struct Array {
 	}
 	constexpr
 	void 	slice_h(
-		This&					str,					// the result by reference.
-		const Type& 			dstart,					// the start delimiter.
-		const Type& 			dend,					// the start delimiter.
-		const uint&		depth,					// the delmiter depth.
-		const Length& 			sindex = 0,				// the start index.
-		const Length& 			eindex = internal::npos,	// the end index.
-		const bool& 			include = false			// include the delimiters.
+		This&			str,					// the result by reference.
+		Type 			dstart,					// the start delimiter.
+		Type 			dend,					// the start delimiter.
+		uint			depth,					// the delmiter depth.
+		Length 			sindex = 0,				// the start index.
+		Length 			eindex = internal::npos,	// the end index.
+		bool 			include = false			// include the delimiters.
 	) requires (is_char<Type>::value) {
 		if (dstart == dend) { throw InvalidUsageError("Not yet supported."); }
 
@@ -2225,19 +2225,19 @@ struct Array {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	mult_r(const Length& x) {
+	This& 	mult_r(const Length x) {
 		This obj;
 		multiply_h(obj, x);
 		return swap(obj);
 	}
 	constexpr
-	This 	mult(const Length& x) const {
+	This 	mult(const Length x) const {
 		This obj;
 		multiply_h(obj, x);
 		return obj;
 	}
 	constexpr
-	void	multiply_h(This& obj, const Length& x) const {
+	void	multiply_h(This& obj, const Length x) const {
 		Length y = x;
 		obj.m_capacity = m_len * y;
 		array_h::alloc(obj.m_arr, m_len * y);
@@ -2259,7 +2259,7 @@ struct Array {
 			x.div(2); x ==> {{0}, {0}};
 	} */
 	constexpr
-	Array<This>	div(const Length& x) const {
+	Array<This>	div(const Length x) const {
 		switch (x) {
 		case 1:
 			return Array<This>({*this});
@@ -2302,7 +2302,7 @@ struct Array {
 		@funcs: 2
 	} */
 	constexpr
-	This&	mod_r(const Length& x) {
+	This&	mod_r(const Length x) {
 		Length len = m_len % x;
 		if (len == 0) { return reset(); }
 		array_h::move(m_arr, m_arr + (m_len - len), len);
@@ -2311,7 +2311,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This	mod(const Length& x) const {
+	This	mod(const Length x) const {
 		This obj;
 		obj.m_len = m_len % x;
 		if (obj.m_len == 0) { return obj; }
@@ -2450,7 +2450,7 @@ struct Array {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	ensure_start_padding_r(const char& padding, const Length& req_len) {
+	This& 	ensure_start_padding_r(char padding, const Length req_len) {
 		if (m_len >= req_len) { return *this; }
 		Length padding_len = req_len - m_len;
 		expand(padding_len);
@@ -2467,7 +2467,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This	ensure_start_padding(const char& padding, const Length& req_len) {
+	This	ensure_start_padding(char padding, const Length req_len) {
 		return copy().ensure_start_padding_r(padding, req_len);
 	}
 	/* 	@docs {
@@ -2486,7 +2486,7 @@ struct Array {
 		@funcs: 2
 	} */
 	constexpr
-	This& 	ensure_end_padding_r(const char& padding, const Length& req_len) {
+	This& 	ensure_end_padding_r(char padding, const Length req_len) {
 		if (m_len >= req_len) { return *this; }
 		Length padding_len = req_len - m_len;
 		expand(padding_len);
@@ -2495,7 +2495,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This 	ensure_end_padding(const char& padding, const Length& req_len) {
+	This 	ensure_end_padding(char padding, const Length req_len) {
 		return copy().ensure_end_padding_r(padding, req_len);
 	}
 
@@ -2751,7 +2751,7 @@ struct Array {
 			Parse a json formatted array from a `const char*`.
 	}*/
 	static inline // do not place a constexpr tag since this will create a nasty llvm bug on linux.
-	This 	parse(const char* arr, const ullong& len) requires (!is_char<Type>::value) {
+	This 	parse(const char* arr, ullong len) requires (!is_char<Type>::value) {
 
 		// Checks.
 		if (!arr || len < 2 || arr[0] != '[' || arr[len-1] != ']') {
@@ -2827,7 +2827,7 @@ struct Array {
 
 	// Parse a String from a const char*.
 	SICE
-	This 	parse(const char* arr, const ullong& len) requires (is_char<Type>::value) {
+	This 	parse(const char* arr, ullong len) requires (is_char<Type>::value) {
 		return This(arr, len);
 	}
 	SICE
@@ -2841,7 +2841,7 @@ struct Array {
 	// Join helper's helper.
 	// - With type: char* / const char*.
 	constexpr
-	void 	join_h_h(Pipe& pipe, const Length& i) const requires (
+	void 	join_h_h(Pipe& pipe, const Length i) const requires (
 		!is_char<Type>::value &&
 		(
 			// is_str<Type>::value ||
@@ -2852,7 +2852,7 @@ struct Array {
 	}
 	// - With type: bool / any numeric / any pointer (not str/cstr).
 	constexpr
-	void 	join_h_h(Pipe& pipe, const Length& i) const requires (
+	void 	join_h_h(Pipe& pipe, const Length i) const requires (
 		!is_char<Type>::value &&
 		(
 			is_bool<Type>::value ||
@@ -2867,7 +2867,7 @@ struct Array {
 		pipe << m_arr[i];
 	}
 	// - With all remaining types.
-	void 	join_h_h(Pipe& pipe, const Length& i) const requires (
+	void 	join_h_h(Pipe& pipe, const Length i) const requires (
 		!is_char<Type>::value &&
 		// !is_str<Type>::value &&
 		!is_cstr<Type>::value &&
@@ -3514,11 +3514,11 @@ struct Array {
 	
 	// Equals with char.
 	constexpr friend
-	bool	operator ==(const This& x, const char& y) requires (is_char<Type>::value) {
+	bool	operator ==(const This& x, char y) requires (is_char<Type>::value) {
 		return x.eq(y);
 	}
 	constexpr friend
-	bool	operator !=(const This& x, const char& y) requires (is_char<Type>::value) {
+	bool	operator !=(const This& x, char y) requires (is_char<Type>::value) {
 		return !x.eq(y);
 	}
 
@@ -3558,19 +3558,19 @@ struct Array {
 
 	// Compare array lengths with any numeric.
 	constexpr
-	bool 	operator >(const Length& x) const {
+	bool 	operator >(const Length x) const {
 		return m_len > x;
 	}
 	constexpr
-	bool 	operator <(const Length& x) const {
+	bool 	operator <(const Length x) const {
 		return m_len < x;
 	}
 	constexpr
-	bool 	operator >=(const Length& x) const {
+	bool 	operator >=(const Length x) const {
 		return m_len >= x;
 	}
 	constexpr
-	bool 	operator <=(const Length& x) const {
+	bool 	operator <=(const Length x) const {
 		return m_len <= x;
 	}
 
@@ -3592,7 +3592,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This 	operator +(const Length& x) const {
+	This 	operator +(const Length x) const {
 		This obj;
 		if (m_len == 0) { return obj; }
 		const Length y = x;
@@ -3605,7 +3605,7 @@ struct Array {
 		return obj;
 	}
 	constexpr
-	This& 	operator +=(const Length& x) {
+	This& 	operator +=(const Length x) {
 		if (m_len == 0) { return *this; }
 		const Length y = x;
 		if (y >= m_len) { return reset(); }
@@ -3631,7 +3631,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This 	operator -(const Length& x) const {
+	This 	operator -(const Length x) const {
 		if (m_len == 0) { return *this; }
 		const Length y = x;
 		if (y >= m_len) { return This(); }
@@ -3641,7 +3641,7 @@ struct Array {
 		return obj;
 	}
 	constexpr
-	This& 	operator -=(const Length& x) {
+	This& 	operator -=(const Length x) {
 		if (m_len == 0) { return *this; }
 		const Length y = x;
 		if (y >= m_len) { return destruct(); }
@@ -3698,33 +3698,33 @@ struct Array {
 
 	// Operators "*, *=" with any numeric.
 	constexpr friend
-	This	operator *(const This obj, const Length& x) {
+	This	operator *(const This obj, const Length x) {
 		return obj.mult(x);
 	}
 	constexpr
-	This& 	operator *=(const Length& x) {
+	This& 	operator *=(const Length x) {
 		return mult_r(x);
 	}
 
 	// Operators "/, /=" with any numeric.
 	constexpr friend
-	Array<This>	operator /(const This obj, const Length& x) {
+	Array<This>	operator /(const This obj, const Length x) {
 		return obj.div(x);
 	}
 
 	// Operators "%, %=" with any numeric.
 	constexpr friend
-	This	operator %(const This obj, const Length& x) {
+	This	operator %(const This obj, const Length x) {
 		return obj.mod(x);
 	}
 	constexpr
-	This& 	operator %=(const Length& x) {
+	This& 	operator %=(const Length x) {
 		return mod_r(x);
 	}
 
 	// Subscript operator
 	constexpr
-	Type& 	operator [](const Length& index) const {
+	Type& 	operator [](const Length index) const {
         if (index >= m_len) {
             throw IndexError("Index is out of range.");
         }
@@ -3829,14 +3829,14 @@ struct is_forwardable<char[N], String> { SICEBOOL value = true;  };
 
 // Enum description.
 constexpr
-String  enum_desc(const short& value, const short& desc_value, const String& desc) {
+String  enum_desc(short value, short desc_value, const String& desc) {
     if (value == desc_value) {
         return desc;
     }
     return "NaN";
 }
 template <typename... Args> constexpr
-String  enum_desc(const short& value, const short& desc_value, const String& desc, Args&&... args) {
+String  enum_desc(short value, short desc_value, const String& desc, Args&&... args) {
     if (value == desc_value) {
         return desc;
     }

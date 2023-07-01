@@ -197,7 +197,7 @@ public:
     
     // Check if the pipe's array will overflow when length is added.
     constexpr
-    bool     overflow(const ullong& len) {
+    bool     overflow(ullong len) {
         return m_len + len > limits<ullong>::max;
     }
     

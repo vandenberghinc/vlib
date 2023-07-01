@@ -55,7 +55,7 @@ private:
 	// Wrapper function for getpwuid.
 	// - Causes undefined behaviour when the wrapper function is called for another user then the initialized user.
 	static inline
-	int 	getpwuid_wrapper(const uint& uid, struct passwd& pwd, char*& buff, const bool& throw_exceptions = false) {
+	int 	getpwuid_wrapper(uint uid, struct passwd& pwd, char*& buff, bool throw_exceptions = false) {
 		struct passwd *result;
 		long bufsize;
 		int s;
@@ -81,7 +81,7 @@ private:
 	// Wrapper function for getpwnam.
 	// - Causes undefined behaviour when the wrapper function is called for another user then the initialized user.
 	static inline
-	int 	getpwnam_wrapper(const char* username, struct passwd& pwd, char*& buff, const bool& throw_exceptions = false) {
+	int 	getpwnam_wrapper(const char* username, struct passwd& pwd, char*& buff, bool throw_exceptions = false) {
 		struct passwd *result;
 		long bufsize;
 		int s;
@@ -109,7 +109,7 @@ private:
 	// - Causes undefined behaviour when the wrapper function is called for another user then the initialized user.
 	#if OSID <= 0 || OSID >= 4
 	static inline
-	int 	getspnam_wrapper(const char* username, struct spwd& pwd, char*& buff, const bool& throw_exceptions = false) {
+	int 	getspnam_wrapper(const char* username, struct spwd& pwd, char*& buff, bool throw_exceptions = false) {
 		endpwent();
 		struct spwd *result;
 		long bufsize;
@@ -135,7 +135,7 @@ private:
 
 	// Crypt wrapper for a new user, with salt.
 	// static inline
-	// char* 	generate_salt(void*& salt, const uint& len = 16) {
+	// char* 	generate_salt(void*& salt, uint len = 16) {
 	// 	constexpr char* chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./";
 	// 	salt = new char [len + 1];
 	// 	random::random_seed();
@@ -219,9 +219,9 @@ private:
 		const char* 	name,								// the username.
 		const char* 	realname,							// the user's real name.
 		const String&	pass,								// the user's password.
-		const int& 		uid = 				-1,				// the user id (leave -1 to assign automatically).
-		const int& 		gid = 				-1,				// the group id, the group must already exist (leave -1 to ignore).
-		const bool&		superuser = 		false,			// whether to grant the new user root priviliges.
+		int 			uid = 				-1,				// the user id (leave -1 to assign automatically).
+		int 			gid = 				-1,				// the group id, the group must already exist (leave -1 to ignore).
+		bool			superuser = 		false,			// whether to grant the new user root priviliges.
 		const char* 	homes = 			"/home/",		// the homes path (base path of the direct path, not the direct path).
 		const char* 	shell = 			"/bin/bash"		// the shell path.
 	) {
@@ -281,9 +281,9 @@ private:
 		const char* 	name,								// the username.
 		const char* 	realname,							// the user's real name.
 		const String&	pass,								// the user's password.
-		const int& 		uid = 				-1,				// the user id (leave -1 to assign automatically).
-		const int& 		gid = 				-1,				// the group id (leave -1 to assign automatically).
-		const bool&		superuser = 		false,			// whether to grant the new user root priviliges.
+		int 			uid = 				-1,				// the user id (leave -1 to assign automatically).
+		int 			gid = 				-1,				// the group id (leave -1 to assign automatically).
+		bool			superuser = 		false,			// whether to grant the new user root priviliges.
 		const char* 	homes = 			"/Users/",		// the homes path (base path of the direct path, not the direct path).
 		const char* 	shell = 			"/bin/zsh"		// the shell path.
 	) {
@@ -493,7 +493,7 @@ public:
 			vlib::User root(0);
 	} */
 	constexpr
-	User	(const int& uid) :
+	User	(int uid) :
 	m_uid(uid),
 	m_gid(-1) {}
 	
@@ -562,7 +562,7 @@ public:
 	
 	// Assignment operator.
 	constexpr
-	auto&	operator =(const int& uid) {
+	auto&	operator =(int uid) {
 		m_uid = uid;
 		m_gid = -1;
         m_name.reset();
@@ -741,7 +741,7 @@ public:
 		return s;
 	}
 	static inline
-	bool 	exists(const uint& uid) {
+	bool 	exists(uint uid) {
 		struct passwd pass;
 		char* buff = nullptr;
 		bool s = getpwuid_wrapper(uid, pass, buff) == 0;
@@ -986,9 +986,9 @@ public:
 		const char* 	name,								// the username.
 		const char* 	realname,							// the user's real name.
 		const String&	pass,								// the user's password.
-		const int& 		uid = 				-1,				// the user id (leave -1 to assign automatically).
-		const int& 		gid = 				-1,				// the group id (leave -1 to assign automatically).
-		const bool&		superuser = 		false,			// whether to grant the new user root priviliges.
+		int 			uid = 				-1,				// the user id (leave -1 to assign automatically).
+		int 			gid = 				-1,				// the group id (leave -1 to assign automatically).
+		bool		superuser = 		false,			// whether to grant the new user root priviliges.
 		const char* 	homes = 			"/home/",		// the homes path (base path of the direct path, not the direct path).
 		const char* 	shell = 			"/bin/bash"		// the shell path.
 	);
@@ -998,9 +998,9 @@ public:
 		const char* 	username,							// the username.
 		const char* 	realname,							// the user's real name.
 		const String&	pass,								// the user's password.
-		const int& 		uid = 				-1,				// the user id (leave -1 to assign automatically).
-		const int& 		gid = 				-1,				// the group id (leave -1 to assign automatically).
-		const bool&		superuser = 		false,			// whether to grant the new user root priviliges.
+		int 			uid = 				-1,				// the user id (leave -1 to assign automatically).
+		int 			gid = 				-1,				// the group id (leave -1 to assign automatically).
+		bool			superuser = 		false,			// whether to grant the new user root priviliges.
 		const char* 	homes = 			"/Users/",		// the homes path (base path of the direct path, not the direct path).
 		const char* 	shell = 			"/bin/zsh"		// the shell path.
 	);

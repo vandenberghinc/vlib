@@ -73,17 +73,17 @@ private:
     
     // Initialize the tcp socket.
     constexpr
-    void    init_tcp(const uint& port) {
+    void    init_tcp(uint port) {
         m_attr->sock.construct(port);
     }
     constexpr
-    void    init_tcp(const String& ip, const uint& port) {
-        m_attr->sock.construct(ip, port);
+    void    init_tcp(String ip, uint port) {
+        m_attr->sock.construct(move(ip), port);
     }
 
 	// SSL accept wrapper.
 	// - Returns the client's index on a successfull accept.
-	Client 	ssl_accept(const int& fd, const Int& timeout = 5 * 1000) {
+	Client 	ssl_accept(int fd, Int timeout = 5 * 1000) {
 
         // Set timeout time.
         ullong end_time;
@@ -170,8 +170,8 @@ private:
         /* V1
 		// Loop.
 		struct pollfd pfd;
-		const int& rfd = SSL_get_rfd(ssl);
-		const int& wfd = SSL_get_wfd(ssl);
+		auto& rfd = SSL_get_rfd(ssl);
+		auto& wfd = SSL_get_wfd(ssl);
         while (true) {
 
 			// Accept ssl.
@@ -234,30 +234,30 @@ public:
 	// Constructor.
 	constexpr
 	void 	construct(
-		const String& 			ip,
-		const uint& 	        port,
-		const String& 			cert,
-		const String& 			key,
-		const String& 			pass = nullptr
+		String 			ip,
+		uint 	        port,
+		String 			cert,
+		String 			key,
+		String 			pass = nullptr
 	) {
-		m_attr->cert = cert;
-		m_attr->key = key;
-		m_attr->pass = pass;
+		m_attr->cert = move(cert);
+		m_attr->key = move(key);
+		m_attr->pass = move(pass);
         close();
-        init_tcp(ip, port);
+        init_tcp(move(ip), port);
         construct_ctx();
         load_certs();
 	}
     constexpr
     void     construct(
-        const uint&             port,
-        const String&           cert,
-        const String&           key,
-        const String&           pass = nullptr
+        uint             port,
+        String           cert,
+        String           key,
+        String           pass = nullptr
     ) {
-        m_attr->cert = cert;
-        m_attr->key = key;
-        m_attr->pass = pass;
+        m_attr->cert = move(cert);
+        m_attr->key = move(key);
+        m_attr->pass = move(pass);
         close();
         init_tcp(port);
         construct_ctx();
@@ -429,7 +429,7 @@ public:
         return ssl_accept(fd.value(), timeout);
 	}
 	template <typename Addrin>
-	Client 	accept(Addrin& addr, const int& timeout = -1) {
+	Client 	accept(Addrin& addr, int timeout = -1) {
         Int fd = m_attr->sock.accept(addr, timeout);
         m_attr->sock.set_sigpipe_action();
         return ssl_accept(fd.value(), timeout);
@@ -505,7 +505,7 @@ public:
     ullong  send(
 		Client& 	    client,
 		const char*     data,
-		const uint& 	len,
+		uint 			len,
 		const Int&      timeout
 	) {
         Socket::set_sigpipe_action();
@@ -599,7 +599,7 @@ public:
 	}
 
 	// Get a client connection state.
-	// int 	state(const uint& client) {
+	// int 	state(uint client) {
 	// 	SSL*& ssl = m_attr->clients.get(client);
 	// 	if (ssl == nullptr) {
 	// 		return vlib::sockets::state::closed;

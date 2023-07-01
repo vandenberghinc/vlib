@@ -89,11 +89,11 @@ private:
 		else { m_body.init(); }
 
 		// Variables.
-		char*& 			data = m_data->data();
-		const ullong& 	len = m_data->len();
-		ullong 			start_index = 0;
-		ullong 			index = 0;
-		bool 			stop = false;
+		char*& 		data = m_data->data();
+		auto& 		len = m_data->len();
+		ullong 		start_index = 0;
+		ullong 		index = 0;
+		bool 		stop = false;
 
 		// Is type variable.
 		// - 0 for the 1th item of the first line.
@@ -172,7 +172,7 @@ public:
 
 	// Reconstructor from a data parse.
 	constexpr
-	auto&	reconstruct(const char* data, const ullong& len) {
+	auto&	reconstruct(const char* data, ullong len) {
 		m_data->reconstruct(data, len);
 		parse();
 		return *this;
@@ -196,7 +196,7 @@ public:
 
 	// Constructor from response attributes.
 	constexpr
-	auto& 	reconstruct(const short& version, const int& status, const Headers& headers) {
+	auto& 	reconstruct(short version, int status, const Headers& headers) {
 		add_version(version);
 		add_status(status);
 		add_headers(headers);
@@ -204,7 +204,7 @@ public:
 		return *this;
 	}
 	constexpr
-	auto& 	reconstruct(const short& version, const int& status, const Headers& headers, const String& body) {
+	auto& 	reconstruct(short version, int status, const Headers& headers, const String& body) {
 		add_version(version);
 		add_status(status);
 		add_headers(headers);
@@ -213,7 +213,7 @@ public:
 		return *this;
 	}
 	constexpr
-	auto& 	reconstruct(const short& version, const int& status, const Headers& headers, const Json& body) {
+	auto& 	reconstruct(short version, int status, const Headers& headers, const Json& body) {
 		return reconstruct(version, status, headers, body.json());
 	}
 
@@ -271,18 +271,12 @@ public:
 			vlib::http::Response response(data);
 	} */
 	constexpr
-	Response (const String& data) :
-	m_data(data)
+	Response (String data) :
+	m_data(move(data))
 	{ parse(); }
 	constexpr
-	Response (const char* data, const ullong& len) :
+	Response (const char* data, ullong len) :
 	m_data(String(data, len))
-	{ parse(); }
-
-	// Constructor from a data swap.
-	constexpr
-	Response (String&& data) :
-	m_data(data)
 	{ parse(); }
 
 	// Constructor from response attributes.
@@ -310,7 +304,7 @@ public:
 			);
 	} */
 	constexpr
-	Response (const short& version, const int& status, const Headers& headers) :
+	Response (short version, int status, const Headers& headers) :
 	m_data(String()) {
 		reconstruct(version, status, headers);
 	}
@@ -343,11 +337,11 @@ public:
 			);
 	} */
 	constexpr
-	Response (const short& version, const int& status, const Headers& headers, const String& body) :
+	Response (short version, int status, const Headers& headers, const String& body) :
 	m_data(String()) {
 		reconstruct(version, status, headers, body);
 	}
-	Response (const short& version, const int& status, const Headers& headers, const Json& body) :
+	Response (short version, int status, const Headers& headers, const Json& body) :
 	m_data(String()) {
 		reconstruct(version, status, headers, body);
 	}
@@ -685,7 +679,7 @@ public:
 		@description: Add a HTTP version to the data string.
 	} */
 	constexpr
-	This& 	add_version(const short& version) {
+	This& 	add_version(short version) {
         m_version = version;
 		return *this;
 	}
@@ -696,7 +690,7 @@ public:
 		@description: Add a status to the data string.
 	} */
 	constexpr
-	This& 	add_status(const int& status) {
+	This& 	add_status(int status) {
         m_status = status;
         m_status_desc = http::status::tostr(status);
 		return *this;
@@ -760,10 +754,7 @@ public:
 		return *this;
 	}
 	constexpr
-	This&	add_body(
-		const char* 				body,
-		const ullong&	len
-	) {
+	This&	add_body(const char* body, ullong len) {
         m_body->reconstruct(body, len);
 		return *this;
 	}
@@ -779,7 +770,7 @@ public:
 		return m_headers.value(key);
 	}
 	constexpr
-	auto&	header(const char* key, const ullong& len) {
+	auto&	header(const char* key, ullong len) {
 		return m_headers.value(key, len);
 	}
     
@@ -840,7 +831,7 @@ public:
 	template <typename Socket> SICE
 	This 	receive(
 		Socket& 	sock,
-		const int&	timeout = -1
+		int			timeout = -1
 	) {
 		
 		// Vars.
@@ -1055,15 +1046,15 @@ template<>				 	struct is_Response<const http::Response&> 		{ SICEBOOL value = t
 
 // Return a response.
 constexpr
-auto	response(const int& version, const int& status, const http::Headers& headers) {
+auto	response(int version, int status, const http::Headers& headers) {
 	return http::Response(version, status, headers);
 }
 constexpr
-auto	response(const int& version, const int& status, const http::Headers& headers, const String& body) {
+auto	response(int version, int status, const http::Headers& headers, const String& body) {
 	return http::Response(version, status, headers, body);
 }
 constexpr
-auto	response(const int& version, const int& status, const http::Headers& headers, const Json& body) {
+auto	response(int version, int status, const http::Headers& headers, const Json& body) {
 	return http::Response(version, status, headers, body.json());
 }
 
@@ -1071,10 +1062,10 @@ auto	response(const int& version, const int& status, const http::Headers& header
 // - Only the body will be compressed.
 // - When the compression fails, the request will be send uncompressed.
 // - Warning: should not be used when the body contains sensitive information.
-auto	compressed_response(const int& version, const int& status, const http::Headers& headers, const String& body) {
+auto	compressed_response(int version, int status, const http::Headers& headers, const String& body) {
 	return http::Response(version, status, headers, vlib::compress(body));
 }
-auto	compressed_response(const int& version, const int& status, const http::Headers& headers, const Json& body) {
+auto	compressed_response(int version, int status, const http::Headers& headers, const Json& body) {
 	return http::Response(version, status, headers, vlib::compress(body.json()));
 }
 

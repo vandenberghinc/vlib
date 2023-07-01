@@ -53,7 +53,7 @@ struct Parser {
     // Functions.
     
     // Get frame lenght.
-    // ullong frame_len(flags flags, const ullong& data_len) {
+    // ullong frame_len(flags flags, ullong data_len) {
     //     ullong size = data_len + 2; // body + 2 bytes of head
     //     if (data_len >= 126) {
     //         if (data_len > 0xFFFF) {
@@ -70,7 +70,7 @@ struct Parser {
     
     // Mask data.
     SICE
-    void mask_data(char * dst, const char * src, const ullong& len, const char mask[4], const uint8_t& mask_offset) {
+    void mask_data(char * dst, const char * src, ullong len, const char mask[4], const uint8_t mask_offset) {
         ullong i = 0;
         for(; i < len; i++) {
             dst[i] = src[i] ^ mask[(i + mask_offset) % 4];

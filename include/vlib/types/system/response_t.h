@@ -21,7 +21,7 @@ namespace vlib {
 		- Status number -1 is reserved for an error response without a status.
 		- A response type acts as a shared pointer for the internal attributes.
 	@warning:
-		Using the `Response(const bool&, const char*, const int&, Type*, Links*)` constructor directly will very easily cause undefined behaviour, use `vlib::success()` and `vlib::error()` instead.
+		Using the `Response(bool, const char*, int, Type*, Links*)` constructor directly will very easily cause undefined behaviour, use `vlib::success()` and `vlib::error()` instead.
 	@usage:
 		// Minimal example.
 		auto somefunc() {
@@ -128,7 +128,7 @@ struct Response {
 
 	// Constructor from bool.
 	constexpr
-	Response(const bool& success)
+	Response(bool success)
 	:	m_success(success),
 		m_status(success ? 0 : -1),
 		m_message(nullptr),
@@ -139,11 +139,11 @@ struct Response {
 	// - WARNING: For internal use only!
 	constexpr
 	Response(
-		const bool& 	success,
-		const int& 		error,
-		String* 			message,
-		Type* 			value,
-		Links* 			links
+		bool 		success,
+		int 		error,
+		String* 	message,
+		Type* 		value,
+		Links* 		links
 	) :	m_success(success),
 		m_status(error),
 		m_message(message),
@@ -194,7 +194,7 @@ struct Response {
 
 	// Assignment operator from bool.
 	constexpr
-	auto&		operator =(const bool& success) {
+	auto&		operator =(bool success) {
 		m_success = success;
 		m_status = success ? 0 : -1;
 		destruct();
@@ -249,9 +249,9 @@ struct Response {
 	// Operators.
 
 	constexpr
-	auto& 	operator ==(const bool& x) const { return m_success == x; }
+	auto& 	operator ==(bool x) const { return m_success == x; }
 	constexpr
-	auto& 	operator !=(const bool& x) const { return m_success != x; }
+	auto& 	operator !=(bool x) const { return m_success != x; }
 	constexpr
 	auto 	operator !() const { return !m_success; }
 	constexpr
@@ -414,7 +414,7 @@ Response<Type> error() {
 	return false;
 }
 template <typename Type = bool> constexpr
-Response<Type> error(const int& status) {
+Response<Type> error(int status) {
 	return Response<Type>(
 		false,
 		status,
@@ -424,7 +424,7 @@ Response<Type> error(const int& status) {
 	);
 }
 template <typename Type = bool> constexpr
-Response<Type> error(const char* msg, const int& status = -1) {
+Response<Type> error(const char* msg, int status = -1) {
 	return Response<Type>(
 		false,
 		status,
@@ -438,7 +438,7 @@ template <typename Type = bool, typename Message> requires (
 	is_CString<Message>::value ||
 	is_String<Message>::value
 ) constexpr
-Response<Type> error(const Message& msg, const int& status = -1) {
+Response<Type> error(const Message& msg, int status = -1) {
 	return Response<Type>(
 		false,
 		status,
@@ -452,7 +452,7 @@ template <typename Type = bool, typename Message> requires (
 	// is_CString<Message>::value ||
 	is_String<Message>::value
 ) constexpr
-Response<Type> error(Message&& msg, const int& status = -1) {
+Response<Type> error(Message&& msg, int status = -1) {
 	return Response<Type>(
 		false,
 		status,

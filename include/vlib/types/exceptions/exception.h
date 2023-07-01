@@ -143,7 +143,7 @@ protected:
 
     // Constructor from ids.
     constexpr
-    Exception (const Length& type_id, const Length& err_id) :
+    Exception (const Length type_id, const Length err_id) :
     m_type_id(type_id),
     m_err_id(err_id)
     {

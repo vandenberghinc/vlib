@@ -114,7 +114,7 @@ private:
     void    command(const char* cmd, const char* mode = NULL, const Bool& encode = false) {
         command(cmd, vlib::len(cmd), mode, encode);
     }
-    void    command(const char* cmd, const ullong& len, const char* mode = NULL, const Bool& encode = false) {
+    void    command(const char* cmd, ullong len, const char* mode = NULL, const Bool& encode = false) {
         if (encode) {
             m_sock.send(Base64::encode(cmd, len), m_timeout);
         } else {

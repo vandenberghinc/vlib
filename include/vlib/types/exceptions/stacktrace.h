@@ -530,7 +530,7 @@ public:
     }
     
     // Get the stacktrace as string.
-    internal::BaseString trace(const int& indent = 0, const int& skip = 1) const {
+    internal::BaseString trace(int indent = 0, int skip = 1) const {
         
         // Vars.
         internal::BaseString trace, prev_func;
@@ -625,7 +625,7 @@ public:
     }
     
     // Dump the stacktrace.
-    auto&   dump(const int& skip = 1) const {
+    auto&   dump(int skip = 1) const {
         auto data = trace(skip);
         if (data.m_arr != nullptr) {
             printf("%s\n", data.c_str());

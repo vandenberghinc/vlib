@@ -41,7 +41,7 @@ struct CString {
 
 	// Construct from array and length.
 	constexpr
-	auto&	construct(const Type* arr, const Length& len) {
+	auto&	construct(const Type* arr, const Length len) {
 		m_arr = arr;
 		m_len = len;
 		return *this;
@@ -62,7 +62,7 @@ struct CString {
 	
 	// Constructor from const char*.
 	inline constexpr
-	CString		(const Type* arr, const Length& len)
+	CString		(const Type* arr, const Length len)
 	: 			m_arr(arr), m_len(len) {}
 
 	// Copy constructor.
@@ -193,11 +193,11 @@ struct CString {
 	// Get by reference.
 	//  - Does not support negative indexes.
 	inline constexpr
-	auto& 	get(const Length& index) const {
+	auto& 	get(const Length index) const {
 		return m_arr[index];
 	}
 	inline constexpr
-	auto& 	rget(const Length& index) const {
+	auto& 	rget(const Length index) const {
 		return m_arr[m_len - index];
 	}
 	
@@ -205,7 +205,7 @@ struct CString {
 	inline constexpr
 	bool 	eq(
 		const Type* 	arr,	// the second array of the comparison.
-		const Length& 	len		// the length to check.
+		const Length 	len		// the length to check.
 	) const {
 		return array_h::eq(m_arr, len, arr, len);
 	}
@@ -241,7 +241,7 @@ struct CString {
 		return m_arr;
 	}
 	constexpr
-	auto 	begin(const Length& index) const {
+	auto 	begin(const Length index) const {
 		return m_arr + index;
 	}
 
@@ -251,7 +251,7 @@ struct CString {
 		return m_arr + m_len;
 	}
 	constexpr
-	auto 	end(const Length& index) const {
+	auto 	end(const Length index) const {
 		return m_arr + index;
 	}
 
@@ -270,7 +270,7 @@ struct CString {
 		is_Forwards<Iter>::value ||
 		is_Backwards<Iter>::value
 	) constexpr
-	auto 	iterate(const Length& sindex, const Length& eindex = internal::npos) const {
+	auto 	iterate(const Length sindex, const Length eindex = internal::npos) const {
 		switch (eindex) {
 			case internal::npos:
 				return vlib::internal::array::iter_t<Iter, Type, Length>(
@@ -297,7 +297,7 @@ struct CString {
 		is_Forwards<Iter>::value ||
 		is_Backwards<Iter>::value
 	) constexpr
-	auto 	indexes(const Length& sindex, const Length& eindex = internal::npos) const {
+	auto 	indexes(const Length sindex, const Length eindex = internal::npos) const {
 		switch (eindex) {
 			case internal::npos:
 				return Range<Iter, Length>(sindex, m_len);
@@ -319,7 +319,7 @@ struct CString {
 
 	// Parse from a const char*.
 	SICE
-	This	parse(const char* arr, const ullong& len) {
+	This	parse(const char* arr, ullong len) {
 		return CString(arr, len);
 	}
 	
@@ -452,7 +452,7 @@ struct CString {
 	
 	// Subscript operator
 	inline constexpr
-	auto& 		operator [](const Length& index) const {
+	auto& 		operator [](const Length index) const {
 		if (index == npos) {
 			throw IndexError("The specified index was out of range.");
 		}

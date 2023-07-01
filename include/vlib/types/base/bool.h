@@ -46,7 +46,7 @@ struct Bool {
 			Bool x (true);
 	} */
 	constexpr
-	Bool(const bool& x) : m_bool(x) {}
+	Bool(bool x) : m_bool(x) {}
 
 	// Copy constructor.
 	constexpr
@@ -61,7 +61,7 @@ struct Bool {
 
 	// Assignment operator from bool.
 	constexpr
-	This&	operator =(const bool& x) {
+	This&	operator =(bool x) {
 		m_bool = x;
 		return *this;
 	}
@@ -143,7 +143,7 @@ struct Bool {
             vlib::Bool x = vlib::Bool::parse("true", 4);
     } */
 	SICE
-	This	parse(const char*, const ullong& len) {
+	This	parse(const char*, ullong len) {
 		switch (len) {
 			case 4: 	return true;
 			default: 	return false;

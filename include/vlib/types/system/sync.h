@@ -47,7 +47,7 @@ struct ScanInfo {
 	// Parse.
 	// Note that not all attributes are parsed, merely the ones required by "Client::push" and "Client::pull".
 	SICE
-	ScanInfo parse(const char* data, const ullong& len) {
+	ScanInfo parse(const char* data, ullong len) {
 		ullong start = 0;
 		short mode = 0;
 		ScanInfo info;
@@ -148,7 +148,7 @@ ScanInfo scan_file(const char* path) {
 
 // Scan a directory's timestamps.
 // Uses the first base path, not the base of the path to scan.
-void    scan_dir(Array<ScanInfo>& paths, const String& base, const char* path, const ullong& len) {
+void    scan_dir(Array<ScanInfo>& paths, const String& base, const char* path, ullong len) {
 	DIR *dir;
 	struct dirent* ent;
 	struct stat sinfo;
@@ -228,7 +228,7 @@ void    compare_scans(
 		Array<const ScanInfo*> dirs, files;
 		Array<const String*> deletions;
 	};
-	auto do_thread = [&src_scan, &dest_scan, &options](const ullong& start, const ullong& end) -> Results* {
+	auto do_thread = [&src_scan, &dest_scan, &options](ullong start, ullong end) -> Results* {
 		
 		Results* results = new Results;
 		

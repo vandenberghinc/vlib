@@ -76,53 +76,25 @@ public:
 
 	// Constructor.
 	constexpr
-	ClientTemplate (const String& ip, const uint& port) :
-	m_sock(ip, port) {}
+	ClientTemplate (String ip, uint port) :
+	m_sock(move(ip), port) {}
 	constexpr
-	ClientTemplate (String&& ip, const uint& port) :
-	m_sock(ip, port) {}
-	constexpr
-	ClientTemplate (const String& ip, const uint& port, const http::Headers& headers) :
-	m_sock(ip, port),
-	m_headers(headers) {}
-	constexpr
-	ClientTemplate (String&& ip, const uint& port, http::Headers&& headers) :
-	m_sock(ip, port),
-	m_headers(headers) {}
+	ClientTemplate (String ip, uint port, http::Headers headers) :
+	m_sock(move(ip), port),
+	m_headers(move(headers)) {}
 
 	// Constructor from hostname.
 	constexpr
-	ClientTemplate (const String& host) :
-	m_sock(host) {}
+	ClientTemplate (String host) :
+	m_sock(move(host)) {}
 	constexpr
-	ClientTemplate (String&& host) :
-	m_sock(host) {}
-	constexpr
-	ClientTemplate (const String& host, const http::Headers& headers) :
-	m_sock(host),
-	m_headers(headers) {}
-	constexpr
-	ClientTemplate (String&& host, http::Headers&& headers) :
-	m_sock(host),
-	m_headers(headers) {}
+	ClientTemplate (String host, http::Headers headers) :
+	m_sock(move(host)),
+	m_headers(move(headers)) {}
 	
 	// Constructor from args.
 	constexpr
-	ClientTemplate (const ClientTemplate_args& x) :
-	m_sock(x.host, x.ip, x.port),
-	m_api_key(x.api_key),
-	m_api_secret(x.api_secret),
-    m_sni(x.sni),
-	m_headers(x.headers),
-    m_compression(x.compression)
-	{
-		set_headers();
-        if (m_sni.is_defined()) {
-            m_sock.set_sni(m_sni);
-        }
-	}
-	constexpr
-	ClientTemplate (ClientTemplate_args&& x) :
+	ClientTemplate (ClientTemplate_args x) :
 	m_sock(move(x.host), move(x.ip), x.port),
 	m_api_key(move(x.api_key)),
 	m_api_secret(move(x.api_secret)),
@@ -163,19 +135,19 @@ public:
 	// Create and send a request.
 	constexpr
 	Response	request(
-		const short&		method,
-		const String&		endpoint,
-		const int&			timeout = -1
+		short			method,
+		const String&	endpoint,
+		int				timeout = -1
 	) {
 		Request request(method, endpoint, m_headers, http_version);
 		return send_request(request, timeout);
 	}
 	constexpr
 	Response	request(
-		const short& 		method,
-		const String& 		endpoint,
-		const String&		body,
-		const int&			timeout = -1
+		short 			method,
+		const String& 	endpoint,
+		const String&	body,
+		int				timeout = -1
 	) {
         if (m_api_secret.is_defined()) {
             m_headers.value("API-Signature", 13) = SHA256::hmac(m_api_secret, body);
@@ -185,19 +157,19 @@ public:
 	}
 	constexpr
 	Response	request(
-		const short& 		method,
-		const String& 		endpoint,
-		const Json&			params,
-		const int&			timeout = -1
+		short 			method,
+		const String& 	endpoint,
+		const Json&		params,
+		int				timeout = -1
 	) {
 		return request(method, endpoint, params.json(), timeout);
 	}
 	constexpr
 	Response	query_request(
-		const short& 		method,
-		const String& 		endpoint,
-		const Json&			params,
-		const int&			timeout = -1
+		short 			method,
+		const String& 	endpoint,
+		const Json&		params,
+		int				timeout = -1
 	) {
 		if (params.len() == 0) {
 			return request(method, endpoint, timeout);
@@ -212,19 +184,19 @@ public:
 	// - Warning: should not be used when the body contains sensitive information.
 	constexpr
 	Response	compressed_request(
-		const short& 		method,
-		const String& 		endpoint,
-		const String&		body,
-		const int&			timeout = -1
+		short 			method,
+		const String& 	endpoint,
+		const String&	body,
+		int				timeout = -1
 	) {
 		return request(method, endpoint, m_compression.compress(body), timeout);
 	}
 	constexpr
 	Response	compressed_request(
-		const short& 		method,
-		const String& 		endpoint,
-		const Json&			params,
-		const int&			timeout = -1
+		short 			method,
+		const String& 	endpoint,
+		const Json&		params,
+		int				timeout = -1
 	) {
 		return compressed_request(method, endpoint, params.json(), timeout);
 	}
@@ -233,7 +205,7 @@ public:
 	constexpr
 	Response	send_request(
 		const http::Request&	request,
-		const int&				timeout = -1
+		int						timeout = -1
 	) {
 		if (!m_was_connected || m_sock.is_broken() || !m_sock.is_connected()) {
             if (m_was_connected) {

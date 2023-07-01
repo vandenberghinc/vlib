@@ -142,7 +142,7 @@ public:
 
 	// As scientific notated String.
 	inline constexpr
-	auto		str(int precision = -1, const int& max_len = -1)  {
+	auto		str(int precision = -1, int max_len = -1)  {
 
 		// Set default precision.
 		if (precision == -1) {
@@ -214,7 +214,7 @@ public:
 
 	// As scientific notated String.
 	inline constexpr
-	auto		str(const ullong& precision = npos, const ullong& max_len = npos);
+	auto		str(ullong precision = npos, ullong max_len = npos);
 
 	// As json formatted String
 	constexpr

@@ -295,7 +295,7 @@ struct desc {
 } */
 
 inline constexpr
-auto& strerr(const int& err) {
+auto& strerr(int err) {
 	switch (err) {
 
 		// Json.

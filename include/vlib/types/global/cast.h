@@ -13,7 +13,7 @@ namespace vlib {
 
 // Cast from string.
 inline constexpr
-void 	tobool_r(bool& value, const char* arr, const ullong& len) {
+void 	tobool_r(bool& value, const char* arr, ullong len) {
 	if (
 		(len == 4 && arr[0] == 't' && arr[1] == 'r' && arr[2] == 'u' && arr[3] == 'e') ||
 		(len == 4 && arr[0] == 'T' && arr[1] == 'R' && arr[2] == 'U' && arr[3] == 'E') ||
@@ -95,7 +95,7 @@ char	tochar(Args&&... args) {
 // Cast to numeric.
 
 // Cast from char to digit.
-short todigit(const char& c) {
+short todigit(char c) {
     switch (c) {
         case '0': { return 0; }
         case '1': { return 1; }
@@ -144,7 +144,7 @@ int fromoctal(int octal) {
 // Cast from string.
 // Valid strings [true, TRUE, false, FALSE, 0...9].
 template <typename Cast> requires (is_any_numeric<Cast>::value) inline constexpr
-void 	tonumeric_r(Cast& value, const char* arr, const ullong& len) {
+void 	tonumeric_r(Cast& value, const char* arr, ullong len) {
 	if (arr == nullptr) {
 		value = 0;
 		return;

@@ -189,7 +189,7 @@ public:
 
 	// Reconstruct.
 	constexpr
-	auto& 	reconstruct(const short& method, const String& endpoint, const Headers& headers, const short& version = http::version::v1_1) {
+	auto& 	reconstruct(short method, const String& endpoint, const Headers& headers, short version = http::version::v1_1) {
 		m_data->reset();
 		add_method(method);
 		add_endpoint(endpoint);
@@ -200,7 +200,7 @@ public:
 		return *this;
 	}
 	constexpr
-	auto& 	reconstruct(const short& method, const String& endpoint, const Headers& headers, const String& body, const short& version = http::version::v1_1) {
+	auto& 	reconstruct(short method, const String& endpoint, const Headers& headers, const String& body, short version = http::version::v1_1) {
 		m_data->reset();
 		add_method(method);
 		add_endpoint(endpoint);
@@ -213,7 +213,7 @@ public:
 		return *this;
 	}
 	constexpr
-	auto& 	reconstruct(const short& method, const String& endpoint, const Headers& headers, const Json& params, const short& version = http::version::v1_1) {
+	auto& 	reconstruct(short method, const String& endpoint, const Headers& headers, const Json& params, short version = http::version::v1_1) {
 		return reconstruct(method, endpoint, headers, params.json(), version);
 	}
 
@@ -269,18 +269,12 @@ public:
 			vlib::http::Request request(data);
 	} */
 	constexpr
-	Request (const String& data) :
-	m_data(data)
+	Request (String data) :
+	m_data(move(data))
 	{ parse(); }
 	constexpr
-	Request (const char* data, const ullong& len) :
+	Request (const char* data, ullong len) :
 	m_data(String(data, len))
-	{ parse(); }
-	
-	// Constructor from a data swap.
-	constexpr
-	Request (String&& data) :
-	m_data(data)
 	{ parse(); }
 
 	// Request constructor.
@@ -313,7 +307,7 @@ public:
 			);
 	} */
 	constexpr
-	Request (const short& method, const String& endpoint, const Headers& headers, const short& version = http::version::v1_1) :
+	Request (short method, const String& endpoint, const Headers& headers, short version = http::version::v1_1) :
 	m_data(String())
 	{
 		reconstruct(method, endpoint, headers, version);
@@ -352,7 +346,7 @@ public:
 			);
 	} */
 	constexpr
-	Request (const short& method, const String& endpoint, const Headers& headers, const String& body, const short& version = http::version::v1_1) :
+	Request (short method, const String& endpoint, const Headers& headers, const String& body, short version = http::version::v1_1) :
 	m_data(String())
 	{
 		reconstruct(method, endpoint, headers, body, version);
@@ -391,7 +385,7 @@ public:
 			);
 	} */
 	constexpr
-	Request (const short& method, const String& endpoint, const Headers& headers, const Json& params, const short& version = http::version::v1_1) :
+	Request (short method, const String& endpoint, const Headers& headers, const Json& params, short version = http::version::v1_1) :
 	m_data(String())
 	{
 		reconstruct(method, endpoint, headers, params.json(), version);
@@ -682,7 +676,7 @@ public:
 			- Does not assign to the attribute `m_method`.
 	} */
 	constexpr
-	This& 	add_method(const short& method) {
+	This& 	add_method(short method) {
 		m_data->concat_r(http::method::tostr(method));
 		m_data->append(' ');
 		return *this;
@@ -701,7 +695,7 @@ public:
 		return add_endpoint(endpoint.data(), endpoint.len());
 	}
 	constexpr
-	This& 	add_endpoint(const char* endpoint, const Length& len) {
+	This& 	add_endpoint(const char* endpoint, const Length len) {
 		m_data->expand(len + 1);
 		m_data->concat_no_resize_r(endpoint, len);
 		m_data->append_no_resize(' ');
@@ -716,7 +710,7 @@ public:
 			- Does not assign to the attribute `m_version`.
 	} */
 	constexpr
-	This& 	add_version(const short& version) {
+	This& 	add_version(short version) {
 		m_data->expand(10);
 		m_data->concat_no_resize_r(http::version::tostr(version));
 		m_data->append_no_resize('\r');
@@ -749,9 +743,9 @@ public:
 	constexpr
 	This&	add_header(
 		const char* 				key,
-		const Length&		 		key_len,
+		const Length		 		key_len,
 		const char* 				value,
-		const Length&		 		value_len
+		const Length		 		value_len
 	) {
 		vlib::http::wrapper::add_header(m_data, key, key_len, value, value_len);
 		return *this;
@@ -793,7 +787,7 @@ public:
 		return *this;
 	}
 	constexpr
-	This&	add_body(const char* body, const ullong& len) {
+	This&	add_body(const char* body, ullong len) {
 		vlib::http::wrapper::add_body(m_data, body, len);
 		return *this;
 	}
@@ -836,7 +830,7 @@ public:
 		return m_headers.value(key);
 	}
 	constexpr
-	auto&	header(const char* key, const Length& len) {
+	auto&	header(const char* key, const Length len) {
 		return m_headers.value(key, len);
 	}
     

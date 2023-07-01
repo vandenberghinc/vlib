@@ -221,7 +221,7 @@ public:
 
 	// Constructor from an array with length and alloc length.
 	constexpr
-	Path (const char* arr, const ullong& len, const ullong& capacity) :
+	Path (const char* arr, ullong len, ullong capacity) :
 	String(arr, len, capacity)
 	{
 		clean();
@@ -245,7 +245,7 @@ public:
 			vlib::Path path("/tmp", 4);
 	} */
 	constexpr
-	Path (const char* arr, const ullong& len) :
+	Path (const char* arr, ullong len) :
 	String(arr, len)
 	{
 		clean();
@@ -794,7 +794,7 @@ public:
 		return *this;
 	}
 	constexpr
-	This& 	base_r(const ullong& back) {
+	This& 	base_r(ullong back) {
 		ullong l_back = back;
 		ullong index = m_len;
 		while (l_back-- > 0 && index != NPos::npos) {
@@ -912,7 +912,7 @@ public:
         @notes:
             Only creates the file when the file does not exist.
 	}*/
-	void    touch(const ushort& permission = 0740) const {
+	void    touch(ushort permission = 0740) const {
         if (!exists()) {
             int fd;
             if ((fd = ::creat(c_str(), permission)) == -1) {
@@ -922,11 +922,11 @@ public:
         }
 	}
     static inline
-    void    touch(const String& path, const ushort& permission = 0740) {
+    void    touch(const String& path, ushort permission = 0740) {
         touch(path.c_str(), permission);
     }
 	static inline
-	void    touch(const char* path, const ushort& permission = 0740) {
+	void    touch(const char* path, ushort permission = 0740) {
         if (!exists(path)) {
             int fd;
             if ((fd = ::creat(path, permission)) == -1) {
@@ -951,21 +951,21 @@ public:
      *      x.mkdir();
      *  @funcs: 2
      }*/
-	void    mkdir(const ushort& permission = 0740) const {
+	void    mkdir(ushort permission = 0740) const {
         mkdir(c_str(), permission);
 	}
-    void    mkdir_p(const ushort& permission = 0740) const {
+    void    mkdir_p(ushort permission = 0740) const {
         mkdir_p(*this, permission);
     }
 	static inline
-	void    mkdir(const char* path, const ushort& permission = 0740) {
+	void    mkdir(const char* path, ushort permission = 0740) {
         errno = 0;
         if (::mkdir(path, permission) == -1 && errno != EEXIST) {
             throw CreateError(tostr("Unable to create directory \"", path, "\"."));
         }
 	}
     static inline
-    void    mkdir_p(const Path& path, const ushort& permission = 0740) {
+    void    mkdir_p(const Path& path, ushort permission = 0740) {
         Path base = path.base();
         if (!base.exists()) {
             mkdir_p(base, permission);
@@ -981,7 +981,7 @@ public:
 			vlib::Path x("/tmp/dir");
 			x.chown("someuser", "somegroup");
 	}*/
-	void    chown(const uint& uid, const uint& gid) {
+	void    chown(uint uid, uint gid) {
 		switch (::chown(c_str(), uid, gid)) {
 			case 0: {
                 if (p_info) {
@@ -995,7 +995,7 @@ public:
 		}
 	}
 	static inline
-	void    chown(const char* path, const uint& uid, const uint& gid) {
+	void    chown(const char* path, uint uid, uint gid) {
 		switch (::chown(path, uid, gid))  {
 			case 0: return ;
 			default:
@@ -1011,7 +1011,7 @@ public:
 			vlib::Path x("/tmp/dir");
 			x.chmod(0740);
 	}*/
-	void    chmod(const ushort& permission) {
+	void    chmod(ushort permission) {
 		switch (::chmod(c_str(), permission)) {
 			case 0: {
                 if (p_info) {
@@ -1024,7 +1024,7 @@ public:
 		}
 	}
 	static inline
-	void    chmod(const char* path, const ushort& permission) {
+	void    chmod(const char* path, ushort permission) {
 		switch (::chmod(path, permission)) {
 			case 0: return ;
 			default:
@@ -1231,7 +1231,7 @@ public:
         remove(path.c_str(), path.len());
     }
 	static inline
-	void	remove(const char* path, const ullong& len) {
+	void	remove(const char* path, ullong len) {
         errno = 0;
         if (::remove(path) != 0 && errno != ENOENT) {
             if (errno == 66) {
@@ -1295,8 +1295,8 @@ public:
 		return *this;
 	}
 	auto& 	save(
-		const char* 	data,		// the file data.
-		const ullong& 	len			// the file data length.
+		const char* data,		// the file data.
+		ullong 		len			// the file data length.
 	) const {
         save(c_str(), data, len);
         return *this;
@@ -1312,7 +1312,7 @@ public:
     void    save(
         const char*     path,
         const char*     data,        // the file data.
-        const ullong&   len            // the file data length.
+		ullong   		len            // the file data length.
     ) {
         switch (vlib::save(path, data, len)) {
         case file::error::open:
@@ -1422,7 +1422,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> paths(const bool& recursive = false) const {
+    Array<Path> paths(bool recursive = false) const {
 		return paths_h(types::any, recursive, c_str(), m_len);
 	}
 
@@ -1435,7 +1435,7 @@ public:
 				 vlib::out << i << " (" << i.size() << " bytes). \n";
 			 }
 	}*/
-    Array<Path> files(const bool& recursive = false) const {
+    Array<Path> files(bool recursive = false) const {
 		return paths_h(types::file, recursive, c_str(), m_len);
 	}
 	
@@ -1448,7 +1448,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> dirs(const bool& recursive = false) const {
+    Array<Path> dirs(bool recursive = false) const {
 		return paths_h(types::directory, recursive, c_str(), m_len);
 	}
 
@@ -1461,7 +1461,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> links(const bool& recursive = false) const {
+    Array<Path> links(bool recursive = false) const {
 		return paths_h(types::symbolic_link, recursive, c_str(), m_len);
 	}
 
@@ -1474,7 +1474,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> sockets(const bool& recursive = false) const {
+    Array<Path> sockets(bool recursive = false) const {
 		return paths_h(types::socket, recursive, c_str(), m_len);
 	}
 
@@ -1487,7 +1487,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> bdevices(const bool& recursive = false) const {
+    Array<Path> bdevices(bool recursive = false) const {
 		return paths_h(types::block_device, recursive, c_str(), m_len);
 	}
 
@@ -1500,7 +1500,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> cdevices(const bool& recursive = false) const {
+    Array<Path> cdevices(bool recursive = false) const {
 		return paths_h(types::char_device, recursive, c_str(), m_len);
 	}
 
@@ -1513,7 +1513,7 @@ public:
 				 ...
 			 }
 	}*/
-    Array<Path> pipes(const bool& recursive = false) const {
+    Array<Path> pipes(bool recursive = false) const {
 		return paths_h(types::pipe, recursive, c_str(), m_len);
 	}
 
@@ -1522,7 +1522,7 @@ public:
 
 	// Parse a DT_X type from dirent.
 	constexpr
-	char	parse_dt_type(const uchar& type) const {
+	char	parse_dt_type(uchar type) const {
 		switch (type) {               //bitwise AND to determine file type
 			case DT_SOCK:  	return types::socket;
 			case DT_LNK:   	return types::symbolic_link;
@@ -1538,7 +1538,7 @@ public:
 	// Get all specified type paths from a directory, optionally recursive.
 	// - Use type 'a' for all.
 	// - The directories "." and ".." are not included.
-	Array<Path> paths_h(const uchar& type, const bool& recursive, const char* path, const ullong& len) const {
+	Array<Path> paths_h(uchar type, bool recursive, const char* path, ullong len) const {
 		Array<Path> arr;
 		DIR *dir;
 		struct dirent* ent;

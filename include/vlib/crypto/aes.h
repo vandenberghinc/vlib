@@ -345,7 +345,7 @@ public:
         return encrypt(data.c_str(), data.len());
     }
 	constexpr
-    String  encrypt(const char* data, const Length& len) {
+    String  encrypt(const char* data, const Length len) {
 
 		// Generate IV.
 		uchar* iv = new uchar [block_size];
@@ -424,7 +424,7 @@ public:
         return decrypt(data.c_str(), data.len());
     }
 	constexpr
-    String  decrypt(const char* data, const Length& len) {
+    String  decrypt(const char* data, const Length len) {
         
 		// Decode.
         String decoded;

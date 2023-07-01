@@ -175,7 +175,7 @@ public:
 	// - Combine format & opt for multi char formatting strings.
 	// - Opt: [0..3] (0 is undefined).
 	constexpr
-	void	str_format_h(String& str, struct tm& time, const char& format, const int& opt = 0) const {
+	void	str_format_h(String& str, struct tm& time, char format, int opt = 0) const {
 		switch (format) {
 
 			// %% : a literal %.
@@ -846,7 +846,7 @@ public:
 		return m_tm.tm_gmtoff;
 	}
 	template <typename As> requires (is_String<As>::value) constexpr
-	auto 	offset(const int& opt = -1) {
+	auto 	offset(int opt = -1) {
 		safe_parse_tm();
 		const long off = abs(m_tm.tm_gmtoff);
 		const long hours = off / 3600;
@@ -918,12 +918,12 @@ public:
 	   @description: Get the week number (1..52).
 	} */
 	constexpr
-	int 	week(const bool& start_at_sunday = true) {
+	int 	week(bool start_at_sunday = true) {
 		safe_parse_tm();
 		return week_h(m_tm, start_at_sunday);
 	}
 	constexpr
-	int 	week_h(struct tm& time, const bool& sunday_as_start = true) const {
+	int 	week_h(struct tm& time, bool sunday_as_start = true) const {
 		
 		// Variables.
 		int leap = 0;
@@ -1140,7 +1140,7 @@ public:
 		@description: Parse from a const char* (unix timestamp milliseconds).
 	} */
 	SICE
-	This	parse(const char* unix, const ullong& len) {
+	This	parse(const char* unix, ullong len) {
 		return tonumeric<long>(unix, len);
 	}
 	SICE

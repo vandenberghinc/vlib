@@ -20,7 +20,7 @@ namespace crypto {
 static int random_stream_fd = 0;
 
 // Generate random bytes.
-auto random(const uint& len) {
+auto random(uint len) {
     
     // /dev/random is not secure because of blocking: https://github.com/jedisct1/libsodium/issues/49
     static const char* device = "/dev/urandom";

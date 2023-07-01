@@ -59,7 +59,7 @@ struct Hex {
         return encode(input.data(), input.len());
     }
 	SICE
-	String 	encode(const char* input, const Length& len) {
+	String 	encode(const char* input, const Length len) {
         String output;
 		output.resize(len * 2);
 		output.len() = output.capacity();
@@ -97,7 +97,7 @@ struct Hex {
         return decode(input.data(), input.len());
     }
 	SICE
-	String  decode(const char* input, const Length& len) {
+	String  decode(const char* input, const Length len) {
 		String output;
 		output.resize((len + 1) / 2);
 		output.len() = output.capacity();

@@ -43,7 +43,7 @@ public:
 
 	// Construct.
 	constexpr
-	void construct	(const Length& sindex, const Length& eindex, const Type* arr) {
+	void construct	(const Length sindex, const Length eindex, const Type* arr) {
 		m_arr = arr;
 		m_start = sindex;
 		m_end = eindex;
@@ -58,7 +58,7 @@ public:
 
 	// Constructor from Type* with start & end index.
 	constexpr
-	normal_iter_t	(const Length& sindex, const Length& eindex, const Type* arr) : m_arr(arr), m_start(sindex), m_end(eindex) {}
+	normal_iter_t	(const Length sindex, const Length eindex, const Type* arr) : m_arr(arr), m_start(sindex), m_end(eindex) {}
 
 	// ---------------------------------------------------------
 	// Functions.
@@ -139,7 +139,7 @@ public:
 
 	// Construct.
 	constexpr
-	void construct	(const Length& sindex, const Length& eindex, const Type* arr) {
+	void construct	(const Length sindex, const Length eindex, const Type* arr) {
 		m_arr = arr;
 		m_index = eindex-1;
 		m_start = sindex;
@@ -156,7 +156,7 @@ public:
 
 	// Constructor from Type* with start & end index.
 	constexpr
-	reversed_iter_t	(const Length& sindex, const Length& eindex, const Type* arr) : m_arr(arr), m_index(eindex-1), m_start(sindex), m_end(eindex), m_stop(false) {}
+	reversed_iter_t	(const Length sindex, const Length eindex, const Type* arr) : m_arr(arr), m_index(eindex-1), m_start(sindex), m_end(eindex), m_stop(false) {}
 
 	// ---------------------------------------------------------
 	// Functions.
@@ -226,7 +226,7 @@ struct 		iter_t<Forwards, Type, Length> : public normal_iter_t<Type, Length> {
 	constexpr
 	iter_t() : normal_iter_t<Type, Length>() {}
 	constexpr
-	iter_t(const Length& sindex, const Length& eindex, const Type* arr) : normal_iter_t<Type, Length>(sindex, eindex, arr) {}
+	iter_t(const Length sindex, const Length eindex, const Type* arr) : normal_iter_t<Type, Length>(sindex, eindex, arr) {}
 	constexpr
 	auto reverse() { return iter_t<Backwards, Type, Length>(this->m_start, this->m_end, this->m_arr); }
 };
@@ -238,7 +238,7 @@ struct 		iter_t<Backwards, Type, Length> : public reversed_iter_t<Type, Length> 
 	constexpr
 	iter_t() : reversed_iter_t<Type, Length>() {}
 	constexpr
-	iter_t(const Length& sindex, const Length& eindex, const Type* arr) : reversed_iter_t<Type, Length>(sindex, eindex, arr) {}
+	iter_t(const Length sindex, const Length eindex, const Type* arr) : reversed_iter_t<Type, Length>(sindex, eindex, arr) {}
 	constexpr
 	auto reverse() { return iter_t<Forwards, Type, Length>(this->m_start, this->m_end, this->m_arr); }
 };
@@ -497,11 +497,11 @@ public:
 
 	// Equals char.
 	constexpr friend
-	bool operator ==(const iter_t& x, const char& y) {
+	bool operator ==(const iter_t& x, char y) {
 		return x.m_current == y;
 	}
 	constexpr friend
-	bool operator !=(const iter_t& x, const char& y) {
+	bool operator !=(const iter_t& x, char y) {
 		return x.m_current != y;
 	}
 	

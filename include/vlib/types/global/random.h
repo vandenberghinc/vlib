@@ -59,7 +59,7 @@ public:
 			vlib::random::seed(1);
 	} */
 	inline static
-	void	seed(const uint& x) {
+	void	seed(uint x) {
 		srand(x);
         seeded = true;
 	}

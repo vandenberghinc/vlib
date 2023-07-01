@@ -27,8 +27,6 @@
 		C3E52A082A4F471200BC2829 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../include; sourceTree = "<group>"; };
 		C3E52A092A4F471E00BC2829 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		C3E52A0A2A4F474100BC2829 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
-		C3E52A0C2A504CF800BC2829 /* dev */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dev; sourceTree = "<group>"; };
-		C3E52A0D2A504D5B00BC2829 /* .github */ = {isa = PBXFileReference; lastKnownFileType = folder; name = .github; path = ../.github; sourceTree = "<group>"; };
 		C3E52A122A505E0A00BC2829 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -50,8 +48,6 @@
 				C3E52A0A2A4F474100BC2829 /* .gitignore */,
 				C3E52A092A4F471E00BC2829 /* README.md */,
 				C3E52A082A4F471200BC2829 /* include */,
-				C3E52A0C2A504CF800BC2829 /* dev */,
-				C3E52A0D2A504D5B00BC2829 /* .github */,
 				C36364B428E4E52F00AB52BB /* Products */,
 			);
 			sourceTree = "<group>";

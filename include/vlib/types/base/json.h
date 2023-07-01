@@ -24,7 +24,7 @@ enum types {
 	array = 6,
 	json = 7,
 };
-String strtype(const ushort& x) {
+String strtype(ushort x) {
     switch (x) {
         case null:
             return String("Null", 4);
@@ -273,7 +273,7 @@ public:
 		return *this;
 	}
 	constexpr
-	auto&   construct(const char* x, const ullong& len) {
+	auto&   construct(const char* x, ullong len) {
 		m_str.reconstruct_by_type_args(x, len);
 		m_type = types::string;
 		return *this;
@@ -391,7 +391,7 @@ public:
         return *this;
     }
     constexpr
-    auto&   reconstruct(const char* data, const ullong& len) {
+    auto&   reconstruct(const char* data, ullong len) {
         reset();
         construct(data, len);
         return *this;
@@ -445,7 +445,7 @@ public:
         construct(data);
     }
     constexpr
-    JsonValue (const char* data, const ullong& len) {
+    JsonValue (const char* data, ullong len) {
         construct(data, len);
     }
     
@@ -508,7 +508,7 @@ public:
     // Constructor for derived classes.
     constexpr
     JsonValue (
-        const ushort& l_type,
+		ushort l_type,
         const UPtr<Bool>& l_bool,
         const UPtr<LDouble>& l_double,
         const UPtr<LLong>& l_int,
@@ -717,7 +717,7 @@ public:
     
     // Subscript operator.
     constexpr
-    This&   value(const ullong& index) {
+    This&   value(ullong index) {
         switch (m_type) {
             case types::json:
                 return m_json->value(index);
@@ -726,7 +726,7 @@ public:
         }
     }
     constexpr
-    This&   value(const ullong& index) const {
+    This&   value(ullong index) const {
         switch (m_type) {
             case types::json:
                 return m_json->value(index);
@@ -753,7 +753,7 @@ public:
         }
     }
     constexpr
-    This&   value(const char* key, const ullong& len) {
+    This&   value(const char* key, ullong len) {
         switch (m_type) {
             case types::json:
                 return m_json->value(key, len);
@@ -762,7 +762,7 @@ public:
         }
     }
     constexpr
-    This&   value(const char* key, const ullong& len) const {
+    This&   value(const char* key, ullong len) const {
         switch (m_type) {
             case types::json:
                 return m_json->value(key, len);
@@ -940,7 +940,7 @@ public:
     
     // Subscript operator.
     constexpr
-    This&   operator [](const ullong& index) {
+    This&   operator [](ullong index) {
         switch (m_type) {
             // case types::str:
             //     return m_str->operator[](index);
@@ -953,7 +953,7 @@ public:
         }
     }
     constexpr
-    This&   operator [](const ullong& index) const {
+    This&   operator [](ullong index) const {
         switch (m_type) {
             // case types::str:
             //     return m_str->operator[](index);
@@ -1130,7 +1130,7 @@ public:
 	Json (const String& str) :
 	Base(parse(str.data(), str.len())) {}
 	constexpr
-	Json (const char* arr, const ullong& len) :
+	Json (const char* arr, ullong len) :
 	Base(parse(arr, len)) {}
     
     // Constructor from dict.
@@ -1231,7 +1231,7 @@ public:
 	
 	// Check if a param is present.
 	constexpr
-	llong 	find_type(const char* key, const ullong& len, const int& type) const {
+	llong 	find_type(const char* key, ullong len, int type) const {
 		ullong index = find(key, len);
 		if (index == NPos::npos) {
 			return json::error::not_found;
@@ -1242,7 +1242,7 @@ public:
 		return (llong) index;
 	}
 	constexpr
-    llong 	find_type(const String& key, const int& type) const {
+    llong 	find_type(const String& key, int type) const {
 		return find_type(key.data(), key.len(), type);
 	}
     
@@ -1429,7 +1429,7 @@ public:
 		return parse_curly_brackets(data.data(), data.len());
 	}
 	SICE
-	This	parse(const char* data, const ullong& len) {
+	This	parse(const char* data, ullong len) {
 		return parse_curly_brackets(data, len);
 	}
 	SICE
@@ -1652,7 +1652,7 @@ public:
 
 	// Parse json from char* and ullong.
 	SICE
-	This	parse_curly_brackets(const char* arr, ullong len, const int& limit = -1) {
+	This	parse_curly_brackets(const char* arr, ullong len, int limit = -1) {
 		
 		// Checks.
         while (len > 0) {

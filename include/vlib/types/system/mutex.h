@@ -200,7 +200,7 @@ public:
             vlib::mutex mutex;
     } */
     constexpr
-    SharedMutex(SharedData*& data, const int& prot = PROT_READ | PROT_WRITE, const int& flags = MAP_SHARED | MAP_ANONYMOUS)
+    SharedMutex(SharedData*& data, int prot = PROT_READ | PROT_WRITE, int flags = MAP_SHARED | MAP_ANONYMOUS)
     {
         data = (SharedData*) mmap(NULL, sizeof(SharedData), prot, flags, -1, 0);
         assert(data);

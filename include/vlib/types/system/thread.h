@@ -659,7 +659,7 @@ public:
             Get a thread by index.
     } */
     constexpr
-    auto& thread(const uint& index) {
+    auto& thread(uint index) {
         return m_threads[index];
     }
     
@@ -670,7 +670,7 @@ public:
             Set a thread's status to running.
     } */
     constexpr
-    void set_running(const uint& index) {
+    void set_running(uint index) {
         m_is_running[index] = 2;
     }
     
@@ -681,7 +681,7 @@ public:
             Set a thread's status to finished running.
     } */
     constexpr
-    void set_finished(const uint& index) {
+    void set_finished(uint index) {
         m_is_running[index] = 1;
     }
     
