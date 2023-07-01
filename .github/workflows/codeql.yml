@@ -4,6 +4,9 @@
 #   The file "./dev/codeql/main.cpp" must exist.
 #   The file must include all parent source files.
 #   The `int main()` may be empty but it must exist.
+#
+# - The build command may need to be edited.
+#
 
 name: "Code Scanning - Action"
 
