@@ -19,13 +19,14 @@ namespace content_type {
 
 // HTTP content type.
 /* 	@docs: {
-	@chapter: http
-	@title: Content types
-	@description: HTTP content types, does not include all available content types.
-	@usage:
-		#include <vlib/sockets/http.h>
-		vlib::http::content_type_t content_type = vlib::http::content_type::json;
-} */
+ * 	@chapter: http
+ * 	@title: Content types
+ * 	@description: HTTP content types, does not include all available content types.
+ * 	@usage:
+ * 		#include <vlib/sockets/http.h>
+ * 		vlib::http::content_type_t content_type = vlib::http::content_type::json;
+ * 	@show_code: true
+ } */
 enum content_types {
 	undefined = 	0, // must always remain zero for vweb.
 	unknown = 		1,

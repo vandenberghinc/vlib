@@ -16,13 +16,14 @@ namespace method {
 
 // HTTP request method.
 /* 	@docs: {
-	@chapter: http
-	@title: Methods
-	@description: HTTP methods.
-	@usage:
-		#include <vlib/sockets/http.h>
-		short get = vlib::http::method::get;
-} */
+ * 	@chapter: http
+ * 	@title: Methods
+ * 	@description: HTTP methods.
+ * 	@usage:
+ * 		#include <vlib/sockets/http.h>
+ * 		short get = vlib::http::method::get;
+ * 	@show_code: true
+ } */
 enum methods {
 	undefined = 	0,
 	get = 			1,

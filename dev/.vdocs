@@ -15,11 +15,7 @@
 		"$SOURCE/include/vlib/compression.h",
 		"$SOURCE/include/vlib/crypto.h",
         "$SOURCE/include/vlib/encoding.h",
-		"$SOURCE/include/vlib/sockets/socket.h",
-		"$SOURCE/include/vlib/sockets/tcp.h",
-		"$SOURCE/include/vlib/sockets/tls.h",
-		"$SOURCE/include/vlib/sockets/http.h",
-		"$SOURCE/include/vlib/sockets/https.h",
+		"$SOURCE/include/vlib/sockets.h",
 	],
 	"os": [
 		"macos", 
