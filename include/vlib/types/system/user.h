@@ -908,6 +908,7 @@ public:
 
 	// Set the user's password.
 	// - Requires root priviliges.
+	#if OSID <= 0 || OSID >= 4
 	/* 	@docs {
 		@title: Set password
 		@description:
@@ -919,7 +920,6 @@ public:
 			vlib::User root(0);
 			root.set_pass("Hello World!");
 	} */
-	#if OSID <= 0 || OSID >= 4
 	void 	set_pass(
 		const String& 	pass					// the password.
 	);

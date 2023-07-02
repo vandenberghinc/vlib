@@ -22,19 +22,11 @@ namespace mode {
         Encryption and encoding modes
     @usage:
         #include <vlib/crypto.h>
-        int base64 = vlib::crypto::mode::base64;
-        int hex = vlib::crypto::mode::Hex;
         int cbc = vlib::crypto::mode::cbc;
-        int cfb = vlib::crypto::mode::cfb;
-        int ctr = vlib::crypto::mode::ctr;
-        int ecb = vlib::crypto::mode::ecb;
-        int ofb = vlib::crypto::mode::ofb;
         int sha256 = vlib::crypto::mode::sha256;
-        int sha512 = vlib::crypto::mode::sha512;
+	@show_code: true
 } */
 enum modes {
-	base64 = 	1,
-	hex = 		2,
 	cbc = 		3,
 	cfb = 		4,
 	ctr = 		5,

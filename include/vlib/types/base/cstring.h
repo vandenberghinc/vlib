@@ -11,7 +11,7 @@ namespace vlib {
 // CString type.
 /* 	@docs {
 	@chapter: types
-	@title: Const string
+	@title: CString
 	@description:
 		CString type.
 	@warning:
@@ -169,7 +169,7 @@ struct CString {
 			Reset all attributes.
 	  @usage:
 			Array<char> x = "Hello World!";
-			x.reset(); ==> ""
+			x.reset(); ==> nullptr
 	} */
 	inline constexpr
 	auto& 	reset() {

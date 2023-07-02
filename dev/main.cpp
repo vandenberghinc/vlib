@@ -12,6 +12,22 @@
 #include "codeql/main.cpp"
 
 // #include "../include/vlib/types.h"
+// int main() {
+// 	using namespace vlib;
+// 	Code code ("x = \"\\\"Hello!\\\"\"; ");
+// 	String green_true = tostr(vlib::colors::green, "true", vlib::colors::end);
+// 	String normal_false = "false";
+// 	for (auto& i: code.iterate()) {
+// 		print(
+// 			  i.character(),
+// 			  " (is_comment=", i.is_comment() ? green_true : normal_false,
+// 			  " is_code=", i.is_code() ? green_true : normal_false,
+// 			  " is_str=", i.is_str() ? green_true : normal_false,
+// 			  " is_char=", i.is_char() ? green_true : normal_false,
+// 		")");
+// 	}
+// }
+
 // #include "../include/vlib/compression.h"
 
 // int main() {

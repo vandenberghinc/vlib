@@ -24,6 +24,7 @@ namespace key {
         #include <vlib/crypto.h>
         int len0 = vlib::crypto::key::length::aes128;
         int len1 = vlib::crypto::key::length::aes256;
+	@show_code: true
 } */
 enum length {
 	aes128 = 16,

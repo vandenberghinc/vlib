@@ -24,6 +24,12 @@ namespace vlib {
 namespace compression {
 
 // Level enum [-1..9].
+/*  @docs {
+ *	@chapter: compression
+ *	@title: Levels
+ *	@description:
+ *	    The allowed compression levels.
+ } */
 enum levels {
 	null = Z_NO_COMPRESSION,
 	def = Z_DEFAULT_COMPRESSION,
@@ -36,14 +42,14 @@ enum levels {
 
 // ---------------------------------------------------------
 // Compression struct.
-/* @docs {
-    @chapter: compression
-    @title: Compression
-    @description:
-        Compression type, used to compress and decompress data.
-    @usage:
-        #include <vlib/compression.h>
-        vlib::Compression compression;
+/*  @docs {
+ *	@chapter: compression
+ *	@title: Compression
+ *	@description:
+ *	    Compression type, used to compress and decompress data.
+ *	@usage:
+ *	    #include <vlib/compression.h>
+ *	    vlib::Compression compression;
 } */
 
 struct Compression {
@@ -76,19 +82,19 @@ struct Compression {
 
 	// Constructor.
     /*  @docs {
-        @title: Constructor
-        @description:
-            Construct a compression object.
-        @parameter: {
-            @name: level
-            @description: The compression level.
-        }
-        @parameter: {
-            @name: maxbytes
-            @description: The maximum bytes to compress, use `-1` to ignore the max bytes.
-        }
-        @usage:
-            vlib::Compression compression(vlib::compression::level::def, -1);
+	 *	@title: Constructor
+	 *	@description:
+	 *	    Construct a compression object.
+	 *	@parameter: {
+	 *	    @name: level
+	 *	    @description: The compression level.
+	 *	}
+	 *	@parameter: {
+	 *	    @name: maxbytes
+	 *	    @description: The maximum bytes to compress, use `-1` to ignore the max bytes.
+	 *	}
+	 *	@usage:
+	 *	    vlib::Compression compression(vlib::compression::level::def, -1);
     } */
 	constexpr
 	Compression(const int level = compression::levels::def) :
@@ -109,11 +115,11 @@ struct Compression {
 
 	// Compression level.
     /*  @docs {
-        @title: Level
-        @description:
-            Get the compression level attribute.
-        @attribute: true
-    } */
+	 *	@title: Level
+	 *	@description:
+	 *	    Get the compression level attribute.
+	 *	@attribute: true
+     } */
     constexpr auto& level() { return m_level; }
 	constexpr auto&	level() const { return m_level; }
 
@@ -122,18 +128,18 @@ struct Compression {
 
 	// Compress data.
     /*  @docs {
-        @title: Compress
-        @description:
-            Compress a string.
-        @parameter: {
-            @name: data
-            @description: The data to compress.
-        }
-        @usage:
-            vlib::Compression compression;
-            vlib::String output = compression.compress("Hello World!");
-        @funcs: 2
-    } */
+	 *	@title: Compress
+	 *	@description:
+	 *	    Compress a string.
+	 *	@parameter: {
+	 *	    @name: data
+	 *	    @description: The data to compress.
+	 *	}
+	 *	@usage:
+	 *	    vlib::Compression compression;
+	 *	    vlib::String output = compression.compress("Hello World!");
+	 *	@funcs: 2
+     } */
     String  compress(const String& data) const {
         return compress(data.data(), data.len());
     }
@@ -282,17 +288,17 @@ struct Compression {
 
 	// Decompress.
     /*  @docs {
-        @title: Decompress
-        @description:
-            Decompress a string.
-        @parameter: {
-            @name: data
-            @description: The data to decompress.
-        }
-        @usage:
-            vlib::Compression compression;
-            vlib::String output = compression.decompress("XXX");
-        @funcs: 2
+     *  @title: Decompress
+     *  @description:
+     *      Decompress a string.
+     *  @parameter: {
+     *      @name: data
+     *      @description: The data to decompress.
+     *  }
+     *  @usage:
+     *      vlib::Compression compression;
+     *      vlib::String output = compression.decompress("XXX");
+     *  @funcs: 2
     } */
     String  decompress(const String& data) const {
         return decompress(data.data(), data.len());
@@ -426,19 +432,19 @@ struct Compression {
 
 	// Is compressed.
     /*  @docs {
-        @title: Is compressed
-        @description:
-            Check if data is compressed.
-        @parameter: {
-            @name: data
-            @description: The data to check.
-        }
-        @return:
-            Returns a boolean indicating whether the data is compressed or not.
-        @usage:
-            vlib::Compression compression;
-            bool is_compressed = compression.is_compressed("XXX");
-        @funcs: 2
+     *	@title: Is compressed
+     *	@description:
+     *	    Check if data is compressed.
+     *	@parameter: {
+     *	    @name: data
+     *	    @description: The data to check.
+     *	}
+     *	@return:
+     *	    Returns a boolean indicating whether the data is compressed or not.
+     *	@usage:
+     *	    vlib::Compression compression;
+     *	    bool is_compressed = compression.is_compressed("XXX");
+     *	@funcs: 2
     } */
     constexpr
 	Bool    is_compressed(const String& obj) const {
@@ -480,17 +486,17 @@ int& level = compressor.m_level;
 
 // Compress data.
 /*  @docs {
-    @chapter: compression
-    @title: Compress
-    @description:
-        Compress a string.
-    @parameter: {
-        @name: data
-        @description: The data to compress.
-    }
-    @usage:
-        vlib::String output = vlib::compression::compress("Hello World!");
-    @funcs: 2
+ *	@chapter: compression
+ *	@title: Compress
+ *	@description:
+ *	    Compress a string.
+ *	@parameter: {
+ *	    @name: data
+ *	    @description: The data to compress.
+ *	}
+ *	@usage:
+ *	    vlib::String output = vlib::compression::compress("Hello World!");
+ *	@funcs: 2
 } */
 String  compress(const String& data) {
     return compression::compressor.compress(data.data(), data.len());
@@ -501,17 +507,17 @@ String  compress(const char* data, ullong len) {
 
 // Decompress.
 /*  @docs {
-    @chapter: compression
-    @title: Decompress
-    @description:
-        Decompress a string.
-    @parameter: {
-        @name: data
-        @description: The data to decompress.
-    }
-    @usage:
-        vlib::String output = vlib::compression::decompress("XXX");
-    @funcs: 2
+ *	@chapter: compression
+ *	@title: Decompress
+ *	@description:
+ *	    Decompress a string.
+ *	@parameter: {
+ *	    @name: data
+ *	    @description: The data to decompress.
+ *	}
+ *	@usage:
+ *	    vlib::String output = vlib::compression::decompress("XXX");
+ *	@funcs: 2
 } */
 String  decompress(const String& data) {
     return compression::compressor.decompress(data.data(), data.len());
@@ -522,19 +528,19 @@ String  decompress(const char* data, ullong len) {
 
 // Is compressed.
 /*  @docs {
-    @chapter: compression
-    @title: Is compressed
-    @description:
-        Check if data is compressed.
-    @parameter: {
-        @name: data
-        @description: The data to check.
-    }
-    @return:
-        Returns a boolean indicating whether the data is compressed or not.
-    @usage:
-        bool is_compressed = vlib::compression::is_compressed("XXX");
-    @funcs: 2
+ *  @chapter: compression
+ *  @title: Is compressed
+ *  @description:
+ *      Check if data is compressed.
+ *  @parameter: {
+ *      @name: data
+ *      @description: The data to check.
+ *  }
+ *  @return:
+ *      Returns a boolean indicating whether the data is compressed or not.
+ *  @usage:
+ *      bool is_compressed = vlib::compression::is_compressed("XXX");
+ *  @funcs: 2
 } */
 constexpr
 Bool     is_compressed(const String& obj) {

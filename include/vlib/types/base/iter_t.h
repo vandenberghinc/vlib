@@ -436,6 +436,7 @@ public:
             switch (m_current) { // && (m_prev != '\\' || (m_prev == '\\' && m_pprev == '\\'))
                 case '"':
 					if (m_is_char) { break; }
+					else if (m_prev == '\\') { break; }
                     if (m_is_str) {
                         m_is_str_count = 1;
                     } else {
@@ -444,6 +445,7 @@ public:
                     break;
                 case '\'':
 					if (m_is_str) { break; }
+					else if (m_prev == '\\') { break; }
                     if (m_is_char) {
                         m_is_char_count = 1;
                     } else {
