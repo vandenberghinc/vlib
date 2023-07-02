@@ -133,13 +133,97 @@ public:
 	// Functions.
 
 	// Create and send a request.
-	/*  @docs {
+	/*  @docs  {
 	 *	@parent: vlib::http::Client
 	 *	@title: Request
 	 *	@description:
-	 *		Make a http request.
+	 *		Make a HTTP request.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
 	 *	@usage:
-	 *		...
+	 *		// Request with no parameters.
+	 *		vlib::http::Client client (...);
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1
+	 *		)
+	 *
+	 *		// Request with a string body.
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Request with json body parameters.
+	 *		// Use query request to make a request with query parameters.
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 4
+	 } */
+	/*  @docs  {
+	 *	@parent: vlib::https::Client
+	 *	@title: Request
+	 *	@description:
+	 *		Make a HTTPS request.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
+	 *	@usage:
+	 *		// Request with no parameters.
+	 *		vlib::https::Client client (...);
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1
+	 *		)
+	 *
+	 *		// Request with a string body.
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Request with json body parameters.
+	 *		// Use query request to make a request with query parameters.
+	 *		vlib::http::Response response = client.request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 4
 	 } */
 	constexpr
 	Response	request(
@@ -188,8 +272,98 @@ public:
 	}
 
 	// Create and send a compressed request.
-	// - Only the body will be compressed.
-	// - Warning: should not be used when the body contains sensitive information.
+	/*  @docs  {
+	 *	@parent: vlib::http::Client
+	 *	@title: Compressed request
+	 *	@description:
+	 *		Make a compressed HTTP request.
+	 *
+	 *		Only the body will compressed.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
+	 *	@parameter: {
+	 *		@name: body
+	 *		@description: The request body.
+	 *	}
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::http::Client client (...);
+	 *		vlib::http::Response response = client.compressed_request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Compressed request with json body parameters.
+	 *		// Use query request to make a request with query parameters.
+	 *		vlib::http::Response response = client.compressed_request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 2
+	 } */
+	/*  @docs  {
+	 *	@parent: vlib::https::Client
+	 *	@title: Compressed request
+	 *	@description:
+	 *		Make a compressed HTTPS request.
+	 *
+	 *		Only the body will compressed.
+	 *	@warning:
+	 *		This function should not be used when the body contains sensitive information.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
+	 *	@parameter: {
+	 *		@name: body
+	 *		@description: The request body.
+	 *	}
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::https::Client client (...);
+	 *		vlib::http::Response response = client.compressed_request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Compressed request with json body parameters.
+	 *		// Use query request to make a request with query parameters.
+	 *		vlib::http::Response response = client.compressed_request(
+	 *			vlib::http::method::get,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 2
+	 } */
 	constexpr
 	Response	compressed_request(
 		short 			method,
@@ -231,6 +405,30 @@ public:
 	}
     
     // Restart the socket.
+	/*  @docs  {
+	 *	@parent: vlib::http::Client
+	 *	@title: Restart
+	 *	@description:
+	 *		Restart the socket.
+	 *
+	 *		Restarting the socket will happen automatically when the socket connection has been closed.
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::http::Client client (...);
+	 *		client.restart();
+	 } */
+	/*  @docs  {
+	 *	@parent: vlib::https::Client
+	 *	@title: Restart
+	 *	@description:
+	 *		Restart the socket.
+	 *
+	 *		Restarting the socket will happen automatically when the socket connection has been closed.
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::https::Client client (...);
+	 *		client.restart();
+	 } */
     void 	restart() {
         m_sock.restart();
         if (m_sni.is_defined()) {
@@ -240,6 +438,28 @@ public:
     }
     
     // Close the socket.
+	/*  @docs  {
+	 *	@parent: vlib::http::Client
+	 *	@title: Close
+	 *	@description:
+	 *		Close the socket.
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::http::Client client (...);
+	 *		...
+	 *		client.close();
+	 } */
+	/*  @docs  {
+	 *	@parent: vlib::https::Client
+	 *	@title: Close
+	 *	@description:
+	 *		Close the socket.
+	 *	@usage:
+	 *		// Compressed request with a string body.
+	 *		vlib::https::Client client (...);
+	 *		...
+	 *		client.close();
+	 } */
     void     close() {
         m_sock.close();
         m_was_connected = false;

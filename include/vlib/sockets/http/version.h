@@ -20,7 +20,7 @@ namespace version {
 // HTTP response status.
 // -
 /* 	@docs: {
- * 	@chapter: http
+ * 	@chapter: HTTP
  * 	@title: Version
  * 	@description:
  * 		HTTP versions.

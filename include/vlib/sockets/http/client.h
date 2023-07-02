@@ -20,7 +20,7 @@ namespace http {
 //   You can use the "Request" functions seperately to create a request that conforms to your wishes.
 //
 /*  @docs {
- *	@chapter: http
+ *	@chapter: HTTP
  *	@title: Client
  *	@description:
  *		HTTP client type.
@@ -56,42 +56,42 @@ struct Client : public vlib::http::ClientTemplate<sockets::Socket<family, type, 
 
 	// Constructor.
 	/*  @docs {
-		@title: Constructor
-		@description:
-			Construct a client object.
-		@parameter: {
-			@name: ip
-			@description: The server's ip address.
-		}
-		@parameter: {
-			@name: port
-			@description: The server's port.
-		}
-		@usage:
-			vlib::http::Client client("127.0.0.1", 9000);
-	} */
+	 *	@title: Constructor
+	 *	@description:
+	 *		Construct a client object.
+	 *	@parameter: {
+	 *		@name: ip
+	 *		@description: The server's ip address.
+	 *	}
+	 *	@parameter: {
+	 *		@name: port
+	 *		@description: The server's port.
+	 *	}
+	 *	@usage:
+	 *		vlib::http::Client client("127.0.0.1", 9000);
+	 } */
 	constexpr
 	Client (String ip, uint port) :
 	Base(move(ip), port) {}
 	/*  @docs {
-		@title: Constructor
-		@description:
-			Construct a client object.
-		@parameter: {
-			@name: ip
-			@description: The server's ip address.
-		}
-		@parameter: {
-			@name: port
-			@description: The server's port.
-		}
-		@parameter: {
-			@name: headers
-			@description: The default headers.
-		}
-		@usage:
-			vlib::http::Client client("127.0.0.1", 9000);
-	} */
+	 *	@title: Constructor
+	 *	@description:
+	 *		Construct a client object.
+	 *	@parameter: {
+	 *		@name: ip
+	 *		@description: The server's ip address.
+	 *	}
+	 *	@parameter: {
+	 *		@name: port
+	 *		@description: The server's port.
+	 *	}
+	 *	@parameter: {
+	 *		@name: headers
+	 *		@description: The default headers.
+	 *	}
+	 *	@usage:
+	 *		vlib::http::Client client("127.0.0.1", 9000);
+	 } */
 	constexpr
 	Client (String ip, uint port, Headers headers) :
 	Base(move(ip), port, move(headers)) {}
@@ -131,9 +131,39 @@ struct Client : public vlib::http::ClientTemplate<sockets::Socket<family, type, 
 	Base(move(host), move(headers)) {}
 	
 	// Constructor from args.
+	/* @docs {
+	 *  @title: Constructor
+	 *  @description:
+	 *      Construct a client object from arguments.
+	 *  @parameter: {
+	 *      @name: args
+	 *      @description:
+	 *			The template arguments.
+	 *
+	 *			The arguments can contain the following fields:
+	 *			```struct ClientTemplateArgs {
+	 *				String				host;
+	 *				String				ip;
+	 *				uint				port = 0;
+	 *				String              sni;
+	 *				String 				api_key;
+	 *				String 				api_secret;
+	 *				http::Headers		headers;
+	 *				Compression			compression;
+	 *			};```
+	 *  }
+	 *  @usage:
+	 *      vlib::http::Client client({
+	 *			.host = ...,
+	 *			.ip = ...,
+	 *			.port = ...,
+	 *			.sni = ...,
+	 *			.headers = ...,
+	 *		});
+	 *} */
 	constexpr
-	Client (http::ClientTemplateArgs x) :
-	Base(move(x)) {}
+	Client (http::ClientTemplateArgs args) :
+	Base(move(args)) {}
 
 };
 

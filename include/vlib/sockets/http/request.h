@@ -32,7 +32,7 @@ namespace http {
 //   You can use the "Request" functions seperately to create a request that conforms to your wishes.
 //
 /* @docs {
-	@chapter: http
+	@chapter: HTTP
 	@title: Request
 	@description:
 		HTTP request type.

@@ -19,7 +19,7 @@ namespace content_type {
 
 // HTTP content type.
 /* 	@docs: {
- * 	@chapter: http
+ * 	@chapter: HTTP
  * 	@title: Content types
  * 	@description: HTTP content types, does not include all available content types.
  * 	@usage:

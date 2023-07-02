@@ -21,7 +21,7 @@ namespace https {
 //
 
 /*  @docs {
- *  @chapter: https
+ *  @chapter: HTTPS
  *  @name: Client
  *  @title: Client
  *  @description:
@@ -134,9 +134,39 @@ struct Client : public vlib::http::ClientTemplate<tls::Client<family, type, prot
 	Base(move(host), move(headers)) {}
 	
 	// Constructor from args.
+	/* @docs {
+	 *  @title: Constructor
+	 *  @description:
+	 *      Construct a client object from arguments.
+	 *  @parameter: {
+	 *      @name: args
+	 *      @description:
+	 *			The template arguments.
+	 *
+	 *			The arguments can contain the following fields:
+	 *			```struct ClientTemplateArgs {
+	 *				String				host;
+	 *				String				ip;
+	 *				uint				port = 0;
+	 *				String              sni;
+	 *				String 				api_key;
+	 *				String 				api_secret;
+	 *				http::Headers		headers;
+	 *				Compression			compression;
+	 *			};```
+	 *  }
+	 *  @usage:
+	 *      vlib::http::Client client({
+	 *			.host = ...,
+	 *			.ip = ...,
+	 *			.port = ...,
+	 *			.sni = ...,
+	 *			.headers = ...,
+	 *		});
+	 *} */
 	constexpr
-	Client (http::ClientTemplateArgs x) :
-	Base(move(x)) {}
+	Client (http::ClientTemplateArgs args) :
+	Base(move(args)) {}
 
 };
 

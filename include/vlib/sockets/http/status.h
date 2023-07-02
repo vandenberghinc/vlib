@@ -17,7 +17,7 @@ namespace status {
 // HTTP response status.
 // - Does not include all status codes.
 /* 	@docs: {
- * 	@chapter: http
+ * 	@chapter: HTTP
  * 	@title: Status
  * 	@description: HTTP status codes.
  * 	@usage:

@@ -29,7 +29,7 @@ namespace http {
 // - Only supports status codes that are included in "vlib::http::status".
 //
 /* @docs {
-	@chapter: http
+	@chapter: HTTP
 	@title: Response
 	@description:
 		HTTP response type.

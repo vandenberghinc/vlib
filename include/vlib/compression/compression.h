@@ -441,11 +441,11 @@ struct Compression {
         @funcs: 2
     } */
     constexpr
-    bool    is_compressed(const String& obj) const {
+	Bool    is_compressed(const String& obj) const {
         return is_compressed(obj.data(), obj.len());
     }
 	constexpr
-	bool 	is_compressed(const char* data, const Length len) const {
+	Bool 	is_compressed(const char* data, const Length len) const {
 		return len > 2 && (
 		   // zlib
 		   (
@@ -537,11 +537,11 @@ String  decompress(const char* data, ullong len) {
     @funcs: 2
 } */
 constexpr
-bool     is_compressed(const String& obj) {
+Bool     is_compressed(const String& obj) {
     return compression::compressor.is_compressed(obj.data(), obj.len());
 }
 constexpr
-bool 	is_compressed(const char* data, ullong len) {
+Bool 	is_compressed(const char* data, ullong len) {
 	return compression::compressor.is_compressed(data, len);
 }
 

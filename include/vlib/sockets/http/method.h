@@ -16,7 +16,7 @@ namespace method {
 
 // HTTP request method.
 /* 	@docs: {
- * 	@chapter: http
+ * 	@chapter: HTTP
  * 	@title: Methods
  * 	@description: HTTP methods.
  * 	@usage:
