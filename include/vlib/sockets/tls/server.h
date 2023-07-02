@@ -45,13 +45,12 @@ public:
 	// Attributes.
 
 	struct attr {
-		Socket						sock;
-		String						cert;
-		String						key;
-		String						pass;
-		SSL_CTX* 					ctx = nullptr;
-        // Array<SSL*, uint>    clients;    // the ssl objects.
-        // Array<int, uint>    fds;        // underlying socket file descriptors.
+		Socket		sock;
+		String		cert;
+		String		key;
+		String		pass;
+		String		ca_bundle;
+		SSL_CTX*	ctx = nullptr;
 	};
 	SPtr<attr>	m_attr;
 
@@ -234,15 +233,17 @@ public:
 	// Constructor.
 	constexpr
 	void 	construct(
-		String 			ip,
-		uint 	        port,
-		String 			cert,
-		String 			key,
-		String 			pass = nullptr
+		String	ip,
+		uint	port,
+		String	cert,
+		String	key,
+		String	pass = nullptr,
+		String	ca_bundle = nullptr
 	) {
 		m_attr->cert = move(cert);
 		m_attr->key = move(key);
 		m_attr->pass = move(pass);
+		m_attr->ca_bundle = move(ca_bundle);
         close();
         init_tcp(move(ip), port);
         construct_ctx();
@@ -250,14 +251,16 @@ public:
 	}
     constexpr
     void     construct(
-        uint             port,
-        String           cert,
-        String           key,
-        String           pass = nullptr
+        uint	port,
+        String	cert,
+        String	key,
+        String	pass = nullptr,
+		String	ca_bundle = nullptr
     ) {
         m_attr->cert = move(cert);
         m_attr->key = move(key);
         m_attr->pass = move(pass);
+		m_attr->ca_bundle = move(ca_bundle);
         close();
         init_tcp(port);
         construct_ctx();
@@ -296,9 +299,10 @@ public:
 		const Int& 	            port,
 		const String& 			cert,
 		const String& 			key,
-		const String& 			pass = nullptr
+		const String& 			pass = nullptr,
+		const String& 			ca_bundle = nullptr
 	) :
-	m_attr(attr { .cert = cert, .key = key, .pass = pass })
+	m_attr(attr { .cert = cert, .key = key, .pass = pass, .ca_bundle = ca_bundle })
 	{
 		wrapper::init_openssl();
         init_tcp(ip, port.value());
@@ -312,9 +316,10 @@ public:
 		const Int& 	            port,
 		const String& 			cert,
 		const String& 			key,
-		const String& 			pass = nullptr
+		const String& 			pass = nullptr,
+		const String& 			ca_bundle = nullptr
 	) :
-	m_attr(attr { .cert = cert, .key = key, .pass = pass })
+	m_attr(attr { .cert = cert, .key = key, .pass = pass, .ca_bundle = ca_bundle })
 	{
 		wrapper::init_openssl();
         init_tcp(port.value());
@@ -394,6 +399,12 @@ public:
 	constexpr
 	auto& 	pass() {
 		return m_attr->pass;
+	}
+	
+	// CA Bundle.
+	constexpr
+	auto& 	ca_bundle() {
+		return m_attr->ca_bundle;
 	}
     
 	// CTX object.
@@ -649,6 +660,11 @@ public:
 		// Verify the private key.
 		if (!SSL_CTX_check_private_key(m_attr->ctx)) {
             throw SocketError(tostr("Unable to verify key \"", m_attr->key, "\" from socket \"", ip(), ":", port(), "\"."));
+		}
+		
+		// Load the CA bundle.
+		if (m_attr->ca_bundle.is_defined() && SSL_CTX_load_verify_locations(m_attr->ctx, m_attr->ca_bundle.c_str(), NULL) != 1) {
+			throw SocketError(tostr("Unable to load ca bundle \"", m_attr->ca_bundle, "\" from socket \"", ip(), ":", port(), "\"."));
 		}
 
 	}
