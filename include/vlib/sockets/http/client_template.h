@@ -26,16 +26,6 @@ struct ClientTemplateArgs {
 	Compression			compression;
 };
 
-/*  @docs {
- *	@chapter: http
- *	@title: Client
- *	@description:
- *		HTTP client type.
- *	@usage:
- *		#include <vlib/sockets/http.h>
- *		vlib::http::Client client;
- } */
-
 template <
 	typename Socket,									// the tcp / tls socket.
 	uint	 http_version = 	http::version::v1_1 	// the http version.

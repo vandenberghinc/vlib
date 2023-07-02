@@ -43,7 +43,7 @@ template <
 	family == sockets::family::ipv4 ||
 	family == sockets::family::ipv6
 )
-struct Client : public http::ClientTemplate<tls::Client<family, type, protocol, buff_len, blocking, tls_version>, http_version> {
+struct Client : public vlib::http::ClientTemplate<tls::Client<family, type, protocol, buff_len, blocking, tls_version>, http_version> {
 
 	// ---------------------------------------------------------
 	// Aliases.

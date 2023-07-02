@@ -1037,7 +1037,7 @@ public:
 		});
 } */
 
-struct Json : public Dict<String, JsonValue<Json>> {
+struct Json : public vlib::Dict<String, JsonValue<Json>> {
 
 // Public.
 public:
