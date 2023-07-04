@@ -357,8 +357,7 @@ struct is_Range<Range<Iter, Type>>    { SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Iter = Forwards, typename Type = ullong> inline constexpr
 vlib::Range<Iter, Type> Range(const Type& max) {

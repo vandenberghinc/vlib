@@ -14,6 +14,8 @@
 #include "ptr.h"
 #include "array.h"
 #include "code.h"
+#include "pair.h"
 #include "dict.h"
 #include "json.h"
 #include "stream.h"
+#include "pack.h"

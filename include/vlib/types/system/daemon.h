@@ -667,6 +667,7 @@ public:
             command = tostr("sudo journalctl -u ", m_settings.name, ".service --no-pager  -n ", lines);
         #elif OSID == 1
             throw OSError(tostr("Operating system \"MacOS\" is not yet supported."));
+			lines + 1; // to ignore unused parameter.
         #endif
         Proc proc;
         if (proc.execute(command) != 0 || proc.exit_status() != 0) {
@@ -690,8 +691,7 @@ template<> 					struct is_Daemon<Daemon> 				{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Daemon =		vlib::Daemon;
 

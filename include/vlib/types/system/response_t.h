@@ -475,8 +475,7 @@ template<typename Type> 						struct is_Response<Response<Type>> 						{ SICEBOO
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Type>
 using Response =		vlib::Response<Type>;

@@ -553,8 +553,7 @@ template <class T, class... Args> auto shared_ptr(Args&&... args) { return Ptr<T
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Type, typename Status = Shared>
 using Ptr =		vlib::Ptr<Type, Status>;

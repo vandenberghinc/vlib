@@ -1022,8 +1022,7 @@ template<>                 struct is_Proc<Proc>             { SICEBOOL value = t
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Proc =        vlib::Proc;
 

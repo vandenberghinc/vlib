@@ -1394,8 +1394,7 @@ template<> 				struct is_Date<Date> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Date =		vlib::Date;
 

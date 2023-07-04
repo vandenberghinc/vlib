@@ -19,3 +19,4 @@
 #include "daemon.h"
 #include "shared_memory.h"
 #include "serial.h"
+#include "compile.h"

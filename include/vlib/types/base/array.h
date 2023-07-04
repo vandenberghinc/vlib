@@ -2426,11 +2426,11 @@ struct Array {
 		ullong len;
 		switch (vlib::load(path, data, len)) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to read file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to write to file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
 		if (len > 0 && data[len - 1] == '\n') {
 			--len;
@@ -2456,11 +2456,11 @@ struct Array {
         This obj;
 		switch (vlib::load(path, obj.m_arr, obj.m_len)) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to read file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to write to file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
         obj.m_capacity = obj.m_len;
         return obj;
@@ -2486,11 +2486,11 @@ struct Array {
 		join_h(pipe);
 		switch (vlib::save(path, pipe.data(), pipe.len())) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to read file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to write to file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
 		return *this;
 	}
@@ -2511,11 +2511,11 @@ struct Array {
 	auto& 	save(const char* path) const requires (is_char<Type>::value) {
 		switch (vlib::save(path, c_str(), m_len)) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to read file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to write to file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
 		return *this;
 	}
@@ -2589,7 +2589,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This 	quote() requires (is_char<Type>::value) {
+	This 	quote() const requires (is_char<Type>::value) {
 		return copy().quote_r();
 	}
 
@@ -2620,7 +2620,7 @@ struct Array {
 		}
 		return *this;
 	}
-	This& 	unquote() requires (is_char<Type>::value) {
+	This& 	unquote() const requires (is_char<Type>::value) {
 		return copy().unquote_r();
 	}
 	
@@ -2638,7 +2638,7 @@ struct Array {
 	 *	@funcs: 2
 	} */
 	constexpr
-	This     uppercase() requires (is_char<Type>::value) {
+	This     uppercase() const requires (is_char<Type>::value) {
 		This up;
 		up.resize(m_len);
 		for (auto& c: *this) {
@@ -2668,7 +2668,7 @@ struct Array {
 	 *	@funcs: 2
 	} */
 	constexpr
-	This     lowercase() requires (is_char<Type>::value) {
+	This     lowercase() const requires (is_char<Type>::value) {
 		This up;
 		up.resize(m_len);
 		for (auto& c: *this) {
@@ -2719,7 +2719,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This	ensure_start_padding(char padding, const Length req_len) {
+	This	ensure_start_padding(char padding, const Length req_len) const {
 		return copy().ensure_start_padding_r(padding, req_len);
 	}
 	/* 	@docs {
@@ -2748,7 +2748,7 @@ struct Array {
 		return *this;
 	}
 	constexpr
-	This 	ensure_end_padding(char padding, const Length req_len) {
+	This 	ensure_end_padding(char padding, const Length req_len) const {
 		return copy().ensure_end_padding_r(padding, req_len);
 	}
 
@@ -4157,8 +4157,7 @@ void 	Exception::dump() {
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Type, typename Length = ullong>
 using Array = 	vlib::Array<Type, Length>;

@@ -13,10 +13,11 @@
 namespace vlib {
 
 namespace file {
+// Source: https://www.man7.org/linux/man-pages/man3/fopen.3.html
 enum mode {
-	read =		O_RDONLY,
-	write =		O_WRONLY | O_CREAT | O_TRUNC,
-	append = 	O_WRONLY | O_CREAT | O_APPEND,
+	read =		O_RDWR,
+	write =		O_RDWR | O_CREAT | O_TRUNC,
+	append = 	O_RDWR | O_CREAT | O_APPEND,
 };
 };
 
@@ -27,19 +28,20 @@ enum mode {
 // CWE-732: Do not use fopen but fdopen due to world-wide permissions.
 //
 inline
-FILE*	open(const char* path, short mode) {
-	int fd = ::open(path, mode);
+FILE*	open(const char* path, int mode, int permission = 0640) {
+	int fd = ::open(path, mode, permission);
+	if (fd == -1) { return nullptr; }
 	FILE* f;
 	switch (mode) {
 		case file::mode::append:
-			f = fdopen(fd, "ab"); // "b" is not needed for unix but keep anyway for compatibility.
+			f = fdopen(fd, "a+");
 			break;
 		case file::mode::write:
-			f = fdopen(fd, "wb");
+			f = fdopen(fd, "w+");
 			break;
 		case file::mode::read:
 		default: // on an invalid file open with read permission.
-			f = fdopen(fd, "rb");
+			f = fdopen(fd, "r+");
 			break;
 	}
 	if (f == NULL) { f = nullptr; }

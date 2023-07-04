@@ -917,8 +917,7 @@ template<> 				struct is_Group<Group> 				{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Group =		vlib::Group;
 

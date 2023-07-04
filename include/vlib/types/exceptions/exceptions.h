@@ -55,8 +55,8 @@ const excid_t name::type_id = vlib::exceptions::add_type(strname); \
 
 // Add exception to shortcuts macro.
 #define SHORTCUT_EXCEPTION(name) \
-namespace shortcuts { \
 namespace exceptions { \
+namespace shortcuts { \
 using name = vlib::name; \
 }}
 
@@ -115,6 +115,9 @@ struct KillError; CREATE_EXCEPTION(KillError, "KillError"); SHORTCUT_EXCEPTION(K
 
 struct SerialError; CREATE_EXCEPTION(SerialError, "SerialError"); SHORTCUT_EXCEPTION(SerialError);
 
+struct ConfigError; CREATE_EXCEPTION(ConfigError, "ConfigError"); SHORTCUT_EXCEPTION(ConfigError);
+struct CompileError; CREATE_EXCEPTION(CompileError, "CompileError"); SHORTCUT_EXCEPTION(CompileError);
+
 struct ShapeError; CREATE_EXCEPTION(ShapeError, "ShapeError"); SHORTCUT_EXCEPTION(ShapeError);
 
 struct GenerateSaltError; CREATE_EXCEPTION(GenerateSaltError, "GenerateSaltError"); SHORTCUT_EXCEPTION(GenerateSaltError);
@@ -156,8 +159,6 @@ struct TLSVersionError; CREATE_EXCEPTION(TLSVersionError, "TLSVersionError"); SH
 struct SMTPError; CREATE_EXCEPTION(SMTPError, "SMTPError"); SHORTCUT_EXCEPTION(SMTPError);
 
 struct DaemonError; CREATE_EXCEPTION(DaemonError, "DaemonError"); SHORTCUT_EXCEPTION(DaemonError);
-
-struct ConfigError; CREATE_EXCEPTION(ConfigError, "ConfigError"); SHORTCUT_EXCEPTION(ConfigError);
 
 struct CudaError; CREATE_EXCEPTION(CudaError, "CudaError"); SHORTCUT_EXCEPTION(CudaError);
 

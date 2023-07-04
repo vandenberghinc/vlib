@@ -176,7 +176,7 @@ struct RequestArgs {
     String url;
     Json params = {};
     Headers headers = {};
-    Int timeout = -1;
+    Int timeout = VLIB_SOCK_TIMEOUT;
 };
 template <typename Client = http::Client<>>
 Response    request_h(const RequestArgs& args) {

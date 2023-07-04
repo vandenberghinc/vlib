@@ -1211,11 +1211,11 @@ public:
 		ullong len;
 		switch (vlib::load(path, data, len)) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to open file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to open file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
 		if (len > 0 && data[len - 1] == '\n') {
 			--len;
@@ -1923,8 +1923,7 @@ template<> 					struct is_Json<Json> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Json = vlib::Json;
 using JsonValue = vlib::JsonValue;

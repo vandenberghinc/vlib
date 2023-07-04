@@ -303,8 +303,7 @@ template<> 				struct is_Script<Script> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Script =		vlib::Script;
 

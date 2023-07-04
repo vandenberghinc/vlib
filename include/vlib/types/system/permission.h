@@ -334,8 +334,7 @@ template<> 				struct is_Permission<Permission> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Permission =		vlib::Permission;
 

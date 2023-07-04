@@ -471,6 +471,7 @@ public:
 		const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
 	) {
         bool first_line = true;
+		bool already_indented_this_line = false;
         ullong last_index = m_len - 1;
         Int l_indent = indent;
         Int indent_step = indent == 0 ? 4 : indent;
@@ -478,9 +479,16 @@ public:
         obj.resize(this->m_len);
         for (auto i: iterate(sindex, eindex)) {
             const char& c = i.character();
+			
+			// New line.
+			if (c == '\n') {
+				already_indented_this_line = false;
+			}
             
-            if (c == '(' || c == '{') {
+			// Add / remove indent.
+            if (!already_indented_this_line && (c == '(' || c == '{')) {
                 l_indent += indent_step;
+				already_indented_this_line = true;
             }
             else if (c == ')' || c == '}') {
                 l_indent -= indent_step;
@@ -507,17 +515,20 @@ public:
                     obj.append(' ');
                 }
                 first_line = false;
-            } else if (i.index != last_index && first_line) {
-                Int while_indent = l_indent;
-                if (i.next() == ')' || i.next() == '}') {
-                    while_indent -= indent_step;
-                }
-                while (--while_indent >= 0) {
-                    obj.append(' ');
-                }
-                obj.append(c);
-                first_line = false;
-            } else {
+			} else if (i.index != last_index && first_line) {
+				Int while_indent = l_indent;
+				if (i.next() == ')' || i.next() == '}') {
+					while_indent -= indent_step;
+				}
+				while (--while_indent >= 0) {
+					obj.append(' ');
+				}
+				obj.append(c);
+				first_line = false;
+			}
+			
+			// Raw append.
+            else {
                 obj.append(c);
             }
         }
@@ -866,8 +877,7 @@ template<> 				struct is_Code<Code> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Code =		vlib::Code;
 

@@ -1157,8 +1157,7 @@ template<> 				struct is_User<User> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using User =		vlib::User;
 

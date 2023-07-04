@@ -69,9 +69,9 @@ struct ExceptionID {
 	@description:
 		Exception type.
  
-        Define preprocessor variable `vlib_enable_trace` to enable a stacktrace.
-        Define preprocessor variable `vlib_trace_depth` to set a max stacktrace depth, the default is 32.
-        The stacktrace only works properly when the program is compiled without optimization.
+        Define preprocessor variable `#define vlib_enable_trace true` to enable a stacktrace.
+        Define preprocessor variable `#define vlib_max_trace 32` to set a max stacktrace depth, the default value is 32.
+        The stacktrace only works properly when the program is compiled without optimization, and compiled with flags `-g` and `-rdynamic` for linux.
 	@usage:
         #include <vlib/types.h>
 		vlib::Exception x (...);

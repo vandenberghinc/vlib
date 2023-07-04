@@ -65,6 +65,7 @@ public:
      *      uint16_t        gid = 0;                // gid of the path.
      *      uint16_t        mod_time = 0;           // mod time of the path
      *      uint16_t        mod_date = 0;           // mod date of the path.
+	 *		uint16_t		compression_method = 8; // the compression method.
      *      uint64_t        compressed_len = 0;     // length of uncompressed data.
      *      uint64_t        uncompressed_len = 0;   // length of compressed data.
      *      uint32_t        crc = 0;                // crc32 checksum.
@@ -89,6 +90,7 @@ public:
         uint16_t        gid = 0;                // gid of the path.
         uint16_t        mod_time = 0;           // mod time of the path
         uint16_t        mod_date = 0;           // mod date of the path.
+		uint16_t		compression_method = 8; // the compression method.
         uint64_t        compressed_len = 0;     // length of uncompressed data.
         uint64_t        uncompressed_len = 0;   // length of compressed data.
         uint32_t        crc = 0;                // crc32 checksum.
@@ -233,7 +235,7 @@ private:
         // Default headers.
         SCE uint16_t        version = 45;
         SCE uint16_t        general_flag = 0;
-        SCE uint16_t        compression_method = 8; // deflated.
+		const uint16_t&		compression_method = entry.compression_method;
         const uint16_t&     mod_time = entry.mod_time;
         const uint16_t&     mod_date = entry.mod_date;
         const uint32_t&     crc = entry.crc;
@@ -284,7 +286,9 @@ private:
         stream.write((char*) &zip64_offset, sizeof(zip64_offset));
         
         // File data.
-        stream.write(entry.data.data(), entry.data.len());
+		if (zip64_compressed_len != 0 || zip64_uncompressed_len != 0) {
+			stream.write(entry.data.data(), entry.data.len());
+		}
         
     }
 
@@ -296,7 +300,7 @@ private:
         SCE uint16_t        made_version = 0x0345; // 03 unix for file permissions and zip version 45.
         SCE uint16_t        version = 45;
         SCE uint16_t        general_flag = 0;
-        SCE uint16_t        compression_method = 8; // deflated.
+		const uint16_t&		compression_method = entry.compression_method;
         const uint16_t&     mod_time = entry.mod_time;
         const uint16_t&     mod_date = entry.mod_date;
         const uint32_t&     crc = entry.crc;
@@ -436,7 +440,7 @@ private:
         
         // Vars.
         ullong pos = start;
-        uint16_t compression_method, name_len;
+        uint16_t name_len;
         uint32_t extra_field_len = 0;
         
         // Set offset to match file headers with central dir headers.
@@ -446,7 +450,7 @@ private:
         pos += sizeof(uint32_t); // signature.
         pos += sizeof(uint16_t); // version.
         pos += sizeof(uint16_t); // general flag.
-        compression_method = *((uint16_t*) &data[pos]);
+        entry.compression_method = *((uint16_t*) &data[pos]);
         pos += sizeof(uint16_t); // compression method.
         
         // Mod time / date.
@@ -482,7 +486,7 @@ private:
         pos = end_extra_field; // in case there are gaps.
         
         // Read data.
-        if (compression_method == 0) {
+        if (entry.compression_method == 0) {
             entry.data.reconstruct(data + pos, entry.uncompressed_len);
             pos += entry.uncompressed_len;
         } else {
@@ -502,18 +506,17 @@ private:
         
         // Vars.
         ullong pos = start;
-        uint16_t made_version, general_flag, compression_method,
-                 name_len, comment_len, disk;
+        uint16_t name_len, comment_len;
         uint32_t extra_field_len = 0, external_file_attr;
         
         // Top.
         pos += sizeof(uint32_t); // signature
-        made_version = *((uint16_t*) &data[pos]);
+        // made_version = *((uint16_t*) &data[pos]);
         pos += sizeof(uint16_t); // made version.
         pos += sizeof(uint16_t); // version.
-        general_flag = *((uint16_t*) &data[pos]);
+        // general_flag = *((uint16_t*) &data[pos]);
         pos += sizeof(uint16_t); // general flag.
-        compression_method = *((uint16_t*) &data[pos]);
+		entry.compression_method = *((uint16_t*) &data[pos]);
         pos += sizeof(uint16_t); // compression method.
         
         // Mod time / date.
@@ -539,7 +542,7 @@ private:
         pos += sizeof(uint16_t);
         
         // Disk.
-        disk = *((uint16_t*) &data[pos]);
+        // disk = *((uint16_t*) &data[pos]);
         pos += sizeof(uint16_t);
         
         // File attr.
@@ -1009,7 +1012,49 @@ public:
      *  @funcs: 2
      } */
     auto&   add(const String& name, Path& path) {
+		
+		// Already compressed file extensions.
+		static Array<String> compressed_file_extensions = {
+			"zip", "7z", "rar", "gz", "bz2", "xz", "tar", "tgz", "tbz2", "txz",
+			"jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
+			"mp3", "aac", "wav", "flac", "ogg", "wma",
+			"mp4", "mkv", "avi", "mov", "wmv", "flv", "webm",
+			"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+			"exe", "dll", "so", "dylib", "jar",
+			"apk", "ipa", "appx", "appxbundle",
+			"iso", "img", "dmg",
+			"ttf", "otf", "woff", "woff2",
+			"swf", "svg",
+			"db", "dbf", "mdb", "accdb", "sqlite", "xlsb",
+			"ico", "cur",
+			"xml", "json", "csv",
+			"epub", "mobi",
+			"psd", "ai",
+			"log", "bak",
+			"zipx", "lzma", "z", "arj", "lzh", "cab", "hqx", "sit", "sitx", "gz", "tgz",
+			"bz2", "tbz", "tbz2", "xz", "txz", "lz", "tlz", "lzma", "tlzma", "lz4", "tlz4",
+			"lzo", "tlzo", "sz", "tsz", "zst", "tzst", "zstd", "tzstd", "rar", "zoo",
+			"iso", "img", "dmg", "vhd", "vmdk", "vdi", "hdd", "qcow", "qcow2",
+			"ppt", "pptx", "pps", "ppsx", "pot", "potx", "odp", "otp",
+			"xls", "xlsx", "xlm", "xlsm", "xlt", "xltx", "ods", "ots",
+			"doc", "docx", "dot", "dotx", "odt", "ott",
+			"msg", "pst", "eml",
+			"swf", "fla",
+			"max", "obj", "fbx", "3ds", "dae",
+			"svg", "eps", "ai",
+			"cdr", "cmx", "emf", "wmf",
+			"exe", "dll", "sys", "ocx",
+			"ttf", "otf", "fon",
+			"avi", "wmv", "mpg", "mpeg", "mkv", "mp4", "m4v", "flv", "f4v",
+			"vob", "mov", "3gp", "webm", "swf",
+			"m4a", "aac", "mp3", "wav", "wma", "ogg", "flac", "alac", "aiff"
+		};
         
+		// Skip directories.
+		if (path.is_dir()) {
+			return *this;
+		}
+		
         // Check existance.
         if (!path.exists()) {
             throw FileNotFoundError("File \"", path, "\" does not exist.");
@@ -1036,6 +1081,8 @@ public:
         // Data.
         String compressed;
         uint64_t uncompressed_len = 0;
+		uint64_t compressed_len = 0;
+		uint16_t compression_method = 0;
         
         // CRC.
         uint32_t crc = 0;
@@ -1044,13 +1091,28 @@ public:
         if (!(stat_info.st_mode & S_IFDIR)) {
             String  data = path.load();
             uncompressed_len = data.len();
-            compressed = m_compression.compress(
-                data.data(),
-                data.len(),
-                -15 // window bits should be -15 for raw deflate.
-            );
-            crc = calc_crc32(data.data(), data.len());
+			crc = calc_crc32(data.data(), data.len());
+			Bool do_not_compress = vlib::is_compressed(data) || uncompressed_len < 256 || compressed_file_extensions.contains(path.extension());
+			
+			// Do not compress.
+			if (do_not_compress) {
+				compressed = move(data);
+				compressed_len = compressed.len();
+				compression_method = 0;
+			}
+			
+			// Compress.
+			else {
+				compressed = m_compression.compress(
+					data.data(),
+					data.len(),
+					-15 // window bits should be -15 for raw deflate.
+				);
+				compressed_len = compressed.len();
+				compression_method = 8; // deflate.
+			}
         }
+		// "data" is no longer accessable now.
         
         // Append.
         m_archive.entries.append(Entry{
@@ -1060,7 +1122,8 @@ public:
             .gid = gid,
             .mod_time = mod_time,
             .mod_date = mod_date,
-            .compressed_len = (uint64_t) compressed.len(),
+			.compression_method = compression_method,
+            .compressed_len = compressed_len,
             .uncompressed_len = uncompressed_len,
             .crc = (uint32_t) crc,
             .name = name,
@@ -1149,11 +1212,24 @@ public:
      *      @name: dest
      *      @description: The destination path of the created archive.
      *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.create("/tmp/dir/", "/tmp/zip.archive");
      } */
-    auto&   create(const Path& _source, const Path& dest) {
+	auto&   create(
+		const Path& _source,
+		const Path& dest,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) {
         
         // Reset.
         reset();
@@ -1162,12 +1238,14 @@ public:
         Path                source = _source; // Make non const for certain funcs
         File                file (dest, vlib::file::mode::write);
         
-        // Remove & check.
+		// Check source.
+		if (!source.exists()) {
+			throw FileNotFoundError("Source file \"", source, "\" does not exist.");
+		}
+		
+        // Remove and create.
         if (dest.exists()) {
             dest.remove();
-        }
-        if (!source.exists()) {
-            throw FileNotFoundError("Source file \"", source, "\" does not exist.");
         }
         
         // Open file.
@@ -1180,9 +1258,9 @@ public:
         
         // Path is a dir.
         else {
-            const ullong slice_from = source.len() - source.full_name().len();
-            for (auto& path: source.paths(true)) {
-                add(path.slice(slice_from), path);
+            const ullong sub_path_slice = source.len() - source.full_name().len();
+            for (auto& path: source.paths(true, exclude, exclude_names)) {
+                add(path.slice(sub_path_slice), path);
             }
         }
         
@@ -1194,6 +1272,9 @@ public:
         
         // Close.
         file.close();
+		
+		// Set permissions.
+		// Path::chmod(dest.c_str(), 0770);
         
         // Handler.
         return *this;
@@ -1213,12 +1294,24 @@ public:
      *      @name: _source
      *      @description: The source file or directory.
      *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
      *  @usage:
      *      vlib::Zip zip;
      *      vlib::Stream stream = zip.create("/tmp/dir/");
      } */
     template <typename Stream> requires (is_Stream<Stream>::value)
-    Stream  create(const Path& _source) {
+    Stream  create(
+		const Path& _source,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) {
         
         // Reset.
         reset();
@@ -1239,8 +1332,9 @@ public:
         
         // Path is a dir.
         else {
-            for (auto& path: source.paths(true)) {
-                add(path.slice(source.len() + 1), path);
+			const ullong sub_path_slice = source.len() - source.full_name().len();
+            for (auto& path: source.paths(true, exclude, exclude_names)) {
+                add(path.slice(sub_path_slice), path);
             }
         }
         

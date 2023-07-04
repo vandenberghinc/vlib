@@ -851,6 +851,7 @@ Full documentation at [Github Pages](https://vandenberghinc.github.io/vlib).
  - [vlib::SharedMemory](https://vandenberghinc.github.io/vlib#vlib::SharedMemory)
      - [vlib::vlib::SharedMemory::data](https://vandenberghinc.github.io/vlib#vlib::SharedMemory::data)
  - [vlib::Serial](https://vandenberghinc.github.io/vlib#vlib::Serial)
+ - [vlib::compile](https://vandenberghinc.github.io/vlib#vlib::compile)
  - [vlib::CLI](https://vandenberghinc.github.io/vlib#vlib::CLI)
      - [vlib::vlib::CLI](https://vandenberghinc.github.io/vlib#vlib::CLI::CLI)
      - [vlib::vlib::CLI::add_docs](https://vandenberghinc.github.io/vlib#vlib::CLI::add_docs)

@@ -72,11 +72,11 @@ private:
     
     // Initialize the tcp socket.
     constexpr
-    void    init_tcp(uint port) {
+    void    init_tcp(Int port) {
         m_attr->sock.construct(port);
     }
     constexpr
-    void    init_tcp(String ip, uint port) {
+    void    init_tcp(String ip, Int port) {
         m_attr->sock.construct(move(ip), port);
     }
 
@@ -106,7 +106,7 @@ private:
             throw AcceptError("Unable to set the file descriptor of the new client context.");
         }
         
-        // V3.
+        // Perform handshake.
         while ((status = SSL_accept(ssl)) != 1) {
             
             // Timeout.
@@ -136,12 +136,26 @@ private:
                     SSL_shutdown(ssl);
                     SSL_free(ssl);
                     ::close(fd);
-                    throw AcceptError(tostr("Accept error [", err, "] [", ::strerror(errno), "]."));
+					if (errno != 0) {
+						throw AcceptError(tostr("Accept error [] [", err, "] [", ::strerror(errno), "]."));
+					} else {
+						throw AcceptError(tostr("Accept error [", err, "] [", error, "]."));
+					}
                     
                 }
             }
             
         }
+		
+		// Check certificate verification result
+		if (SSL_get_verify_result(ssl) != X509_V_OK) {
+			SSL_shutdown(ssl);
+			SSL_free(ssl);
+			::close(fd);
+			throw AcceptError("Unable to verify the clients certificate.");
+		}
+		
+		// Handler.
         return ssl;
         
         /* V2 Non blocking.
@@ -234,7 +248,7 @@ public:
 	constexpr
 	void 	construct(
 		String	ip,
-		uint	port,
+		Int		port,
 		String	cert,
 		String	key,
 		String	pass = nullptr,
@@ -251,7 +265,7 @@ public:
 	}
     constexpr
     void     construct(
-        uint	port,
+		Int		port,
         String	cert,
         String	key,
         String	pass = nullptr,
@@ -434,15 +448,13 @@ public:
 
 	// Accept.
 	// - Returns the client's index on a successfull accept.
-	Client 	accept(const Int& timeout = -1) {
+	Client 	accept(const Int& timeout = VLIB_SOCK_TIMEOUT) {
         Int fd = m_attr->sock.accept(timeout.value());
-        m_attr->sock.set_sigpipe_action();
         return ssl_accept(fd.value(), timeout);
 	}
 	template <typename Addrin>
-	Client 	accept(Addrin& addr, int timeout = -1) {
+	Client 	accept(Addrin& addr, int timeout = VLIB_SOCK_TIMEOUT) {
         Int fd = m_attr->sock.accept(addr, timeout);
-        m_attr->sock.set_sigpipe_action();
         return ssl_accept(fd.value(), timeout);
 	}
 
@@ -452,7 +464,7 @@ public:
         Socket::info(ip, port, SSL_get_fd(client));
 	}
     static inline
-    typename Socket::Connection info(const Client& client) {
+    typename Socket::Info info(const Client& client) {
         return Socket::info(SSL_get_fd(client));
     }
     
@@ -467,17 +479,15 @@ public:
 	void 	recv(
 		String& 		received,
 		Client&	        client,
-		const Int& 		timeout = -1
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT
 	) {
-        Socket::set_sigpipe_action();
 		wrapper::receive(received, client, timeout.value(), buff_len);
 	}
     static inline
     String  recv(
         Client&            client,
-        const Int&         timeout = -1
+        const Int&         timeout = VLIB_SOCK_TIMEOUT
     ) {
-        Socket::set_sigpipe_action();
         String received;
         wrapper::receive(received, client, timeout.value(), buff_len);
         return received;
@@ -486,9 +496,8 @@ public:
     void 	recv(
 		http::Request&	request,
 		Client&	        client,
-		const Int& 	    timeout = -1
+		const Int& 	    timeout = VLIB_SOCK_TIMEOUT
 	) {
-        Socket::set_sigpipe_action();
 		String received;
         wrapper::receive(received, client, timeout.value(), buff_len);
 		request.reconstruct(move(received));
@@ -499,16 +508,15 @@ public:
 	ullong 	send(
 		Client&         client,
 		const String& 	data,
-		const Int& 		timeout = -1
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT
 	) {
-        Socket::set_sigpipe_action();
 		return wrapper::send(client, data.data(), data.len(), timeout.value());
 	}
     static inline
     ullong  send(
 		Client& 	            client,
 		const http::Response&	response,
-		const Int& 				timeout = -1
+		const Int& 				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		return send(client, response.data(), timeout);
 	}
@@ -519,7 +527,6 @@ public:
 		uint 			len,
 		const Int&      timeout
 	) {
-        Socket::set_sigpipe_action();
 		return wrapper::send(client, data, len, timeout.value());
 	}
     
@@ -530,15 +537,13 @@ public:
     ullong  send_chunked(
         Client&                 client,
         const http::Response&   response,
-        const Int&              timeout = -1
+        const Int&              timeout = VLIB_SOCK_TIMEOUT
     ) {
-        
-        // Set sigaction.
-        Socket::set_sigpipe_action();
         
         // Vars.
         String& data = response.data();
-        ullong len = data.len(), sent = 0, full_sent = 0, end_header_pos, chunk_header_len;
+		ullong len = data.len(), sent = 0, full_sent = 0, end_header_pos;
+		uint chunk_header_len;
         size_t chunk;
         const ullong chunk_size = 1024 * 32;
         char chunk_header[16];
@@ -566,11 +571,11 @@ public:
             
             chunk = len - sent < chunk_size ? len - sent : chunk_size;
             snprintf(chunk_header, 16, "%zx\r\n", chunk);
-            chunk_header_len = vlib::len(chunk_header);
+            chunk_header_len = vlib::len<uint>(chunk_header);
             send(client, chunk_header, chunk_header_len, timeout);
             full_sent += chunk_header_len;
             
-            send(client, data.data() + sent, chunk, timeout);
+            send(client, data.data() + sent, (uint) chunk, timeout);
             full_sent += chunk;
             
             send(client, "\r\n", 2, timeout);

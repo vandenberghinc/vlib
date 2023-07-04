@@ -1027,8 +1027,7 @@ auto&	abs(const From& x) {
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Short =        vlib::Short;
 using UShort =    vlib::UShort;

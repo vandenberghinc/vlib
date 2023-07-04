@@ -1316,11 +1316,11 @@ public:
     ) {
         switch (vlib::save(path, data, len)) {
         case file::error::open:
-            throw OpenError(String() << "Unable to open file \"" << path << "\" [" << errno << "].");
+            throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
         case file::error::read:
-            throw ReadError(String() << "Unable to open file \"" << path << "\" [" << errno << "].");
+            throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
         case file::error::write:
-            throw WriteError(String() << "Unable to open file \"" << path << "\" [" << errno << "].");
+            throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
         }
     }
 	
@@ -1414,107 +1414,263 @@ public:
     }
 	
 	// Get all paths from a directory.
-	/* @docs {
-		@title: Paths
-		@description: Get all paths from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").paths()) {
-				 ...
-			 }
-	}*/
-    Array<Path> paths(bool recursive = false) const {
-		return paths_h(types::any, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Paths
+	 *	@description: Get all paths from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The path names to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> paths(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::any, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all files from a directory.
 	/* @docs {
-		@title: Files
-		@description: Get all files from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").files()) {
-				 vlib::out << i << " (" << i.size() << " bytes). \n";
-			 }
-	}*/
-    Array<Path> files(bool recursive = false) const {
-		return paths_h(types::file, recursive, c_str(), m_len);
+	 *	@title: Files
+	 *	@description: Get all files from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").files()) {
+	 *			 vlib::out << i << " (" << i.size() << " bytes). \n";
+	 *		 }
+	 }*/
+    Array<Path> files(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::file, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 	
 	// Get all directories from a directory.
 	/* @docs {
-		@title: Directories
-		@description: Get all directories from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").dirs()) {
-				 ...
-			 }
-	}*/
-    Array<Path> dirs(bool recursive = false) const {
-		return paths_h(types::directory, recursive, c_str(), m_len);
+	 *	@title: Directories
+	 *	@description: Get all directories from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").dirs()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> dirs(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::directory, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all symbolic links from a directory.
-	/* @docs {
-		@title: Links
-		@description: Get all symbolic links from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").links()) {
-				 ...
-			 }
-	}*/
-    Array<Path> links(bool recursive = false) const {
-		return paths_h(types::symbolic_link, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Links
+	 *	@description: Get all symbolic links from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").links()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> links(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::symbolic_link, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all socket paths from a directory.
-	/* @docs {
-		@title: Sockets
-		@description: Get all socket paths from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").sockets()) {
-				 ...
-			 }
-	}*/
-    Array<Path> sockets(bool recursive = false) const {
-		return paths_h(types::socket, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Sockets
+	 *	@description: Get all socket paths from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").sockets()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> sockets(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::socket, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all block device paths from a directory.
-	/* @docs {
-		@title: Block devices
-		@description: Get all block device paths from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").bdevices()) {
-				 ...
-			 }
-	}*/
-    Array<Path> bdevices(bool recursive = false) const {
-		return paths_h(types::block_device, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Block devices
+	 *	@description: Get all block device paths from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").bdevices()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> bdevices(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::block_device, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all char device paths from a directory.
-	/* @docs {
-		@title: Char devices
-		@description: Get all char device paths from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").cdevices()) {
-				 ...
-			 }
-	}*/
-    Array<Path> cdevices(bool recursive = false) const {
-		return paths_h(types::char_device, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Char devices
+	 *	@description: Get all char device paths from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").cdevices()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> cdevices(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::char_device, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// Get all pipe paths from a directory.
-	/* @docs {
-		@title: Pipes
-		@description: Get all pipe paths from a directory.
-		@usage:
-			 for (auto& i: vlib::Path("/tmp/").pipes()) {
-				 ...
-			 }
-	}*/
-    Array<Path> pipes(bool recursive = false) const {
-		return paths_h(types::pipe, recursive, c_str(), m_len);
+	/*  @docs {
+	 *	@title: Pipes
+	 *	@description: Get all pipe paths from a directory.
+	 *  @parameter: {
+	 *      @name: recursive
+	 *      @description: Get all the paths recursively for each sub directory.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude
+	 *      @description: The sub paths to exclude.
+	 *  }
+	 *  @parameter: {
+	 *      @name: exclude_names
+	 *      @description: The full name of paths to exclude.
+	 *  }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
+	 *			 ...
+	 *		 }
+	 *	@usage:
+	 *		 for (auto& i: vlib::Path("/tmp/").pipes()) {
+	 *			 ...
+	 *		 }
+	 }*/
+    Array<Path> pipes(
+		bool recursive = false,
+		const Array<String>& exclude = {},
+		const Array<String>& exclude_names = {}
+	) const {
+		return paths_h(types::pipe, recursive, c_str(), m_len, m_len, exclude, exclude_names);
 	}
 
 	// ---------------------------------------------------------
@@ -1538,32 +1694,68 @@ public:
 	// Get all specified type paths from a directory, optionally recursive.
 	// - Use type 'a' for all.
 	// - The directories "." and ".." are not included.
-	Array<Path> paths_h(uchar type, bool recursive, const char* path, ullong len) const {
+	Array<Path> paths_h(
+		uchar type,									// the wanted type.
+		bool recursive,								// get recursively.
+		const char* path,							// the path.
+		ullong len,									// the length of the path.
+		ullong root_path_len = 0, 					// the length of the root path that is parsed, required for "exclude".
+		const Array<String>& exclude = {},			// an array with subpaths to exclude.
+		const Array<String>& exclude_names = {}		// exclude names.
+	) const {
 		Array<Path> arr;
 		DIR *dir;
 		struct dirent* ent;
 		char d_type;
 		if ((dir = ::opendir(path)) != NULL) {
 			while ((ent = ::readdir(dir)) != NULL) {
+				
+				// Skip dirs "." and "..".
 				if (
 					!(ent->d_name[0] == '.' && ent->d_name[1] == '\0') &&
 					!(ent->d_name[0] == '.' && ent->d_name[1] == '.' && ent->d_name[2] == '\0')
 				) {
 					d_type = parse_dt_type(ent->d_type);
 					if (type == any || type == d_type) {
+						
+						// Exclude by names.
+						if (exclude_names.is_defined() && exclude_names.contains(ent->d_name)) {
+							continue;
+						}
+						
+						// Construct path.
 						Path x;
 						x.concat_r(path, len);
 						x.append('/');
 						x.concat_r(ent->d_name);
 						x.clean();
+						
+						// Exclude by sub paths.
+						if (exclude.is_defined() && root_path_len != 0) {
+							bool skip = false;
+							for (auto& i: exclude) {
+								if (i.eq(x.data() + (root_path_len + 1), x.len() - root_path_len - 1)) { // 1 for the / character.
+									skip = true;
+									break;
+								}
+							}
+							if (skip) {
+								continue;
+							}
+						}
+						
+						// Set path info.
 						x.p_info = info {
 							.type = d_type,
 							.size = ent->d_reclen,
 							.full_name = ent->d_name,
 						};
+						
+						// Append.
 						arr.append(x);
+						
+						// Recursive.
 						if (recursive && d_type == directory) {
-                            print(x);
 							arr.concat_r(
 								paths_h(
 									type,
@@ -1573,6 +1765,7 @@ public:
 								)
 							);
 						}
+						
 					}
 				}
 			}
@@ -1618,8 +1811,7 @@ template<> 				struct is_Path<Path> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Path =		vlib::Path;
 

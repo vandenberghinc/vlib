@@ -1158,9 +1158,7 @@ template<> 				struct is_Shared<const variant_t<Shared>&> 		{ SICEBOOL value = t
 
 // ---------------------------------------------------------
 // Shortcuts.
-
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Status = Shared>
 using variant_t =		vlib::variant_t<Status>;

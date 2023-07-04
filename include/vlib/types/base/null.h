@@ -110,8 +110,7 @@ template<> 				struct is_Null<Null> 				{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 constexpr const Null null;
 using Null =		vlib::Null;

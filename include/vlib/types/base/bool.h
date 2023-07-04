@@ -201,8 +201,7 @@ template<> 				struct is_Bool<Bool> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Bool =		vlib::Bool;
 

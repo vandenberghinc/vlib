@@ -102,7 +102,7 @@ public:
     // Functions.
     
     // Connect.
-    void    connect(const Int& timeout = -1) {
+    void    connect(const Int& timeout = 60000) {
         
         // Connect with server.
         if (m_sock.connect(timeout.value()) != 0) {
@@ -182,7 +182,7 @@ public:
     
     // Receive.
     constexpr
-    String  recv(const Int& timeout = -1) {
+    String  recv(const Int& timeout = VLIB_SOCK_TIMEOUT) {
         String received;
         // while (true) {
             String frame;

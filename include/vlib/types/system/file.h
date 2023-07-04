@@ -48,9 +48,9 @@ public:
 	// Attributes.
 
 	struct attr {
-		Path			path;						// the file path.
-		FILE*			file =	nullptr;			// the file pointer.
-		short			mode =	vlib::file::append;	// the file mode.
+		Path	path;						// the file path.
+		FILE*	file =	nullptr;			// the file pointer.
+		int		mode =	vlib::file::append;	// the file mode.
 	};
 	SPtr<attr>	m_attr;
 
@@ -97,10 +97,10 @@ public:
 		@funcs: 2
 	} */
 	constexpr
-	File (Path path, short mode = vlib::file::append) :
+	File (Path path, int mode = vlib::file::append) :
 	m_attr(attr{ .path = move(path), .mode = mode }) {}
     constexpr
-    File (const char* path, short mode = vlib::file::append) :
+    File (const char* path, int mode = vlib::file::append) :
     m_attr(attr{ .path = path, .mode = mode }) {}
 
 	// Copy constructor.
@@ -162,13 +162,13 @@ public:
 		@funcs: 2
 	} */
 	constexpr
-	This&	reconstruct(const Path& path, short mode = vlib::file::append) {
+	This&	reconstruct(const Path& path, int mode = vlib::file::append) {
 		close();
 		m_attr = attr{ .path = path, .mode = mode };
 		return *this;
 	}
 	constexpr
-	This&	reconstruct(Path& path, short mode = vlib::file::append) {
+	This&	reconstruct(Path& path, int mode = vlib::file::append) {
 		close();
 		m_attr = attr{ .path = move(path), .mode = mode };
 		return *this;
@@ -361,7 +361,7 @@ public:
 		}
 		m_attr->file = vlib::open(m_attr->path.c_str(), m_attr->mode);
 		if (m_attr->file == nullptr) {
-            throw OpenError(tostr("Unable to open file \"", m_attr->path, "\"."));
+            throw OpenError(tostr("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -375,7 +375,7 @@ public:
 			file.reopen(vlib::file::mode::write);
 	} */
 	constexpr
-	void 	reopen(short mode) {
+	void 	reopen(int mode) {
 		if (m_attr->mode == mode && m_attr->file != nullptr) {
 			return ;
 		}
@@ -388,7 +388,7 @@ public:
 		m_attr->mode = mode;
 		m_attr->file = vlib::open(m_attr->path.c_str(), m_attr->mode);
 		if (m_attr->file == nullptr) {
-			throw OpenError(tostr("Unable to open file \"", m_attr->path, "\"."));
+			throw OpenError(tostr("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 	
@@ -409,7 +409,7 @@ public:
         String output;
 		output.resize(output.len() + l);
 		if (fread(output.data(), sizeof(char), l, m_attr->file) != l) {
-            throw ReadError(tostr("Unable to read file \"", m_attr->path, "\"."));
+            throw ReadError(tostr("Unable to read file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 		output.len() = l;
 		output.null_terminate();
@@ -440,13 +440,13 @@ public:
     void 	write(const char* data, const Length len) {
         reopen(file::mode::write);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\"."));
+            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
     void     write(const uchar* data, const Length len) {
         reopen(file::mode::write);
         if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\"."));
+            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
         }
     }
 	
@@ -472,7 +472,7 @@ public:
     void 	append(const char* data, const Length len) {
         reopen(file::mode::append);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to append to file \"", m_attr->path, "\"."));
+            throw WriteError(tostr("Unable to append to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -487,7 +487,7 @@ public:
 	} */
 	void 	flush() {
 		if (::fflush(m_attr->file) != 0) {
-            throw FlushError(tostr("Unable to flush file \"", m_attr->path, "\"."));
+            throw FlushError(tostr("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -502,7 +502,7 @@ public:
 	} */
 	void 	sync() {
 		if (::fsync(::fileno(m_attr->file)) != 0) {
-            throw SyncError(tostr("Unable to flush file \"", m_attr->path, "\"."));
+            throw SyncError(tostr("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -542,8 +542,7 @@ template<> 				struct is_File<File> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using File =		vlib::File;
 

@@ -243,8 +243,7 @@ template<typename Type> struct is_Stream<Stream<Type>>  { SICEBOOL value = true;
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 // template<typename Type = char>
 // using Stream =        vlib::Stream<Type>;

@@ -831,7 +831,7 @@ public:
 	template <typename Socket> SICE
 	This 	receive(
 		Socket& 	sock,
-		int			timeout = -1
+		int			timeout = VLIB_SOCK_TIMEOUT
 	) {
 		
 		// Vars.
@@ -1075,7 +1075,7 @@ auto	compressed_response(int version, int status, const http::Headers& headers, 
 }; 		// End namespace http.
 
 // Shortcuts.
-namespace shortcuts { namespace http {
+namespace http { namespace shortcuts {
 using Response =		vlib::http::Response;
 };};
 

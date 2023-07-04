@@ -229,7 +229,7 @@ public:
 	Response	request(
 		short			method,
 		const String&	endpoint,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		Request request(method, endpoint, m_headers, http_version);
 		return send_request(request, timeout);
@@ -239,7 +239,7 @@ public:
 		short 			method,
 		const String& 	endpoint,
 		const String&	body,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
         if (m_api_secret.is_defined()) {
             m_headers.value("API-Signature", 13) = SHA256::hmac(m_api_secret, body);
@@ -252,16 +252,20 @@ public:
 		short 			method,
 		const String& 	endpoint,
 		const Json&		params,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
-		return request(method, endpoint, params.json(), timeout);
+		if (params.len() > 0) {
+			return request(method, endpoint, params.json(), timeout);
+		} else {
+			return request(method, endpoint, timeout);
+		}
 	}
 	constexpr
 	Response	query_request(
 		short 			method,
 		const String& 	endpoint,
 		const Json&		params,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		if (params.len() == 0) {
 			return request(method, endpoint, timeout);
@@ -369,7 +373,7 @@ public:
 		short 			method,
 		const String& 	endpoint,
 		const String&	body,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		return request(method, endpoint, m_compression.compress(body), timeout);
 	}
@@ -378,7 +382,7 @@ public:
 		short 			method,
 		const String& 	endpoint,
 		const Json&		params,
-		int				timeout = -1
+		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		return compressed_request(method, endpoint, params.json(), timeout);
 	}
@@ -387,7 +391,7 @@ public:
 	constexpr
 	Response	send_request(
 		const http::Request&	request,
-		int						timeout = -1
+		int						timeout = VLIB_SOCK_TIMEOUT
 	) {
 		if (!m_was_connected || m_sock.is_broken() || !m_sock.is_connected()) {
             if (m_was_connected) {

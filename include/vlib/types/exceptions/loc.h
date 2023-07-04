@@ -238,8 +238,7 @@ public:
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Loc =		vlib::Loc;
 

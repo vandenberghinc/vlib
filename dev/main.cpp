@@ -9,7 +9,7 @@
 //     vlib::print(vlib::dns_blacklist("84.84.132.194"));
 // }
 
-#include "codeql/main.cpp"
+// #include "codeql/main.cpp"
 
 // #include "../include/vlib/types.h"
 // int main() {
@@ -28,38 +28,27 @@
 // 	}
 // }
 
-// #include "../include/vlib/compression.h"
+#include "../include/vlib/compression.h"
 
-// int main() {
-//     using namespace vlib::shortcuts::types;
-//
-//
-//     // String raw;
-//     // // raw.random_r(UINT_MAX * 2);
-//     // raw.random_r(10000);
-//     // String compressed = vlib::compress(raw);
-//     // print("MATCH: ", vlib::decompress(compressed) == raw);
-//
-//     // vlib::Zip zip;
-//     // // zip.create("//Users/administrator/Downloads/dir", "/Users/administrator/Downloads/archive.zip");
-//     // zip.read("/Users/administrator/Downloads/archive.zip");
-//     // Path::remove("/Users/administrator/Downloads/zip_extract/");
-//     // zip.extract("/Users/administrator/Downloads/zip_extract/");
-//     // // zip.read("/Users/administrator/Downloads/macos_archive.zip");
-//
-// 	Code code ("\" * offset: \" << entry.offset << \"\n\" << \n// \" * permission: \" << (entry.mode & (S_IRWXU | S_IRWXG | S_IRWXO)) << \"\n\" << \n\" * mode: \" << entry.mode << \"\n\" <<");
-// 	String green_true = tostr(vlib::colors::green, "true", vlib::colors::end);
-// 	String normal_false = "false";
-// 	for (auto& i: code.iterate()) {
-// 		print(
-// 			  i.character(),
-// 			  " (is_comment=", i.is_comment() ? green_true : normal_false,
-// 			  " is_code=", i.is_code() ? green_true : normal_false,
-// 			  " is_str=", i.is_str() ? green_true : normal_false,
-// 			  " is_char=", i.is_char() ? green_true : normal_false,
-// 		")");
-// 	}
-// }
+int main() {
+    using namespace vlib::types::shortcuts;
+
+
+    // String raw;
+    // // raw.random_r(UINT_MAX * 2);
+    // raw.random_r(10000);
+    // String compressed = vlib::compress(raw);
+    // print("MATCH: ", vlib::decompress(compressed) == raw);
+
+    vlib::Zip zip;
+    // zip.create("//Users/administrator/Downloads/dir", "/Users/administrator/Downloads/archive.zip");
+	zip.create("/Volumes/persistance/private/vinc/vweb/", "/Users/administrator/Downloads/archive.zip", {".git", ".gitignore", "dev/.versions"});
+    // zip.read("/Users/administrator/Downloads/archive.zip");
+    // Path::remove("/Users/administrator/Downloads/zip_extract/");
+    // zip.extract("/Users/administrator/Downloads/zip_extract/");
+    // zip.read("/Users/administrator/Downloads/macos_archive.zip");
+
+}
 
 
 

@@ -415,8 +415,7 @@ void print_error(const Arg& arg, Args&&... args) {
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Pipe =		vlib::Pipe;
 

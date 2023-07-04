@@ -125,8 +125,7 @@ template<> 				struct is_NPos<NPos> 				{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using NPos =		vlib::NPos;
 

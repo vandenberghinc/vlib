@@ -862,7 +862,7 @@ template<>				 	struct is_Request<const http::Request&> 		{ SICEBOOL value = tru
 }; 		// End namespace http.
 
 // Shortcuts.
-namespace shortcuts { namespace http {
+namespace http { namespace shortcuts {
 using Request =		vlib::http::Request;
 };};
 

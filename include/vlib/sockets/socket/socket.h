@@ -85,7 +85,7 @@ public:
     // Structs.
     
     // Connection info.
-    struct Connection {
+    struct Info {
         Int     fd;
         String  ip;
         Int     port;
@@ -132,11 +132,13 @@ public:
     constexpr
     Socket()
     {
+		set_sigpipe_action();
     }
     
 	// Constructor from ip and port.
 	constexpr
 	Socket(const String& ip, const Int& port) {
+		set_sigpipe_action();
 		assign(ip, port);
 		construct_by_ip();
 	}
@@ -144,6 +146,7 @@ public:
 	// Constructor from port.
 	constexpr
 	Socket(const Int& port) {
+		set_sigpipe_action();
 		assign(port);
 		construct_by_ip();
 	}
@@ -151,6 +154,7 @@ public:
 	// Constructor host.
 	constexpr
 	Socket(const String& host) {
+		set_sigpipe_action();
 		assign_host(host);
 		construct_by_host();
 	}
@@ -158,6 +162,7 @@ public:
     // Constructor with host or ip.
     constexpr
     Socket(const String& host, const String& ip, const Int& port) {
+		set_sigpipe_action();
         if (host.is_defined()) {
             assign_host(host, port);
             construct_by_host();
@@ -687,17 +692,45 @@ public:
         }
     }
 
+	// Peek the number of bytes available for reading.
+	//
+	/* @docs {
+	 *	@title: Peek
+	 *	@description:
+	 *		Peek the number of bytes available for reading.
+	 *	@return:
+	 *		Returns the number of bytes ready to be read or `< 0` when an error has occured.
+	 *	@parameter: {
+	 *		@name: fd
+	 *		@description: The file descriptor to peek.
+	 *	}
+	 *	@usage:
+	 *		llong ready = vlib::Socket::peek(fd);
+	 } */
+	static
+	llong	peek(const Int& fd) {
+		llong ready = 0;
+		#if defined(__linux__)
+			::ioctl(fd.value(), FIONREAD, &ready);
+		#elif defined(__APPLE__)
+			socklen_t optlen = sizeof(llong);
+			getsockopt(fd.value(), SOL_SOCKET, SO_NREAD, (void*) &ready, &optlen);
+		#else
+			#error "The current operating system is not supported."
+		#endif
+		return ready;
+	}
+	
 	// Poll a file descriptor.
 	SICE
 	void	poll(
 		const Int&		fd,
 		const Short&	events,
 		const Short&	revents,
-		const Int&		timeout = -1
+		const Int&		timeout = VLIB_SOCK_TIMEOUT
 	) {
         
         // Poll.
-        // set_sigpipe_action();
         struct pollfd pfd {fd.value(), events.value(), 0};
         while (true) {
             switch (::poll(&pfd, 1, timeout.value())) {
@@ -737,7 +770,7 @@ public:
     SICE
     void	poll_recv(
         const Int&         fd,
-        const Int&         timeout = -1
+        const Int&         timeout = VLIB_SOCK_TIMEOUT
     ) {
         poll(fd, POLLIN, POLLIN, timeout);
     }
@@ -748,7 +781,7 @@ public:
     SICE
     void	poll_send(
         const Int&         fd,
-        const Int&         timeout = -1
+        const Int&         timeout = VLIB_SOCK_TIMEOUT
     ) {
         poll(fd, POLLOUT, POLLOUT, timeout);
     }
@@ -756,9 +789,6 @@ public:
 	// Connect to the socket.
 	constexpr
 	void 	connect(const Int& timeout = 10 * 1000) {
-        
-        // Set sigaction.
-        set_sigpipe_action();
         
         /* V2 blocking.
         set_blocking(m_fd, true);
@@ -828,15 +858,13 @@ public:
 	}
 	SICE
     Bool    is_connected(const Int& fd) {
-        // Set sigaction.
-        set_sigpipe_action();
         
         // Check.
 		if (blocking) {
 			throw InvalidUsageError(tostr("Function \"", __FUNCTION__, "\" is only supported for non-blocking sockets."));
 		}
         char buf;
-        return ::recv(fd.value(), &buf, 1, MSG_PEEK) != 0 || ::send(fd.value(), &buf, 1, MSG_PEEK) != 0;
+		return ::recv(fd.value(), &buf, 1, MSG_PEEK) > 0;// || ::send(fd.value(), &buf, 1, MSG_PEEK) > 0;
         // errno = 0;
         // char buf;
         // if (
@@ -869,7 +897,6 @@ public:
 	// Bind to the address.
 	constexpr
 	void	bind() {
-        set_sigpipe_action();
 		if (::bind(m_fd.value(), m_addr, m_addrlen) < 0) {
 			throw BindError(tostr("Unable to bind to \"", str(), "\" [", ::strerror(errno), "]."));
 		}
@@ -878,7 +905,6 @@ public:
 	// Listen to incoming connections.
 	constexpr
 	void	listen() {
-        set_sigpipe_action();
 		if (::listen(m_fd.value(), 3) < 0) {
 			throw ListenError(tostr("Unable to listen to \"", str(), "\" [", ::strerror(errno), "]."));
 		}
@@ -888,16 +914,15 @@ public:
 	//
 	// IPv4.
 	constexpr
-    Int     accept(const Int& timeout = -1) requires (family == family::ipv4) {
+    Int     accept(const Int& timeout = VLIB_SOCK_TIMEOUT) requires (family == family::ipv4) {
 		Addrin4 addr;
         return accept(addr, timeout);
 	}
 	constexpr
     Int	    accept(
 		Addrin4& 		addr,
-		const Int& 		timeout = -1	// the timeout.
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT	// the timeout.
 	) requires (family == family::ipv4) {
-        set_sigpipe_action();
 		int status;
 		poll(m_fd, POLLIN, POLLIN, timeout);
 		addr = {};
@@ -910,16 +935,15 @@ public:
 	//
 	// IPv6.
 	constexpr
-    Int	    accept(const Int& timeout = -1) requires (family == family::ipv6) {
+    Int	    accept(const Int& timeout = VLIB_SOCK_TIMEOUT) requires (family == family::ipv6) {
 		Addrin6 addr;
 		return accept(addr, timeout);
 	}
 	constexpr
     Int accept(
 		Addrin6& 		addr,
-		const Int& 		timeout = -1	// the timeout.
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT	// the timeout.
 	) requires (family == family::ipv6) {
-        set_sigpipe_action();
 		int status;
 		poll(m_fd, POLLIN, POLLIN, timeout);
 		addr = {};
@@ -966,8 +990,8 @@ public:
     
     // Info with return type.
     static inline
-    Connection     info(const Int& fd) {
-        Connection i { .fd = fd };
+	Info     info(const Int& fd) {
+		Info i { .fd = fd };
         info(i.ip, i.port, fd);
         return i;
     }
@@ -1003,12 +1027,9 @@ public:
 	ullong  recv(
 		String& 		received,
 		const Int& 		fd,
-		const Int& 		timeout = -1,
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT,
 		const Int& 		flags = 0
 	) {
-        
-        // Set sigaction.
-        set_sigpipe_action();
         
         // Poll.
 		poll(fd, POLLIN, POLLIN, timeout);
@@ -1035,7 +1056,7 @@ public:
     template <int l_buff_len = buff_len, typename... Air> SICE
     String  recv(
         const Int&         fd,
-        const Int&         timeout = -1,
+        const Int&         timeout = VLIB_SOCK_TIMEOUT,
         const Int&         flags = 0
     ) {
         String received;
@@ -1048,7 +1069,7 @@ public:
     // void    recv(
     //     http::Request&     received,
     //     const Int&         fd,
-    //     const Int&         timeout = -1,
+    //     const Int&         timeout = VLIB_SOCK_TIMEOUT,
     //     const Int&         flags = 0
     // ) {
     //     String data;
@@ -1064,9 +1085,6 @@ public:
         const Int& fd,
         const Int& timeout
     ) {
-        
-        // Set sigaction.
-        set_sigpipe_action();
         
         // Vars.
         String received, header;
@@ -1180,7 +1198,7 @@ public:
 	ullong	send(
 		const Int& 		fd,
 		const String& 	data,
-		const Int& 		timeout = -1,
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT,
 		const Int& 		flags = 0
 	) {
         return send(fd, data.data(), data.len(), timeout, flags);
@@ -1193,7 +1211,6 @@ public:
         const Int          timeout,
         const Int          flags = 0
     ) {
-        set_sigpipe_action();
         ullong full_sent = 0;
         llong status = 0, attempts = 0;
         while (full_sent < len) {
@@ -1227,7 +1244,7 @@ public:
     ullong  send(
         const Int&              fd,
         const http::Response&   data,
-        const Int&              timeout = -1,
+        const Int&              timeout = VLIB_SOCK_TIMEOUT,
         const Int&              flags = 0
     ) {
         String& x = data.data();
@@ -1236,7 +1253,7 @@ public:
     constexpr
     ullong  send(
         const http::Response&   data,
-        const Int&              timeout = -1,
+        const Int&              timeout = VLIB_SOCK_TIMEOUT,
         const Int&              flags = 0
     ) {
         String& x = data.data();
@@ -1250,12 +1267,9 @@ public:
     ullong  send_chunked(
         const Int&              fd,
         const http::Response&   response,
-        const Int&              timeout = -1,
+        const Int&              timeout = VLIB_SOCK_TIMEOUT,
         const Int&              flags = 0
     ) {
-        
-        // Set sigaction.
-        set_sigpipe_action();
         
         // Vars.
         String& data = response.data();

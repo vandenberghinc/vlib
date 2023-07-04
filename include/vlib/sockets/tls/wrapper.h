@@ -183,7 +183,7 @@ struct wrapper {
 	void 	receive(
 		String& 		received,
 		SSL*& 		    ssl,
-		int 			timeout = -1,
+		int 			timeout = VLIB_SOCK_TIMEOUT,
 		int 			buff_len = 1024
 	) {
 
@@ -288,7 +288,7 @@ struct wrapper {
     ullong  send(
 		SSL*& 			ssl,
 		const String& 	data,
-		int 		timeout = -1
+		int 		timeout = VLIB_SOCK_TIMEOUT
 	) {
 		return send(ssl, data.data(), (uint) data.len(), timeout);
 	}
@@ -305,39 +305,39 @@ struct wrapper {
         Socket<>::set_blocking(fd, false);
         
         // Shut down.
-        // try {
-        //     SSL_shutdown(ssl);
-        // } catch (BrokenPipeError&) {}
-        int status, attempts = 0;
-        bool active = true;
-        llong end_time = Date::get_mseconds() + timeout.value();
-        while (active) {
-            if (timeout != -1 && Date::get_mseconds() >= end_time) {
-                throw TimeoutError("Operation timed out.");
-            }
-            switch (status = SSL_shutdown(ssl)) {
-                case 0:
-                    vlib::sleep::msec(10);
-                    continue;
-                case 1:
-                    active = false;
-                    break;
-                default:
-                    if (errno == EAGAIN) {
-                        continue;
-                    }
-                    if (attempts < 3) {
-                        ++attempts;
-                        continue;
-                    }
-                    print(tostr("Shut down error [", status, "] [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
-                    throw CloseError(tostr("Shut down error [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
-                    break;
-            }
-        }
-        if (active) {
-            throw CloseError("Failed to close the socket.");
-        }
+        try {
+            SSL_shutdown(ssl);
+        } catch (BrokenPipeError&) {}
+        // int status, attempts = 0;
+        // bool active = true;
+        // llong end_time = Date::get_mseconds() + timeout.value();
+        // while (active) {
+        //     if (timeout != -1 && Date::get_mseconds() >= end_time) {
+        //         throw TimeoutError("Operation timed out.");
+        //     }
+        //     switch (status = SSL_shutdown(ssl)) {
+        //         case 0:
+        //             vlib::sleep::msec(10);
+        //             continue;
+        //         case 1:
+        //             active = false;
+        //             break;
+        //         default:
+        //             if (errno == EAGAIN) {
+        //                 continue;
+        //             }
+        //             if (attempts < 3) {
+        //                 ++attempts;
+        //                 continue;
+        //             }
+        //             print(tostr("Shut down error [", status, "] [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+        //             throw CloseError(tostr("Shut down error [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+        //             break;
+        //     }
+        // }
+        // if (active) {
+        //     throw CloseError("Failed to close the socket.");
+        // }
         
         // Free.
         SSL_free(ssl);
@@ -406,11 +406,23 @@ struct wrapper {
     // Get error.
     static inline
     String  get_err(SSL*& ssl, int ret) {
-        int err_code = SSL_get_error(ssl, ret);
-        String err;
-        err.resize(256);
-        ERR_error_string_n(err_code, err.data(), 256);
-        err.len() = vlib::len(err.data());
+		ulong e;
+		String err;
+		err.resize(1024);
+		if ((e = ERR_get_error()) != 0) {
+			ERR_error_string_n(e, err.data(), err.capacity());
+			err.len() = vlib::len(err.data());
+			err.concat_r(", fatal: ", 9);
+			err << (ERR_FATAL_ERROR(e) == 1);
+		}
+		return err;
+		
+		
+        // int err_code = SSL_get_error(ssl, ret);
+        // String err;
+        // err.resize(256);
+        // ERR_error_string_n(err_code, err.data(), 256);
+        // err.len() = vlib::len(err.data());
         
         // const char* err_lib = ERR_lib_error_string(ERR_GET_LIB(err_code));
         // // const char* err_func = ERR_func_error_string(ERR_GET_FUNC(err_code));
@@ -431,9 +443,9 @@ struct wrapper {
 	static inline
 	auto& 	debug(String& data) {
 		ulong e;
-		char* buff = new char [256];
+		char* buff = new char [1024];
 		while ((e = ERR_get_error()) != 0) {
-			ERR_error_string_n(e, buff, 256);
+			ERR_error_string_n(e, buff, sizeof(buff));
 			data << buff;
 			data.concat_r(" [fatal: ", 9);
 			data << (ERR_FATAL_ERROR(e) == 1);
@@ -445,9 +457,9 @@ struct wrapper {
 	static inline
 	void 	debug() {
 		ulong e;
-		char* buff = new char [256];
+		char* buff = new char [1024];
 		while ((e = ERR_get_error()) != 0) {
-			ERR_error_string_n(e, buff, 256);
+			ERR_error_string_n(e, buff, sizeof(buff));
 			vlib::out << buff;
 			vlib::out.dump(" [fatal: ", 9);
 			vlib::out << (ERR_FATAL_ERROR(e) == 1);
@@ -457,8 +469,8 @@ struct wrapper {
 	}
 	static inline
 	void 	debug(ulong e) {
-		char* buff = new char [256];
-		ERR_error_string_n(e, buff, 256);
+		char* buff = new char [1024];
+		ERR_error_string_n(e, buff, sizeof(buff));
 		vlib::out << buff;
 		vlib::out.dump(" [fatal: ", 9);
 		vlib::out << (ERR_FATAL_ERROR(e) == 1);

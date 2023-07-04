@@ -482,8 +482,7 @@ template<> 				struct is_CString<CString> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using CString =		vlib::CString;
 

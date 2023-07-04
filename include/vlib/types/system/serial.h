@@ -17,6 +17,11 @@
 #include <errno.h>
 #include <string.h>
 
+// Default serial timeout.
+#ifndef VLIB_SERIAL_TIMEOUT
+#define VLIB_SERIAL_TIMEOUT 900000 // 15 minutes in milliseconds.
+#endif
+
 // Namespace vlib.
 namespace vlib {
 
@@ -136,7 +141,7 @@ struct Serial {
 	
 	// Read.
 	template <uint BuffLen = 128, typename... Air> constexpr
-	void	read(String& data, const Int& timeout = -1) {
+	void	read(String& data, const Int& timeout = VLIB_SERIAL_TIMEOUT) {
 		
 		// Check open.
 		switch (fd.value()) {
@@ -214,7 +219,7 @@ struct Serial {
 		
 	}
 	template <uint BuffLen = 128, typename... Air> constexpr
-	String	read(const Int& timeout = -1) {
+	String	read(const Int& timeout = VLIB_SERIAL_TIMEOUT) {
 		String data;
 		read(data, timeout);
 		return data;
@@ -231,7 +236,7 @@ struct Serial {
 	}
 	
 	// Write.
-	void	write(const String& data, const Int& timeout = -1) {
+	void	write(const String& data, const Int& timeout = VLIB_SERIAL_TIMEOUT) {
 		
 		// Check open.
 		switch (fd.value()) {
@@ -276,7 +281,7 @@ struct Serial {
 		const Int&		fd,
 		const Short&	events,
 		const Short&	revents,
-		const Int&		timeout = -1
+		const Int&		timeout = VLIB_SERIAL_TIMEOUT
 	) {
 		struct pollfd pfd {fd.value(), events.value(), 0};
 		switch (::poll(&pfd, 1, timeout.value())) {

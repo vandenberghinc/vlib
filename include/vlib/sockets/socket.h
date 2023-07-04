@@ -1,6 +1,11 @@
 // Author: Daan van den Bergh
 // Copyright: © 2022 Daan van den Bergh.
 
+// Default socket timeout.
+#ifndef VLIB_SOCK_TIMEOUT
+#define VLIB_SOCK_TIMEOUT 900000 // 15 minutes in milliseconds.
+#endif
+
 // Includes.
 #include <sys/types.h>
 #include <sys/socket.h>

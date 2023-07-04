@@ -71,7 +71,7 @@ auto& tostr(short version) {
 }; 		// End namespace http.
 
 // Shortcuts.
-namespace shortcuts { namespace http {
+namespace http { namespace shortcuts {
 using version_t =		vlib::http::version_t;
 };};
 

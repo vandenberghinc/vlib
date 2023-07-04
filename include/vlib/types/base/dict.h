@@ -8,85 +8,6 @@
 // Namespace vlib.
 namespace vlib {
 
-// Pair type.
-// - Used for initializations and iterations.
-template <typename Key, typename Value>
-class Pair {
-public:
-
-	// ---------------------------------------------------------
-	// Aliases.
-
-	using 		This = Pair;
-    using       value_type = Value;
-
-	// ---------------------------------------------------------
-	// Attributes.
-
-	Key 		m_key;
-	Value 		m_value;
-
-	// ---------------------------------------------------------
-	// Constructors.
-
-	// Default constructor.
-	constexpr
-	Pair	() {}
-
-	// Constructor.
-	constexpr
-	Pair	(const Key& key, const Value& value) : m_key(key), m_value(value) {}
-	constexpr
-	Pair	(Key&& key, const Value& value) : m_key(key), m_value(value) {}
-	constexpr
-	Pair	(const Key& key, Value&& value) : m_key(key), m_value(value) {}
-	constexpr
-	Pair	(Key&& key, Value&& value) : m_key(key), m_value(value) {}
-
-	// Copy constructor.
-	constexpr
-	Pair	(const This& obj) :
-	m_key(obj.m_key),
-	m_value(obj.m_value) {}
-
-	// Move constructor.
-	constexpr
-	Pair	(This&& obj) :
-	m_key(move(obj.m_key)),
-	m_value(move(obj.m_value)) {}
-
-	// ---------------------------------------------------------
-	// Operators.
-
-	// Copy assignment operator.
-	constexpr
-	auto& 	operator =(const This& obj) {
-		m_key = obj.m_key;
-		m_value = obj.m_value;
-		return *this;
-	}
-
-	// Move assignment operator.
-	constexpr
-	auto& 	operator =(This&& obj) {
-		m_key = move(obj.m_key);
-		m_value = move(obj.m_value);
-		return *this;
-	}
-
-	// Equals.
-	constexpr friend
-	auto 	operator ==(const This& obj, const This& x) {
-		return obj.m_key == x.m_key && obj.m_value == x.m_value;
-	}
-	constexpr friend
-	auto 	operator !=(const This& obj, const This& x) {
-		return obj.m_key != x.m_key || obj.m_value != x.m_value;
-	}
-
-	//
-};
-
 // Dict requires clause.
 #define VLIB_DICT_REQUIRES_CLAUSE requires ( \
 (!is_CString<Key>::value && !is_CString<Value>::value) && \
@@ -1313,11 +1234,11 @@ struct Dict {
 		ullong len;
 		switch (vlib::load(path, data, len)) {
 		case file::error::open:
-			throw OpenError(String() << "Unable to open file \"" << path << "\".");
+			throw OpenError(String() << "Unable to open file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::read:
-			throw ReadError(String() << "Unable to open file \"" << path << "\".");
+			throw ReadError(String() << "Unable to read file \"" << path << "\" [" << ::strerror(errno) << "].");
 		case file::error::write:
-			throw WriteError(String() << "Unable to open file \"" << path << "\".");
+			throw WriteError(String() << "Unable to write to file \"" << path << "\" [" << ::strerror(errno) << "].");
 		}
 		if (len > 0 && data[len - 1] == '\n') {
 			--len;
@@ -1806,8 +1727,7 @@ struct is_Dict<Dict<Key, Value, Length, Status>> 	{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Key, typename Value>
 using Pair =        vlib::Pair<Key, Value>;

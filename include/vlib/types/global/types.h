@@ -308,8 +308,7 @@ template<> 							struct is_instance<Shared, Shared> 					{ SICEBOOL value = tru
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using uchar = vlib::uchar;
 using ushort = vlib::ushort;

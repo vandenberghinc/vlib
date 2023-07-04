@@ -103,8 +103,7 @@ public:
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 template <typename Type>
 using SharedMemory =        vlib::SharedMemory<Type>;

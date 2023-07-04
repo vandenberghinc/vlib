@@ -286,28 +286,25 @@ public:
 	}
 	
 	// Receive.
-	String  recv(const Int& timeout = -1) {
-        m_attr->sock.set_sigpipe_action();
+	String  recv(const Int& timeout = VLIB_SOCK_TIMEOUT) {
         String received;
 		wrapper::receive(received, m_attr->ssl, timeout.value(), buff_len);
         return received;
 	}
-    void     recv(String& received, const Int& timeout = -1) {
-        m_attr->sock.set_sigpipe_action();
+    void     recv(String& received, const Int& timeout = VLIB_SOCK_TIMEOUT) {
         wrapper::receive(received, m_attr->ssl, timeout.value(), buff_len);
     }
 
 	// Send.
 	void 	send(
 		const String&	data,
-		const Int& 		timeout = -1
+		const Int& 		timeout = VLIB_SOCK_TIMEOUT
 	) {
-        m_attr->sock.set_sigpipe_action();
 		wrapper::send(m_attr->ssl, data.data(), data.len(), timeout.value());
 	}
 	void 	send(
 		const http::Request&	request,
-		const Int& 				timeout = -1
+		const Int& 				timeout = VLIB_SOCK_TIMEOUT
 	) {
 		send(request.data(), timeout);
 	}
@@ -316,17 +313,16 @@ public:
 		uint 			len,
 		Int      		timeout
 	) {
-        m_attr->sock.set_sigpipe_action();
 		wrapper::send(m_attr->ssl, data, len, timeout.value());
 	}
     
     // Poll receive.
-    void    poll_recv(const Int& timeout = -1) {
+    void    poll_recv(const Int& timeout = VLIB_SOCK_TIMEOUT) {
         m_attr->sock.poll_recv(m_attr->sock.fd(), timeout);
     }
     
     // Poll send.
-    void    poll_send(const Int& timeout = -1) {
+    void    poll_send(const Int& timeout = VLIB_SOCK_TIMEOUT) {
         m_attr->sock.poll_send(m_attr->sock.fd(), timeout);
     }
 
@@ -351,10 +347,6 @@ public:
         //         m_attr->sock.connect();
         //     }
         // }
-        
-        
-        // Set sigaction.
-        m_attr->sock.set_sigpipe_action();
         
         
         // Verify socket connection

@@ -208,8 +208,7 @@ template<> 				struct is_Logger<Logger> 			{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using Logger =		vlib::Logger;
 

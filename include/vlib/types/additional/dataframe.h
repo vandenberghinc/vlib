@@ -5910,8 +5910,7 @@ template<> 				struct is_DataFrame<DataFrame> 				{ SICEBOOL value = true;  };
 // ---------------------------------------------------------
 // Shortcuts.
 
-namespace shortcuts {
-namespace types {
+namespace types { namespace shortcuts {
 
 using DataFrame = vlib::DataFrame;
 
