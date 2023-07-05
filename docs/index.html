@@ -67,7 +67,33 @@
 		/* Colors */
 		:root {
 			
-			/* Dark theme. */
+			/* Font */
+			--font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+			--font-icon: Montserrat, sans-serif;
+			--font-code: 'Menlo', 'Consolas', monospace;
+			/* font-family: "Avenir", sans-serif; */
+			/* font-family: "Helvetica", sans-serif; */
+			/* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif; */
+			/* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif; */
+			
+			/* Gradients. */
+			--gradient-1: linear-gradient(10deg, #C03558 0%, #E8454E 20%, #DC44AD 50%);
+			
+			/* Syntax highlighting */
+			--color-token-comment: #818C97;
+			--color-token-url: #818C97;
+			--color-token-char: #D6C986;
+			--color-token-string: #D6C986;
+			--color-token-numeric: #D6C986;
+			--color-token-bool: #EE8378;
+			--color-token-keyword: #EE8378;
+			--color-token-type-def: #C78BF0;
+			--color-token-type: #5795F3;
+             
+		}
+		
+		/* Dark theme. */
+		body.dark_theme {
 			--red: #BA2D20;
 			--purple: #C78BF0;
 			--orange: #E0887C;
@@ -85,28 +111,13 @@
 			--color-code-block-text: #FFFFFF;
 			--color-code-text: #FFFFFF;
 			--color-codefont-bg: transparent;
-			
-			/* Other vars. */
-			--gradient-1: linear-gradient(10deg, #C03558 0%, #E8454E 20%, #DC44AD 50%);
-			
-			/* Syntax highlighting */
-			--color-token-comment: #818C97;
-			--color-token-url: #818C97;
-			--color-token-char: #D6C986;
-			--color-token-string: #D6C986;
-			--color-token-numeric: #D6C986;
-			--color-token-bool: #EE8378;
-			--color-token-keyword: #EE8378;
-			--color-token-type-def: #C78BF0;
-			--color-token-type: #5795F3;
-             
+			--menu-button-src: https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/menu.white.png;
+			--arrow-button-src: https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png;
 		}
 		
-		/* Body light theme. */
+		/* Light theme. */
 		body.light_theme {
-			/* White theme.
-			Inspo https://doc.libsodium.org/advanced/stream_ciphers/chacha20
-			*/
+			/* Inspo https://doc.libsodium.org/advanced/stream_ciphers/chacha20 */
 			--red: #BA2D20;
 			--purple: #694F85;
 			--orange: #EA8615;
@@ -124,16 +135,14 @@
 			--color-code-block-text: #FFFFFF;
 			--color-code-text: #3D454D;
 			--color-codefont-bg: transparent;
+			--menu-button-src: https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/menu.black.png;
+			--arrow-button-src: https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.grey.png;
 		}
 		
 		/* root content. */
 		.root {
 			background: var(--color-bg);
-			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-			/* font-family: "Avenir", sans-serif; */
-			/* font-family: "Helvetica", sans-serif; */
-			/* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif; */
-			/* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif; */
+			font-family: var(--font);
 			position: absolute;
 			top: 0px;
 			left: 0px;
@@ -205,7 +214,7 @@
 		
 		/* Code classes */
 		.codefont, .code, .codeblock {
-			font-family: 'Menlo', 'Consolas', monospace;
+			font-family: var(--font-code);
 			color: var(--color-dark-text);
 			background: var(--color-codefont-bg);
 		}
@@ -311,6 +320,8 @@
 			/* text-transform: uppercase; */
 			overflow-wrap: break-word;
 			scroll-margin-top: 100px;
+			flex: 1;
+			margin: 0px;
 		}
 		.sidebar_title, .sidebar_subtitle {
 			color: var(--color-light-text);
@@ -334,6 +345,25 @@
 		}
 		.sidebar_hover {
 			color: var(--color-dark-text);
+		}
+		.sidebar_arrow_container { /* also used for getElementsByClassName. */
+			margin-right: 15px;
+			margin-top: 5px;
+			-moz-transform: rotate(0deg);
+			-webkit-transform: rotate(0deg);
+			transform: rotate(0deg);
+			transform-origin: center center;
+		}
+		.sidebar_arrow_container.rotated { /* also used for getElementsByClassName. */
+			-moz-transform: rotate(90deg);
+			-webkit-transform: rotate(90deg);
+			transform: rotate(90deg);
+			transform-origin: center center;
+			margin-right: 21px;
+			margin-top: 5px;
+		}
+		.sidebar_arrow { /* also used for getElementsByClassName. */
+			margin: 0px;
 		}
 		
 		/* content */
@@ -475,23 +505,18 @@
 	<script type='text/javascript'>
 		
 		// Vars.
-		let chapters = []; 				// array with all chapter ids.
-		let chapter_parents = {}; 		// the sidebar chapters {sidebar_title_id: chapter_id} also includes subtitles.
-		let titles = []; 				// the sidebar title ids [sidebar_chapter_id].
-		let titles_and_subtitles = []; 	// the sidebar title & subtitle ids [sidebar_chapter_id].
-		let subtitle_parents = {}; 		// the title parent of each sidebar title child {child_title_id: title_id}.
-		let content_ids = []; 			// all content ids of the parents.
-		let selected_title = ''; 		// the selected sidebar title / subtitle.
-        let selected_content = ''; 		// the selected title content.
-		// var sidebar_open = true; 	// sidebar open or closed for mobile devices.
-		let cached_elements = {};		// cached elements.
-		
-		// CSS transform wrapper.
-		function transform(element, value) {
-			element.style.transform = value;
-			element.style["-moz-transform"] = value;
-			element.style["-webkit-transform"] = value;
-		}
+		let chapters = []; 					// array with all chapter ids.
+		let chapter_parents = {}; 			// the sidebar chapters {sidebar_title_id: chapter_id} also includes subtitles.
+		let titles = []; 					// the sidebar title ids [sidebar_chapter_id].
+		let titles_and_subtitles = []; 		// the sidebar title & subtitle ids [sidebar_chapter_id].
+		let subtitle_parents = {}; 			// the title parent of each sidebar title child {child_title_id: title_id}.
+		let content_ids = []; 				// all content ids of the parents.
+		let selected_title = ''; 			// the selected sidebar title / subtitle.
+        let selected_content = ''; 			// the selected title content.
+		// var sidebar_open = true; 		// sidebar open or closed for mobile devices.
+		let cached_elements = {};			// cached elements.
+		let theme = null;					// the current theme.
+		let default_theme = "dark_theme";	// the current theme.
 		
 		// Get element wrapper.
 		function get_element(id) {
@@ -599,7 +624,7 @@
 						let children = get_element('sidebar_chapter.' + i_id);
 						if (children.getAttribute("hidden") == "false") {
 							var arrow = get_element('sidebar_chapter_arrow.' + i_id);
-							transform(arrow, 'rotate(0deg)');
+							arrow.classList.remove('rotated');
 							children.style.display = 'none';
 							children.setAttribute('hidden', 'true');
 						}
@@ -612,22 +637,22 @@
 			var arrow = get_element('sidebar_chapter_arrow.' + id);
 			var children = get_element('sidebar_chapter.' + id);
 			if (show == true) {
-				transform(arrow, 'rotate(90deg)');
+				arrow.classList.add('rotated');
 				children.style.display = 'block';
 				children.setAttribute('hidden', 'false');
 			} else if (show == false) {
-				transform(arrow, 'rotate(0deg)');
+				arrow.classList.remove('rotated');
 				children.style.display = 'none';
 				children.setAttribute('hidden', 'true');
 			} else {
 				var hidden = children.getAttribute('hidden');
 				if (hidden == 'true') {
-					transform(arrow, 'rotate(90deg)');
+					arrow.classList.add('rotated');
 					children.style.display = 'block';
 					children.setAttribute('hidden', 'false');
 				} else {
                     if (arrow != null) {
-						transform(arrow, 'rotate(0deg)');
+						arrow.classList.remove('rotated');
                     }
 					children.style.display = 'none';
 					children.setAttribute('hidden', 'true');
@@ -835,7 +860,7 @@
                     
                     // Rotate arrow.
                     e = get_element("sidebar_chapter_arrow." + chapter_parents[id]);
-					transform(e, 'rotate(90deg)');
+					arrow.classList.add('rotated');
                     
                 }
             });
@@ -859,35 +884,57 @@
 		}
 		
 		// Toggle color theme.
-		function toggle_color_theme(to = null) {
+		// Leave to_theme null to toggle between light and dark theme.
+		function toggle_color_theme(to_theme = null) {
+			
+			// Already current theme.
+			if (to_theme == theme) { return ; }
 			
 			// Toggle the dark-mode class on the <body> element
-			document.body.classList.toggle('light_theme');
-			
-			// Enabled.
-			if (document.body.classList.contains('light_theme')) {
-				// get_element("switch_color_theme_child").style.background = "var(--color-dark-text)";
-				localStorage.setItem('vdocs-color-theme', 'light_theme');
+			if (to_theme == null) {
+				if (theme == null) {
+					document.body.classList.add(default_theme);
+					theme = default_theme;
+				} if (theme == "dark_theme") {
+					document.body.classList.remove(theme);
+					document.body.classList.add("light_theme");
+					theme = "light_theme";
+				} else {
+					document.body.classList.remove(theme);
+					document.body.classList.add("dark_theme");
+					theme = "dark_theme";
+				}
+				
+			// Set to.
+			} else {
+				document.body.classList.remove(theme);
+				document.body.classList.add(to_theme);
+				theme = to_theme;
 			}
 			
-			// Disabled.
-			else {
-				// get_element("switch_color_theme_child").style.background = "var(--gradient-1)";
-				localStorage.setItem('vdocs-color-theme', 'dark_theme');
+			// Save.
+			localStorage.setItem('vdocs-color-theme', theme);
+			
+			// Get computed style of body.
+			const computed_style = getComputedStyle(document.body);
+			
+			// Set menu button.
+			get_element("menu_button").src = computed_style.getPropertyValue("--menu-button-src");
+			
+			// Set arrow buttons.
+			let elements = document.getElementsByClassName("sidebar_arrow");
+			const arrow_src = computed_style.getPropertyValue("--arrow-button-src");
+			console.log(arrow_src);
+			for (let i = 0; i < elements.length; i++) {
+				console.log(i);
+				elements[i].src = arrow_src;
 			}
 			
 		}
 		
 		// Initialize the color scheme from previously stored preferences.
 		function initialize_color_theme() {
-			var preferredColorScheme = localStorage.getItem('vdocs-color-theme');
-			if (preferredColorScheme === 'dark_theme') {
-				// get_element("switch_color_theme_child").style.background = "var(--gradient-1)";
-				document.body.classList.remove('light_theme');
-			} else if (preferredColorScheme === 'light_theme') {
-				// get_element("switch_color_theme_child").style.background = "var(--color-dark-text)";
-				document.body.classList.add('light_theme');
-			}
+			toggle_color_theme(localStorage.getItem('vdocs-color-theme'));
 		}
 		
 		// Content loaded event.
@@ -984,7 +1031,7 @@
 						<div style='margin-top: 10px; padding: 0px 10px 1px 10px; width: 100%; display: flex;'>
 							<div id="previous" style='display: flex; cursor: pointer;' onclick=''>
 								<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.png' alt='VLib' style='width: 22.5px; height: 22.5px; margin-top: 9px;'>
-								<h1 class="sidebar_chapter gradient_text" style='font-family: Montserrat, sans-serif; font-weight: 700; letter-spacing: 0.50px; text-transform: uppercase; font-size: 20px; padding: 0px; margin-top: 12.5px; margin-left: 10px; padding: 0px;r'>
+								<h1 class="sidebar_chapter gradient_text" style='font-family: var(--font-icon); font-weight: 700; letter-spacing: 0.50px; text-transform: uppercase; font-size: 20px; padding: 0px; margin-top: 12.5px; margin-left: 10px; padding: 0px;r'>
 									VLib
 								</h1>
 							</div>
@@ -1046,7 +1093,7 @@
 <div style='clear: both;'><div id='sidebar.Introduction' class='sidebar_title' onclick='click_sidebar_title("Introduction");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#Introduction' style='display:block;'>Introduction</a></div><script type='text/javascript'>	chapter_parents['Introduction'] = 'NO_CHAPTER';	titles.push('Introduction');   titles_and_subtitles.push('Introduction');   content_ids.push('Introduction');</script>
 </div>
 </div>
-<div id='sidebar_chapter_name.global' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.global' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Global</div>		<div id='sidebar_chapter_arrow.global' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.global' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.global' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Global</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.global'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='global' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.global' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('global');</script>
 <div style='clear: both;'><div id='sidebar.vlib::limits' class='sidebar_title' onclick='click_sidebar_title("vlib::limits");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::limits' style='display:block;'>Limits</a></div><script type='text/javascript'>	chapter_parents['vlib::limits'] = 'global';	titles.push('vlib::limits');   titles_and_subtitles.push('vlib::limits');   content_ids.push('vlib::limits');</script>
 </div>
@@ -1081,7 +1128,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.casts' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.casts' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Casts</div>		<div id='sidebar_chapter_arrow.casts' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.casts' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.casts' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Casts</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.casts'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='casts' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.casts' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('casts');</script>
 <div style='clear: both;'><div id='sidebar.vlib::tobool' class='sidebar_title' onclick='click_sidebar_title("vlib::tobool");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::tobool' style='display:block;'>To bool</a></div><script type='text/javascript'>	chapter_parents['vlib::tobool'] = 'casts';	titles.push('vlib::tobool');   titles_and_subtitles.push('vlib::tobool');   content_ids.push('vlib::tobool');</script>
 </div>
@@ -1092,7 +1139,7 @@
 <div style='clear: both;'><div id='sidebar.tostr' class='sidebar_title' onclick='click_sidebar_title("tostr");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#tostr' style='display:block;'>To string</a></div><script type='text/javascript'>	chapter_parents['tostr'] = 'casts';	titles.push('tostr');   titles_and_subtitles.push('tostr');   content_ids.push('tostr');</script>
 </div>
 </div>
-<div id='sidebar_chapter_name.exceptions' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.exceptions' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Exceptions</div>		<div id='sidebar_chapter_arrow.exceptions' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.exceptions' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.exceptions' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Exceptions</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.exceptions'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='exceptions' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.exceptions' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('exceptions');</script>
 <div style='clear: both;'><div id='sidebar.vlib::Loc' class='sidebar_title' onclick='click_sidebar_title("vlib::Loc");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::Loc' style='display:block;'>Location</a></div><script type='text/javascript'>	chapter_parents['vlib::Loc'] = 'exceptions';	titles.push('vlib::Loc');   titles_and_subtitles.push('vlib::Loc');   content_ids.push('vlib::Loc');</script>
 <div id='sidebar_children.vlib::Loc' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -1113,7 +1160,7 @@
 <div style='clear: both;'><div id='sidebar.vlib::Exception' class='sidebar_title' onclick='click_sidebar_title("vlib::Exception");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::Exception' style='display:block;'>Exception</a></div><script type='text/javascript'>	chapter_parents['vlib::Exception'] = 'exceptions';	titles.push('vlib::Exception');   titles_and_subtitles.push('vlib::Exception');   content_ids.push('vlib::Exception');</script>
 </div>
 </div>
-<div id='sidebar_chapter_name.types' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.types' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Types</div>		<div id='sidebar_chapter_arrow.types' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.types' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.types' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Types</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.types'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='types' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.types' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('types');</script>
 <div style='clear: both;'><div id='sidebar.vlib::Pipe' class='sidebar_title' onclick='click_sidebar_title("vlib::Pipe");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::Pipe' style='display:block;'>Pipe</a></div><script type='text/javascript'>	chapter_parents['vlib::Pipe'] = 'types';	titles.push('vlib::Pipe');   titles_and_subtitles.push('vlib::Pipe');   content_ids.push('vlib::Pipe');</script>
 <div id='sidebar_children.vlib::Pipe' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -1984,7 +2031,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.system' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.system' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>System</div>		<div id='sidebar_chapter_arrow.system' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.system' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.system' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>System</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.system'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='system' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.system' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('system');</script>
 <div style='clear: both;'><div id='sidebar.vlib::env' class='sidebar_title' onclick='click_sidebar_title("vlib::env");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::env' style='display:block;'>Environment</a></div><script type='text/javascript'>	chapter_parents['vlib::env'] = 'system';	titles.push('vlib::env');   titles_and_subtitles.push('vlib::env');   content_ids.push('vlib::env');</script>
 <div id='sidebar_children.vlib::env' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -2863,7 +2910,7 @@
 <div style='clear: both;'><div id='sidebar.vlib::compile' class='sidebar_title' onclick='click_sidebar_title("vlib::compile");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::compile' style='display:block;'>Compile</a></div><script type='text/javascript'>	chapter_parents['vlib::compile'] = 'system';	titles.push('vlib::compile');   titles_and_subtitles.push('vlib::compile');   content_ids.push('vlib::compile');</script>
 </div>
 </div>
-<div id='sidebar_chapter_name.cli' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.cli' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Cli</div>		<div id='sidebar_chapter_arrow.cli' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.cli' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.cli' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Cli</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.cli'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='cli' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.cli' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('cli');</script>
 <div style='clear: both;'><div id='sidebar.vlib::CLI' class='sidebar_title' onclick='click_sidebar_title("vlib::CLI");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::CLI' style='display:block;'>CLI</a></div><script type='text/javascript'>	chapter_parents['vlib::CLI'] = 'cli';	titles.push('vlib::CLI');   titles_and_subtitles.push('vlib::CLI');   content_ids.push('vlib::CLI');</script>
 <div id='sidebar_children.vlib::CLI' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -2878,7 +2925,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.compression' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.compression' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Compression</div>		<div id='sidebar_chapter_arrow.compression' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.compression' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.compression' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Compression</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.compression'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='compression' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.compression' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('compression');</script>
 <div style='clear: both;'><div id='sidebar.vlib::compression::levels' class='sidebar_title' onclick='click_sidebar_title("vlib::compression::levels");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::compression::levels' style='display:block;'>Levels</a></div><script type='text/javascript'>	chapter_parents['vlib::compression::levels'] = 'compression';	titles.push('vlib::compression::levels');   titles_and_subtitles.push('vlib::compression::levels');   content_ids.push('vlib::compression::levels');</script>
 </div>
@@ -2939,7 +2986,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.crypto' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.crypto' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Crypto</div>		<div id='sidebar_chapter_arrow.crypto' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.crypto' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.crypto' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Crypto</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.crypto'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='crypto' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.crypto' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('crypto');</script>
 <div style='clear: both;'><div id='sidebar.vlib::crypto::mode::modes' class='sidebar_title' onclick='click_sidebar_title("vlib::crypto::mode::modes");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::crypto::mode::modes' style='display:block;'>Modes</a></div><script type='text/javascript'>	chapter_parents['vlib::crypto::mode::modes'] = 'crypto';	titles.push('vlib::crypto::mode::modes');   titles_and_subtitles.push('vlib::crypto::mode::modes');   content_ids.push('vlib::crypto::mode::modes');</script>
 </div>
@@ -3000,12 +3047,12 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.Errors' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.Errors' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Errors</div>		<div id='sidebar_chapter_arrow.Errors' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.Errors' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.Errors' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Errors</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.Errors'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='Errors' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.Errors' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('Errors');</script>
 <div style='clear: both;'><div id='sidebar.vlib::strerr' class='sidebar_title' onclick='click_sidebar_title("vlib::strerr");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::strerr' style='display:block;'>String error</a></div><script type='text/javascript'>	chapter_parents['vlib::strerr'] = 'Errors';	titles.push('vlib::strerr');   titles_and_subtitles.push('vlib::strerr');   content_ids.push('vlib::strerr');</script>
 </div>
 </div>
-<div id='sidebar_chapter_name.Encoding' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.Encoding' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>Encoding</div>		<div id='sidebar_chapter_arrow.Encoding' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.Encoding' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.Encoding' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Encoding</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.Encoding'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='Encoding' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.Encoding' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('Encoding');</script>
 <div style='clear: both;'><div id='sidebar.vlib::Hex' class='sidebar_title' onclick='click_sidebar_title("vlib::Hex");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::Hex' style='display:block;'>Hex</a></div><script type='text/javascript'>	chapter_parents['vlib::Hex'] = 'Encoding';	titles.push('vlib::Hex');   titles_and_subtitles.push('vlib::Hex');   content_ids.push('vlib::Hex');</script>
 <div id='sidebar_children.vlib::Hex' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -3028,7 +3075,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.HTTP' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.HTTP' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>HTTP</div>		<div id='sidebar_chapter_arrow.HTTP' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.HTTP' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.HTTP' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>HTTP</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.HTTP'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='HTTP' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.HTTP' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('HTTP');</script>
 <div style='clear: both;'><div id='sidebar.vlib::http::content_type::content_types' class='sidebar_title' onclick='click_sidebar_title("vlib::http::content_type::content_types");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::http::content_type::content_types' style='display:block;'>Content types</a></div><script type='text/javascript'>	chapter_parents['vlib::http::content_type::content_types'] = 'HTTP';	titles.push('vlib::http::content_type::content_types');   titles_and_subtitles.push('vlib::http::content_type::content_types');   content_ids.push('vlib::http::content_type::content_types');</script>
 </div>
@@ -3187,7 +3234,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.HTTPS' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.HTTPS' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>HTTPS</div>		<div id='sidebar_chapter_arrow.HTTPS' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.HTTPS' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.HTTPS' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>HTTPS</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.HTTPS'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='HTTPS' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.HTTPS' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('HTTPS');</script>
 <div style='clear: both;'><div id='sidebar.vlib::https::Client' class='sidebar_title' onclick='click_sidebar_title("vlib::https::Client");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::https::Client' style='display:block;'>Client</a></div><script type='text/javascript'>	chapter_parents['vlib::https::Client'] = 'HTTPS';	titles.push('vlib::https::Client');   titles_and_subtitles.push('vlib::https::Client');   content_ids.push('vlib::https::Client');</script>
 <div id='sidebar_children.vlib::https::Client' style='display: none; width: 100%; height: 100%; scroll-behavior: instant;'>
@@ -3214,7 +3261,7 @@
 </div></div>
 </div>
 </div>
-<div id='sidebar_chapter_name.SMTP' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.SMTP' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter' style='float: left; width: 100%; margin: 0px;'>SMTP</div>		<div id='sidebar_chapter_arrow.SMTP' style='float: left; -moz-transform: rotate(0deg); -webkit-transform: rotate(0deg); transform: rotate(0deg); margin-right: 15px; margin-top: 5px;'>			<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='vlib' width='20' height='20' style='width: 20px; height: 20px; margin: 0px;'>		</div>	</a></div>
+<div id='sidebar_chapter_name.SMTP' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.SMTP' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>SMTP</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.SMTP'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='SMTP' width='15' height='15'>		</div>	</a></div>
 <div id='sidebar_chapter.SMTP' hidden='true' style='display none; scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('SMTP');</script>
 <div style='clear: both;'><div id='sidebar.vlib::smtp::Mail' class='sidebar_title' onclick='click_sidebar_title("vlib::smtp::Mail");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#vlib::smtp::Mail' style='display:block;'>SMTP Mail</a></div><script type='text/javascript'>	chapter_parents['vlib::smtp::Mail'] = 'SMTP';	titles.push('vlib::smtp::Mail');   titles_and_subtitles.push('vlib::smtp::Mail');   content_ids.push('vlib::smtp::Mail');</script>
 </div>
@@ -3244,14 +3291,22 @@
 				</div>
 				
 				<div style='width: 100%; height: 100%;'>
+					
+					<!-- Menu button -->
+					<div class='menu_button'>
+						<img
+							id="menu_button"
+							src="https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/menu.black.png"
+							width="25"
+							height="25"
+							style='width: 100%; height: 100%;'
+							onclick="toggle_sidebar();"
+						>
+					</div>
+					
 					<!-- Content -->
 					<div id='content_parent' class="content_parent" style='position: relative; width: 100%; height: calc(100% - 40px); overflow-y: scroll; overflow-x: hidden;'>
 						<div class='max_width_center' style='width: 100%; max-width: 1200px; overflow: visible;'>
-							
-							<!-- Menu button -->
-							<div class='menu_button'>
-								<img src="https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/menu.black.png" width="25" height="25" style='width: 100%; height: 100%;' onclick="toggle_sidebar();">
-							</div>
 							
 							<!-- Content views. -->
 							<div id='content' class="fade_out" style='width: 100%; overflow: visible;'>
