@@ -64,6 +64,11 @@
 			color: inherit;
 		}
 		
+		/* Bold element */
+		b {
+			font-weight: 700;
+		}
+		
 		/* Colors */
 		:root {
 			
@@ -106,7 +111,7 @@
 			--color-link-text: rgb(85, 108, 214);
 			--color-dark-text: #FFFFFF;
 			--color-light-text: #7E858F;
-			--color-code-bg: #0E1116;
+			--color-code-bg: #161B24;
 			--color-code-block-bg: #0E1116;
 			--color-code-block-text: #FFFFFF;
 			--color-code-text: #FFFFFF;
@@ -166,7 +171,7 @@
 		.subtitle {
 			color: var(--color-dark-text);
 			font-weight: 700;
-			font-size: 22px;
+			font-size: 22px; /* dont forget to update the docs::create_markdown_content font size variable for headings when changing this. */
 			margin-top: 45px;
 			overflow-wrap: break-word;
 		}
@@ -228,7 +233,7 @@
 			font-size: 15px;
             /* font-style: italic; */
 			border-radius: 5px;
-			padding: 2.5px 5px 2.5px 5px;
+			padding: 5px 5px 5px 5px;
 		}
 		.codeblock {
             color: var(--color-code-block-text);
@@ -888,14 +893,14 @@
 		function toggle_color_theme(to_theme = null) {
 			
 			// Already current theme.
-			if (to_theme == theme) { return ; }
+			if (theme != null && to_theme == theme) { return ; }
 			
 			// Toggle the dark-mode class on the <body> element
 			if (to_theme == null) {
 				if (theme == null) {
 					document.body.classList.add(default_theme);
 					theme = default_theme;
-				} if (theme == "dark_theme") {
+				} else if (theme == "dark_theme") {
 					document.body.classList.remove(theme);
 					document.body.classList.add("light_theme");
 					theme = "light_theme";
@@ -934,7 +939,9 @@
 		
 		// Initialize the color scheme from previously stored preferences.
 		function initialize_color_theme() {
-			toggle_color_theme(localStorage.getItem('vdocs-color-theme'));
+			let x = localStorage.getItem('vdocs-color-theme');
+			if (x == "") { x = null; }
+			toggle_color_theme(x);
 		}
 		
 		// Content loaded event.
@@ -1091,6 +1098,8 @@
 						>
 							<div id='sidebar_chapter.NO_CHAPTER' style='scroll-behavior: instant;'><script type='text/javascript'>    chapters.push('NO_CHAPTER');</script>
 <div style='clear: both;'><div id='sidebar.Introduction' class='sidebar_title' onclick='click_sidebar_title("Introduction");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#Introduction' style='display:block;'>Introduction</a></div><script type='text/javascript'>	chapter_parents['Introduction'] = 'NO_CHAPTER';	titles.push('Introduction');   titles_and_subtitles.push('Introduction');   content_ids.push('Introduction');</script>
+</div>
+<div style='clear: both;'><div id='sidebar.Installation' class='sidebar_title' onclick='click_sidebar_title("Installation");' onmouseover='select_sidebar_title_hover_by_element(this, true)' onmouseout='select_sidebar_title_hover_by_element(this, false)'><a href='#Installation' style='display:block;'>Installation</a></div><script type='text/javascript'>	chapter_parents['Installation'] = 'NO_CHAPTER';	titles.push('Installation');   titles_and_subtitles.push('Installation');   content_ids.push('Installation');</script>
 </div>
 </div>
 <div id='sidebar_chapter_name.global' style='clear: both; margin-bottom: 2.5px; margin-top: 2.5px;'>	<a id='sidebar_chapter_link.global' href='#' style='display:flex;' onclick='toggle_chapter_dropdown_by_element(this)'>		<div class='sidebar_chapter'>Global</div>		<div class='sidebar_arrow_container' id='sidebar_chapter_arrow.global'>			<img class='sidebar_arrow' src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/arrow.white.png' alt='global' width='15' height='15'>		</div>	</a></div>
@@ -3311,7 +3320,37 @@
 							<!-- Content views. -->
 							<div id='content' class="fade_out" style='width: 100%; overflow: visible;'>
 								<div id='content.Introduction' style='display: none;'>
-<div id='Introduction'class='content_child'><div style='display: flex;'><div style='flex: 1;'><h1 class='title' style=''>VLib</h1><div class='title_description'>All-round header-only c++ library.</div></div><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.png' alt='VLib' width='100' height='100' style='margin-top: 50px;'></div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Language Dialect</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib is developed for the language dialect <span class='code'>c++20</span>.</div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Operating Systems</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib supports operating systems <span class='code'>macos</span> & <span class='code'>linux</span>.</div><div style='display: flex; margin-top: 15px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/apple.png' width='25' height='25' style='margin: 5px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/linux.png' width='25' height='25' style='margin: 5px;'></div></div>
+<div id='Introduction'class='content_child'>
+<div style='display: flex;'><div style='flex: 1;'><h1 class='title' style=''>VLib</h1><div class='title_description'>All-round header-only c++ library.</div></div><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.png' alt='VLib' width='100' height='100' style='margin-top: 50px;'></div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Language Dialect</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib is developed for the language dialect <span class='code'>c++20</span>.</div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Operating Systems</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib supports operating systems <span class='code'>macos</span> & <span class='code'>linux</span>.</div><div style='display: flex; margin-top: 15px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/apple.png' width='25' height='25' style='margin: 5px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/linux.png' width='25' height='25' style='margin: 5px;'></div></div>
+</div>
+<div id='content.Installation' style='display: none;'>
+<div id='Installation'class='content_child'>
+<div id='Installation' class='content_child title_description' style='margin: 0px;'>
+<h1 class='title'>Installation</h1>
+<p class='title_description'>The vlib library can be installed using library <span class='code'>vinc</span> or directly from github.</p>
+
+<h2 class='title' style='font-size: 20px'>Installation with vinc.</h2>
+<div class='divider'></div><p class='title_description'>Execute the following commands to install vlib from github.</p>
+
+<p class='title_description'>This will install the vlib library into <span class='code'>/opt/vinc/vlib/</span> with a symbolic link for the include directory to <span class='code'>/opt/vinc/include/vlib</span>.</p>
+<p class='title_description'>Make sure the <span class='code'>vinc</span> binary is available in your <span class='code'>PATH</span>.</p>
+
+<pre class='codeblock'>$ vinc --api-key XXX # set the api key when you are using vinc for the first time.
+$ vinc --install vlib
+</pre>
+
+<h2 class='title' style='font-size: 20px'>Installation from github.</h2>
+<div class='divider'></div><p class='title_description'>Execute the following commands to install vlib from github.</p>
+
+<p class='title_description'>This will install the vlib library into <span class='code'>/opt/vinc/vlib/</span> with a symbolic link for the include directory to <span class='code'>/opt/vinc/include/vlib</span>.</p>
+<p class='title_description'>The installation may require root priviliges when directory <span class='code'>/opt/vinc/</span> does not exist.</p>
+
+<pre class='codeblock'>$ git clone https://github.com/vandenberghinc/vlib.git /tmp/vlib
+$ chmod +x /tmp/vlib/install
+$ /tmp/vlib/install
+</pre>
+</div>
+</div>
 </div>
 <div id='content.vlib::limits' style='display: none;'>
 <div id='content_child.vlib::limits' class='content_child'>

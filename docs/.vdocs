@@ -37,4 +37,10 @@
 		"crypto",
 		"sockets",
 	],
+	"blocks": [
+		{
+			"name": "Installation",
+			"include": "$SOURCE/docs/files/installation.md",
+		},
+	]
 }

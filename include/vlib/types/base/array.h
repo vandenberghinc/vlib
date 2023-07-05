@@ -746,11 +746,11 @@ struct Array {
 	 *	@funcs: 2
 	 } */
     template <typename Func> constexpr
-    auto&   iterate_lines(Func&& handler) {
+    auto&   iterate_lines(Func&& handler) const {
         return iterate_lines(0, 0, handler);
     }
     template <typename Func> constexpr
-    auto&   iterate_lines(ullong start_line, ullong end_line, Func&& func) {
+    auto&   iterate_lines(ullong start_line, ullong end_line, Func&& func) const {
         ullong sindex = 0, index = 0, line = 0;
         for (auto& c: *this) {
             switch (c) {
