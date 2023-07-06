@@ -24,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		C36364B328E4E52F00AB52BB /* vlib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vlib; sourceTree = BUILT_PRODUCTS_DIR; };
+		C380A9E12A56DBA6001605F7 /* install */ = {isa = PBXFileReference; lastKnownFileType = text; name = install; path = ../install; sourceTree = "<group>"; };
 		C3E52A082A4F471200BC2829 /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../include; sourceTree = "<group>"; };
 		C3E52A092A4F471E00BC2829 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		C3E52A0A2A4F474100BC2829 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
@@ -47,6 +48,7 @@
 			children = (
 				C3E52A122A505E0A00BC2829 /* main.cpp */,
 				C3E52A0A2A4F474100BC2829 /* .gitignore */,
+				C380A9E12A56DBA6001605F7 /* install */,
 				C3E52A092A4F471E00BC2829 /* README.md */,
 				C3E52A082A4F471200BC2829 /* include */,
 				C3FAD5DD2A559D2100E0FE49 /* docs */,

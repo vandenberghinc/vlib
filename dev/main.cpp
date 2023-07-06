@@ -36,24 +36,7 @@ int main() {
     using namespace vlib::types::shortcuts;
 	
 	
-	FILE *file;
-	char line[256];  // Assumes a maximum line length of 255 characters
-
-	file = fopen("/tmp/file", "r");  // Open the file in read mode
-	if (file == NULL) {
-		printf("Failed to open the file.\n");
-		return 1;
-	}
-
-	while (fgets(line, sizeof(line), file) != NULL) {
-		// Process the line
-		printf("%s", line);
-	}
-
-	fclose(file);  // Close the file
-
-	return 0;
-	
+	print(Json::load("/tmp/test").dump(4));
 
 
     // String raw;

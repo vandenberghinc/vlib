@@ -11,8 +11,7 @@ namespace vlib {
 // Pair type.
 // - Used for initializations and iterations.
 template <typename Key, typename Value>
-class Pair {
-public:
+struct Pair {
 
 	// ---------------------------------------------------------
 	// Aliases.

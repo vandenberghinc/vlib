@@ -1107,43 +1107,36 @@ public:
             ::close(sfd);
             throw CreateError(tostr("Unable to create \"", dest, "\" [", ::strerror(errno), "]."));
         }
-        // if (::access(dest, F_OK) != 0) {
-        //     if ((dfd = ::creat(dest, 0740)) == -1) {
-        //         ::close(sfd);
-        //         throw CreateError(tostr("Unable to create \"", dest, "\" [", ::strerror(errno), "]."));
-        //     }
-        // } else {
-        //     if ((dfd = ::open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0740)) == -1) {
-        //         ::close(sfd);
-        //         if (errno == EACCES) {
-        //             remove(dest, vlib::len(dest));
-        //             if ((dfd = ::creat(dest, 0740)) == -1) {
-        //                 throw CreateError(tostr("Unable to create \"", dest, "\" [", ::strerror(errno), "]."));
-        //             }
-        //         } else {
-        //             throw OpenError(tostr("Unable to open \"", dest, "\" [", ::strerror(errno), "]."));
-        //         }
-        //     }
-        // }
 		
 		// Macos.
-		#if OSID == 1
+		#if defined(__APPLE__)
+		
+			// Copy.
 			if (fcopyfile(sfd, dfd, 0, COPYFILE_ALL) == -1) {
                 ::close(sfd);
                 ::close(dfd);
 				throw CopyError(tostr("Copy file error [", strerror(errno), "]."));
 			}
 		
+			// Close.
+			::close(sfd);
+			::close(dfd);
+		
 		// Linux.
 		#else
-			
-			// Copy.
+		
+			// Get file info.
 			struct stat stat_buf;
 			if (::fstat(sfd, &stat_buf) != 0) {
-                ::close(sfd);
-                ::close(dfd);
+				::close(sfd);
+				::close(dfd);
 				throw ScanError(tostr("Unable to scan \"", src, "\" [", ::strerror(errno), "]."));
 			}
+			
+			/* V1 Copy
+			- Is not reliable on all platforms.
+			- Less reliable when the file already exists.
+			- Some older versions have a 2GB limit.
 			off_t offset = 0;
 			ssize_t rc;
 			if ((rc = ::sendfile(dfd, sfd, &offset, stat_buf.st_size)) == -1) {
@@ -1156,30 +1149,59 @@ public:
                 ::close(dfd);
 				throw CopyError("Incomplete transfer.");
 			}
+			*/
+		
+			// Open files.
+			FILE* sfile = fdopen(sfd, "rb");
+			FILE* dfile = fdopen(dfd, "wb");
+			
+			// Check err.
+			if (sfile == NULL) {
+				::close(sfd);
+				::close(dfd);
+				throw OpenError(tostr("Unable to open source \"", src, "\" [", ::strerror(errno), "]."));
+			}
+			if (dfile == NULL) {
+				::close(dfd);
+				::fclose(sfile);
+				throw OpenError(tostr("Unable to destination \"", src, "\" [", ::strerror(errno), "]."));
+			}
+			
+			// Read from source and write to dest.
+			char buffer[1024 * 1024];
+			size_t bytesRead;
+			while ((bytesRead = fread(buffer, 1, sizeof(buffer), sfile)) > 0) {
+				size_t bytesWritten = fwrite(buffer, 1, bytesRead, dfile);
+				if (bytesWritten != bytesRead) {
+					::fclose(sfile);
+					::fclose(dfile);
+					throw CopyError(tostr("Encountered an error while writing to \"", dest, "\" [", ::strerror(errno), "]."));
+				}
+			}
 		
 			// Set metadata.
 			struct utimbuf totime {stat_buf.st_atim.tv_nsec, stat_buf.st_mtim.tv_nsec};
 			if (::utime(dest, &totime) != 0) {
-                ::close(sfd);
-                ::close(dfd);
+				::fclose(sfile);
+				::fclose(dfile);
 				throw PermissionError(tostr("Unable to set the time of path \"", dest, "\" [", ::strerror(errno), "]."));
 			}
 			if (::fchmod(dfd, stat_buf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) != 0) {
-                ::close(sfd);
-                ::close(dfd);
+				::fclose(sfile);
+				::fclose(dfile);
 				throw PermissionError(tostr("Unable to set the permission of path \"", dest, "\" [", ::strerror(errno), "]."));
 			};
 			if (::fchown(dfd, stat_buf.st_uid, stat_buf.st_gid) != 0) {
-                ::close(sfd);
-                ::close(dfd);
+				::fclose(sfile);
+				::fclose(dfile);
 				throw PermissionError(tostr("Unable to set the ownership and group of path \"", dest, "\" [", ::strerror(errno), "]."));
 			}
+			
+			// Close.
+			::fclose(sfile);
+			::fclose(dfile);
 		
 		#endif
-		
-		// Close.
-		::close(sfd);
-		::close(dfd);
 		
 	}
 	

@@ -2,8 +2,8 @@
 // Copyright: © 2022 Daan van den Bergh.
 
 // Header.
-#ifndef VLIB_DICT_T_H
-#define VLIB_DICT_T_H
+#ifndef VLIB_DICT_H
+#define VLIB_DICT_H
 
 // Namespace vlib.
 namespace vlib {
@@ -42,7 +42,7 @@ struct Dict {
 	// Aliases.
 
 	using 		This = 			Dict;
-	using 		Pair = 			vlib::Pair<Key, Value>;
+	using 		PairType = 		vlib::Pair<Key, Value>;
 	using 		KeyArray = 		Array<Key, Length>;
 	using 		ValueArray = 	Array<Value, Length>;
 	typedef 	Key				key_type;
@@ -64,7 +64,7 @@ struct Dict {
 
 	// Construct from initializer list.
 	constexpr
-	auto& 	reconstruct(const std::initializer_list<Pair>& x) {
+	auto& 	reconstruct(const std::initializer_list<PairType>& x) {
 		if (m_keys) {
 			m_keys->destruct();
 		} else {
@@ -141,7 +141,7 @@ struct Dict {
 			});
 	} */
 	constexpr
-	Dict (const std::initializer_list<Pair>& x) :
+	Dict (const std::initializer_list<PairType>& x) :
 	m_keys(KeyArray()),
 	m_values(ValueArray())
 	{
@@ -182,7 +182,7 @@ struct Dict {
 	
 	// Assignment operator from initializer list.
 	constexpr
-	auto&		operator =(const std::initializer_list<Pair>& x) {
+	auto&		operator =(const std::initializer_list<PairType>& x) {
 		return reconstruct(x);
 	}
 	
@@ -1290,7 +1290,7 @@ struct Dict {
 	// ---------------------------------------------------------
 	// Iterations.
     
-    struct IterPair {
+    struct IterPairType {
         Key* key;
         Value* value;
     };
@@ -1300,7 +1300,7 @@ struct Dict {
         // Attributes.
         Key* m_keys;
         Value* m_values;
-        IterPair m_pair;
+        IterPairType m_pair;
         ullong m_start = 0;
         ullong m_end = 0;
         
@@ -1730,7 +1730,7 @@ struct is_Dict<Dict<Key, Value, Length, Status>> 	{ SICEBOOL value = true;  };
 namespace types { namespace shortcuts {
 
 template <typename Key, typename Value>
-using Pair =        vlib::Pair<Key, Value>;
+using PairType =        vlib::Pair<Key, Value>;
 
 template <typename Key, typename Value, typename Length = ullong, typename Status = Unique>
 using Dict =		vlib::Dict<Key, Value, Length, Status>;
