@@ -1092,9 +1092,10 @@ public:
 	static inline
 	void	cp(const char* src, const char* dest) {
 		#if defined(__APPLE__)
-			cp(src, dest, NULL);
+			cp(src, dest, NULL, 0);
 		#elif defined(__linux__)
-			char* buff = new char [1024 * 1024];
+			constexpr ullong buff_capacity = 1024 * 1024;
+			char* buff = new char [buff_capacity];
 			cp(src, dest, buff);
 			delete[] buff;
 		#else
@@ -1102,7 +1103,7 @@ public:
 		#endif
 	}
 	static inline
-	void	cp(const char* src, const char* dest, char* buff) {
+	void	cp(const char* src, const char* dest, char* buff, ullong buff_capacity) {
 		
 		// Vars.
 		int sfd, dfd;
@@ -1185,7 +1186,7 @@ public:
 			
 			// Read from source and write to dest.
 			size_t bytesRead;
-			while ((bytesRead = fread(buff, 1, sizeof(buff), sfile)) > 0) {
+			while ((bytesRead = fread(buff, 1, buff_capacity, sfile)) > 0) {
 				size_t bytesWritten = fwrite(buff, 1, bytesRead, dfile);
 				if (bytesWritten != bytesRead) {
 					::fclose(sfile);

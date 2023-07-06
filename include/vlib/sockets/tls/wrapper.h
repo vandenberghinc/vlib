@@ -258,7 +258,7 @@ struct wrapper {
          */
         
         /* V1 */
-        llong status;
+        llong status = 0;
 		struct pollfd pfd;
 		int fd = SSL_get_fd(ssl);
 		llong end_time = Date::get_mseconds() + timeout;
