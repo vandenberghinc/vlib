@@ -10,7 +10,7 @@ namespace vlib {
 
 // Random type.
 /* 	@docs {
-	@chapter: global
+	@chapter: types
 	@title: Random
 	@description:
 		Static random structure.

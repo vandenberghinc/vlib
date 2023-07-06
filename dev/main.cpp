@@ -30,8 +30,30 @@
 
 #include "../include/vlib/compression.h"
 
+#include <stdio.h>
+
 int main() {
     using namespace vlib::types::shortcuts;
+	
+	
+	FILE *file;
+	char line[256];  // Assumes a maximum line length of 255 characters
+
+	file = fopen("/tmp/file", "r");  // Open the file in read mode
+	if (file == NULL) {
+		printf("Failed to open the file.\n");
+		return 1;
+	}
+
+	while (fgets(line, sizeof(line), file) != NULL) {
+		// Process the line
+		printf("%s", line);
+	}
+
+	fclose(file);  // Close the file
+
+	return 0;
+	
 
 
     // String raw;
@@ -40,9 +62,9 @@ int main() {
     // String compressed = vlib::compress(raw);
     // print("MATCH: ", vlib::decompress(compressed) == raw);
 
-    vlib::Zip zip;
+    // vlib::Zip zip;
     // zip.create("//Users/administrator/Downloads/dir", "/Users/administrator/Downloads/archive.zip");
-	zip.create("/Volumes/persistance/private/vinc/vweb/", "/Users/administrator/Downloads/archive.zip", {".git", ".gitignore", "dev/.versions"});
+	// zip.create("/Volumes/persistance/private/vinc/vweb/", "/Users/administrator/Downloads/archive.zip", {".git", ".gitignore", "dev/.versions"});
     // zip.read("/Users/administrator/Downloads/archive.zip");
     // Path::remove("/Users/administrator/Downloads/zip_extract/");
     // zip.extract("/Users/administrator/Downloads/zip_extract/");

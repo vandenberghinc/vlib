@@ -11,7 +11,7 @@ namespace vlib {
 // ---------------------------------------------------------
 // CLI Type.
 /*  @docs {
- *	@chapter: cli
+ *	@chapter: CLI
  *	@title: CLI
  *	@description:
  *		CLI type to create cli applications.
@@ -24,91 +24,16 @@ namespace vlib {
  } */
 
 struct CLI {
-		
+	
+// Private.
+private:
+	
 	// ---------------------------------------------------------
 	// Attributes.
 	
 	Array<String> 			m_args;		// {arg, arg}
 	Dict<String, String>	m_docs;		// {chapter: docs}
 	
-	// ---------------------------------------------------------
-	// Constructor.
-	
-	// Default constructor.
-	/* @docs {
-	 *	@title: Constructor
-	 *	@description:
-	 *		Construct the cli object with the `argc` and `argv` arguments.
-	 *	@usage:
-	 *		#include <vlib/cli.h>
-	 *		int main(int argc, char** argv) {
-	 *			vlib::CLI cli(argc, argv);
-	 *			...
-	 *		}
-	 } */
-	constexpr
-	CLI(int argc = 0, char** argv = nullptr)
-	{
-		if (argv) {
-			for (auto& i: Range<>(argc)) {
-				m_args.append(argv[i]);
-			}
-		}
-	}
-	constexpr
-	CLI(const Array<String>& args) :
-	m_args(args) {}
-	
-	// ---------------------------------------------------------
-	// Properties.
-	
-	// Set the docs.
-	/*  @docs {
-	 *	@title: Add docs
-	 *	@description:
-	 *		Add a docs chapter with a docs string.
-	 *	@usage:
-	 *		cli.add_docs("Help", tostr(
-	 *			"--help: Show the cli documentation."
-	 *		));
-	 } */
-	constexpr
-	void	add_docs(const String& chapter, String&& docs) {
-		if (docs.len() > 0 && docs.last() == '\n') {
-			--docs.len();
-		}
-		m_docs.append(chapter, docs);
-	}
-	constexpr
-	void	add_docs(const String& chapter, const String& docs) {
-		m_docs.append(chapter, docs);
-	}
-	
-	// Get the docs string.
-	/*  @docs {
-	 *	@title: Get docs
-	 *	@description:
-	 *		Get the docs in a string representation.
-	 *
-	 *		Optionally specificy a specific chapter.
-	 *	@usage:
-	 *		vlib::out << cli.docs();
-	 *		vlib::out << cli.docs("Help");
-	 } */
-	constexpr
-	String	docs(const String& chapter = nullptr) {
-		String str;
-		for (auto& i: m_docs.indexes()) {
-			String& key = m_docs.key(i);
-			if (chapter.is_undefined() || chapter.eq(key)) {
-				str << m_docs.value(i);
-			}
-		}
-		return str;
-	}
-	
-// Private.
-private:
 	
 	// ---------------------------------------------------------
 	// Private functions.
@@ -234,12 +159,85 @@ private:
 		}
 		return obj;
 	}
-	
+
 // Public.
 public:
 	
 	// ---------------------------------------------------------
+	// Constructor.
+	
+	// Default constructor.
+	/* @docs {
+	 *	@title: Constructor
+	 *	@description:
+	 *		Construct the cli object with the `argc` and `argv` arguments.
+	 *	@usage:
+	 *		#include <vlib/cli.h>
+	 *		int main(int argc, char** argv) {
+	 *			vlib::CLI cli(argc, argv);
+	 *			...
+	 *		}
+	 } */
+	constexpr
+	CLI(int argc = 0, char** argv = nullptr)
+	{
+		if (argv) {
+			for (auto& i: Range<>(argc)) {
+				m_args.append(argv[i]);
+			}
+		}
+	}
+	constexpr
+	CLI(const Array<String>& args) :
+	m_args(args) {}
+	
+	// ---------------------------------------------------------
 	// Functions.
+	
+	// Set the docs.
+	/*  @docs {
+	 *	@title: Add docs
+	 *	@description:
+	 *		Add a docs chapter with a docs string.
+	 *	@usage:
+	 *		cli.add_docs("Help", tostr(
+	 *			"--help: Show the cli documentation."
+	 *		));
+	 } */
+	constexpr
+	void	add_docs(const String& chapter, String&& docs) {
+		if (docs.len() > 0 && docs.last() == '\n') {
+			--docs.len();
+		}
+		m_docs.append(chapter, docs);
+	}
+	constexpr
+	void	add_docs(const String& chapter, const String& docs) {
+		m_docs.append(chapter, docs);
+	}
+	
+	// Get the docs string.
+	/*  @docs {
+	 *	@title: Get docs
+	 *	@description:
+	 *		Get the docs in a string representation.
+	 *
+	 *		Optionally specificy a specific chapter.
+	 *	@usage:
+	 *		vlib::out << cli.docs();
+	 *		vlib::out << cli.docs("Help");
+	 } */
+	constexpr
+	String	docs(const String& chapter = nullptr) {
+		String str;
+		for (auto& i: m_docs.indexes()) {
+			String& key = m_docs.key(i);
+			if (chapter.is_undefined() || chapter.eq(key)) {
+				str << m_docs.value(i);
+			}
+		}
+		return str;
+	}
 	
 	// Length.
 	/*  @docs {
@@ -771,33 +769,3 @@ public:
 
 }; 		// End namespace vlib.
 #endif 	// End header.
-
-
-/*
- 
- 1D:
- [
-	 0,
-	 1,
-	 2,
- ]
- 
- 2D:
- [
-	 [0, 1, 2],
-	 [0, 1, 2],
- ]
- 
- 3D:
- [
-	 [
-		[0, 1, 2],
-		[0, 1, 2],
-	 ]
-	 [
-		[0, 1, 2],
-		[0, 1, 2],
-	 ]
- ]
- 
-*/

@@ -73,16 +73,17 @@ void 	tochar_r(char& value, const Type& digit) {
 
 // Cast with return.
 /* 	@docs {
-	@chapter: casts
-	@title: To char
-	@description:
-		Cast to a char.
-		- Currently only supports casts from a digit [0..9].
-	@usage:
-        #include <vlib/types.h>
-		vlib::tochar(0) ==> '0';
-		vlib::tochar(9) ==> '9';
-		vlib::tochar(100) ==> '0'; // ERROR: the digit's range is [0..9].
+ *	@chapter: casts
+ *	@title: To char
+ *	@description:
+ *		Cast to a char.
+ *		- Currently only supports casts from a single digit [0..9].
+ *	@usage:
+ *      #include <vlib/types.h>
+ *		vlib::tochar(0) ==> '0';
+ *		vlib::tochar(9) ==> '9';
+ *		vlib::tochar(100) ==> '0'; // ERROR: the digit's range is [0..9].
+ *	@funcs: 2
 } */
 template 		<typename... Args> inline constexpr
 char	tochar(Args&&... args) {

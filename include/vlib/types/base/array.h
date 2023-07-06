@@ -666,7 +666,7 @@ struct Array {
 		is_Backwards<Iter>::value
 	) constexpr
 	auto 	iterate() const {
-		return vlib::internal::array::iter_t<Iter, Type, Length>(
+		return vlib::internal::array::Iterator<Iter, Type, Length>(
 			0,
 			m_len,
 			m_arr );
@@ -678,12 +678,12 @@ struct Array {
 	auto 	iterate(const Length sindex, const Length eindex = internal::npos) const {
 		switch (eindex) {
 			case internal::npos:
-				return vlib::internal::array::iter_t<Iter, Type, Length>(
+				return vlib::internal::array::Iterator<Iter, Type, Length>(
 					sindex,
 					m_len,
 					m_arr );
 			default:
-				return vlib::internal::array::iter_t<Iter, Type, Length>(
+				return vlib::internal::array::Iterator<Iter, Type, Length>(
 					sindex,
 					eindex,
 					m_arr );

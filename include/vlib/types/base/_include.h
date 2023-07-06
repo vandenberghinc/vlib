@@ -3,7 +3,7 @@
 
 // Includes.
 #include "pipe.h"
-#include "iter_t.h"
+#include "iterator.h"
 #include "npos.h"
 #include "null.h"
 #include "bool.h"

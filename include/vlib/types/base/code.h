@@ -212,7 +212,7 @@ public:
     /*  @docs {
         @title: Iterate
         @description:
-            Iterate over a code file with a special iterator.
+            Iterate over a code file with a special Iterator.
         @usage:
             vlib::Code code("...");
             for (auto& i: code.iterate()) {
@@ -224,46 +224,46 @@ public:
     } */
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value) constexpr
 	auto iterate() const {
-		return internal::code::iter_t(0, this->m_len, this->m_arr, false);
+		return internal::code::Iterator(0, this->m_len, this->m_arr, false);
 	}
 	template <typename Iter> requires (is_Backwards<Iter>::value) constexpr
 	auto iterate() const {
-		return internal::code::iter_t(0, this->m_len, this->m_arr, true);
+		return internal::code::Iterator(0, this->m_len, this->m_arr, true);
 	}
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value) constexpr
 	auto iterate(Len sindex) const {
 		auto si = sindex.subscript(this->m_len);
 		if (si == npos) {
-			return internal::code::iter_t(0, 0, "", false);
+			return internal::code::Iterator(0, 0, "", false);
 		} else {
-			return internal::code::iter_t(si, this->m_len, this->m_arr, false);
+			return internal::code::Iterator(si, this->m_len, this->m_arr, false);
 		}
 	}
 	template <typename Iter> requires (is_Backwards<Iter>::value) constexpr
 	auto iterate(Len sindex) const {
 		auto si = sindex.subscript(this->m_len);
 		if (si == npos) {
-			return internal::code::iter_t(0, 0, "", false);
+			return internal::code::Iterator(0, 0, "", false);
 		} else {
-			return internal::code::iter_t(si, this->m_len, this->m_arr, true);
+			return internal::code::Iterator(si, this->m_len, this->m_arr, true);
 		}
 	}
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value) constexpr
 	auto iterate(Len sindex, Len eindex) const {
 		auto si = sindex.subscript(this->m_len);
 		if (si == npos) {
-			return internal::code::iter_t(0, 0, "", false);
+			return internal::code::Iterator(0, 0, "", false);
 		} else {
-			return internal::code::iter_t(si, eindex.subscript(this->m_len, this->m_len), this->m_arr, false);
+			return internal::code::Iterator(si, eindex.subscript(this->m_len, this->m_len), this->m_arr, false);
 		}
 	}
 	template <typename Iter> requires (is_Backwards<Iter>::value) constexpr
 	auto iterate(Len sindex, Len eindex) const {
 		auto si = sindex.subscript(this->m_len);
 		if (si == npos) {
-			return internal::code::iter_t(0, 0, "", false);
+			return internal::code::Iterator(0, 0, "", false);
 		} else {
-			return internal::code::iter_t(si, eindex.subscript(this->m_len, this->m_len), this->m_arr, true);
+			return internal::code::Iterator(si, eindex.subscript(this->m_len, this->m_len), this->m_arr, true);
 		}
 	}
 

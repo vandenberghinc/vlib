@@ -434,10 +434,10 @@ public:
 			file.write("Hello World!\n");
 		@funcs: 2
 	} */
-	void 	write(const String& data) {
+	void 	 write(const String& data) {
 		return write(data.data(), data.len());
 	}
-    void 	write(const char* data, const Length len) {
+    void 	 write(const char* data, const Length len) {
         reopen(file::mode::write);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
             throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
@@ -504,6 +504,37 @@ public:
 		if (::fsync(::fileno(m_attr->file)) != 0) {
             throw SyncError(tostr("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
+	}
+	
+	// Get line.
+	/*  @docs {
+	 *	@title: Get line
+	 *	@description:
+	 *		Get the current line.
+	 *
+	 *		Function `read_line` reopens the file if required and resizes the `line` parameter when the capacity is 0. Function `read_line_h` only reads the line and does not check the file mode nor buffer capacity.
+	 *
+	 *	@return:
+	 *		Returns a `true` when there is a line to read, and `false` when there are no more lines to read.
+	 *	@usage:
+	 *		vlib::File file("/tmp/myfile.txt");
+	 *		String line;
+	 *		Bool success = file.read_line(line);
+	 *	@funcs: 2
+	} */
+	constexpr
+	Bool 	get_line(String& line) {
+		reopen(vlib::file::mode::read);
+		switch (line.capacity()) {
+			case 0:
+				line.resize(10000);
+			default:
+				break;
+		}
+		return fgets(line.data(), (int)line.capacity(), m_attr->file) != NULL;
+	}
+	Bool 	get_line_h(String& line) {
+		return fgets(line.data(), (int)line.capacity(), m_attr->file) != NULL;
 	}
 
 	// Close.

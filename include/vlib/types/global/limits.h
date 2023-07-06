@@ -16,7 +16,7 @@ namespace vlib {
 // Static limits type.
 
 /* @docs {
-	@chapter: global
+	@chapter: types
 	@title: Limits
 	@description:
 		Numeric limits structure.

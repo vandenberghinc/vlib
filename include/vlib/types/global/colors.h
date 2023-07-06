@@ -103,7 +103,7 @@ public:
 
 // Colors.
 /* 	@docs {
-	@chapter: global
+	@chapter: types
 	@title: Colors
 	@description:
 		Static colors structure.

@@ -10,7 +10,7 @@ namespace vlib {
 
 // Normal iteration range type.
 /* @docs {
-	@chapter: global
+	@chapter: types
 	@title: Range
 	@description:
 		Iterate a certain range.
