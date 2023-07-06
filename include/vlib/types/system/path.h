@@ -1096,7 +1096,7 @@ public:
 		#elif defined(__linux__)
 			constexpr ullong buff_capacity = 1024 * 1024;
 			char* buff = new char [buff_capacity];
-			cp(src, dest, buff);
+			cp(src, dest, buff, buff_capacity);
 			delete[] buff;
 		#else
 			#error "The current operating system is not supported."
