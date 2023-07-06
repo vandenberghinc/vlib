@@ -105,14 +105,14 @@
 			--green: #009051;
 			--color-bg: #020409;
 			--color-sidebar-bg: #0E1116;
-			--color-selected-sidebar-bg: #161921;
+			--color-selected-sidebar-bg: #181E28; /* #161B24 */
 			--color-warning-bg: #E74D3A;
 			--color-divider: #22262C;
 			--color-link-text: rgb(85, 108, 214);
 			--color-dark-text: #FFFFFF;
 			--color-light-text: #7E858F;
 			--color-code-bg: #161B24;
-			--color-code-block-bg: #0E1116;
+			--color-code-block-bg: #12151C; /* #0E1116 */
 			--color-code-block-text: #FFFFFF;
 			--color-code-text: #FFFFFF;
 			--color-codefont-bg: transparent;
@@ -560,7 +560,6 @@
             titles_and_subtitles.forEach(function(i_id) {
 				var element = get_element('sidebar.' + i_id);
 				if (id == i_id) {
-                    // console.log("Select title " + id);
                     selected_title = id;
 					element.classList.add('sidebar_selected');
                     if (scroll_into) {
@@ -688,15 +687,12 @@
 		
 		// Wrapper function for a click link to a documented type event.
 		function click_documented_type_link(bid) {
-			console.log(bid);
 			select_sidebar_title_hover(bid, false);
 			select_sidebar_title(bid, false);
 			let parent_bid = subtitle_parents[bid];
 			if (parent_bid == null) {
-				console.log("TITLE");
 				select_title_content(bid);
 			} else {
-				console.log("SUBTITLE");
 				select_title_content(parent_bid);
 			}
 			scroll_into_content(bid);
@@ -929,9 +925,7 @@
 			// Set arrow buttons.
 			let elements = document.getElementsByClassName("sidebar_arrow");
 			const arrow_src = computed_style.getPropertyValue("--arrow-button-src");
-			console.log(arrow_src);
 			for (let i = 0; i < elements.length; i++) {
-				console.log(i);
 				elements[i].src = arrow_src;
 			}
 			
@@ -1037,7 +1031,7 @@
 						<!-- Icon -->
 						<div style='margin-top: 10px; padding: 0px 10px 1px 10px; width: 100%; display: flex;'>
 							<div id="previous" style='display: flex; cursor: pointer;' onclick=''>
-								<img src='/favicon.ico' alt='VLib' style='width: 22.5px; height: 22.5px; margin-top: 9px;'>
+								<img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.png' alt='VLib' style='width: 22.5px; height: 22.5px; margin-top: 9px;'>
 								<h1 class="sidebar_chapter gradient_text" style='font-family: var(--font-icon); font-weight: 700; letter-spacing: 0.50px; text-transform: uppercase; font-size: 20px; padding: 0px; margin-top: 12.5px; margin-left: 10px; padding: 0px;r'>
 									VLib
 								</h1>
@@ -3363,7 +3357,7 @@
 							<div id='content' class="fade_out" style='width: 100%; overflow: visible;'>
 								<div id='content.Introduction' style='display: none;'>
 <div id='Introduction'class='content_child'>
-<div style='display: flex;'><div style='flex: 1;'><h1 class='title' style=''>VLib</h1><div class='title_description'>VLib is a generic header-only c++ library for basic types, json, pandas like dataframe, threads, service daemons, compression, zip, encryption, hashing, encoding, tcp, http, https, tls and more.</div></div><img src='/favicon.ico' alt='VLib' width='100' height='100' style='margin-top: 50px;'></div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Language Dialect</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib is developed for the language dialect <span class='code'>c++20</span>.</div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Operating Systems</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib supports operating systems <span class='code'>macos</span> & <span class='code'>linux</span>.</div><div style='display: flex; margin-top: 15px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/apple.grey.png' width='25' height='25' style='margin: 5px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/linux.grey.png' width='25' height='25' style='margin: 5px;'></div></div>
+<div style='display: flex;'><div style='flex: 1;'><h1 class='title' style=''>VLib</h1><div class='title_description'>VLib is a generic header-only c++ library for basic types, json, pandas like dataframe, threads, service daemons, compression, zip, encryption, hashing, encoding, tcp, http, https, tls and more.</div></div><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.png' alt='VLib' width='100' height='100' style='margin-top: 50px;'></div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Language Dialect</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib is developed for the language dialect <span class='code'>c++20</span>.</div><div style='width: 1px; height: 25px;'></div><h1 class='subtitle'>Operating Systems</h1><div class='divider'></div><div class='title_description' style='margin-top: 25px;'>VLib supports operating systems <span class='code'>macos</span> & <span class='code'>linux</span>.</div><div style='display: flex; margin-top: 15px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/apple.grey.png' width='25' height='25' style='margin: 5px;'><img src='https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vdocs/media/linux.grey.png' width='25' height='25' style='margin: 5px;'></div></div>
 </div>
 <div id='content.Installation' style='display: none;'>
 <div id='Installation'class='content_child'>
@@ -3425,8 +3419,6 @@ $ /tmp/vlib/install</pre>
 <span class='token_keyword'>int</span> <span class='token_type_def'>main</span>() {
     <span class='token_type'>print</span>(<span class='token_string'>"Hello World!"</span>);
 }</pre>
-
-
 </div>
 </div>
 </div>
@@ -6728,8 +6720,8 @@ x.<span class='token_type'>reverse_r</span>(); x ==&gt; {<span class='token_nume
 <span class='token_comment'>// Do not use reverse_r for iterations.
 // Since this is quite inefficient.
 // Use "iterate<Backwards>()" instead.
-</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}     <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
-</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}  &lt;-- Correct.</pre>
+</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}                 <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
+</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}     &lt;-- Correct.</pre>
 <div class='content_divider'></div>
 </div>
 <div id='content_child.vlib::Array::remove_r' class='content_child'>
@@ -9025,8 +9017,8 @@ x.<span class='token_type'>reverse_r</span>(); x ==&gt; {<span class='token_nume
 <span class='token_comment'>// Do not use reverse_r for iterations.
 // Since this is quite inefficient.
 // Use "iterate<Backwards>()" instead.
-</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}     <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
-</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}  &lt;-- Correct.</pre>
+</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}                 <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
+</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}     &lt;-- Correct.</pre>
 <div class='content_divider'></div>
 </div>
 <div id='content_child.vlib::String::remove_r' class='content_child'>
@@ -11875,8 +11867,8 @@ x.<span class='token_type'>reverse_r</span>(); x ==&gt; {<span class='token_nume
 <span class='token_comment'>// Do not use reverse_r for iterations.
 // Since this is quite inefficient.
 // Use "iterate<Backwards>()" instead.
-</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}     <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
-</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}  &lt;-- Correct.</pre>
+</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}                 <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
+</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}     &lt;-- Correct.</pre>
 <div class='content_divider'></div>
 </div>
 <div id='content_child.vlib::String::remove_r-0' class='content_child'>
@@ -12814,13 +12806,13 @@ y ==&gt; { ... };</pre>
 	<div style='float: left; margin-right: 10px;'><span class='purple_tag' style='padding-top: 5px; padding-bottom: 5px'>Member	</span></div>
 </div>
 <pre class='codeblock' style='; margin-top: 0px; padding: 10px; padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 10px;'><span class='token_keyword'>constexpr</span> 
-<span class='token_type'>vlib</span>::<span class='token_type_def'>Dict</span>(<span class='token_keyword'>const</span> <span class='token_type'>std</span>::<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>Pair</span>&gt;&x); 
+<span class='token_type'>vlib</span>::<span class='token_type_def'>Dict</span>(<span class='token_keyword'>const</span> <span class='token_type'>std</span>::<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>PairType</span>&gt;&x); 
 </pre>
 <h1 class='subtitle'>Parameters</h1>
 <div class='divider'></div>
 <div style='margin-bottom: 10px;'>
 	<div style='display: flex; width: 100%;'>
-	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; white-space: nowrap;'><span class='token_keyword'>const</span> <span class='token_type'>std</span>:<span class='token_type'></span>:<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>Pair</span>&gt;<span class='token_type'></span>&<span class='token_type'></span>	</div>
+	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; white-space: nowrap;'><span class='token_keyword'>const</span> <span class='token_type'>std</span>:<span class='token_type'></span>:<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>PairType</span>&gt;<span class='token_type'></span>&<span class='token_type'></span>	</div>
 	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; margin-left: 10px; width: 100%; white-space: nowrap;'>x	</div>
 	<div class='required' style='float: left; margin-left: 20px; margin-top: 0px;'>Required	</div>
 	</div>
@@ -14036,13 +14028,13 @@ y ==&gt; { ... };</pre>
 	<div style='float: left; margin-right: 10px;'><span class='purple_tag' style='padding-top: 5px; padding-bottom: 5px'>Member	</span></div>
 </div>
 <pre class='codeblock' style='; margin-top: 0px; padding: 10px; padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 10px;'><span class='token_keyword'>constexpr</span> 
-<span class='token_type'>vlib</span>::<span class='token_type_def'>Dict</span>(<span class='token_keyword'>const</span> <span class='token_type'>std</span>::<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>Pair</span>&gt;&x); 
+<span class='token_type'>vlib</span>::<span class='token_type_def'>Dict</span>(<span class='token_keyword'>const</span> <span class='token_type'>std</span>::<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>PairType</span>&gt;&x); 
 </pre>
 <h1 class='subtitle'>Parameters</h1>
 <div class='divider'></div>
 <div style='margin-bottom: 10px;'>
 	<div style='display: flex; width: 100%;'>
-	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; white-space: nowrap;'><span class='token_keyword'>const</span> <span class='token_type'>std</span>:<span class='token_type'></span>:<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>Pair</span>&gt;<span class='token_type'></span>&<span class='token_type'></span>	</div>
+	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; white-space: nowrap;'><span class='token_keyword'>const</span> <span class='token_type'>std</span>:<span class='token_type'></span>:<span class='token_type'>initializer_list</span>&lt;<span class='token_type'>PairType</span>&gt;<span class='token_type'></span>&<span class='token_type'></span>	</div>
 	<div class='codefont text dark_text' style='float: left; font-size: 14px; margin-top: 1.5px; margin-bottom: 5px; margin-left: 10px; width: 100%; white-space: nowrap;'>x	</div>
 	<div class='required' style='float: left; margin-left: 20px; margin-top: 0px;'>Required	</div>
 	</div>
@@ -17955,7 +17947,7 @@ mutex.<span class='token_type'>unlock</span>();</pre>
 </span><span class='token_keyword'>struct</span> <span class='token_type_def'>some_thread </span>: <span class='token_keyword'>public</span> <span class='token_type'>vlib</span>::<span class='token_type'>Thread</span>&lt;<span class='token_type'>some_thread</span>&gt; {
     
     <span class='token_comment'>// The thread run function.
-</span>    <span class='token_keyword'>void</span>*<span class='token_numeric'>  </span><span class='token_type_def'>run</span>(<span class='token_keyword'>void</span>) {
+</span>    <span class='token_keyword'>void</span>*<span class='token_numeric'>  </span>   <span class='token_type_def'>run</span>(<span class='token_keyword'>void</span>) {
     <span class='token_type'>vlib</span>::<span class='token_type'>print</span>(<span class='token_string'>"Starting thread: "</span>, <span class='token_type'>id</span>()));
 <span class='token_keyword'>return</span> NULL;
 }
@@ -22688,8 +22680,8 @@ x.<span class='token_type'>reverse_r</span>(); x ==&gt; {<span class='token_nume
 <span class='token_comment'>// Do not use reverse_r for iterations.
 // Since this is quite inefficient.
 // Use "iterate<Backwards>()" instead.
-</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}     <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
-</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}  &lt;-- Correct.</pre>
+</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}                 <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
+</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}     &lt;-- Correct.</pre>
 <div class='content_divider'></div>
 </div>
 <div id='content_child.vlib::String::remove_r-1' class='content_child'>
@@ -26039,8 +26031,8 @@ x.<span class='token_type'>reverse_r</span>(); x ==&gt; {<span class='token_nume
 <span class='token_comment'>// Do not use reverse_r for iterations.
 // Since this is quite inefficient.
 // Use "iterate<Backwards>()" instead.
-</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}     <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
-</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}  &lt;-- Correct.</pre>
+</span><span class='token_keyword'>for</span> (<span class='token_keyword'>auto</span>& i: x.<span class='token_type'>reverse_r</span>()) {}                 <span class='token_type'></span>&lt;--<span class='token_type'> </span><span class='token_type'>Incorrect</span><span class='token_type'>
+</span><span class='token_keyword'>for</span> <span class='token_type'>(</span><span class='token_keyword'>auto</span>&<span class='token_type'> i</span>:<span class='token_type'> </span><span class='token_type'>x.iterate</span>&lt;<span class='token_type'>Backwards</span>&gt;()) {}     &lt;-- Correct.</pre>
 <div class='content_divider'></div>
 </div>
 <div id='content_child.vlib::String::remove_r-2' class='content_child'>
@@ -28034,7 +28026,7 @@ x.<span class='token_type'>null_terminate</span>();</pre>
 </span><span class='token_type'>uint16_t</span><span class='token_numeric'>  </span>      gid = <span class='token_numeric'>0</span>;                <span class='token_comment'>// gid of the path.
 </span><span class='token_type'>uint16_t</span><span class='token_numeric'>  </span>      mod_time = <span class='token_numeric'>0</span>;           <span class='token_comment'>// mod time of the path
 </span><span class='token_type'>uint16_t</span><span class='token_numeric'>  </span>      mod_date = <span class='token_numeric'>0</span>;           <span class='token_comment'>// mod date of the path.
-</span><span class='token_type'>uint16_t</span><span class='token_numeric'>  </span>compression_method = <span class='token_numeric'>8</span>; <span class='token_comment'>// the compression method.
+</span><span class='token_type'>uint16_t</span><span class='token_numeric'>  </span>      compression_method = <span class='token_numeric'>8</span>; <span class='token_comment'>// the compression method.
 </span><span class='token_type'>uint64_t</span><span class='token_numeric'>  </span>      compressed_len = <span class='token_numeric'>0</span>;     <span class='token_comment'>// length of uncompressed data.
 </span><span class='token_type'>uint64_t</span><span class='token_numeric'>  </span>      uncompressed_len = <span class='token_numeric'>0</span>;   <span class='token_comment'>// length of compressed data.
 </span><span class='token_type'>uint32_t</span><span class='token_numeric'>  </span>      crc = <span class='token_numeric'>0</span>;                <span class='token_comment'>// crc32 checksum.
@@ -31670,14 +31662,14 @@ data &lt;&lt; <span class='token_string'>"\r\n"</span>
 	<div class='required' style='float: left; margin-left: 20px; margin-top: 0px;'>Required	</div>
 	</div>
 <div class='text' style='margin-top: 0px;'>The template arguments.<br/><br/>The arguments can contain the following fields:<br/><pre class='codeblock'><span class='token_keyword'>struct</span> <span class='token_type_def'>ClientTemplateArgs</span> {
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>  host;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>  ip;
-    <span class='token_type'>uint</span><span class='token_numeric'>  </span>  port = <span class='token_numeric'>0</span>;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>              host;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>              ip;
+    <span class='token_type'>uint</span><span class='token_numeric'>  </span>              port = <span class='token_numeric'>0</span>;
     <span class='token_type'>String</span><span class='token_numeric'>  </span>            sni;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>   api_key;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>   api_secret;
-    <span class='token_type'>http</span>::<span class='token_type'>Headers</span><span class='token_numeric'>  </span>headers;
-    <span class='token_type'>Compression</span><span class='token_numeric'>  </span> compression;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>               api_key;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>               api_secret;
+    <span class='token_type'>http</span>::<span class='token_type'>Headers</span><span class='token_numeric'>  </span>      headers;
+    <span class='token_type'>Compression</span><span class='token_numeric'>  </span>          compression;
 };</pre>.</div>
 </div>
 <h1 class='subtitle'>Examples</h1>
@@ -32096,14 +32088,14 @@ client.<span class='token_type'>close</span>();</pre>
 	<div class='required' style='float: left; margin-left: 20px; margin-top: 0px;'>Required	</div>
 	</div>
 <div class='text' style='margin-top: 0px;'>The template arguments.<br/><br/>The arguments can contain the following fields:<br/><pre class='codeblock'><span class='token_keyword'>struct</span> <span class='token_type_def'>ClientTemplateArgs</span> {
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>  host;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>  ip;
-    <span class='token_type'>uint</span><span class='token_numeric'>  </span>  port = <span class='token_numeric'>0</span>;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>              host;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>              ip;
+    <span class='token_type'>uint</span><span class='token_numeric'>  </span>              port = <span class='token_numeric'>0</span>;
     <span class='token_type'>String</span><span class='token_numeric'>  </span>            sni;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>   api_key;
-    <span class='token_type'>String</span><span class='token_numeric'>  </span>   api_secret;
-    <span class='token_type'>http</span>::<span class='token_type'>Headers</span><span class='token_numeric'>  </span>headers;
-    <span class='token_type'>Compression</span><span class='token_numeric'>  </span> compression;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>               api_key;
+    <span class='token_type'>String</span><span class='token_numeric'>  </span>               api_secret;
+    <span class='token_type'>http</span>::<span class='token_type'>Headers</span><span class='token_numeric'>  </span>      headers;
+    <span class='token_type'>Compression</span><span class='token_numeric'>  </span>          compression;
 };</pre>.</div>
 </div>
 <h1 class='subtitle'>Examples</h1>
