@@ -1069,11 +1069,15 @@ public:
 	// Copy the path to another path.
 	/* @docs {
 		@title: Copy
-		@description: Copy the file path to another file path.
+		@description:
+			Copy the file path to another file path.
+			
+			The `buff` parameter will be not be used on macos.
+			Make sure the `buff` parameter is allocated when using `cp(const char* src, const char* dest, char* buff)`, otherwise this may cause undefined behaviour.
 		@usage:
 			vlib::Path x("/tmp/src");
 			x.cp("/tmp/dest");
-		@funcs: 4
+		@funcs: 5
 	}*/
 	void	cp(const Path& dest) {
 		cp(c_str(), dest.c_str());
@@ -1087,6 +1091,18 @@ public:
 	}
 	static inline
 	void	cp(const char* src, const char* dest) {
+		#if defined(__APPLE__)
+			cp(src, dest, NULL);
+		#elif defined(__linux__)
+			char* buff = new char [1024 * 1024];
+			cp(src, dest, buff);
+			delete[] buff;
+		#else
+			#error "The current operating system is not supported."
+		#endif
+	}
+	static inline
+	void	cp(const char* src, const char* dest, char* buff) {
 		
 		// Vars.
 		int sfd, dfd;
@@ -1123,7 +1139,7 @@ public:
 			::close(dfd);
 		
 		// Linux.
-		#else
+		#elif defined(__linux__)
 		
 			// Get file info.
 			struct stat stat_buf;
@@ -1168,10 +1184,9 @@ public:
 			}
 			
 			// Read from source and write to dest.
-			char buffer[1024 * 1024];
 			size_t bytesRead;
-			while ((bytesRead = fread(buffer, 1, sizeof(buffer), sfile)) > 0) {
-				size_t bytesWritten = fwrite(buffer, 1, bytesRead, dfile);
+			while ((bytesRead = fread(buff, 1, sizeof(buff), sfile)) > 0) {
+				size_t bytesWritten = fwrite(buff, 1, bytesRead, dfile);
 				if (bytesWritten != bytesRead) {
 					::fclose(sfile);
 					::fclose(dfile);
@@ -1201,6 +1216,9 @@ public:
 			::fclose(sfile);
 			::fclose(dfile);
 		
+		// Unsupported os.
+		#else
+			#error "The current operating system is not supported."
 		#endif
 		
 	}

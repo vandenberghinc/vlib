@@ -522,7 +522,6 @@ public:
 	 *		Bool success = file.read_line(line);
 	 *	@funcs: 2
 	} */
-	constexpr
 	Bool 	get_line(String& line) {
 		reopen(vlib::file::mode::read);
 		switch (line.capacity()) {

@@ -259,12 +259,23 @@ struct wrapper {
         
         /* V1 */
         llong status;
-        if ((status = SSL_write(ssl, data, len)) < 0) {
-            throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
-        }
-        struct pollfd pfd;
-        int fd = SSL_get_fd(ssl);
-        handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout);
+		struct pollfd pfd;
+		int fd = SSL_get_fd(ssl);
+		llong end_time = Date::get_mseconds() + timeout;
+		while (true) {
+			if (timeout != -1 && Date::get_mseconds() >= end_time) {
+				throw TimeoutError("Operation timed out.");
+			}
+			handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout);
+			errno = 0;
+			if ((status = SSL_write(ssl, data, len)) < 0) {
+				if (errno == EAGAIN) {
+					continue;
+				}
+				throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
+			}
+			break;
+		}
         return (ullong) status;
          
         

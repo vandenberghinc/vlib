@@ -379,9 +379,22 @@ void    Path::sync(
 	// Save files single process.
 	if (gb <= 0.25) { // 10GB
 		// speed_test.start("Save files");
+		#if defined(__APPLE__)
+			char* buff = NULL;
+		#elif defined(__linux__)
+			char* buff = new char [1024 * 1024];
+		#else
+			#error "The current operating system is not supported."
+		#endif
+		Path s, d;
 		for (auto& i: files) {
-			src.join(i->path).cp(dest.join(i->path));
+			s = src.join(i->path);
+			d = dest.join(i->path);
+			Path::cp(s.c_str(), d.c_str(), buff);
 		}
+		#if defined(__linux__)
+			delete[] buff;
+		#endif
 		// speed_test.end();
 	}
 	
@@ -391,9 +404,22 @@ void    Path::sync(
 		auto save_files = [&dest, &src](const Array<const internal::ScanInfo*>* files) -> Exception* {
 			try {
 				Path subpath;
+				#if defined(__APPLE__)
+					char* buff = NULL;
+				#elif defined(__linux__)
+					char* buff = new char [1024 * 1024];
+				#else
+					#error "The current operating system is not supported."
+				#endif
+				Path s, d;
 				for (auto& i: *files) {
-					src.join(i->path).cp(dest.join(i->path));
+					s = src.join(i->path);
+					d = dest.join(i->path);
+					Path::cp(s.c_str(), d.c_str(), buff);
 				}
+				#if defined(__linux__)
+					delete[] buff;
+				#endif
 				return NULL;
 			} catch (Exception& e) {
 				return new Exception(e);
