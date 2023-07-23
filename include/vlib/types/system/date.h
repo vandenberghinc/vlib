@@ -96,6 +96,12 @@ public:
 			m_parsed = true;
 		}
 	}
+	constexpr
+	void	safe_parse_tm() const {
+		if (!m_parsed) {
+			throw ParseError("The date has not yet been parsed, and can not be parsed due to the const status.");
+		}
+	}
 	
 	// Build tm.
 	struct tm	build_tm() const {
@@ -250,7 +256,7 @@ public:
 
 			// %C : century; like %Y, except omit last two digits (e.g., 21).
 			case 'C':
-				str.concat_r(tostr(1900 + time.tm_year).ensure_end_padding_r('0', 4).data(), 2);
+				str.concat_r(to_str(1900 + time.tm_year).ensure_end_padding_r('0', 4).data(), 2);
 				break;
 
 			// %d : day of month (e.g, 01).
@@ -260,18 +266,18 @@ public:
 					// %d : day of month (e.g, 01).
 					default:
 					case 0:
-						str.concat_r(tostr(time.tm_mday).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(time.tm_mday).ensure_start_padding_r('0', 2));
 						break;
 					// %_d : day of month, space padded; same as %e.
 					case 1:
-						str.concat_r(tostr(time.tm_mday).ensure_start_padding_r(' ', 2));
+						str.concat_r(to_str(time.tm_mday).ensure_start_padding_r(' ', 2));
 						break;
 				}
 				break;
 
 			// %e : day of month, space padded; same as %_d.
 			case 'e':
-				str.concat_r(tostr(time.tm_mday).ensure_start_padding_r(' ', 2));
+				str.concat_r(to_str(time.tm_mday).ensure_start_padding_r(' ', 2));
 				break;
 
 			// %D : date; same as %m/%d/%y.
@@ -298,13 +304,13 @@ public:
 
 			// %H : hour (00..23).
 			case 'H':
-				str.concat_r(tostr(time.tm_hour).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(time.tm_hour).ensure_start_padding_r('0', 2));
 				break;
 
 			// %I : hour (01..12).
 			case 'I':
 				str.concat_r(
-					tostr(
+					to_str(
 						(time.tm_hour + 1 <= 12) ?
 						time.tm_hour :
 						(time.tm_hour + 1) / 2
@@ -314,7 +320,7 @@ public:
 
 			// %j : day of year (001..366) .
 			case 'j':
-				str.concat_r(tostr(time.tm_yday + 1).ensure_start_padding_r('0', 3));
+				str.concat_r(to_str(time.tm_yday + 1).ensure_start_padding_r('0', 3));
 				break;
 
 			// %k : hour (0..23).
@@ -325,7 +331,7 @@ public:
 			// %l : hour ( 1..12) .
 			case 'l':
 				str.concat_r(
-					tostr(
+					to_str(
 						(time.tm_hour + 1 <= 12) ?
 						time.tm_hour :
 						(time.tm_hour + 1) / 2
@@ -335,12 +341,12 @@ public:
 
 			// %m : month (01..12).
 			case 'm':
-				str.concat_r(tostr(time.tm_mon+1).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(time.tm_mon+1).ensure_start_padding_r('0', 2));
 				break;
 
 			// %M : minute (00..59).
 			case 'M':
-				str.concat_r(tostr(time.tm_min).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(time.tm_min).ensure_start_padding_r('0', 2));
 				break;
 
 			// %n : a newline.
@@ -357,13 +363,13 @@ public:
 						);
 						break;
 					case 2:
-						str.concat_r(tostr(
+						str.concat_r(to_str(
 							(m_mtime - ((m_mtime / 1000) * 1000)) / 10
 						).ensure_start_padding_r('0', 2));
 						break;
 					default:
 					case 3:
-						str.concat_r(tostr(
+						str.concat_r(to_str(
 							m_mtime - ((m_mtime / 1000) * 1000)
 						).ensure_start_padding_r('0', 3));
 						break;
@@ -407,7 +413,7 @@ public:
 
 			// %S : second (00..60).
 			case 'S':
-				str.concat_r(tostr(time.tm_sec).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(time.tm_sec).ensure_start_padding_r('0', 2));
 				break;
 
 			// %t : a tab.
@@ -432,12 +438,12 @@ public:
 
 			// %U : week number of year, with Sunday as first day of week (00..53).
 			case 'U':
-				str.concat_r(tostr(week_h(time, true)).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(week_h(time, true)).ensure_start_padding_r('0', 2));
 				break;
 
 			// %V : ISO week number, with Monday as first day of week (01..53).
 			case 'V':
-				str.concat_r(tostr(week_h(time, false)).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(week_h(time, false)).ensure_start_padding_r('0', 2));
 				break;
 
 			// %w : day of week (1..7); 1 is Monday.
@@ -447,7 +453,7 @@ public:
 
 			// %W : week number of year, with Monday as first day of week (00..53).
 			case 'W':
-				str.concat_r(tostr(week_h(time, false)).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(week_h(time, false)).ensure_start_padding_r('0', 2));
 				break;
 
 			// %x : locale’s date representation (e.g., 12/31/99).
@@ -456,12 +462,12 @@ public:
 
 			// %y : last two digits of year (00..99).
 			case 'y':
-				str.concat_r(tostr(1900 + time.tm_year).ensure_end_padding_r('0', 4).data() + 2, 2);
+				str.concat_r(to_str(1900 + time.tm_year).ensure_end_padding_r('0', 4).data() + 2, 2);
 				break;
 
 			// %Y : year.
 			case 'Y':
-				str.concat_r(tostr(1900 + time.tm_year).ensure_end_padding_r('0', 4));
+				str.concat_r(to_str(1900 + time.tm_year).ensure_end_padding_r('0', 4));
 				break;
 
 			// %z : +hhmm numeric timezone (e.g., -0400).
@@ -480,32 +486,32 @@ public:
 					// %z : +hhmm numeric timezone (e.g., -0400).
 					default:
 					case 0:
-						str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
-						str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 						break;
 					// %:z : +hh:mm numeric timezone (e.g., -04:00)
 					case 1:
-						str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 						str.append(':');
-						str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 						break;
 					// %::z : +hh:mm:ss numeric time zone (e.g., -04:00:00).
 					case 2:
-						str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 						str.append(':');
-						str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 						str.append(':');
-						str.concat_r(tostr(sec).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(sec).ensure_start_padding_r('0', 2));
 						break;
 					// %:::z : numeric time zone with : to necessary precision (e.g., -04, +05:30).
 					case 3:
-						str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 						if (min > 0) {
 							str.append(':');
-							str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+							str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 							if (sec > 0) {
 								str.append(':');
-								str.concat_r(tostr(sec).ensure_start_padding_r('0', 2));
+								str.concat_r(to_str(sec).ensure_start_padding_r('0', 2));
 							}
 						}
 						break;
@@ -666,6 +672,11 @@ public:
 		safe_parse_tm();
 		return m_tm.tm_sec;
 	}
+	constexpr
+	auto& 	seconds() const {
+		safe_parse_tm();
+		return m_tm.tm_sec;
+	}
 	
 	// Get as minutes.
 	/* @docs {
@@ -674,6 +685,11 @@ public:
 	} */
 	constexpr
 	auto& 	minutes() {
+		safe_parse_tm();
+		return m_tm.tm_min;
+	}
+	constexpr
+	auto& 	minutes() const {
 		safe_parse_tm();
 		return m_tm.tm_min;
 	}
@@ -689,6 +705,12 @@ public:
         return m_tm.tm_hour;
         // return m_tm.tm_hour + m_tm.tm_isdst != 0 ? 1 : 0;
 	}
+	constexpr
+	auto& 	hour() const {
+		safe_parse_tm();
+		return m_tm.tm_hour;
+		// return m_tm.tm_hour + m_tm.tm_isdst != 0 ? 1 : 0;
+	}
 	
 	// Get as day of the month.
 	/* @docs {
@@ -697,6 +719,11 @@ public:
 	} */
 	constexpr
 	auto& 	mday() {
+		safe_parse_tm();
+		return m_tm.tm_mday;
+	}
+	constexpr
+	auto& 	mday() const {
 		safe_parse_tm();
 		return m_tm.tm_mday;
 	}
@@ -711,6 +738,11 @@ public:
 		safe_parse_tm();
 		return m_tm.tm_wday;
 	}
+	constexpr
+	auto& 	wday() const {
+		safe_parse_tm();
+		return m_tm.tm_wday;
+	}
 	
 	// Get as day of the year.
 	/* @docs {
@@ -722,6 +754,11 @@ public:
 		safe_parse_tm();
 		return m_tm.tm_yday;
 	}
+	constexpr
+	auto& 	yday() const {
+		safe_parse_tm();
+		return m_tm.tm_yday;
+	}
 	
 	// Get the day name.
 	/* @docs {
@@ -730,6 +767,20 @@ public:
 	} */
 	constexpr
 	auto 	day_name() {
+		safe_parse_tm();
+		switch (m_tm.tm_wday) {
+			case days::sun: return String("Sunday", 6);
+			case days::mon: return String("Monday", 6);
+			case days::tue: return String("Tuesday", 7);
+			case days::wed: return String("Wednesday", 9);
+			case days::thu: return String("Thursday", 8);
+			case days::fri: return String("Friday", 6);
+			case days::sat: return String("Saturday", 8);
+			default: return String("Unknown", 7);
+		}
+	}
+	constexpr
+	auto 	day_name() const {
 		safe_parse_tm();
 		switch (m_tm.tm_wday) {
 			case days::sun: return String("Sunday", 6);
@@ -762,6 +813,20 @@ public:
 			default: return String("Unknown", 7);
 		}
 	}
+	constexpr
+	auto 	day_name_abr() const {
+		safe_parse_tm();
+		switch (m_tm.tm_wday) {
+			case days::sun: return String("Sun", 3);
+			case days::mon: return String("Mon", 3);
+			case days::tue: return String("Tue", 3);
+			case days::wed: return String("Wed", 3);
+			case days::thu: return String("Thu", 3);
+			case days::fri: return String("Fri", 3);
+			case days::sat: return String("Sat", 3);
+			default: return String("Unknown", 7);
+		}
+	}
 	
 	// Get as month.
 	/* @docs {
@@ -773,6 +838,11 @@ public:
 		safe_parse_tm();
 		return m_tm.tm_mon;
 	}
+	constexpr
+	auto& 	month() const {
+		safe_parse_tm();
+		return m_tm.tm_mon;
+	}
 	
 	// Get the month name.
 	/* @docs {
@@ -781,6 +851,25 @@ public:
 	} */
 	constexpr
 	auto 	month_name() {
+		safe_parse_tm();
+		switch (m_tm.tm_mon) {
+			case months::jan: return String("January", 7);
+			case months::feb: return String("February", 8);
+			case months::mar: return String("March", 5);
+			case months::apr: return String("April", 5);
+			case months::may: return String("May", 3);
+			case months::jun: return String("June", 4);
+			case months::jul: return String("July", 4);
+			case months::aug: return String("August", 6);
+			case months::sep: return String("September", 9);
+			case months::oct: return String("October", 7);
+			case months::nov: return String("November", 8);
+			case months::dec: return String("December", 8);
+			default: return String("Unknown", 7);
+		}
+	}
+	constexpr
+	auto 	month_name() const {
 		safe_parse_tm();
 		switch (m_tm.tm_mon) {
 			case months::jan: return String("January", 7);
@@ -823,6 +912,25 @@ public:
 			default: return String("Unknown", 7);
 		}
 	}
+	constexpr
+	auto 	month_name_abr() const {
+		safe_parse_tm();
+		switch (m_tm.tm_mon) {
+			case months::jan: return String("Jan", 3);
+			case months::feb: return String("Feb", 3);
+			case months::mar: return String("Mar", 3);
+			case months::apr: return String("Apr", 3);
+			case months::may: return String("May", 3);
+			case months::jun: return String("Jun", 3);
+			case months::jul: return String("Jul", 3);
+			case months::aug: return String("Aug", 3);
+			case months::sep: return String("Sep", 3);
+			case months::oct: return String("Oct", 3);
+			case months::nov: return String("Nov", 3);
+			case months::dec: return String("Dec", 3);
+			default: return String("Unknown", 7);
+		}
+	}
 	
 	// Get as year.
 	/* @docs {
@@ -834,6 +942,11 @@ public:
 		safe_parse_tm();
 		return 1900 + m_tm.tm_year;
 	}
+	constexpr
+	auto 	year() const {
+		safe_parse_tm();
+		return 1900 + m_tm.tm_year;
+	}
 	
 	// Get the timezone offset from UTC in seconds.
 	/* @docs {
@@ -842,6 +955,11 @@ public:
 	} */
 	constexpr
 	auto& 	offset() {
+		safe_parse_tm();
+		return m_tm.tm_gmtoff;
+	}
+	constexpr
+	auto& 	offset() const {
 		safe_parse_tm();
 		return m_tm.tm_gmtoff;
 	}
@@ -859,36 +977,36 @@ public:
 			
 			// +hhmm numeric timezone (e.g., -0400).
 			case 0:
-				str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
-				str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 				break;
 		
 			// +hh:mm numeric timezone (e.g., -04:00)
 			default:
 			case 1:
-				str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 				str.append(':');
-				str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 				break;
 			
 			// +hh:mm:ss numeric time zone (e.g., -04:00:00).
 			case 2:
-				str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 				str.append(':');
-				str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 				str.append(':');
-				str.concat_r(tostr(sec).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(sec).ensure_start_padding_r('0', 2));
 				break;
 			
 			// numeric time zone with : to necessary precision (e.g., -04, +05:30).
 			case 3:
-				str.concat_r(tostr(hours).ensure_start_padding_r('0', 2));
+				str.concat_r(to_str(hours).ensure_start_padding_r('0', 2));
 				if (min > 0) {
 					str.append(':');
-					str.concat_r(tostr(min).ensure_start_padding_r('0', 2));
+					str.concat_r(to_str(min).ensure_start_padding_r('0', 2));
 					if (sec > 0) {
 						str.append(':');
-						str.concat_r(tostr(sec).ensure_start_padding_r('0', 2));
+						str.concat_r(to_str(sec).ensure_start_padding_r('0', 2));
 					}
 				}
 				break;
@@ -903,6 +1021,11 @@ public:
 	} */
 	constexpr
 	const char* timezone() {
+		safe_parse_tm();
+		return m_tm.tm_zone;
+	}
+	constexpr
+	const char* timezone() const {
 		safe_parse_tm();
 		return m_tm.tm_zone;
 	}
@@ -923,7 +1046,12 @@ public:
 		return week_h(m_tm, start_at_sunday);
 	}
 	constexpr
-	int 	week_h(struct tm& time, bool sunday_as_start = true) const {
+	int 	week(bool start_at_sunday = true) const {
+		safe_parse_tm();
+		return week_h(m_tm, start_at_sunday);
+	}
+	constexpr
+	int 	week_h(const struct tm& time, bool sunday_as_start = true) const {
 		
 		// Variables.
 		int leap = 0;
@@ -999,6 +1127,140 @@ public:
 		struct timespec time;
 		clock_gettime(CLOCK_REALTIME, &time);
 		return Date::get_mseconds(time);
+	}
+	
+	// Get milliseconds.
+	/* @docs {
+		@title: Milliseconds
+		@description: Get the current milliseconds.
+		@usage:
+			vlib::mtime_t now = vlib::Date::get_mseconds();
+	} */
+	static inline
+	mtime_t	get_mseconds() {
+		struct timespec time;
+		clock_gettime(CLOCK_REALTIME, &time);
+		return (time.tv_sec * 1000) + (time.tv_nsec / 1000000);
+	}
+	SICE
+	mtime_t	get_mseconds(struct timespec& time) {
+		return (time.tv_sec * 1000) + (time.tv_nsec / 1000000);
+	}
+	
+	// Get seconds.
+	/* @docs {
+		@title: Seconds
+		@description: Get the current seconds.
+		@usage:
+			time_t now = vlib::Date::get_mseconds();
+	} */
+	static inline
+	time_t	get_seconds() {
+		struct timespec time;
+		clock_gettime(CLOCK_REALTIME, &time);
+		return time.tv_sec;
+	}
+	SICE
+	time_t	get_seconds(struct timespec& time) {
+		return time.tv_sec;
+	}
+	
+	// Minute start.
+	/* 	@docs {
+	 *	@title: Minute start
+	 *	@description: Get the start of the minute timesamp from the current `Date` object.
+	 *	@usage:
+	 *		Date minute_start = vlib::Date::now().minute_start();
+	 } */
+	constexpr
+	Date	minute_start() {
+		safe_parse_tm();
+		return const_cast<const Date*>(this)->hour_start();
+	}
+	constexpr
+	Date	minute_start() const {
+		if (!m_parsed) {
+			String dumped = str("%m-%y");
+			return Date::parse(dumped.c_str(), "%m-%y");
+		}
+		Date obj = *this;
+		obj.sub_r(seconds() * 1000);
+		return obj;
+	}
+	
+	// Hour start.
+	/* 	@docs {
+	 *	@title: Hour start
+	 *	@description: Get the start of the hour timesamp from the current `Date` object.
+	 *	@usage:
+	 *		Date hour_start = vlib::Date::now().hour_start();
+	 } */
+	constexpr
+	Date	hour_start() {
+		safe_parse_tm();
+		return const_cast<const Date*>(this)->hour_start();
+	}
+	constexpr
+	Date	hour_start() const {
+		if (!m_parsed) {
+			String dumped = str("%m-%y");
+			return Date::parse(dumped.c_str(), "%m-%y");
+		}
+		Date obj = *this;
+		obj.sub_r(seconds() * 1000);
+		obj.sub_r(minutes() * 60 * 1000);
+		return obj;
+	}
+	
+	// Day start.
+	/* 	@docs {
+	 *	@title: Day start
+	 *	@description: Get the start of the day timesamp from the current `Date` object.
+	 *	@usage:
+	 *		Date day_start = vlib::Date::now().day_start();
+	 } */
+	constexpr
+	Date	day_start() {
+		safe_parse_tm();
+		return const_cast<const Date*>(this)->day_start();
+	}
+	constexpr
+	Date	day_start() const {
+		if (!m_parsed) {
+			String dumped = str("%m-%y");
+			return Date::parse(dumped.c_str(), "%m-%y");
+		}
+		Date obj = *this;
+		obj.sub_r(seconds() * 1000);
+		obj.sub_r(minutes() * 60 * 1000);
+		obj.sub_r(hour() * 3600 * 1000);
+		return obj;
+	}
+	
+	// Month start.
+	/* 	@docs {
+	 *	@title: Month start
+	 *	@description: Get the start of the month timesamp from the current `Date` object.
+	 *	@usage:
+	 *		Date month_start = vlib::Date::now().month_start();
+	} */
+	constexpr
+	Date	month_start() {
+		safe_parse_tm();
+		return const_cast<const Date*>(this)->month_start();
+	}
+	constexpr
+	Date	month_start() const {
+		if (!m_parsed) {
+			String dumped = str("%m-%y");
+			return Date::parse(dumped.c_str(), "%m-%y");
+		}
+		Date obj = *this;
+		obj.sub_r(seconds() * 1000);
+		obj.sub_r(minutes() * 60 * 1000);
+		obj.sub_r(hour() * 3600 * 1000);
+		obj.sub_r(mday() * 3600 * 24 * 1000);
+		return obj;
 	}
 	
 	// Add.
@@ -1141,11 +1403,11 @@ public:
 	} */
 	SICE
 	This	parse(const char* unix, ullong len) {
-		return tonumeric<long>(unix, len);
+		return to_num<long>(unix, len);
 	}
 	SICE
 	This	parse(const char* unix) {
-		return tonumeric<long>(unix);
+		return to_num<long>(unix);
 	}
 	
 	// Parse from a formatted date string.
@@ -1157,7 +1419,7 @@ public:
 	This	parse(const char* timestamp, const char* format) {
 		struct tm tm = {};
 		if (strptime(timestamp, format, &tm) == NULL) {
-			throw ParseError(tostr("Unable to parse date string \"", timestamp, "\" with format \"", format, "\"."));
+			throw ParseError(to_str("Unable to parse date string \"", timestamp, "\" with format \"", format, "\"."));
 		}
 		return (mktime(&tm) - (tm.tm_isdst != 0 ? 3600 : 0)) * 1000;
 	}
@@ -1217,53 +1479,17 @@ public:
 		return *m_str;
 	}
 	
-	String		str() const {
+	String	str() const {
 		struct tm time = build_tm();
 		String formatted;
 		str_h(formatted, time, default_format);
 		return formatted;
 	}
-	String		str(const char* format) const {
+	String	str(const char* format) const {
 		struct tm time = build_tm();
 		String formatted;
 		str_h(formatted, time, format);
 		return formatted;
-	}
-
-	// Get milliseconds.
-	/* @docs {
-		@title: Milliseconds
-		@description: Get the current milliseconds.
-		@usage:
-			vlib::mtime_t now = vlib::Date::get_mseconds();
-	} */
-	static inline
-	mtime_t	get_mseconds() {
-		struct timespec time;
-		clock_gettime(CLOCK_REALTIME, &time);
-		return (time.tv_sec * 1000) + (time.tv_nsec / 1000000);
-	}
-	SICE
-	mtime_t	get_mseconds(struct timespec& time) {
-		return (time.tv_sec * 1000) + (time.tv_nsec / 1000000);
-	}
-	
-	// Get seconds.
-	/* @docs {
-		@title: Seconds
-		@description: Get the current seconds.
-		@usage:
-			time_t now = vlib::Date::get_mseconds();
-	} */
-	static inline
-	time_t	get_seconds() {
-		struct timespec time;
-		clock_gettime(CLOCK_REALTIME, &time);
-		return time.tv_sec;
-	}
-	SICE
-	time_t	get_seconds(struct timespec& time) {
-		return time.tv_sec;
 	}
 	
 	// ---------------------------------------------------------

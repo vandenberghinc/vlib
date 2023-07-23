@@ -55,7 +55,7 @@ String  dns_blacklist(
         hints.ai_socktype = SOCK_STREAM;
         
         // Query records
-        String full_domain = tostr(reversed, domain);
+        String full_domain = to_str(reversed, domain);
         int res = getaddrinfo(full_domain.c_str(), NULL, &hints, &result);
         if (res == 0) {
             

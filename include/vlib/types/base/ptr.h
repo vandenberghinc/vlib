@@ -82,18 +82,11 @@ public:
 
 	// Type constructor.
 	constexpr
-	Ptr (const Type& x) requires (is_Unique<Status>::value) :
-	m_ptr(new Type (x)) {}
+	Ptr (Type x) requires (is_Unique<Status>::value) :
+	m_ptr(new Type (move(x))) {}
 	constexpr
-	Ptr (Type&& x) requires (is_Unique<Status>::value) :
-	m_ptr(new Type (x)) {}
-	constexpr
-	Ptr (const Type& x) requires (is_Shared<Status>::value) :
-	m_ptr(new Type (x)),
-	m_links(new Links (0)) {}
-	constexpr
-	Ptr (Type&& x) requires (is_Shared<Status>::value) :
-	m_ptr(new Type (x)),
+	Ptr (Type x) requires (is_Shared<Status>::value) :
+	m_ptr(new Type (move(x))),
 	m_links(new Links (0)) {}
 
 	// Copy constructor.
@@ -188,18 +181,11 @@ public:
 		@title: Reconstruct
 		@description:
 			Reconstruct the pointer.
-		@funcs: 2
 	} */
 	constexpr
-	This& 	reconstruct(const Type& pointee) {
-		if (m_ptr)	{ *m_ptr = pointee; }
-		else 		{ m_ptr = new Type (pointee); }
-		return *this;
-	}
-	constexpr
-	This& 	reconstruct(Type&& pointee) {
-		if (m_ptr)	{ *m_ptr = pointee; }
-		else 		{ m_ptr = new Type (pointee); }
+	This& 	reconstruct(Type pointee) {
+		if (m_ptr)	{ *m_ptr = move(pointee); }
+		else 		{ m_ptr = new Type (move(pointee)); }
 		return *this;
 	}
 
@@ -211,18 +197,18 @@ public:
 	} */
 	template <typename... Args> constexpr
 	This& 	reconstruct_by_type_args(Args&&... args) requires (is_Unique<Status>::value) {
-		if (m_ptr)	{ *m_ptr = std::move(Type(args...)); }
+		if (m_ptr)	{ *m_ptr = move(Type(args...)); }
 		else 		{ m_ptr = new Type (args...); }
 		return *this;
 	}
 	template <typename... Args> constexpr
 	This& 	reconstruct_by_type_args(Args&&... args) requires (is_Shared<Status>::value) {
-		if (m_ptr)	{ *m_ptr = std::move(Type(args...)); }
+		if (m_ptr)	{ *m_ptr = move(Type(args...)); }
 		else 		{ m_ptr = new Type (args...); }
-		if (*m_links != 0) {
-			--(*m_links);
-			m_links = new Links(0);
-		}
+		// if (*m_links != 0) {
+		// 	--(*m_links);
+		// 	m_links = new Links(0);
+		// }
 		return *this;
 	}
 
@@ -244,7 +230,9 @@ public:
 		if (*m_links == 0) 	{
 			delete m_ptr;
 			delete m_links;
-		} else { --(*m_links); }
+		} else {
+			--(*m_links);
+		}
 		m_ptr = obj.m_ptr;
 		m_links = obj.m_links;
 		++(*m_links);

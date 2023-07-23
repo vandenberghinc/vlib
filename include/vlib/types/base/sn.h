@@ -154,15 +154,15 @@ public:
         ullong pre_len = 0;
         ullong pre_capacity = 0;
 		if (precision == 0) {
-			vlib::array::append(pre, pre_len, pre_capacity, tochar(round<uint>(m_double)));
+			vlib::array::append(pre, pre_len, pre_capacity, to_char(round<uint>(m_double)));
 		} else {
-            vlib::array::append(pre, pre_len, pre_capacity, tochar(floor<uint>(m_double)));
+            vlib::array::append(pre, pre_len, pre_capacity, to_char(floor<uint>(m_double)));
             vlib::array::append(pre, pre_len, pre_capacity, '.');
 			uint l_precision;
 			if (precision == -1) { l_precision = vlib::cast<char*>::precision(); }
 			else { l_precision = (uint) precision; }
 			for (auto& i: internal::math::iterate_decimals(todecimals(round(m_double, (int) l_precision)), l_precision, true)) {
-                vlib::array::append(pre, pre_len, pre_capacity, tochar(i));
+                vlib::array::append(pre, pre_len, pre_capacity, to_char(i));
 			}
 		}
 
@@ -175,7 +175,7 @@ public:
 			vlib::array::append(post, post_len, post_capacity, '+');
 			if (m_pow >= 0 && m_pow < 10) {
                 vlib::array::append(post, post_len, post_capacity, '0');
-                vlib::array::append(post, post_len, post_capacity, tochar(m_pow));
+                vlib::array::append(post, post_len, post_capacity, to_char(m_pow));
             }
 			else {
 				vlib::cast<char*>(post, post_len, post_capacity, m_pow);
@@ -184,7 +184,7 @@ public:
             vlib::array::append(post, post_len, post_capacity, '-');
 			if (m_pow <= 0 && m_pow > -10) {
                 vlib::array::append(post, post_len, post_capacity, '0');
-                vlib::array::append(post, post_len, post_capacity, tochar(-m_pow));
+                vlib::array::append(post, post_len, post_capacity, to_char(-m_pow));
             }
 			else {
 				vlib::cast<char*>(post, post_len, post_capacity, -m_pow);
@@ -194,7 +194,7 @@ public:
 		// Concat.
 		if (max_len > 0) {
 			if ((ullong) max_len < post.len<ref_t>()) {
-				throw std::runtime_error(tostr(
+				throw std::runtime_error(to_str(
 				    "Unable to create a scientific notation with max length of \"",
 				    max_len,
 				    "\" min length is \"",

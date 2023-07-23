@@ -50,7 +50,7 @@ struct desc {
 
 // Convert the enum to a string description.
 inline constexpr
-auto& tostr(short version) {
+auto& to_str(short version) {
 	switch (version) {
 		case versions::undefined:
 			return desc::undefined;

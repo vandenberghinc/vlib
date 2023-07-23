@@ -53,9 +53,9 @@ private:
 		if (result == NULL) {
 			if (!throw_exceptions) { return -1; }
 			if (s == 0) {
-				throw ParseError(tostr("Unable to find group \"", gid, "\"."));
+				throw ParseError(to_str("Unable to find group \"", gid, "\"."));
 			} else {
-				throw ParseError(tostr("Unknown error [errno: ", errno, "]."));
+				throw ParseError(to_str("Unknown error [errno: ", errno, "]."));
 			}
 		}
 		return 0;
@@ -80,9 +80,9 @@ private:
 		if (result == NULL) {
 			if (!throw_exceptions) { return -1; }
 			if (s == 0) {
-				throw ParseError(tostr("Unable to find group \"", name, "\"."));
+				throw ParseError(to_str("Unable to find group \"", name, "\"."));
 			} else {
-				throw ParseError(tostr("Unknown error [errno: ", errno, "]."));
+				throw ParseError(to_str("Unknown error [errno: ", errno, "]."));
 			}
 		}
 		// free(result);
@@ -488,7 +488,7 @@ public:
         struct group gr;
         if (getgrnam_wrapper(name, gr, buff, false) != 0) {
             delete[] buff;
-            throw ParseError(tostr("Unable to find group \"", name, "\"."));
+            throw ParseError(to_str("Unable to find group \"", name, "\"."));
         }
         Int s = gr.gr_gid;
         delete[] buff;
@@ -511,7 +511,7 @@ public:
         struct group gr;
         if (getgrgid_wrapper((uint) gid.value(), gr, buff, false) != 0) {
             delete[] buff;
-            throw ParseError(tostr("Unable to find group \"", gid, "\"."));
+            throw ParseError(to_str("Unable to find group \"", gid, "\"."));
         }
         String name = gr.gr_name;
         delete[] buff;
@@ -558,7 +558,7 @@ public:
 
 			 // Create the group.
 			 command.c_str(),
-			 tostr("usermod -a -G ", name, " root"),
+			 to_str("usermod -a -G ", name, " root"),
 
 			 // Handler.
 			 "exit 0"
@@ -568,10 +568,10 @@ public:
 		Proc proc;
 		proc.timeout = 5000;
 		if ((status = proc.execute(script)) != 0) {
-            throw CreateError(tostr("Unable to create group \"", name, "\"."));
+            throw CreateError(to_str("Unable to create group \"", name, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw CreateError(tostr("Unable to create group \"", name, "\"."));
+            throw CreateError(to_str("Unable to create group \"", name, "\"."));
 		}
 
 	}
@@ -591,16 +591,16 @@ public:
 		// User.
 		if (l_gid == -1) {
 			if ((status = proc.execute("dscl . list /Groups gid | awk '{print $2}' | sort -n | tail -1")) != 0) {
-                throw CreateError(tostr("Unable to create group \"", name, "\"."));
+                throw CreateError(to_str("Unable to create group \"", name, "\"."));
 			}
 			if (proc.exit_status() != 0) {
-                throw CreateError(tostr("Unable to create group \"", name, "\"."));
+                throw CreateError(to_str("Unable to create group \"", name, "\"."));
 			}
 			if (!proc.has_out()) {
-                throw CreateError(tostr("Unable to create group \"", name, "\"."));
+                throw CreateError(to_str("Unable to create group \"", name, "\"."));
 			}
 			proc.out().replace_end_r("\n");
-			l_gid = tonumeric<int>(proc.out().data(), proc.out().len()) + 1;
+			l_gid = to_num<int>(proc.out().data(), proc.out().len()) + 1;
 			if (l_gid < 1000) { l_gid = 1000; }
 		}
 
@@ -610,9 +610,9 @@ public:
 						 "set -e",
 
 						 // Arguments.
-						 tostr("GroupName=\"", name, "\""),
-						 // tostr("RealName=\"", realname, "\""),
-						 tostr("GroupID=\"", l_gid, "\""),
+						 to_str("GroupName=\"", name, "\""),
+						 // to_str("RealName=\"", realname, "\""),
+						 to_str("GroupID=\"", l_gid, "\""),
 
 						 // Check root permission.
 						 "if [[ `id -u` != 0 ]]; then",
@@ -629,7 +629,7 @@ public:
 						 // Create the group.
 						 "dscl . create /Groups/$GroupName",
 						 // "dscl . create /Groups/$GroupName RealName $RealName",
-						 tostr("dscl . create /Groups/$GroupName passwd \"", pass, "\""),
+						 to_str("dscl . create /Groups/$GroupName passwd \"", pass, "\""),
 						 "dscl . create /Groups/$GroupName gid $GroupID",
 						 "dscl . create /Groups/$GroupName GroupMembership root",
 
@@ -641,10 +641,10 @@ public:
 		// Execute the script.
 		proc.timeout = 5000;
 		if ((status = proc.execute(script)) != 0) {
-            throw CreateError(tostr("Unable to create group \"", name, "\"."));
+            throw CreateError(to_str("Unable to create group \"", name, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw CreateError(tostr("Unable to create group \"", name, "\"."));
+            throw CreateError(to_str("Unable to create group \"", name, "\"."));
 		}
 
 	}
@@ -655,7 +655,7 @@ public:
 	void 	del_h() {
 		int status;
 		if (!safe_parse()) {
-            throw InvalidGIDError(tostr("Invalid group id \"", m_gid, "\"."));
+            throw InvalidGIDError(to_str("Invalid group id \"", m_gid, "\"."));
 		}
 		Proc proc { .timeout = 5000 };
 		#if OSID <= 0 || OSID >= 4
@@ -664,7 +664,7 @@ public:
 						     "set -e",
 
 							 // Variables.
-							 tostr("GroupName=\"", m_name, "\""),
+							 to_str("GroupName=\"", m_name, "\""),
 
 							 // Check root permission.
 							 "if [[ `id -u` != 0 ]]; then",
@@ -684,7 +684,7 @@ public:
 						     "set -e",
 
 							 // Variables.
-							 tostr("GroupName=\"", m_name, "\""),
+							 to_str("GroupName=\"", m_name, "\""),
 
 							 // Check root permission.
 							 "if [[ `id -u` != 0 ]]; then",
@@ -708,10 +708,10 @@ public:
 
 		// Execute the script.
 		if ((status = proc.execute(script)) != 0) {
-            throw RemoveError(tostr("Unable to remove group \"", m_gid, "\"."));
+            throw RemoveError(to_str("Unable to remove group \"", m_gid, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw RemoveError(tostr("Unable to remove group \"", m_gid, "\"."));
+            throw RemoveError(to_str("Unable to remove group \"", m_gid, "\"."));
 		}
 
 	}
@@ -763,7 +763,7 @@ public:
 		
 		// Parse.
 		if (!safe_parse()) {
-            throw InvalidGIDError(tostr("Invalid group id \"", m_gid, "\"."));
+            throw InvalidGIDError(to_str("Invalid group id \"", m_gid, "\"."));
 		}
 
 		// Vard.
@@ -794,7 +794,7 @@ public:
 		
 		// Execute the script.
 		if ((status = proc.execute(script)) != 0) {
-            throw AddError(tostr("Unable to add user \"", username, "\" to group \"", m_gid, "\"."));
+            throw AddError(to_str("Unable to add user \"", username, "\" to group \"", m_gid, "\"."));
 		}
 		if (proc.exit_status() == 0) {
 			if (m_members.len() == 0) {
@@ -803,7 +803,7 @@ public:
 			m_members.append(username, args...);
 		}
 		else {
-            throw AddError(tostr("Unable to add user \"", username, "\" to group \"", m_gid, "\"."));
+            throw AddError(to_str("Unable to add user \"", username, "\" to group \"", m_gid, "\"."));
 		}
 
 	}
@@ -854,7 +854,7 @@ public:
 		
 		int status;
 		if (!safe_parse()) {
-            throw InvalidGIDError(tostr("Invalid gid \"", m_gid, "\"."));
+            throw InvalidGIDError(to_str("Invalid gid \"", m_gid, "\"."));
 		}
 		Proc proc { .timeout = 5000 };
 		String remove_command;
@@ -878,7 +878,7 @@ public:
 
 		// Execute the script.
 		if ((status = proc.execute(script)) != 0) {
-            throw RemoveError(tostr("Unable to remove user \"", username, "\" from group \"", m_gid, "\"."));
+            throw RemoveError(to_str("Unable to remove user \"", username, "\" from group \"", m_gid, "\"."));
 		}
 		// std::cout << "ERRNO: " << proc.m_errno << "\n";
 		// std::cout << "EXIT STATUS: " << proc.exit_status() << "\n";
@@ -888,7 +888,7 @@ public:
 			m_members.remove(username, args...);
 		}
 		else {
-            throw RemoveError(tostr("Unable to remove user \"", username, "\" from group \"", m_gid, "\"."));
+            throw RemoveError(to_str("Unable to remove user \"", username, "\" from group \"", m_gid, "\"."));
 		}
 
 	}

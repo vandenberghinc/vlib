@@ -82,7 +82,7 @@ enum statuses {
 	not_extended =						510,
 	network_auth_required =				511,
     // Custom statuses.
-    two_factor_auth_required =          601,
+    two_factor_auth_required =          601, // should not be changed, used by vweb js.
 };
 
 // Descriptions.
@@ -147,7 +147,7 @@ struct desc {
 
 // Convert the error number to a string description.
 inline constexpr
-auto& tostr(int status) {
+auto& to_str(int status) {
 	switch (status) {
 		case statuses::undefined:
 			return desc::undefined;

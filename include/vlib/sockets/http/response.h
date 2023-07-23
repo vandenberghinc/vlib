@@ -43,8 +43,9 @@ namespace http {
 
 struct Response {
 
-// Private.
-private:
+// Public.
+// - Need to be public for Parser.
+public:
 
 	// ---------------------------------------------------------
 	// Aliases.
@@ -54,13 +55,21 @@ private:
 	// ---------------------------------------------------------
 	// Attributes.
 
-	short 					m_version = vlib::http::version::undefined; // the http version.
-	short 					m_status; 		// the http status code.
-	SPtr<String>			m_status_desc;	// a shared pointer to the http status code description.
-	short					m_content_type;	// the content type id.
-	Headers				    m_headers;		// a shared pointer to the array of http header values.
-	SPtr<String>			m_body;			// a shared pointer to http message body.
-	SPtr<String>			m_data;			// a shared pointer to the entire request in string format.
+	short 			m_version = vlib::http::version::undefined; // the http version.
+	short 			m_status = 0; 		// the http status code.
+	String			m_status_desc;	// a shared pointer to the http status code description.
+	short			m_content_type = vlib::http::content_type::undefined;	// the content type id.
+	Headers			m_headers;		// a shared pointer to the array of http header values.
+	String			m_body;			// a shared pointer to http message body.
+	String			m_data;			// a shared pointer to the entire request in string format.
+
+	// ---------------------------------------------------------
+	// Static attribute.
+	
+	SICE short type = 2; // 1 for request and 2 for response.
+	
+// Private.
+private:
 
 	// ---------------------------------------------------------
 	// Private functions.
@@ -76,91 +85,9 @@ private:
 	//   * The method string is not comprised of uppercase characters.
 	constexpr
 	This& 	parse() {
-
-		// Init / reset.
-		if (!m_data) { return *this; }
-		m_version = vlib::http::version::undefined;
-		m_status = vlib::http::status::undefined;
-		if (m_status_desc) { m_status_desc->reset(); }
-		else { m_status_desc.init(); }
-		m_content_type = vlib::http::content_type::undefined;
-		if (!m_headers.is_undefined()) { m_headers.reset(); }
-		if (m_body) { m_body->reset(); }
-		else { m_body.init(); }
-
-		// Variables.
-		char*& 		data = m_data->data();
-		auto& 		len = m_data->len();
-		ullong 		start_index = 0;
-		ullong 		index = 0;
-		bool 		stop = false;
-
-		// Is type variable.
-		// - 0 for the 1th item of the first line.
-		// - 1 for the 2th item of the first line
-		// - 2 for the 3th item of the first line.
-		ushort 	is_type = 0;
-
-		// Iterate.
-		for (; index < len; ++index) {
-			switch (is_type) {
-
-				// Is the first item of the first line.
-				case 0: {
-					switch (data[index]) {
-						case ' ': {
-							vlib::http::wrapper::parse_version(m_version, data, len, start_index);
-							is_type = 1;
-							start_index = index + 1;
-							continue;
-						}
-						default: continue;
-					}
-				}
-
-				// Is the second item of the first line.
-				case 1: {
-					switch (data[index]) {
-						case ' ': {
-							vlib::http::wrapper::parse_status(m_status, data, len, start_index);
-							is_type = 2;
-							start_index = index + 1;
-							continue;
-						}
-						default: continue;
-					}
-				}
-
-				// Is the third item of the first line.
-				case 2: {
-					switch (data[index]) {
-						case '\n': {
-							switch (data[index-1]) {
-								case '\r': {
-									m_status_desc.reconstruct_by_type_args(
-										data + start_index,
-										index - start_index - 1
-									);
-									start_index = index + 1;
-									stop = true;
-									break;
-								}
-								default: continue;
-							}
-							break;
-						}
-						default: continue;
-					}
-					break;
-				}
-				default: continue;
-			}
-			if (stop) { break; }
-		}
-		++index;
-		vlib::http::wrapper::parse_headers_and_body(m_content_type, m_headers, m_body, m_data, index, start_index);
-
-		// Handler.
+		reset();
+		Parser parser (*this);
+		parser.parse(m_data);
 		return *this;
 	}
 
@@ -173,7 +100,7 @@ public:
 	// Reconstructor from a data parse.
 	constexpr
 	auto&	reconstruct(const char* data, ullong len) {
-		m_data->reconstruct(data, len);
+		m_data.reconstruct(data, len);
 		parse();
 		return *this;
 	}
@@ -181,7 +108,7 @@ public:
 	// Reconstructor from a data parse.
 	constexpr
 	auto&	reconstruct(const String& data) {
-		m_data->copy(data);
+		m_data.copy(data);
 		parse();
 		return *this;
 	}
@@ -189,7 +116,7 @@ public:
 	// Reconstructor from a data parse swap.
 	constexpr
 	auto&	reconstruct(String&& data) {
-		m_data->swap(data);
+		m_data.swap(data);
 		parse();
 		return *this;
 	}
@@ -374,16 +301,14 @@ public:
 	// Assignment operator from a data copy.
 	constexpr
 	auto&	operator =(const String& data) {
-		if (m_data) { m_data->copy(data); }
-		else { m_data = data; }
+		m_data = data;
 		return parse();
 	}
 
 	// Assignment operator from a data swap.
 	constexpr
 	auto&	operator =(String&& data) {
-		if (m_data) { m_data->swap(data); }
-		else { m_data = data; }
+		m_data = data;
 		return parse();
 	}
 
@@ -470,7 +395,7 @@ public:
 	} */
 	constexpr
 	bool 	has_status_desc() const {
-		return m_status_desc && m_status_desc->is_defined();
+		return m_status_desc.is_defined();
 	}
 	/*  @docs {
 		@title: Status description
@@ -482,11 +407,11 @@ public:
 	} */
 	constexpr
 	auto& 	status_desc() {
-		return *m_status_desc;
+		return m_status_desc;
 	}
 	constexpr
 	auto& 	status_desc() const {
-		return *m_status_desc;
+		return m_status_desc;
 	}
 
 	// Status description.
@@ -560,7 +485,7 @@ public:
 	} */
 	constexpr
 	bool 	has_body() const {
-		return m_body && m_body->is_defined();
+		return m_body.is_defined();
 	}
 	/*  @docs {
 		@title: Body
@@ -572,11 +497,11 @@ public:
 	} */
 	constexpr
 	auto& 	body() {
-		return *m_body;
+		return m_body;
 	}
 	constexpr
 	auto& 	body() const {
-		return *m_body;
+		return m_body;
 	}
 	
 	/*  @docs {
@@ -587,8 +512,7 @@ public:
 	} */
 	constexpr
 	Json 	json() const {
-		if (m_body) { return *m_body; }
-		return Json();
+		return m_body;
 	}
     
     /*  @docs {
@@ -598,8 +522,7 @@ public:
     } */
     constexpr
     JArray  jarray() const {
-        if (m_body) { return Json::parse_brackets(m_body->data(), m_body->len()); }
-        return JArray();
+        return Json::parse_brackets(m_body.data(), m_body.len());
     }
 
 	// Data.
@@ -611,7 +534,7 @@ public:
 	} */
 	constexpr
 	bool 	has_data() const {
-		return m_data.is_defined() && m_data->is_defined();
+		return m_data.is_defined();
 	}
 	/*  @docs {
 		@title: Data
@@ -621,17 +544,17 @@ public:
 	} */
 	constexpr
 	auto& 	data() {
-        if (m_data.is_undefined() || m_data->is_undefined()) {
+        if (m_data.is_undefined()) {
             build();
         }
-		return *m_data;
+		return m_data;
 	}
 	constexpr
 	auto& 	data() const {
-        if (!m_data || m_data->is_undefined()) {
+        if (m_data.is_undefined()) {
             throw InvalidUsageError("The response body has not yet been build and can not be build for a const object.");
         }
-		return *m_data;
+		return m_data;
 	}
 	
 	// ---------------------------------------------------------
@@ -643,13 +566,13 @@ public:
 		@description: Reset all attributes.
 	} */
 	constexpr
-	auto& 	reset() {
+	This& 	reset() {
 		m_version = vlib::http::version::undefined;
 		m_status = vlib::http::status::undefined;
-		m_status_desc->reset();
+		m_status_desc.reset();
 		m_headers.reset();
-		m_body->reset();
-		m_data->reset();
+		m_body.reset();
+		m_data.reset();
 		return *this;
 	}
     
@@ -692,7 +615,7 @@ public:
 	constexpr
 	This& 	add_status(int status) {
         m_status = status;
-        m_status_desc = http::status::tostr(status);
+        m_status_desc = http::status::to_str(status);
 		return *this;
 	}
 
@@ -710,7 +633,7 @@ public:
 		return *this;
 	}
     constexpr
-    This&    add_header(String&& key, String&& value) {
+    This&   add_header(String&& key, String&& value) {
         m_headers.append(key, value);
         return *this;
     }
@@ -755,7 +678,7 @@ public:
 	}
 	constexpr
 	This&	add_body(const char* body, ullong len) {
-        m_body->reconstruct(body, len);
+        m_body.reconstruct(body, len);
 		return *this;
 	}
 
@@ -777,49 +700,63 @@ public:
     // Build the http response.
     constexpr
     This&   build() {
-        m_data->reset();
+        m_data.reset();
         
         // Add version.
-        m_data->expand(9);
-        m_data->concat_no_resize_r(http::version::tostr(m_version));
-        m_data->append_no_resize(' ');
+        m_data.expand(9);
+        m_data.concat_no_resize_r(http::version::to_str(m_version));
+        m_data.append_no_resize(' ');
         
         // Add status.
-        m_data->expand(6);
-        m_data->concat_no_resize_r(m_status);
-        m_data->append_no_resize(' ');
-        m_data->concat_r(*m_status_desc);
-        m_data->expand(2);
-        m_data->append_no_resize('\r');
-        m_data->append_no_resize('\n');
+        m_data.expand(6);
+        m_data.concat_no_resize_r(m_status);
+        m_data.append_no_resize(' ');
+        m_data.concat_r(m_status_desc);
+        m_data.expand(2);
+        m_data.append_no_resize('\r');
+        m_data.append_no_resize('\n');
         
         // Add headers.
         for (auto& i: m_headers.indexes()) {
             String &key = m_headers.key(i), &value = m_headers.value(i);
-            vlib::http::wrapper::add_header(m_data, key.data(), key.len(), value.data(), value.len());
+			m_data.expand(key.len() + value.len() + 3);
+			m_data.concat_no_resize_r(key);
+			m_data.append_no_resize(':');
+			m_data.concat_no_resize_r(value);
+			m_data.append_no_resize('\r');
+			m_data.append_no_resize('\n');
         }
         
         // Add body.
-        if (m_body && m_body->is_defined()) {
+        if (m_body.is_defined()) {
             
             // Add content length header.
             String cont_len;
-            cont_len << m_body->len();
-            vlib::http::wrapper::add_header(m_data, "Content-Length", 14, cont_len.data(), cont_len.len());
+            cont_len << m_body.len();
+			m_data.expand(15 + cont_len.len() + 3);
+			m_data.concat_no_resize_r("Content-Length", 14);
+			m_data.append_no_resize(':');
+			m_data.concat_no_resize_r(cont_len);
+			m_data.append_no_resize('\r');
+			m_data.append_no_resize('\n');
             
             // Add body.
-            vlib::http::wrapper::add_body(m_data, m_body->data(), m_body->len());
+			m_data.expand(m_body.len() + 2);
+			m_data.append_no_resize('\r');
+			m_data.append_no_resize('\n');
+			m_data.concat_no_resize_r(m_body);
+			m_data.null_terminate();
             
         // Add end crlf's.
         } else {
-            m_data->expand(2);
-            m_data->append_no_resize('\r');
-            m_data->append_no_resize('\n');
-            m_data->null_terminate();
+            m_data.expand(2);
+            m_data.append_no_resize('\r');
+            m_data.append_no_resize('\n');
+            m_data.null_terminate();
         }
         
         // Null terminate.
-        m_data->null_terminate();
+        m_data.null_terminate();
         return *this;
     }
 	
@@ -828,6 +765,7 @@ public:
 	
 	// Receive from socket.
 	// Only supports HTTP/1.1.
+	/*
 	template <typename Socket> SICE
 	This 	receive(
 		Socket& 	sock,
@@ -850,17 +788,18 @@ public:
 			
 			// Receive.
             sock.recv(received, timeout);
-			auto& data = received.data();
+			const char* data = received.data();
+			auto& len = received.len();
 			
 			// Iterate new data.
-			for (auto& index: received.indexes(received_len, received.len())) {
+			for (auto& index: received.indexes(received_len, len)) {
 				switch (mode) {
 					
 				// HTTP Version.
 				case 0:
 					switch (data[index]) {
 					case ' ':
-						http::wrapper::parse_version(response.m_version, received.data(), received.len(), start_index);
+						http::wrapper::parse_version(response.m_version, data, len, start_index);
 						start_index = index + 1;
 						mode = 1;
 						continue;
@@ -872,7 +811,7 @@ public:
 				case 1:
 					switch (data[index]) {
 					case ' ':
-						http::wrapper::parse_status(response.m_status, received.data(), received.len(), start_index);
+						http::wrapper::parse_status(response.m_status, data, len, start_index);
 						start_index = index + 1;
 						mode = 2;
 						continue;
@@ -886,7 +825,7 @@ public:
 					case '\n':
 						switch (data[index-1]) {
 						case '\r':
-							response.m_status_desc.reconstruct_by_type_args(
+							response.m_status_desc.reconstruct(
 								data + start_index,
 								index - start_index - 1
 							);
@@ -968,9 +907,6 @@ public:
 										loop = false;
 										continue;
 									}
-									if (response.m_body.is_undefined()) {
-										response.m_body.init();
-									}
 								default:
 									continue;
 								}
@@ -981,7 +917,7 @@ public:
 						
 						// End of chunk.
 						else if (body_len != 0 && index >= body_end) {
-							response.m_body->concat_r(data + body_start, body_len);
+							response.m_body.concat_r(data + body_start, body_len);
 							body_start = index + 3;
 							body_len = 0;
 							continue;
@@ -990,7 +926,7 @@ public:
 					
 					// End of body by content-length.
 					else if (body_len != 0 && index >= body_end) {
-						response.m_body.reconstruct_by_type_args(data + body_start, body_len);
+						response.m_body.reconstruct(data + body_start, body_len);
 						loop = false;
 						continue;
 					}
@@ -1017,14 +953,29 @@ public:
 		// Handler.
 		return response;
 	}
-
+	*/
+	
 	// ---------------------------------------------------------
 	// Operators.
 
 	// Dump to pipe.
 	constexpr friend
-	auto& 	operator <<(Pipe pipe, const This& obj) {
-		return pipe << *obj.m_data;
+	auto& 	operator <<(Pipe& pipe, const This& obj) {
+		if (obj.m_data.is_defined()) {
+			return pipe << obj.m_data;
+		}
+		else {
+			pipe <<
+			vlib::http::version::to_str(obj.m_version) << ' ' <<
+			obj.m_status << ' ' << obj.m_status_desc << "\r\n";
+			for (auto& [k,v]: obj.m_headers.iterate()) {
+				pipe << *k << ": " << *v << "\r\n";
+			}
+			if (obj.m_body.is_defined()) {
+				pipe << "\r\n" << obj.m_body;
+			}
+			return pipe;
+		}
 	}
 
 };

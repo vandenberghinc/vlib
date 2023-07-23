@@ -61,7 +61,7 @@ private:
 	template <typename As> requires (is_any_integer<As>::value || is_floating<As>::value)
 	SICE
 	As	cast(const char* data, ullong sindex, ullong eindex) {
-		return tonumeric<As>(data + sindex, eindex - sindex);
+		return to_num<As>(data + sindex, eindex - sindex);
 	}
 	template <typename As> requires (is_any_integer<As>::value || is_floating<As>::value)
 	As	cast(const String& arg) {
@@ -200,7 +200,7 @@ public:
 	 *	@description:
 	 *		Add a docs chapter with a docs string.
 	 *	@usage:
-	 *		cli.add_docs("Help", tostr(
+	 *		cli.add_docs("Help", to_str(
 	 *			"--help: Show the cli documentation."
 	 *		));
 	 } */

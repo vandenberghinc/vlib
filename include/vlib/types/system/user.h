@@ -70,9 +70,9 @@ private:
 		if (result == NULL) {
 			if (!throw_exceptions) { return -1; }
 			if (s == 0) {
-				throw ParseError(tostr("Unable to find user \"", uid, "\"."));
+				throw ParseError(to_str("Unable to find user \"", uid, "\"."));
 			} else {
-				throw ParseError(tostr("Unknown error [errno: ", errno, "]."));
+				throw ParseError(to_str("Unknown error [errno: ", errno, "]."));
 			}
 		}
 		return 0;
@@ -96,9 +96,9 @@ private:
 		if (result == NULL) {
 			if (!throw_exceptions) { return -1; }
 			if (s == 0) {
-				throw ParseError(tostr("Unable to find user \"", username, "\"."));
+				throw ParseError(to_str("Unable to find user \"", username, "\"."));
 			} else {
-				throw ParseError(tostr("Unknown error [errno: ", errno, "]."));
+				throw ParseError(to_str("Unknown error [errno: ", errno, "]."));
 			}
 		}
 		return 0;
@@ -124,9 +124,9 @@ private:
 		if (result == NULL) {
 			if (!throw_exceptions) { return -1; }
 			if (errno == EACCES) {
-				throw PermissionError(tostr("No permission to read the shadow password file [errno: ", errno, "]."));
+				throw PermissionError(to_str("No permission to read the shadow password file [errno: ", errno, "]."));
 			} else {
-				throw PermissionError(tostr("Failed to read the shadow password file [errno: ", errno, "]."));
+				throw PermissionError(to_str("Failed to read the shadow password file [errno: ", errno, "]."));
 			}
 		}
 		return 0;
@@ -173,7 +173,7 @@ private:
 		
 		// Parse.
 		if (!safe_parse()) {
-            throw InvalidUIDError(tostr("Invalid user id \"", m_uid, "\"."));
+            throw InvalidUIDError(to_str("Invalid user id \"", m_uid, "\"."));
 		}
 		
 		// Encrypt the password.
@@ -191,7 +191,7 @@ private:
 			 "fi",
 
 			 // Create the user.
-			 tostr("usermod -p ", encrypted, " ", m_name),
+			 to_str("usermod -p ", encrypted, " ", m_name),
 
 			 // Handler.
 			 "exit 0"
@@ -202,10 +202,10 @@ private:
 		proc.timeout = 5000;
         int status;
 		if ((status = proc.execute(script)) != 0) {
-            throw SetPasswordError(tostr("Unable to set the password for user \"", m_uid, "\"."));
+            throw SetPasswordError(to_str("Unable to set the password for user \"", m_uid, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw SetPasswordError(tostr("Unable to set the password for user \"", m_uid, "\"."));
+            throw SetPasswordError(to_str("Unable to set the password for user \"", m_uid, "\"."));
 		}
 
 	}
@@ -268,10 +268,10 @@ private:
 		Proc proc;
 		proc.timeout = 5000;
 		if ((status = proc.execute(script)) != 0) {
-            throw CreateError(tostr("Unable create user \"", name, "\"."));
+            throw CreateError(to_str("Unable create user \"", name, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw CreateError(tostr("Unable create user \"", name, "\"."));
+            throw CreateError(to_str("Unable create user \"", name, "\"."));
 		}
 
 	}
@@ -310,7 +310,7 @@ private:
                 throw GenerateUIDError("Unable generate a new user id.");
 			}
 			proc.out().replace_end_r("\n");
-			l_uid = tonumeric<int>(proc.out().data(), proc.out().len()) + 1;
+			l_uid = to_num<int>(proc.out().data(), proc.out().len()) + 1;
 			if (l_uid < 1000) { l_uid = 1000; }
 		}
 
@@ -328,12 +328,12 @@ private:
 						 "set -e",
 
 						 // Arguments.
-						 tostr("UserName=\"", name, "\""),
-						 tostr("RealName=\"", realname, "\""),
-						 tostr("UserID=\"", l_uid, "\""),
-						 tostr("GroupID=\"", l_gid, "\""),
-						 tostr("UserShell=\"", shell, "\""),
-						 tostr("HomeDirectories=\"", homes, "/\""),
+						 to_str("UserName=\"", name, "\""),
+						 to_str("RealName=\"", realname, "\""),
+						 to_str("UserID=\"", l_uid, "\""),
+						 to_str("GroupID=\"", l_gid, "\""),
+						 to_str("UserShell=\"", shell, "\""),
+						 to_str("HomeDirectories=\"", homes, "/\""),
 
 						 // Check root permission.
 						 "if [[ `id -u` != 0 ]]; then",
@@ -350,12 +350,12 @@ private:
 						 // Create the user.
 						 "dscl . create /Users/$UserName",
 						 "dscl . create /Users/$UserName RealName $RealName",
-						 tostr("dscl . passwd /Users/$UserName \"", pass.c_str(), "\""),
+						 to_str("dscl . passwd /Users/$UserName \"", pass.c_str(), "\""),
 						 "dscl . create /Users/$UserName UniqueID $UserID",
 						 "dscl . create /Users/$UserName PrimaryGroupID $GroupID",
 						 "dscl . create /Users/$UserName UserShell $UserShell",
 						 "dscl . create /Users/$UserName NFSHomeDirectory $HomeDirectories/$UserName",
-						 tostr("dscl . -append /Groups/", group, " GroupMembership $UserName"),
+						 to_str("dscl . -append /Groups/", group, " GroupMembership $UserName"),
 						 "createhomedir -n $HomeDirectories -u $UserName -c",
 
 						 // Handler.
@@ -365,10 +365,10 @@ private:
 		// Execute the script.
 		proc.timeout = 5000;
 		if ((status = proc.execute(script)) != 0) {
-            throw CreateError(tostr("Unable create user \"", name, "\"."));
+            throw CreateError(to_str("Unable create user \"", name, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw CreateError(tostr("Unable create user \"", name, "\"."));
+            throw CreateError(to_str("Unable create user \"", name, "\"."));
 		}
 
 	}
@@ -380,7 +380,7 @@ private:
 	void 	del_h() {
 		int status;
 		if (!safe_parse()) {
-            throw InvalidUIDError(tostr("Invalid user id \"", m_uid, "\"."));
+            throw InvalidUIDError(to_str("Invalid user id \"", m_uid, "\"."));
 		}
 		Proc proc { .timeout = 5000 };
 		#if OSID <= 0 || OSID >= 4
@@ -389,7 +389,7 @@ private:
 							 "set -e",
 
 							 // Variables.
-							 tostr("UserName=\"", m_name, "\""),
+							 to_str("UserName=\"", m_name, "\""),
 
 							 // Check root permission.
 							 "if [[ `id -u` != 0 ]]; then",
@@ -410,7 +410,7 @@ private:
 							 "set -e",
 
 							 // Variables.
-							 tostr("UserName=\"", m_name, "\""),
+							 to_str("UserName=\"", m_name, "\""),
 
 							 // Check root permission.
 							 "if [[ `id -u` != 0 ]]; then",
@@ -435,10 +435,10 @@ private:
 
 		// Execute the script.
 		if ((status = proc.execute(script)) != 0) {
-            throw DeleteError(tostr("Unable delete user \"", m_uid, "\"."));
+            throw DeleteError(to_str("Unable delete user \"", m_uid, "\"."));
 		}
 		if (proc.exit_status() != 0) {
-            throw DeleteError(tostr("Unable delete user \"", m_uid, "\"."));
+            throw DeleteError(to_str("Unable delete user \"", m_uid, "\"."));
 		}
 
 	}
@@ -881,7 +881,7 @@ public:
 
 		// Parse.
 		if (!safe_parse()) {
-            throw InvalidUIDError(tostr("Invalid user id \"", m_uid, "\"."));
+            throw InvalidUIDError(to_str("Invalid user id \"", m_uid, "\"."));
 		}
 
 		// Parse the shadow file.
@@ -1042,7 +1042,7 @@ public:
         struct passwd pass;
         if (getpwnam_wrapper(name, pass, buff, false) != 0) {
             delete[] buff;
-            throw ParseError(tostr("Unable to find user \"", name, "\"."));
+            throw ParseError(to_str("Unable to find user \"", name, "\"."));
         }
         Int uid = (int) pass.pw_uid;
         delete[] buff;
@@ -1070,7 +1070,7 @@ public:
         struct passwd pass;
         if (getpwnam_wrapper(name, pass, buff, false) != 0) {
             delete[] buff;
-            throw ParseError(tostr("Unable to find user \"", name, "\"."));
+            throw ParseError(to_str("Unable to find user \"", name, "\"."));
         }
         Int gid = (int) pass.pw_gid;
         delete[] buff;
@@ -1126,7 +1126,7 @@ public:
         String name;
         if (getpwuid_wrapper((uint) uid.value(), pass, buff, true) != 0) {
             delete[] buff;
-            throw ParseError(tostr("Unable to find user \"", uid, "\"."));
+            throw ParseError(to_str("Unable to find user \"", uid, "\"."));
         }
         name = pass.pw_name;
         delete[] buff;

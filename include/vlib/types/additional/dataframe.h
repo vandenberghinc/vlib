@@ -201,7 +201,7 @@ private:
 				}
 			}
 			default:
-				throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+				throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
 		}
 	}
 	constexpr
@@ -240,7 +240,7 @@ private:
 				break;
 			}
 			default:
-				throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+				throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
 		}
 		
 	}
@@ -298,12 +298,12 @@ private:
 		}
 		case 2: {
 			for (auto& index: m_vals->indexes()) {
-				m_cols->append(tostr("column ", index));
+				m_cols->append(to_str("column ", index));
 			}
 			break;
 		}
 		default:
-			throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+			throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
 		}
 	}
     constexpr
@@ -316,12 +316,12 @@ private:
 		}
 		case 2: {
 			for (auto& index: m_vals->indexes()) {
-				cols.append(tostr("column ", index));
+				cols.append(to_str("column ", index));
 			}
 			return cols;
 		}
 		default:
-			throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+			throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
 		}
 	}
 	
@@ -332,19 +332,19 @@ private:
 		case 1:
 			if (cols.len() != 1) {
 				throw ShapeError(
-					tostr("Expecting ", m_vals->len(), " columns, not ", cols.len(), ".")
+					to_str("Expecting ", m_vals->len(), " columns, not ", cols.len(), ".")
 				);
 			}
 			break;
 		case 2:
 			if (m_vals->len() != 0 && cols.len() != m_vals->len()) {
 				throw ShapeError(
-					tostr("Expecting ", m_vals->len(), " columns, not ", cols.len(), ".")
+					to_str("Expecting ", m_vals->len(), " columns, not ", cols.len(), ".")
 				);
 			}
 			break;
 		default:
-			throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+			throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
 		}
 	}
 	
@@ -383,7 +383,7 @@ private:
 		case df::types::df:
 			return ;
 		default:
-			throw TypeError(tostr(
+			throw TypeError(to_str(
 				"Function \"",
 				func,
 				"()\" is not supported for type \"",
@@ -399,7 +399,7 @@ private:
 				return ;
 			}
 			default:
-				throw DimensionError(tostr(
+				throw DimensionError(to_str(
 					"Function \"",
 					func,
 					"\" is not supported for a dataframe with a dimension of \"",
@@ -407,7 +407,7 @@ private:
 					"\"."));
 			}
 		default:
-			throw TypeError(tostr(
+			throw TypeError(to_str(
 				"Function \"",
 				func,
 				"()\" is not supported for type \"",
@@ -423,7 +423,7 @@ private:
 				return ;
 			}
 			default:
-				throw DimensionError(tostr(
+				throw DimensionError(to_str(
 					"Function \"",
 					func,
 					"\" is not supported for a dataframe with a dimension of \"",
@@ -431,7 +431,7 @@ private:
 					"\"."));
 			}
 		default:
-			throw TypeError(tostr(
+			throw TypeError(to_str(
 				"Function \"",
 				func,
 				"()\" is not supported for type \"",
@@ -448,7 +448,7 @@ private:
             case df::types::floating:
                 return ;
             default:
-                throw TypeError(tostr(
+                throw TypeError(to_str(
                     "Function \"",
                     func,
                     "()\" is not supported for type \"",
@@ -464,7 +464,7 @@ private:
 		switch (m_dim) {
 		case 1: break;
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"()\" is not supported for a dataframe with dimension ",
@@ -476,7 +476,7 @@ private:
 			switch (obj.m_dim) {
 			case 1: break;
 			default:
-				throw DimensionError(tostr(
+				throw DimensionError(to_str(
 					"Function \"",
 					__FUNCTION__,
 					"()\" is not supported for a dataframe with dimension ",
@@ -500,7 +500,7 @@ private:
 		switch (m_dim) {
 		case 1: break;
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"()\" is not supported for a dataframe with dimension ",
@@ -527,7 +527,7 @@ private:
                 return *this; \
             default: break; \
         } \
-        throw TypeError(tostr( \
+        throw TypeError(to_str( \
             "Function \"", \
             __FUNCTION__, \
             "()\" is not supported for type \"", \
@@ -547,7 +547,7 @@ private:
                 return *this; \
             default: break; \
         } \
-        throw TypeError(tostr( \
+        throw TypeError(to_str( \
             "Function \"", \
             __FUNCTION__, \
             "()\" is not supported for type \"", \
@@ -558,7 +558,7 @@ private:
         switch (m_dim) { \
             case 1: break; \
             default: \
-                throw DimensionError(tostr( \
+                throw DimensionError(to_str( \
                 "Function \"", \
                 __FUNCTION__, \
                 "()\" is not supported for a dataframe with dimension ", \
@@ -570,7 +570,7 @@ private:
                 switch (x.m_dim) { \
                     case 1: break; \
                     default: \
-                        throw DimensionError(tostr( \
+                        throw DimensionError(to_str( \
                             "Function \"", \
                             __FUNCTION__, \
                             "()\" is not supported for a dataframe with dimension ", \
@@ -594,7 +594,7 @@ private:
         switch (m_dim) { \
             case 1: break; \
             default: \
-                throw DimensionError(tostr( \
+                throw DimensionError(to_str( \
                     "Function \"", \
                     __FUNCTION__, \
                     "()\" is not supported for a dataframe with dimension ", \
@@ -782,7 +782,7 @@ public:
                 return *this;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 	}
 	
@@ -834,7 +834,7 @@ public:
                 return *this;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 	}
 	
@@ -880,7 +880,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::boolean;
 		assign(x);
@@ -919,7 +919,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
         }
         m_type = df::types::integer;
         assign(x);
@@ -958,7 +958,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::integer;
 		assign(x);
@@ -997,7 +997,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::floating;
 		assign(x);
@@ -1036,7 +1036,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::str;
 		assign(x);
@@ -1073,7 +1073,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::str;
 		assign(x);
@@ -1110,7 +1110,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::str;
 		assign(x);
@@ -1149,7 +1149,7 @@ public:
                 return *this;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::df;
 		assign(x);
@@ -1186,7 +1186,7 @@ public:
                 return *this;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = df::types::df;
 		assign(x);
@@ -1298,7 +1298,7 @@ public:
 		// 	}
 		// 	return df::zero_len;
 		// default:
-		// 	throw DimensionError(tostr(
+		// 	throw DimensionError(to_str(
 		// 		"Function \"",
 		// 		__FUNCTION__,
 		// 		"\" is not supported for a dataframe with a dimension of \"",
@@ -1319,7 +1319,7 @@ public:
 		// 	}
 		// 	return df::zero_len;
 		// default:
-		// 	throw DimensionError(tostr(
+		// 	throw DimensionError(to_str(
 		// 		"Function \"",
 		// 		__FUNCTION__,
 		// 		"\" is not supported for a dataframe with a dimension of \"",
@@ -1460,7 +1460,7 @@ public:
                 break;
             }
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = 0;
 		return *this;
@@ -1515,7 +1515,7 @@ public:
                 }
                 break;
             default:
-                throw TypeError(tostr("Unknown type \"", df::strtype(m_type), "\"."));
+                throw TypeError(to_str("Unknown type \"", df::strtype(m_type), "\"."));
 		}
 		m_type = type;
 		return *this;
@@ -1747,7 +1747,7 @@ public:
 				}
 				return *this;
 			default:
-				throw DimensionError(tostr(
+				throw DimensionError(to_str(
 					"Function \"",
 					__FUNCTION__,
 					"()\" is not supported for a dataframe with dimension ",
@@ -1756,7 +1756,7 @@ public:
 			}
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Unable to convert type \"",
 			df::strtype(m_type),
 			"\" to type \"",
@@ -2036,7 +2036,7 @@ public:
 			}
 			return shifted;
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -2098,7 +2098,7 @@ public:
 					data.append('\n');
 					continue;
 				default:
-					throw TypeError(tostr("Unknown type \"", df::strtype(i.m_type), "\"."));
+					throw TypeError(to_str("Unknown type \"", df::strtype(i.m_type), "\"."));
 				}
 			}
 			break;
@@ -2140,7 +2140,7 @@ public:
 							data.append('"');
 							break;
 						default:
-							throw TypeError(tostr("Unexpected type \"", df::strtype(item.m_type), "\"."));
+							throw TypeError(to_str("Unexpected type \"", df::strtype(item.m_type), "\"."));
 						}
 						data.append(',');
 					}
@@ -2152,7 +2152,7 @@ public:
 			
 		// Error.
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -2220,9 +2220,9 @@ public:
 						break;
 					}
 					if (floating) {
-						df.append(tonumeric<Float::value_type>(data + start, len));
+						df.append(to_num<Float::value_type>(data + start, len));
 					} else {
-						df.append(tonumeric<Int::value_type>(data + start, len));
+						df.append(to_num<Int::value_type>(data + start, len));
 					}
 					return ;
 				}
@@ -2313,7 +2313,7 @@ public:
 			
 		// Error.
 		default:
-			throw ParseError(tostr("Unable to parse file \"", path, "\"."));
+			throw ParseError(to_str("Unable to parse file \"", path, "\"."));
 		}
 		return df;
 	}
@@ -2352,10 +2352,10 @@ public:
 				m_vals->concat_r(*obj.m_vals);
 				return *this;
 			default:
-				throw InvalidUsageError(tostr("Axis \"", axis, "\" is not a valid option."));
+				throw InvalidUsageError(to_str("Axis \"", axis, "\" is not a valid option."));
 			}
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -2382,10 +2382,10 @@ public:
 				m_vals->concat_r(move(*obj.m_vals));
 				return *this;
 			default:
-				throw InvalidUsageError(tostr("Axis \"", axis, "\" is not a valid option."));
+				throw InvalidUsageError(to_str("Axis \"", axis, "\" is not a valid option."));
 			}
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -2535,7 +2535,7 @@ public:
 			
 			// Invalid axis.
 			default:
-				throw InvalidUsageError(tostr("Axis \"", axis, "\" is not a valid option."));
+				throw InvalidUsageError(to_str("Axis \"", axis, "\" is not a valid option."));
 			}
 		
 		// 2D.
@@ -2605,13 +2605,13 @@ public:
 			
 			// Invalid axis.
 			default:
-				throw InvalidUsageError(tostr("Axis \"", axis, "\" is not a valid option."));
+				throw InvalidUsageError(to_str("Axis \"", axis, "\" is not a valid option."));
 			}
 		}
 			
 		// Invalid dimension.
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -2675,7 +2675,7 @@ public:
             
             // Invalid dimension.
             default:
-                throw DimensionError(tostr(
+                throw DimensionError(to_str(
                     "Function \"",
                     __FUNCTION__,
                     "\" is not supported for a dataframe with a dimension of \"",
@@ -2738,7 +2738,7 @@ public:
                 if (m_type != obj.m_type) { return false; }
                 return *m_vals == *obj.m_vals;
             default:
-                throw TypeError(tostr("Unknown type \"", m_type, "\"."));
+                throw TypeError(to_str("Unknown type \"", m_type, "\"."));
 		}
 	}
 	
@@ -2820,7 +2820,7 @@ public:
                 // Cast to string.
                 index = 0;
                 for (auto& i: *m_vals) {
-                    vals.get(0).append(tostr(index));
+                    vals.get(0).append(to_str(index));
                     mlens.get(0) = vlib::max(mlens.get(0), vals.get(0).last().len());
                     switch (i.m_type) {
                     case df::types::boolean: {
@@ -2848,7 +2848,7 @@ public:
                         break;
                     }
                     default:
-                        throw TypeError(tostr("Unknown type \"", df::strtype(i.m_type), "\"."));
+                        throw TypeError(to_str("Unknown type \"", df::strtype(i.m_type), "\"."));
                     }
                     ullong& mlen1 = mlens.get(1);
                     mlen1 = vlib::max(mlen1, vals.get(1).last().len());
@@ -2910,10 +2910,10 @@ public:
                 }
                 
                 // Cast to string.
-                int old_precision = vlib::casts::tostr::precision;
-                vlib::casts::tostr::precision = (uint) precision.value();
+                int old_precision = vlib::casts::to_str::precision;
+                vlib::casts::to_str::precision = (uint) precision.value();
                 for (auto& i: Range(m_vals->get(0).m_vals->len())) {
-                    vals.get(0).append(tostr(i));
+                    vals.get(0).append(to_str(i));
                     mlens.get(0) = vlib::max(mlens.get(0), vals.get(0).last().len());
                 }
                 index = 1;
@@ -2945,13 +2945,13 @@ public:
                             break;
                         }
                         default:
-                            throw TypeError(tostr("Unknown type \"", df::strtype(i1.m_type), "\"."));
+                            throw TypeError(to_str("Unknown type \"", df::strtype(i1.m_type), "\"."));
                         }
                         mlens.get(index) = vlib::max(mlens.get(index), arr.last().len());
                     }
                     ++index;
                 }
-                vlib::casts::tostr::precision = old_precision;
+                vlib::casts::to_str::precision = old_precision;
                 
                 // Add padding.
                 for (auto& cindex: vals.indexes()) {
@@ -2973,7 +2973,7 @@ public:
                 return ;
             }
             default:
-                throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+                throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
         }
     }
     constexpr
@@ -3070,10 +3070,10 @@ public:
 			switch (obj.m_type) {
 			case df::types::df:
 				if (m_vals->len() != obj.m_vals->len()) {
-					throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
+					throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
 				}
 				if (m_dim != obj.m_dim) {
-					throw DimensionError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe dimensions."));
+					throw DimensionError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe dimensions."));
 				}
 				for (auto& index: m_vals->indexes()) {
 					m_vals->get(index).min_r(obj.m_vals->get(index));
@@ -3087,7 +3087,7 @@ public:
 			}
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3117,7 +3117,7 @@ public:
 			return *this;
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3161,7 +3161,7 @@ public:
 			return val;
 		}
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -3203,7 +3203,7 @@ public:
             return rolling;
         }
         default:
-            throw DimensionError(tostr(
+            throw DimensionError(to_str(
                 "Function \"",
                 __FUNCTION__,
                 "\" is not supported for a dataframe with a dimension of \"",
@@ -3237,7 +3237,7 @@ public:
             return val;
         }
         default:
-            throw DimensionError(tostr(
+            throw DimensionError(to_str(
                 "Function \"",
                 __FUNCTION__,
                 "\" is not supported for a dataframe with a dimension of \"",
@@ -3331,10 +3331,10 @@ public:
 			switch (obj.m_type) {
 			case df::types::df:
 				if (m_vals->len() != obj.m_vals->len()) {
-					throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
+					throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
 				}
 				if (m_dim != obj.m_dim) {
-					throw DimensionError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe dimensions."));
+					throw DimensionError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe dimensions."));
 				}
 				for (auto& index: m_vals->indexes()) {
 					m_vals->get(index).max_r(obj.m_vals->get(index));
@@ -3348,7 +3348,7 @@ public:
 			}
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3378,7 +3378,7 @@ public:
 			return *this;
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3422,7 +3422,7 @@ public:
 			return val;
 		}
 		default:
-			throw DimensionError(tostr(
+			throw DimensionError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not supported for a dataframe with a dimension of \"",
@@ -3464,7 +3464,7 @@ public:
             return rolling;
         }
         default:
-            throw DimensionError(tostr(
+            throw DimensionError(to_str(
                 "Function \"",
                 __FUNCTION__,
                 "\" is not supported for a dataframe with a dimension of \"",
@@ -3498,7 +3498,7 @@ public:
             return val;
         }
         default:
-            throw DimensionError(tostr(
+            throw DimensionError(to_str(
                 "Function \"",
                 __FUNCTION__,
                 "\" is not supported for a dataframe with a dimension of \"",
@@ -3553,7 +3553,7 @@ public:
 		}
 		default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3643,7 +3643,7 @@ public:
 			}
 			break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for types \"",
@@ -3667,7 +3667,7 @@ public:
 			*obj.m_float += x;
 			return ;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3763,7 +3763,7 @@ public:
                 return *this;
             default: break;
         }
-        throw TypeError(tostr(
+        throw TypeError(to_str(
             "Function \"",
             __FUNCTION__,
             "()\" is not supported for type \"",
@@ -3823,7 +3823,7 @@ public:
                     }
                 break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for types \"",
@@ -3847,7 +3847,7 @@ public:
 			*obj.m_float -= x;
 			return ;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -3937,7 +3937,7 @@ public:
 			}
 			break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for types \"",
@@ -3961,7 +3961,7 @@ public:
 			*obj.m_float *= x;
 			return ;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -4057,7 +4057,7 @@ public:
                 return *this;
             default: break;
         }
-        throw TypeError(tostr(
+        throw TypeError(to_str(
             "Function \"",
             __FUNCTION__,
             "()\" is not supported for type \"",
@@ -4117,7 +4117,7 @@ public:
 			}
 			break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for types \"",
@@ -4141,7 +4141,7 @@ public:
 			*obj.m_float /= x;
 			return ;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -4209,7 +4209,7 @@ public:
                 }
                 break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for types \"",
@@ -4230,7 +4230,7 @@ public:
                 *obj.m_int %= x;
                 break;
             }
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -4320,7 +4320,7 @@ public:
                 }
                 break;
             }
-            throw TypeError(tostr(
+            throw TypeError(to_str(
                 "Function \"",
                 __FUNCTION__,
                 "()\" is not supported for types \"",
@@ -4344,7 +4344,7 @@ public:
                 obj.m_float->pow_r(x);
                 return ;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -4394,7 +4394,7 @@ public:
                 return *this;
             default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -4931,7 +4931,7 @@ public:
 		case df::types::boolean:
 			return *m_bool;
 		default:
-			throw TypeError(tostr(
+			throw TypeError(to_str(
 				"Function \"",
 				__FUNCTION__,
 				"()\" is not supported for type \"",
@@ -4970,11 +4970,11 @@ public:
                         return df;
                     }
                     default:
-                        throw DimensionError(tostr("Unsupported dimension of \"", m_dim, "\"."));
+                        throw DimensionError(to_str("Unsupported dimension of \"", m_dim, "\"."));
                 }
             }
         }
-        throw TypeError(tostr(
+        throw TypeError(to_str(
             "Function \"",
             __FUNCTION__,
             "()\" is not supported for type \"",
@@ -5023,7 +5023,7 @@ public:
                 switch (y.m_type) {
                     case df::types::df: {
                         if (x.m_vals->len() != y.m_vals->len()) {
-                            throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
+                            throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
                         }
                         DataFrame z;
                         z.init(df::types::df);
@@ -5044,7 +5044,7 @@ public:
                 break;
             default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5095,7 +5095,7 @@ public:
                     case df::types::df: {
                         y.expect_1d(__FUNCTION__);
                         if (x.m_vals->len() != y.m_vals->len()) {
-                            throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths [", x.m_vals->len(), " & ", y.m_vals->len(), "]."));
+                            throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths [", x.m_vals->len(), " & ", y.m_vals->len(), "]."));
                         }
                         DataFrame z;
                         z.init(df::types::df);
@@ -5116,7 +5116,7 @@ public:
                 break;
             default: break;
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5140,7 +5140,7 @@ public:
 			case df::types::df:
 				x.expect_df(__FUNCTION__);
 				if (obj.m_vals->len() != x.m_vals->len()) {
-					throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
+					throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
 				}
 				for (auto& index: obj.m_vals->indexes()) {
 					eq.m_vals->get(index) = obj.m_vals->get(index) == x.m_vals->get(index);
@@ -5174,7 +5174,7 @@ public:
 			case df::types::df:
 				x.expect_df(__FUNCTION__);
 				if (obj.m_vals->len() != x.m_vals->len()) {
-					throw ShapeError(tostr("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
+					throw ShapeError(to_str("Function \"", __FUNCTION__, "\" does not support different dataframe lengths."));
 				}
 				for (auto& index: obj.m_vals->indexes()) {
 					eq.m_vals->get(index) = obj.m_vals->get(index) != x.m_vals->get(index);
@@ -5334,7 +5334,7 @@ public:
                 break;
             }
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5480,7 +5480,7 @@ public:
                 break;
             }
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5626,7 +5626,7 @@ public:
                 break;
             }
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5771,7 +5771,7 @@ public:
                 break;
             }
 		}
-		throw TypeError(tostr(
+		throw TypeError(to_str(
 			"Function \"",
 			__FUNCTION__,
 			"()\" is not supported for type \"",
@@ -5882,7 +5882,7 @@ public:
 		expect_2d(__FUNCTION__);
 		ullong index = m_cols->find(column);
 		if (index == NPos::npos) {
-			throw KeyError(tostr("Column \"", column, "\" does not exist."));
+			throw KeyError(to_str("Column \"", column, "\" does not exist."));
 		} else {
 			return m_vals->get(index);
 		}

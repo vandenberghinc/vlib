@@ -22,8 +22,8 @@ namespace vlib {
 // Namespace casts.
 namespace casts {
 
-// Namespace tostr.
-namespace tostr {
+// Namespace to_str.
+namespace to_str {
 
 // The precision for double casts.
 static inline uint 	precision = 		6;
@@ -31,7 +31,7 @@ static inline uint 	precision = 		6;
 // Add zero padding for double casts.
 static inline bool  zero_padding = 		true;
 
-};		// End namespace tostr.
+};		// End namespace to_str.
 };		// End namespace casts.
 
 // ---------------------------------------------------------
@@ -112,6 +112,7 @@ struct Array {
 	// Wrappers.
 
 	// Shift the array 1 pos to the right.
+	// DEPRECATED
 	constexpr
 	This& 	rshift_h(const Length sindex = 0, const Length eindex = internal::npos) {
 		const Length shift = 1;
@@ -140,6 +141,7 @@ struct Array {
 	}
 
 	// Shift the array 1 pos to the left.
+	// DEPRECATED
 	constexpr
 	This& 	lshift_h(const Length sindex = 0, const Length eindex = internal::npos) {
 		const Length shift = 1;
@@ -736,7 +738,7 @@ struct Array {
 	 *	@parameter: {
 	 *		@name: handler
 	 *		@description:
-	 *			The handler function takes the arguments `(const char*, ullong)`. The `const char*` is null terminated.
+	 *			The handler function takes the arguments `(const char*, ullong)`. The `const char*` is NOT null terminated. Editing the `const char*` may cause undefined behaviour.
 	 *	}
 	 * 	@usage:
 	 * 		String x = "Line 1\n Line 2";
@@ -747,18 +749,18 @@ struct Array {
 	 } */
     template <typename Func> constexpr
     auto&   iterate_lines(Func&& handler) const {
-        return iterate_lines(0, 0, handler);
+        return iterate_lines(0, NPos::npos, handler);
     }
     template <typename Func> constexpr
     auto&   iterate_lines(ullong start_line, ullong end_line, Func&& func) const {
+		if (m_len == 0) { return *this; }
         ullong sindex = 0, index = 0, line = 0;
+		const char* p = c_str();
         for (auto& c: *this) {
             switch (c) {
                 case '\n': {
-					if (line >= start_line && (end_line == 0 || line < end_line)) {
-						char* arr = data() + sindex;
-						arr[index - sindex] = '\0';
-						func(arr, index - sindex);
+					if (line >= start_line && (end_line == NPos::npos || line < end_line)) {
+						func(p + sindex, index - sindex);
 					}
 					++line;
                     sindex = index + 1;
@@ -770,9 +772,7 @@ struct Array {
             }
             ++index;
         }
-		char* arr = data() + sindex;
-		arr[index - sindex] = '\0';
-        func(arr, index - sindex);
+        func(p + sindex, index - sindex);
         return *this;
     }
 
@@ -927,6 +927,33 @@ struct Array {
 	bool 	eq_first(const String& obj, const Length len_to_check) const requires (is_char<Type>::value) {
 		if (m_len < len_to_check) { return false; }
 		return array_h::eq(m_arr, len_to_check, obj.data(), len_to_check);
+	}
+	
+	// Equals first characters.
+	/*  @docs {
+	 *  @title: Equals last
+	 *  @description:
+	 *  	Check if the last items of the array are equal to another array.
+	} */
+	constexpr
+	bool 	eq_last(const Type* arr, const Length len) const requires (is_char<Type>::value) {
+		if (m_len < len) { return false; }
+		return array_h::eq(m_arr + (m_len - len), len, arr, len);
+	}
+	constexpr
+	bool 	eq_last(const Array& arr) const requires (is_char<Type>::value) {
+		if (m_len < arr.m_len) { return false; }
+		return array_h::eq(m_arr + (m_len - arr.m_len), arr.m_len, arr.m_arr, arr.m_len);
+	}
+	template <typename String> requires (
+		is_String_h<String>() ||
+		is_CString<String>::value ||
+		is_Pipe<String>::value ||
+		internal::is_BaseArray<String>::value
+	)
+	bool 	eq_last(const String& arr) const requires (is_char<Type>::value) {
+		if (m_len < arr.len()) { return false; }
+		return array_h::eq(m_arr + (m_len - arr.len()), arr.len(), arr.data(), arr.len());
 	}
 
 	// First element.
@@ -1187,25 +1214,12 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
-	) constexpr
-	This&	concat_r(Template&& obj) {
-		expand(obj.len());
-		array_h::move(m_arr + m_len, obj.data(), obj.len());
-		m_len += obj.len();
-		return *this;
-	}
-	template <typename Template>	requires (
-		is_char<Type>::value &&
 		!is_String_h<Template>() &&
 		!is_cstr<Template>::value &&
-		!is_bool<Template>::value &&
-		!is_char<Template>::value &&
-		!is_any_integer<Template>::value &&
-		!is_floating<Template>::value &&
+		!is_integral<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Template>::value
+		!internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concat_r(const Template& x) {
 		Pipe pipe;
@@ -1267,24 +1281,12 @@ struct Array {
 	}
 	template <typename Template>	requires (
 		is_char<Type>::value &&
-		(is_CString<Template>::value || is_Pipe<Template>::value || internal::is_BaseArray<Template>::value)
-	) constexpr
-	This&	concat_no_resize_r(Template&& obj) {
-		array_h::move(m_arr + m_len, obj.m_arr, obj.m_len);
-		m_len += obj.m_len;
-		return *this;
-	}
-	template <typename Template>	requires (
-		is_char<Type>::value &&
 		!is_String_h<Template>() &&
 		!is_cstr<Template>::value &&
-		!is_bool<Template>::value &&
-		!is_char<Template>::value &&
-		!is_any_integer<Template>::value &&
-		!is_floating<Template>::value &&
+		!is_integral<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Template>::value
+		!internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concat_no_resize_r(const Template& x) {
 		Pipe pipe;
@@ -1314,7 +1316,7 @@ struct Array {
 	} */
 	constexpr
 	This&	fill_r(const Len& len, const Type& item) {
-		Length u_len = len.value();
+		Length u_len = (Length) len.value();
 		expand(u_len);
 		while (u_len-- > 0) {
 			m_arr[m_len] = item;
@@ -1423,11 +1425,11 @@ struct Array {
 	 *		Find the index of an item.
 	 *	@usage:
 	 *		String x = "123";
-	 *		x.find_first('3') ==> 2;
-	 *		x.find_first('3', 2) ==> 2;
-	 *		x.find_first('3', 0, 3) ==> 2;
-	 *		x.find_first('3', 0, 2) ==> npos;
-	 *		x.find_first<Backwards>('3') ==> 2;
+	 *		x.find_first("3") ==> 2;
+	 *		x.find_first("3", 2) ==> 2;
+	 *		x.find_first("3", 0, 3) ==> 2;
+	 *		x.find_first("3", 0, 2) ==> npos;
+	 *		x.find_first<Backwards>("3") ==> 2;
 	 } */
 	template <typename Iter = Forwards, typename... Args> requires (
 		is_char<Type>::value &&
@@ -2416,6 +2418,10 @@ struct Array {
 	 *	@parent: vlib::Array
 	 *	@title: Load
 	 *	@description: Load a file.
+	 *	@parameter: {
+	 *		@name: path
+	 *		@description: The path of the file.
+	 *	}
 	 *	@usage:
 	 *		Array<...> x = Array<...>::load("./myarray.txt");
 	 *	@funcs: 2
@@ -2693,7 +2699,7 @@ struct Array {
 	 *
 	 *		Function `ensure_start_padding_r` updates the current array, while `ensure_start_padding` creates a copy.
 	 *	@notes:
-	 *		The minus (`-`) from a `tostr(-1)` is also included in the required length.
+	 *		The minus (`-`) from a `to_str(-1)` is also included in the required length.
 	 *	@usage:
 	 *		String x = "1";
 	 *		x.ensure_start_padding_r('0', 2); x ==> "01";
@@ -2730,7 +2736,7 @@ struct Array {
 	 *
 	 *		Function `ensure_end_padding_r` updates the current array, while `ensure_end_padding` creates a copy.
 	 *	@notes:
-	 *		The minus (`-`) from a `tostr(-1)` is also included in the required length.
+	 *		The minus (`-`) from a `to_str(-1)` is also included in the required length.
 	 *	@usage:
 	 *		String x = "1";
 	 *		x.ensure_end_padding_r(' ', 2); x ==> "1 ";
@@ -2777,6 +2783,175 @@ struct Array {
 			copy(def);
 		}
 		return *this;
+	}
+	
+	// Escape.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Escape
+	 *	@description:
+	 *		Add an additional escape to all escaped characters and the " character.
+	 *	@usage:
+	 *		String x = "Hello\nWorld!";
+	 *		x.escape(); x ==> "Hello\\nWorld!";
+	 *	@funcs: 2
+	 } */
+	constexpr
+	This	escape() requires (is_char<Type>::value) {
+		return escape(m_arr, m_len);
+	}
+	SICE
+	This	escape(const char* data, const ullong len) requires (is_char<Type>::value) {
+		String escaped;
+		escaped.resize(len);
+		for (ullong i = 0; i < len; ++i) {
+			switch (data[i]) {
+				case '\"':
+					escaped.concat_r("\\\"", 2);
+					break;
+				case '\\':
+					escaped.concat_r("\\\\", 2);
+					break;
+				case '\n':
+					escaped.concat_r("\\n", 2);
+					break;
+				case '\r':
+					escaped.concat_r("\\r", 2);
+					break;
+				case '\t':
+					escaped.concat_r("\\t", 2);
+					break;
+				case '\b':
+					escaped.concat_r("\\b", 2);
+					break;
+				case '\f':
+					escaped.concat_r("\\f", 2);
+					break;
+				default:
+					escaped.append(data[i]);
+					break;
+			}
+		}
+		return escaped;
+	}
+	
+	// Unescape.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Unescape
+	 *	@description:
+	 *		Remove the additional escape from all escaped characters and from the " character.
+	 *	@usage:
+	 *		String x = "Hello\\nWorld!";
+	 *		x.unescape(); x ==> "Hello\nWorld!";
+	 *	@funcs: 2
+	 } */
+	constexpr
+	This	unescape() requires (is_char<Type>::value) {
+		return unescape(m_arr, m_len);
+	}
+	SICE
+	This	unescape(const char* data, const ullong len) requires (is_char<Type>::value) {
+		String unescaped;
+		unescaped.resize(len);
+		for (ullong i = 0; i < len; ++i) {
+			switch (data[i]) {
+				case '\\':
+					if (i + 1 == len) {
+						unescaped.append(data[i]);
+						break;
+					}
+					++i;
+					switch (data[i]) {
+						case '\"':
+							unescaped.append('"');
+							break;
+						case '\\':
+							unescaped.append('\\');
+							break;
+						case 'n':
+							unescaped.append('\n');
+							break;
+						case 'r':
+							unescaped.append('\r');
+							break;
+						case 't':
+							unescaped.append('\t');
+							break;
+						case 'b':
+							unescaped.append('\b');
+							break;
+						case 'f':
+							unescaped.append('\f');
+							break;
+					}
+					break;
+				default:
+					unescaped.append(data[i]);
+					break;
+			}
+		}
+		return unescaped;
+	}
+	
+	// Trim leading whitespace.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Trim leading whitespace
+	 *	@description:
+	 *		Trim all leading whitespace ' ', '\t' and '\n'.
+	 *	@usage:
+	 *		String x = " Hello World!";
+	 *		x.trim_leading_whitespace(); x ==> "Hello World!";
+	 *	@funcs: 2
+	 } */
+	constexpr
+	This	trim_leading_whitespace() requires (is_char<Type>::value) {
+		return replace_start(" \t\n");
+	}
+	constexpr
+	This&	trim_leading_whitespace_r() requires (is_char<Type>::value) {
+		return replace_start_r(" \t\n");
+	}
+	
+	// Trim trailing whitespace.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Trim trailing whitespace
+	 *	@description:
+	 *		Trim all trailing whitespace ' ', '\t' and '\n'.
+	 *	@usage:
+	 *		String x = "Hello World! ";
+	 *		x.trim_trailing_whitespace(); x ==> "Hello World!";
+	 *	@funcs: 2
+	 } */
+	constexpr
+	This	trim_trailing_whitespace() requires (is_char<Type>::value) {
+		return replace_end(" \t\n");
+	}
+	constexpr
+	This&	trim_trailing_whitespace_r() requires (is_char<Type>::value) {
+		return replace_end_r(" \t\n");
+	}
+	
+	// Trim leading and trailing whitespace.
+	/* 	@docs {
+	 *	@parent: vlib::String
+	 *	@title: Trim leading and trailing whitespace
+	 *	@description:
+	 *		Trim all leading and trailing whitespace ' ', '\t' and '\n'.
+	 *	@usage:
+	 *		String x = " Hello World! ";
+	 *		x.trim_whitespace(); x ==> "Hello World!";
+	 *	@funcs: 2
+	 } */
+	constexpr
+	This	trim_whitespace() requires (is_char<Type>::value) {
+		return replace_start(" \t\n").replace_end_r(" \t\n");
+	}
+	constexpr
+	This&	trim_whitespace_r() requires (is_char<Type>::value) {
+		return replace_start_r(" \t\n").replace_end_r(" \t\n");
 	}
 	
 	// Null terminate.
@@ -2848,7 +3023,7 @@ struct Array {
 		!is_char<Type>::value &&
 		is_any_numeric<Type>::value
 	) {
-		obj.append(tonumeric<Type>(arr + value_start, value_end - value_start));
+		obj.append(to_num<Type>(arr + value_start, value_end - value_start));
 	}
 	// - With type: all other.
 	SICE
@@ -3081,7 +3256,7 @@ struct Array {
 	// Cast concats_r.
 
 	// Empty concat_r.
-	// - Concats will always null terminate the array for "tostr".
+	// - Concats will always null terminate the array for "to_str".
 	constexpr
 	This&	concats_r() {
 		null_terminate();
@@ -3111,7 +3286,7 @@ struct Array {
 	}
 
 	// Concat a char*.
-	template <typename Arg, typename... Args> requires (is_char<Arg>::value) constexpr
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_char<Arg>::value) constexpr
 	This&	concats_r(const Arg* x, Args&&... args) {
         if (x != NULL && x != nullptr) {
             concat_r(x);
@@ -3121,7 +3296,7 @@ struct Array {
 	}
 
 	// Concat a bool.
-	template <typename Arg, typename... Args> requires (is_bool<Arg>::value) constexpr
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_bool<Arg>::value) constexpr
 	This&	concats_r(const Arg& x, Args&&... args) {
 		if (x) { concat_r("true", 4); }
 		else { concat_r("false", 5); }
@@ -3130,15 +3305,23 @@ struct Array {
 	}
 
 	// Concat a char.
-	template <typename Arg, typename... Args> requires (is_char<Arg>::value) constexpr
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_char<Arg>::value) constexpr
 	This&	concats_r(const Arg& x, Args&&... args) {
 		append(x);
 		concats_r(args...);
 		return *this;
 	}
+	
+	// Concat a uchar.
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_uchar<Arg>::value) constexpr
+	This&	concats_r(const Arg& x, Args&&... args) {
+		append((char) x);
+		concats_r(args...);
+		return *this;
+	}
 
 	// Concat any integer.
-	template <typename Arg, typename... Args> requires (is_any_integer<Arg>::value) constexpr
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_any_integer<Arg>::value) constexpr
 	This&	concats_r(const Arg& x, Args&&... args) {
 		if (x == 0) { append('0'); }
         else if (::isinf(x)) { concat_r("inf", 3); }
@@ -3151,7 +3334,7 @@ struct Array {
 	}
 
 	// Concat any double.
-	template <typename Arg, typename... Args> requires (is_floating<Arg>::value) constexpr
+	template <typename Arg, typename... Args> requires (is_char<Type>::value && is_floating<Arg>::value) constexpr
 	This&	concats_r(const Arg& x, Args&&... args) {
 		Length old_len = m_len;
         if (::isinf(x)) { concat_r("inf", 3); }
@@ -3197,10 +3380,7 @@ struct Array {
 		is_char<Type>::value &&
 		!is_String_h<Template>() &&
 		!is_cstr<Template>::value &&
-		!is_bool<Template>::value &&
-		!is_char<Template>::value &&
-		!is_any_integer<Template>::value &&
-		!is_floating<Template>::value &&
+		!is_integral<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
         !internal::is_BaseArray<Template>::value
@@ -3329,13 +3509,10 @@ struct Array {
 		is_char<Type>::value &&
 		!is_String_h<Template>() &&
 		!is_cstr<Template>::value &&
-		!is_bool<Template>::value &&
-		!is_char<Template>::value &&
-		!is_any_integer<Template>::value &&
-		!is_floating<Template>::value &&
+		!is_integral<Template>::value &&
 		!is_CString<Template>::value &&
 		!is_Pipe<Template>::value &&
-        !internal::is_BaseArray<Template>::value
+		!internal::is_BaseArray<Template>::value
 	) constexpr
 	This&	concats_no_resize_r(const Template& x, Args&&... args) {
 		Pipe pipe;
@@ -3415,13 +3592,13 @@ struct Array {
 
 		// Get decimals.
 		Arg y = vlib::todecimals(abs(x));
-		y = vlib::round(y, (int) vlib::casts::tostr::precision);
-		y += 1.0 / vlib::pow<ullong>(10, (int) vlib::casts::tostr::precision + 1); // add padding to avoid rounding errors.
+		y = vlib::round(y, (int) vlib::casts::to_str::precision);
+		y += 1.0 / vlib::pow<ullong>(10, (int) vlib::casts::to_str::precision + 1); // add padding to avoid rounding errors.
 
 		// Iterate.
-		for (auto& i: Range<Forwards>(vlib::casts::tostr::precision)) {
+		for (auto& i: Range<Forwards>(vlib::casts::to_str::precision)) {
 			if (is_zero) {
-				if (!vlib::casts::tostr::zero_padding) { m_len = i; break; }
+				if (!vlib::casts::to_str::zero_padding) { m_len = i; break; }
 				append('0');
 			} else {
 				y *= 10;
@@ -3433,7 +3610,7 @@ struct Array {
 		}
 
 		// Remove last zeros.
-		while (!vlib::casts::tostr::zero_padding && m_len > 0 && m_arr[m_len - 1] == '0') {
+		while (!vlib::casts::to_str::zero_padding && m_len > 0 && m_arr[m_len - 1] == '0') {
 			--m_len;
 		}
 
@@ -3448,13 +3625,13 @@ struct Array {
 
 		// Get decimals.
 		Arg y = vlib::todecimals(abs(x));
-		y = vlib::round(y, (int) vlib::casts::tostr::precision);
-		y += 1.0 / vlib::pow<ullong>(10, (int) vlib::casts::tostr::precision + 1); // add padding to avoid rounding errors.
+		y = vlib::round(y, (int) vlib::casts::to_str::precision);
+		y += 1.0 / vlib::pow<ullong>(10, (int) vlib::casts::to_str::precision + 1); // add padding to avoid rounding errors.
 
 		// Iterate.
-		for (auto& i: Range<Forwards>(vlib::casts::tostr::precision)) {
+		for (auto& i: Range<Forwards>(vlib::casts::to_str::precision)) {
 			if (is_zero) {
-				if (!vlib::casts::tostr::zero_padding) { m_len = i; break; }
+				if (!vlib::casts::to_str::zero_padding) { m_len = i; break; }
 				append_no_resize('0');
 			} else {
 				y *= 10;
@@ -3466,7 +3643,7 @@ struct Array {
 		}
 
 		// Remove last zeros.
-		while (!vlib::casts::tostr::zero_padding && m_len > 0 && m_arr[m_len - 1] == '0') {
+		while (!vlib::casts::to_str::zero_padding && m_len > 0 && m_arr[m_len - 1] == '0') {
 			--m_len;
 		}
 
@@ -3486,7 +3663,7 @@ struct Array {
 			case 6: { return '6'; }
 			case 7: { return '7'; }
 			case 8: { return '8'; }
-			case 10: // fix for round from 9 to 10 for tostr.
+			case 10: // fix for round from 9 to 10 for to_str.
 			case 9: { return '9'; }
 			default: {
 				std::cout << "DIGIT: " << digit << "\n";
@@ -3575,7 +3752,7 @@ struct Array {
         )
 	) constexpr
 	As	as() const {
-		return tobool(m_arr, m_len);
+		return to_bool(m_arr, m_len);
 	}
 	
 	// As numeric.
@@ -3590,7 +3767,7 @@ struct Array {
 		is_any_numeric<As>::value
 	) constexpr
 	As		as() const {
-		return tonumeric<As>(m_arr, m_len);
+		return to_num<As>(m_arr, m_len);
 	}
     template <typename As> requires (
         is_char<Type>::value &&
@@ -3944,15 +4121,43 @@ template<ullong N>
 struct is_forwardable<char[N], String> { SICEBOOL value = true;  };
 
 // ---------------------------------------------------------
-// Out of line definitions.
+// String casts
 
-// Create the "tostr" function.
+// Create the "to_str" function.
+// Only declared in global namespace.
 // template         <typename... Args> inline constexpr
-// auto     tostr(Args&&... args) {
+// auto     to_str(Args&&... args) {
 //     String value;
-//     tostr_r(value, args...);
+//     to_str_r(value, args...);
 //     return value;
 // }
+
+// ---------------------------------------------------------
+// Hex casts
+
+// To hex.
+String	to_hex(ullong value) {
+	String hex;
+	to_hex_r(hex, value);
+	return hex;
+}
+void to_hex_r(String& hex, ullong value) {
+	hex.expand(17);
+	hex.len() += to_hex(hex.data() + hex.len(), value);
+	// hex.len() += snprintf(hex.data() + hex.len(), hex.capacity(), "%llX", value);
+}
+
+// From hex.
+ullong	from_hex(const String& hex) {
+	return from_hex(hex.data(), hex.len());
+}
+void	from_hex_r(ullong& value, const String& hex) {
+	value = from_hex(hex.data(), hex.len());
+	// sscanf(hex.c_str(), "%llX", &value);
+}
+
+// ---------------------------------------------------------
+// Out of line definitions.
 
 // Enum description.
 constexpr
@@ -4123,15 +4328,26 @@ m_err_id(internal::npos)
 #endif
 }
 
+// Create the "Exception::head" function.
+String 	Exception::head() const {
+	String msg;
+	msg << colors::bold;
+	msg << colors::red << type();
+	if (err() != nullptr) {
+		msg << ':' << ' ' << colors::end << colors::bold << err() << colors::end;
+	} else {
+		msg << '.';
+	}
+	msg.null_terminate();
+	return msg;
+}
+
 // Create the "Exception::dump" function.
-void 	Exception::dump() {
+void 	Exception::dump(bool trace) const {
     
     // Add exception.
     Pipe msg;
     msg << colors::bold;
-    // if (parent() != nullptr) {
-    //     msg << "[" << parent() << "] ";
-    // }
     msg << colors::red << type();
     if (err() != nullptr) {
         msg << ':' << ' ' << colors::end << colors::bold << err() << colors::end << '\n';
@@ -4141,10 +4357,12 @@ void 	Exception::dump() {
     
 // Add trace.
 #if vlib_enable_trace == true
-    auto trace = this->trace();
-    if (trace.m_arr != nullptr) {
-        msg << trace.c_str() << '\n';
-    }
+	if (trace) {
+		auto trace_data = this->trace();
+		if (trace_data.m_arr != nullptr) {
+			msg << trace_data.c_str() << '\n';
+		}
+	}
 #endif
     
 	// Dump m_message.
@@ -4182,17 +4400,17 @@ using String =		vlib::String;
  Concatenate arg(s) to a `String`.
  @usage:
  #include <vlib/types.h>
- tostr("Hello", " ", "World!") ==> "Hello World!";
- tostr(true) ==> "true";
- tostr("Bool: ", true) ==> "Bool: true";
- tostr(1) ==> "1";
- tostr("Int: ", 1) ==> "Int: 1";
- tostr(0.1) ==> "0.100000";
- tostr("Double: ", 0.1) ==> "Double: 0.100000";
- tostr(1, " == ", 1, " = ", 1 == 1) ==> "1 == 1 = true";
+ to_str("Hello", " ", "World!") ==> "Hello World!";
+ to_str(true) ==> "true";
+ to_str("Bool: ", true) ==> "Bool: true";
+ to_str(1) ==> "1";
+ to_str("Int: ", 1) ==> "Int: 1";
+ to_str(0.1) ==> "0.100000";
+ to_str("Double: ", 0.1) ==> "Double: 0.100000";
+ to_str(1, " == ", 1, " = ", 1 == 1) ==> "1 == 1 = true";
  } */
 template         <typename... Args> inline constexpr
-vlib::String tostr(Args&&... args) {
+vlib::String to_str(Args&&... args) {
     vlib::String value;
     value.concats_r(args...);
     return value;

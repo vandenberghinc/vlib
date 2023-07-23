@@ -417,7 +417,7 @@ public:
         const Len& 		sindex = 0,					// the start index.
         const Len& 		eindex = NPos::npos,		// the end index.
         const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		This obj;
 		remove_indent_h(obj, sindex, eindex, patterns);
 		return obj;
@@ -469,7 +469,7 @@ public:
 		const Len& 		sindex = 0,					// the start index.
 		const Len& 		eindex = NPos::npos,		// the end index.
 		const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
         bool first_line = true;
 		bool already_indented_this_line = false;
         ullong last_index = m_len - 1;
@@ -576,7 +576,7 @@ public:
 		const Len& 		sindex = 0,					// the start index.
 		const Len& 		eindex = NPos::npos,		// the end index.
 		const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		This obj;
 		remove_comments_h(obj, sindex, eindex, patterns);
 		return obj;
@@ -622,7 +622,7 @@ public:
 	This 		slice_comments(
 		const Len& 		sindex = 0,					// the start index.
 		const Len& 		eindex = NPos::npos		// the end index.
-	) {
+	) const {
 		This obj;
 		slice_comments_h(obj, sindex, eindex);
 		return obj;
@@ -673,7 +673,7 @@ public:
         const Len& 	sindex = 0,					// the start index.
         const Len& 	eindex = NPos::npos,		// the end index.
         const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		This obj;
 		replace_double_h(obj, replacements, sindex, eindex, patterns);
 		return obj;
@@ -729,6 +729,76 @@ public:
 		return splitted;
 	}
 	
+	// Trim whitespace.
+	/* 	@docs {
+	 * 	@title: Remove whitespace
+	 * 	@description:
+	 * 		Removes leading whitespace, traling whitespace and double spaces / tabs. Only code lines are trimmed.
+	 }*/
+	constexpr
+	Code	remove_whitespace() const {
+		Code trimmed;
+		trimmed.resize(m_len);
+		trimmed.m_arr[0] = '\0'; // to prevent UB at last().
+		for (auto& i: iterate()) {
+			if (
+				(i.is_code() && (
+					((trimmed.len() == 0 || trimmed.last() == '\n') && (i.character() == ' ' || i.character() == '\t')) ||
+					((trimmed.len() == 0 || trimmed.last() == ' ' || trimmed.last() == '\t') && (i.character() == ' ' || i.character() == '\t')) ||
+					((i.character() == ' ' || i.character() == '\t') && i.next() == '\n')
+				))
+			) {
+				continue;
+			} else {
+				trimmed.append(i.character());
+			}
+		}
+		return trimmed;
+	}
+	
+	// Trim newlines.
+	/* 	@docs {
+	 * 	@title: Remove newlines
+	 * 	@description:
+	 * 		Removes all newline characters. Only code lines are trimmed.
+	 }*/
+	constexpr
+	Code	remove_newlines() const {
+		Code trimmed;
+		trimmed.resize(m_len);
+		for (auto& i: iterate()) {
+			if (i.is_code() && i.character() == '\n') {
+				continue;
+			} else {
+				trimmed.append(i.character());
+			}
+		}
+		return trimmed;
+	}
+	
+	// Trim double newlines.
+	/* 	@docs {
+	 * 	@title: Remove double newlines
+	 * 	@description:
+	 * 		Replaces double newlines with a single newline. Only code lines are trimmed.
+	 }*/
+	constexpr
+	Code	remove_double_newlines() const {
+		Code trimmed;
+		trimmed.resize(m_len);
+		trimmed.m_arr[0] = '\0'; // to prevent UB at last().
+		for (auto& i: iterate()) {
+			if (i.is_code() && (trimmed.len() == 0 || trimmed.last() == '\n') && i.character() == '\n') {
+				continue;
+			} else {
+				trimmed.append(i.character());
+			}
+		}
+		return trimmed;
+	}
+	
+	
+	
 // Private.
 private:
 	
@@ -742,7 +812,7 @@ private:
 		Len 		sindex = 0,					// the start index.
 		Len 		eindex = NPos::npos,		// the end index.
         const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		bool is_newline = true;
 		obj.resize(this->m_len);
 		for (auto i: iterate(sindex, eindex)) {
@@ -777,7 +847,7 @@ private:
 		Len 		sindex = 0,					// the start index.
 		Len 		eindex = NPos::npos,		// the end index.
         const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		obj.resize(m_capacity);
 		for (auto i: iterate(sindex, eindex)) {
 			if (
@@ -803,7 +873,7 @@ private:
 		This& 		obj,						// the result object.
 		Len 		sindex = 0,					// the start index.
 		Len 		eindex = NPos::npos		// the end index.
-	) {
+	) const {
 		obj.resize(m_capacity);
 		for (auto i: iterate(sindex, eindex)) {
 			if (i.is_comment()) {
@@ -820,7 +890,7 @@ private:
 		Len 			sindex = 0,					// the start index.
 		Len 			eindex = NPos::npos,		// the end index.
         const code_patterns& patterns = {false, false, false, false, -1, -1, -1, -1} // Exclude patterns.
-	) {
+	) const {
 		// auto len = vlib::len(replacements);
 		bool found;
 		obj.resize(m_capacity);

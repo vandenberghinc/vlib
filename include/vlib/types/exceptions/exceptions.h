@@ -60,6 +60,7 @@ namespace shortcuts { \
 using name = vlib::name; \
 }}
 
+struct UBError; CREATE_EXCEPTION(UBError, "UBError"); SHORTCUT_EXCEPTION(UBError);
 struct InvalidUsageError; CREATE_EXCEPTION(InvalidUsageError, "InvalidUsageError"); SHORTCUT_EXCEPTION(InvalidUsageError);
 struct IndexError; CREATE_EXCEPTION(IndexError, "IndexError"); SHORTCUT_EXCEPTION(IndexError);
 struct KeyError; CREATE_EXCEPTION(KeyError, "KeyError"); SHORTCUT_EXCEPTION(KeyError);
@@ -163,6 +164,8 @@ struct DaemonError; CREATE_EXCEPTION(DaemonError, "DaemonError"); SHORTCUT_EXCEP
 struct CudaError; CREATE_EXCEPTION(CudaError, "CudaError"); SHORTCUT_EXCEPTION(CudaError);
 
 struct UserDoesNotExistError; CREATE_EXCEPTION(UserDoesNotExistError, "UserDoesNotExistError"); SHORTCUT_EXCEPTION(UserDoesNotExistError);
+
+struct APIError; CREATE_EXCEPTION(APIError, "APIError"); SHORTCUT_EXCEPTION(APIError);
 
 }; 		// End namespace vlib.
 #endif 	// End header.

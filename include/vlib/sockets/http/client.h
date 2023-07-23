@@ -220,7 +220,7 @@ Response    request_h(const RequestArgs& args) {
             response = client.request(args.method.value(), endpoint, args.params, args.timeout.value());
             break;
         default:
-            throw InvalidUsageError(tostr("Invalid method \"", args.method, "\"."));
+            throw InvalidUsageError(to_str("Invalid method \"", args.method, "\"."));
     }
     client.close();
     return response;

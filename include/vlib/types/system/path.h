@@ -130,12 +130,12 @@ public:
 	// Parse the stat property attributes.
 	void	stat_wrapper() {
         if (!m_arr) {
-            throw ParseError(tostr("Unable to parse path \"", *this, "\"."));
+            throw ParseError(to_str("Unable to parse path \"", *this, "\"."));
         }
 		m_arr[m_len] = '\0';
 		struct stat stat_info;
         if (::lstat(m_arr, &stat_info) == -1) {
-            throw ParseError(tostr("Unable to parse path \"", *this, "\"."));
+            throw ParseError(to_str("Unable to parse path \"", *this, "\"."));
         }
 		p_info = info{};
 		switch (stat_info.st_mode & S_IFMT) {               // bitwise AND to determine file type
@@ -883,7 +883,7 @@ public:
 		tmp.resize(PATH_MAX + 1);
 		char* ctmp;
 		if ((ctmp = realpath(c_str(), tmp.data())) == NULL) {
-			throw CreateError(tostr("Unable to get the absolute path of \"", c_str(), "\" [", errno, "]."));
+			throw CreateError(to_str("Unable to get the absolute path of \"", c_str(), "\" [", errno, "]."));
 		}
 		tmp.data() = ctmp;
 		tmp.len() = vlib::len(ctmp);
@@ -895,7 +895,7 @@ public:
 		tmp.resize(PATH_MAX + 1);
 		char* ctmp = realpath(c_str(), tmp.data());
 		if (ctmp == NULL) {
-			throw CreateError(tostr("Unable to get the absolute path of \"", c_str(), "\" [", errno, "]."));
+			throw CreateError(to_str("Unable to get the absolute path of \"", c_str(), "\" [", errno, "]."));
 		}
 		tmp.data() = ctmp;
 		tmp.len() = vlib::len(ctmp);
@@ -916,7 +916,7 @@ public:
         if (!exists()) {
             int fd;
             if ((fd = ::creat(c_str(), permission)) == -1) {
-                throw CreateError(tostr("Unable to create path \"", c_str(), "\" [", errno, "]."));
+                throw CreateError(to_str("Unable to create path \"", c_str(), "\" [", errno, "]."));
             }
             ::close(fd);
         }
@@ -931,7 +931,7 @@ public:
             int fd;
             if ((fd = ::creat(path, permission)) == -1) {
                 ::close(fd);
-                throw CreateError(tostr("Unable to create path \"", path, "\" [", errno, "]."));
+                throw CreateError(to_str("Unable to create path \"", path, "\" [", errno, "]."));
             }
             ::close(fd);
         }
@@ -949,7 +949,7 @@ public:
      *  @usage:
      *      vlib::Path x("/tmp/dir");
      *      x.mkdir();
-     *  @funcs: 2
+     *  @funcs: 5
      }*/
 	void    mkdir(ushort permission = 0740) const {
         mkdir(c_str(), permission);
@@ -958,10 +958,14 @@ public:
         mkdir_p(*this, permission);
     }
 	static inline
+	void    mkdir(const String& path, ushort permission = 0740) {
+		return mkdir(path.c_str(), permission);
+	}
+	static inline
 	void    mkdir(const char* path, ushort permission = 0740) {
         errno = 0;
         if (::mkdir(path, permission) == -1 && errno != EEXIST) {
-            throw CreateError(tostr("Unable to create directory \"", path, "\"."));
+            throw CreateError(to_str("Unable to create directory \"", path, "\"."));
         }
 	}
     static inline
@@ -991,7 +995,7 @@ public:
 				return ;
 			};
 			default:
-                throw PermissionError(tostr("Unable to set the ownership and group of path \"", c_str(), "\"."));
+                throw PermissionError(to_str("Unable to set the ownership and group of path \"", c_str(), "\"."));
 		}
 	}
 	static inline
@@ -999,7 +1003,7 @@ public:
 		switch (::chown(path, uid, gid))  {
 			case 0: return ;
 			default:
-                throw PermissionError(tostr("Unable to set the ownership and group of path \"", path, "\"."));
+                throw PermissionError(to_str("Unable to set the ownership and group of path \"", path, "\"."));
 		}
 	}
 	
@@ -1020,7 +1024,7 @@ public:
 				return ;
 			};
 			default:
-                throw PermissionError(tostr("Unable to set the permission of path \"", c_str(), "\"."));
+                throw PermissionError(to_str("Unable to set the permission of path \"", c_str(), "\"."));
 		}
 	}
 	static inline
@@ -1028,7 +1032,7 @@ public:
 		switch (::chmod(path, permission)) {
 			case 0: return ;
 			default:
-                throw PermissionError(tostr("Unable to set the permission of path \"", path, "\"."));
+                throw PermissionError(to_str("Unable to set the permission of path \"", path, "\"."));
 		};
 	}
     
@@ -1051,7 +1055,7 @@ public:
                 return ;
             };
             default:
-                throw PermissionError(tostr("Unable to set the time of path \"", c_str(), "\"."));
+                throw PermissionError(to_str("Unable to set the time of path \"", c_str(), "\"."));
         }
     }
 	static inline
@@ -1062,7 +1066,7 @@ public:
                 return ;
             };
             default:
-                throw PermissionError(tostr("Unable to set the time of path \"", path, "\"."));
+                throw PermissionError(to_str("Unable to set the time of path \"", path, "\"."));
         }
     }
 	
@@ -1110,19 +1114,19 @@ public:
 		
 		// Open source file.
 		if ((sfd = ::open(src, O_RDONLY)) == -1) {
-			throw OpenError(tostr("Unable to open \"", src, "\" [", ::strerror(errno), "]."));
+			throw OpenError(to_str("Unable to open \"", src, "\" [", ::strerror(errno), "]."));
 		}
         
         // Remove file.
         if (::remove(dest) != 0 && errno != ENOENT) {
             ::close(sfd);
-            throw RemoveError(tostr("Unable to remove \"", dest, "\" [", ::strerror(errno), "]."));
+            throw RemoveError(to_str("Unable to remove \"", dest, "\" [", ::strerror(errno), "]."));
         }
 		
 		// Create dest file.
         if ((dfd = ::open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0740)) == -1) {
             ::close(sfd);
-            throw CreateError(tostr("Unable to create \"", dest, "\" [", ::strerror(errno), "]."));
+            throw CreateError(to_str("Unable to create \"", dest, "\" [", ::strerror(errno), "]."));
         }
 		
 		// Macos.
@@ -1132,7 +1136,7 @@ public:
 			if (fcopyfile(sfd, dfd, 0, COPYFILE_ALL) == -1) {
                 ::close(sfd);
                 ::close(dfd);
-				throw CopyError(tostr("Copy file error [", strerror(errno), "]."));
+				throw CopyError(to_str("Copy file error [", strerror(errno), "]."));
 			}
 		
 			// Close.
@@ -1147,7 +1151,7 @@ public:
 			if (::fstat(sfd, &stat_buf) != 0) {
 				::close(sfd);
 				::close(dfd);
-				throw ScanError(tostr("Unable to scan \"", src, "\" [", ::strerror(errno), "]."));
+				throw ScanError(to_str("Unable to scan \"", src, "\" [", ::strerror(errno), "]."));
 			}
 			
 			/* V1 Copy
@@ -1159,7 +1163,7 @@ public:
 			if ((rc = ::sendfile(dfd, sfd, &offset, stat_buf.st_size)) == -1) {
                 ::close(sfd);
                 ::close(dfd);
-				throw CopyError(tostr("Copy file error [", strerror(errno), "]."));
+				throw CopyError(to_str("Copy file error [", strerror(errno), "]."));
 			}
 			else if (rc != stat_buf.st_size) {
                 ::close(sfd);
@@ -1176,12 +1180,12 @@ public:
 			if (sfile == NULL) {
 				::close(sfd);
 				::close(dfd);
-				throw OpenError(tostr("Unable to open source \"", src, "\" [", ::strerror(errno), "]."));
+				throw OpenError(to_str("Unable to open source \"", src, "\" [", ::strerror(errno), "]."));
 			}
 			if (dfile == NULL) {
 				::close(dfd);
 				::fclose(sfile);
-				throw OpenError(tostr("Unable to destination \"", src, "\" [", ::strerror(errno), "]."));
+				throw OpenError(to_str("Unable to destination \"", src, "\" [", ::strerror(errno), "]."));
 			}
 			
 			// Read from source and write to dest.
@@ -1191,7 +1195,7 @@ public:
 				if (bytesWritten != bytesRead) {
 					::fclose(sfile);
 					::fclose(dfile);
-					throw CopyError(tostr("Encountered an error while writing to \"", dest, "\" [", ::strerror(errno), "]."));
+					throw CopyError(to_str("Encountered an error while writing to \"", dest, "\" [", ::strerror(errno), "]."));
 				}
 			}
 		
@@ -1200,17 +1204,17 @@ public:
 			if (::utime(dest, &totime) != 0) {
 				::fclose(sfile);
 				::fclose(dfile);
-				throw PermissionError(tostr("Unable to set the time of path \"", dest, "\" [", ::strerror(errno), "]."));
+				throw PermissionError(to_str("Unable to set the time of path \"", dest, "\" [", ::strerror(errno), "]."));
 			}
 			if (::fchmod(dfd, stat_buf.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO)) != 0) {
 				::fclose(sfile);
 				::fclose(dfile);
-				throw PermissionError(tostr("Unable to set the permission of path \"", dest, "\" [", ::strerror(errno), "]."));
+				throw PermissionError(to_str("Unable to set the permission of path \"", dest, "\" [", ::strerror(errno), "]."));
 			};
 			if (::fchown(dfd, stat_buf.st_uid, stat_buf.st_gid) != 0) {
 				::fclose(sfile);
 				::fclose(dfile);
-				throw PermissionError(tostr("Unable to set the ownership and group of path \"", dest, "\" [", ::strerror(errno), "]."));
+				throw PermissionError(to_str("Unable to set the ownership and group of path \"", dest, "\" [", ::strerror(errno), "]."));
 			}
 			
 			// Close.
@@ -1248,7 +1252,7 @@ public:
 		switch (::rename(src, dest)) {
 			case 0:
 			default:
-				throw MoveError(tostr("Unable to move \"", src, "\" to \"", dest, "\" [", errno, "]."));
+				throw MoveError(to_str("Unable to move \"", src, "\" to \"", dest, "\" [", errno, "]."));
 		}
 	}
 
@@ -1294,13 +1298,13 @@ public:
                     ::closedir(dir);
                     free(ent);
                     if (::remove(path) != 0 && errno != ENOENT) {
-                        throw RemoveError(tostr("Unable to remove path \"", path, "\" [", errno, "]."));
+                        throw RemoveError(to_str("Unable to remove path \"", path, "\" [", errno, "]."));
                     }
                 } else {
-                    throw RemoveError(tostr("Unable to read path \"", path, "\" [", errno, "]."));
+                    throw RemoveError(to_str("Unable to read path \"", path, "\" [", errno, "]."));
                 }
             } else {
-                throw RemoveError(tostr("Unable to remove path \"", path, "\" [", errno, "]."));
+                throw RemoveError(to_str("Unable to remove path \"", path, "\" [", errno, "]."));
             }
         }
 	}
@@ -1415,11 +1419,11 @@ public:
     //         l.append('/');
     //         r.append('/');
     //     }
-    //     if (proc.execute(tostr("rsync ", options, ' ', l, ' ', r)) != 0) {
-    //         throw CopyError(tostr("Failed to synchronize \"", *this, "\" with \"", remote, "\"."));
+    //     if (proc.execute(to_str("rsync ", options, ' ', l, ' ', r)) != 0) {
+    //         throw CopyError(to_str("Failed to synchronize \"", *this, "\" with \"", remote, "\"."));
     //     }
     //     if (proc.exit_status() != 0) {
-    //         throw CopyError(tostr("Failed to synchronize \"", *this, "\" with \"", remote, "\"."));
+    //         throw CopyError(to_str("Failed to synchronize \"", *this, "\" with \"", remote, "\"."));
     //     }
     //     return *this;
     // }
@@ -1445,11 +1449,11 @@ public:
         const Int&      timeout = -1
     ) const {
         Proc proc { .timeout = timeout.value(), };
-        if (proc.execute(tostr("rm -fr ", remote, " && ln ", options, ' ', *this, ' ', remote)) != 0) {
-            throw LinkError(tostr("Failed to link \"", *this, "\" with \"", remote, "\"."));
+        if (proc.execute(to_str("rm -fr ", remote, " && ln ", options, ' ', *this, ' ', remote)) != 0) {
+            throw LinkError(to_str("Failed to link \"", *this, "\" with \"", remote, "\"."));
         }
         if (proc.exit_status() != 0) {
-            throw LinkError(tostr("Failed to link \"", *this, "\" with \"", remote, "\"."));
+            throw LinkError(to_str("Failed to link \"", *this, "\" with \"", remote, "\"."));
         }
         return *this;
     }
@@ -1814,7 +1818,7 @@ public:
 			free(ent);
 			return arr;
 		} else {
-			throw ParseError(tostr("Unable to read the content of directory ", json().data(), "."));
+			throw ParseError(to_str("Unable to read the content of directory ", json().data(), "."));
 			return arr;
 		}
 	};

@@ -123,7 +123,7 @@ public:
  
     @usage:
         #include <vlib/types.h>
-        vlib::print(tostr(vlib::colors::bold, "Hello World!", vlib::colors::end));
+        vlib::print(to_str(vlib::colors::bold, "Hello World!", vlib::colors::end));
 }*/
 struct colors {
 

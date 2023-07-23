@@ -657,7 +657,7 @@ public:
 	} */
 	SICE
 	This	parse(const char* arr, ullong len) {
-		return tonumeric<Type>(arr, len);
+		return to_num<Type>(arr, len);
 	}
 
 	// As String

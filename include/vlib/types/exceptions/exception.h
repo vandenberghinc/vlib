@@ -11,11 +11,6 @@ using excid_t = unsigned long long;
 // Namespace vlib.
 namespace vlib {
 
-// Forward declaration of class string.
-template <typename Type, typename Length = ullong>
-struct Array;
-typedef Array<char, ullong>        String;
-
 // Namespace exceptions.
 namespace exceptions {
 
@@ -139,7 +134,7 @@ public:
     {}
     
 // Protected:
-protected:
+// protected:
 
     // Constructor from ids.
     constexpr
@@ -238,8 +233,11 @@ public:
         return m_trace.trace(1, 3);
     }
 
+	// Get the heading.
+	String head() const;
+	
 	// Dump an exception.
-	void dump();
+	void dump(bool trace = true) const;
 
 	//
 };

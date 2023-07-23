@@ -378,14 +378,14 @@ struct Dict {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i) == key) { return m_values->get(i); }
 		}
-        throw KeyError(tostr("Key \"", key, "\" does not exist."));
+        throw KeyError(to_str("Key \"", key, "\" does not exist."));
 	}
 	constexpr
 	const Value& 		value(const char* key, const Length len) const requires (is_CString<Key>::value || is_String<Key>::value) {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i).eq(key, len)) { return m_values->get(i); }
 		}
-        throw KeyError(tostr("Key \"", key, "\" does not exist."));
+        throw KeyError(to_str("Key \"", key, "\" does not exist."));
 	}
 
 	// Set a key and value by index.
@@ -591,7 +591,7 @@ struct Dict {
 	Value	pop(const Key& key) {
 		ullong i = m_keys->find(key);
 		if (i == NPos::npos) {
-			throw KeyError(tostr(
+			throw KeyError(to_str(
 				 "Index \"",
 				 i,
 				 "\" is out of range, size is \"",
@@ -1084,7 +1084,7 @@ struct Dict {
 		ullong&		 	item_start,
 		ullong&		 	item_end
 	) {
-		ptr->append(tonumeric<ArrayType>(arr + item_start, item_end - item_start));
+		ptr->append(to_num<ArrayType>(arr + item_start, item_end - item_start));
 	}
 	// - With type: all other.
 	template <typename ArrayType, typename ArrayPointer> requires (
@@ -1690,7 +1690,7 @@ struct Dict {
 		for (auto& i: indexes()) {
 			if (m_keys->get(i) == key) { return m_values->get(i); }
 		}
-		throw KeyError(tostr("Key \"", key, "\" does not exist."));
+		throw KeyError(to_str("Key \"", key, "\" does not exist."));
 	}
 	
 	// Dump to pipe.

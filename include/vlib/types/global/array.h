@@ -167,6 +167,11 @@ struct array {
     bool 	eq(const Type* arr_x, const Type* arr_y) {
         return eq(arr_x, vlib::len(arr_x), arr_y, vlib::len(arr_y));
     }
+	SICE
+	bool 	eq_first(const Type* arr_x, Length len_x, const Type* arr_y, Length len_to_check) {
+		if (len_x < len_to_check) { return false; }
+		return eq(arr_x, len_to_check, arr_y, len_to_check);
+	}
     
     // Append an item to the array.
     SICE
@@ -445,6 +450,13 @@ template<typename Type, typename Length>    struct is_BaseArray<BaseArray<Type, 
 template<typename Type>         struct is_BaseString                { SICEBOOL value = false; };
 template<>                      struct is_BaseString<BaseString>    { SICEBOOL value = true;  };
 
-};      // End namespace internal.
+// End namespace internal.
+};
+
+// Forward declaration of class string.
+template <typename Type, typename Length = ullong>
+struct Array;
+typedef Array<char, ullong>        String;
+
 }; 		// End namespace vlib.
 #endif 	// End header.

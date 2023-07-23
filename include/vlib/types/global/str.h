@@ -76,36 +76,6 @@ char	lowercase(char c) {
 	}
 }
 
-// Converts a hex character to its integer value.
-char 	from_hex(char ch) {
-  return isdigit(ch) ? ch - '0' : lowercase(ch) - 'a' + 10;
-}
-
-/* Converts an integer value to its hex character*/
-char    to_hex(char code) {
-  static constexpr const char hex[] = "0123456789abcdef";
-  return hex[code & 15];
-}
-
-// Hexadecimal string to numeric.
-constexpr
-llong   from_hex(const char* hex, ullong len) {
-	ullong base = 1;
-	ullong dec_val = 0;
-	for (llong i = len - 1; i >= 0; i--) {
-		char c = uppercase(hex[i]);
-		if (c >= '0' && c <= '9') {
-			dec_val += (ullong(c) - 48) * base;
-			base = base * 16;
-		}
-		else if (c >= 'A' && c <= 'F') {
-			dec_val += (ullong(c) - 55) * base;
-			base = base * 16;
-		}
-	}
-   return dec_val;
-}
-
 // Is lowercase.
 bool    is_lowercase(char c) {
 	switch (c) {

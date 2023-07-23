@@ -294,6 +294,39 @@ public:
     void     recv(String& received, const Int& timeout = VLIB_SOCK_TIMEOUT) {
         wrapper::receive(received, m_attr->ssl, timeout.value(), buff_len);
     }
+	
+	// Receive a full HTTP request over tls.
+	/* @docs {
+	 *	@title: Receive a HTTP request.
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timeout in milliseconds.
+	 *	}
+	 *	@description:
+	 *		Receive a HTTP request.
+	 *
+	 *		Supports chunked requests.
+	 *	@usage:
+	 *		vlib::Socket sock;
+	 *		...
+	 *		vlib::http::Request request = sock.recv<vlib::http::Request>(10000);
+	 } */
+	template <typename DataType> requires (
+		http::is_Response<DataType>::value ||
+		http::is_Request<DataType>::value
+	) constexpr
+	DataType recv(const Int& timeout) {
+		DataType request;
+		http::Parser parser(request);
+		String received;
+		while (true) {
+			recv(received, timeout);
+			if (parser.parse(received)) {
+				break;
+			}
+		}
+		return request;
+	}
 
 	// Send.
 	void 	send(
@@ -314,6 +347,17 @@ public:
 		Int      		timeout
 	) {
 		wrapper::send(m_attr->ssl, data, len, timeout.value());
+	}
+	
+	// Send chunked http response.
+	// The header "Transfer-Encoding: chunked" will automatically be added.
+	// May cause undefined behaviour if the header already exists.
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value)
+	ullong  send_chunked(
+		const Type&	response,
+		const Int&  timeout = VLIB_SOCK_TIMEOUT
+	) {
+		return wrapper::send_chunked(m_attr->ssl, response, timeout);
 	}
     
     // Poll receive.
@@ -369,7 +413,7 @@ public:
             
             // Handle sys call errors.
             // else if (errno != 0) {
-            //     throw ConnectError(tostr("Unable to establish a connection [", wrapper::get_err(m_attr->ssl, status), "]."));
+            //     throw ConnectError(to_str("Unable to establish a connection [", wrapper::get_err(m_attr->ssl, status), "]."));
             // }
 
             // Handle want read / write.

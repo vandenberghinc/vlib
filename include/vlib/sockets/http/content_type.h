@@ -40,19 +40,19 @@ enum content_types {
 
 // Descriptions.
 struct desc {
-	SICE const CString 	undefined		= "undefined";
-	SICE const CString 	unknown			= "unknown";
-	SICE const CString 	json			= "application/json";
-	SICE const CString 	xml				= "application/xml";
-	SICE const CString 	html			= "text/html";
-	SICE const CString 	plain			= "text/plain";
-	SICE const CString 	css				= "text/css";
-	SICE const CString 	js				= "application/javascript";
+	static inline const String 	undefined		= "undefined";
+	static inline const String 	unknown			= "unknown";
+	static inline const String 	json			= "application/json";
+	static inline const String 	xml				= "application/xml";
+	static inline const String 	html			= "text/html";
+	static inline const String 	plain			= "text/plain";
+	static inline const String 	css				= "text/css";
+	static inline const String 	js				= "application/javascript";
 };
 
 // Convert the error number to a string description.
 inline constexpr
-auto& tostr(int status) {
+auto& to_str(int status) {
 	switch (status) {
 		case content_types::undefined:
 			return desc::undefined;
@@ -76,26 +76,30 @@ auto& tostr(int status) {
 }
 
 // Convert string to content type.
-SICE
-Int     fromstr(const String& content_type) {
-    if (content_type == desc::html) {
-        return vlib::http::content_type::html;
-    } else if (content_type == desc::json) {
-        return vlib::http::content_type::json;
-    } else if (content_type == desc::xml) {
-        return vlib::http::content_type::xml;
-    } else if (content_type == desc::plain) {
+template <typename Num = short> constexpr
+Num		fromstr(const char* data, ullong len) {
+	if (desc::html.eq(data, len)) {
+		return vlib::http::content_type::html;
+	} else if (desc::json.eq(data, len)) {
+		return vlib::http::content_type::json;
+	} else if (desc::xml.eq(data, len)) {
+		return vlib::http::content_type::xml;
+	} else if (desc::plain.eq(data, len)) {
 		return vlib::http::content_type::plain;
-	} else if (content_type == desc::css) {
+	} else if (desc::css.eq(data, len)) {
 		return vlib::http::content_type::css;
-	} else if (content_type == desc::js) {
+	} else if (desc::js.eq(data, len)) {
 		return vlib::http::content_type::js;
 		
-	} else if (content_type == desc::unknown) {
+	} else if (desc::unknown.eq(data, len)) {
 		return vlib::http::content_type::unknown;
-    } else {
-        return vlib::http::content_type::undefined;
-    }
+	} else {
+		return vlib::http::content_type::undefined;
+	}
+}
+constexpr
+Int     fromstr(const String& content_type) {
+	return fromstr(content_type.data(), content_type.len());
 }
 
 }; 		// End namespace content_type.

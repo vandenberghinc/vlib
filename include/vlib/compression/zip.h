@@ -932,7 +932,7 @@ public:
      *      zip.reset();
      *      ...
      } */
-    auto&   reset() {
+    Zip&	reset() {
         m_archive = {};
         m_compression.level() = Z_BEST_COMPRESSION;
         return *this;
@@ -956,10 +956,10 @@ public:
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.find_entry_by_offset(0);
      } */
-    auto&   find_entry_by_offset(uint64_t offset) {
+	auto&	find_entry_by_offset(uint64_t offset) {
         return find_entry(m_archive, offset);
     }
-    auto&   find_entry_by_offset(uint64_t offset) const {
+	auto&	find_entry_by_offset(uint64_t offset) const {
         return find_entry(m_archive, offset);
     }
     
@@ -983,10 +983,10 @@ public:
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.find_entry_by_offset("dir/myfile");
      } */
-    auto&   find_entry_by_name(const String& name) {
+	auto&	find_entry_by_name(const String& name) {
         return find_entry(m_archive, name);
     }
-    auto&   find_entry_by_name(const String& name) const {
+	auto&	find_entry_by_name(const String& name) const {
         return find_entry(m_archive, name);
     }
     
@@ -1011,7 +1011,7 @@ public:
      *      zip.add("dir/file2", "/tmp/dir/dir/file2");
      *  @funcs: 2
      } */
-    auto&   add(const String& name, Path& path) {
+	auto&	add(const String& name, Path& path) {
 		
 		// Already compressed file extensions.
 		static Array<String> compressed_file_extensions = {
@@ -1067,7 +1067,7 @@ public:
         // Permission.
         struct stat stat_info;
         if (::lstat(path.c_str(), &stat_info) == -1) {
-            throw ParseError(tostr("Unable to parse path \"", path, "\"."));
+            throw ParseError(to_str("Unable to parse path \"", path, "\"."));
         }
         uint16_t mode = stat_info.st_mode;
         
@@ -1131,7 +1131,7 @@ public:
         });
         return *this;
     }
-    auto&   add(const String& name, const Path& _path) {
+	auto&	add(const String& name, const Path& _path) {
         Path path = _path;
         return add(name, path);
     }
@@ -1166,7 +1166,7 @@ public:
      *      zip.write(stream);
      } */
     template <typename Stream> requires (is_File<Stream>::value || is_Stream<Stream>::value)
-    auto&   write(Stream& stream) {
+	auto&	write(Stream& stream) {
         
         // Write files.
         for (auto& entry: m_archive.entries) {
@@ -1224,7 +1224,7 @@ public:
      *      vlib::Zip zip;
      *      zip.create("/tmp/dir/", "/tmp/zip.archive");
      } */
-	auto&   create(
+	auto&	create(
 		const Path& _source,
 		const Path& dest,
 		const Array<String>& exclude = {},
@@ -1350,6 +1350,8 @@ public:
      *  @title: Read
      *  @description:
      *      Read a zip archive.
+	 *
+	 *		Function `read` reads the data from a path, and function `read_data` reads the loaded archive data directly.
      *  @type:
      *      Zip&
      *  @parameter: {
@@ -1359,70 +1361,82 @@ public:
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
+	 *	@funcs: 2
      } */
-    auto&   read(const Path& path) {
-        
-        // Reset.
-        reset();
-        
-        // Vars.
-        Archive archive;
+	Zip&	read(const Path& path) {
         
         // Load data.
-        String file = path.load();
-        const char* data = file.data();
-        ullong& len = file.len();
+        String archive_data = path.load();
         
-        // Iterate.
-        ullong pos = 0;
-        while (pos + sizeof(uint32_t) <= len) {
-            
-            // Signature var (when present).
-            const uint32_t signature = *((uint32_t*) &data[pos]);
-            
-            // File header.
-            if (signature == header_signature) {
-                Entry entry;
-                pos += read_fheader(entry, data, pos) - 1;
-                archive.entries.append(move(entry));
-            }
-            
-            // Central dir header.
-            else if (signature == cd_header_signature) {
-                Entry entry;
-                pos += read_cdheader(entry, data, pos) - 1;
-                
-                // Set the fields from archive that are only present in the cd header.
-                Entry& archive_entry = find_entry(archive, entry.offset);
-                archive_entry.mode = entry.mode;
-            }
-            
-            // End of 64 central dir record.
-            else if (signature == eocd64_signature) {
-                pos += read_eocd64(archive, data, pos);
-            }
-            
-            // End of 64 central dir locator.
-            else if (signature == eocl64_signature) {
-                pos += read_eocl64(archive, data, pos);
-            }
-            
-            // End of central dir record.
-            else if (signature == eocd_signature) {
-                pos += read_eocd(archive, data, pos);
-            }
-            
-            // Increment pos.
-            pos += 1;
-        }
-        
-        // Assign.
-        m_archive = archive;
+		// Read.
+		read_data(archive_data);
         
         // Handler.
         return *this;
         
     }
+	Zip&	read_data(const String& archive_data) {
+		
+		// Reset.
+		reset();
+		
+		// Vars.
+		Archive archive;
+		
+		// Load data.
+		const char* data = archive_data.data();
+		const ullong& len = archive_data.len();
+		
+		// Iterate.
+		ullong pos = 0;
+		while (pos + sizeof(uint32_t) <= len) {
+			
+			// Signature var (when present).
+			const uint32_t signature = *((uint32_t*) &data[pos]);
+			
+			// File header.
+			if (signature == header_signature) {
+				Entry entry;
+				pos += read_fheader(entry, data, pos) - 1;
+				archive.entries.append(move(entry));
+			}
+			
+			// Central dir header.
+			else if (signature == cd_header_signature) {
+				Entry entry;
+				pos += read_cdheader(entry, data, pos) - 1;
+				
+				// Set the fields from archive that are only present in the cd header.
+				Entry& archive_entry = find_entry(archive, entry.offset);
+				archive_entry.mode = entry.mode;
+			}
+			
+			// End of 64 central dir record.
+			else if (signature == eocd64_signature) {
+				pos += read_eocd64(archive, data, pos);
+			}
+			
+			// End of 64 central dir locator.
+			else if (signature == eocl64_signature) {
+				pos += read_eocl64(archive, data, pos);
+			}
+			
+			// End of central dir record.
+			else if (signature == eocd_signature) {
+				pos += read_eocd(archive, data, pos);
+			}
+			
+			// Increment pos.
+			pos += 1;
+		}
+		
+		// Assign.
+		m_archive = archive;
+		
+		// Handler.
+		return *this;
+		
+	}
     
     // Extract an entry.
     /*  @docs {
@@ -1442,7 +1456,7 @@ public:
      *      zip.extract("/tmp/myfile", entry);
      *  @funcs: 2
      } */
-    auto&    extract(Path& dest, const Entry& entry) const {
+	auto&	extract(Path& dest, const Entry& entry) const {
         
         // Directory
         if (entry.is_dir()) {
@@ -1488,7 +1502,7 @@ public:
         return *this;
         
     }
-    auto&    extract(const Path& _dest, const Entry& entry) const {
+	auto&	extract(const Path& _dest, const Entry& entry) const {
         Path dest = _dest;
         return extract(dest, entry);
     }
@@ -1509,9 +1523,9 @@ public:
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
-     *      zip.extract("/tmp/extract")
+     *      zip.extract("/tmp/extract");
      } */
-    auto&   extract(const Path& _dest) const {
+	auto&	extract(const Path& _dest) const {
         
         // Vars.
         Path dest = _dest;
@@ -1547,6 +1561,60 @@ public:
         return *this;
         
     }
+	
+	// Extract a zip archive into a dict.
+	/*  @docs {
+	 *  @title: Extract as dict
+	 *  @description:
+	 *      Extract a zip archive into a dict.
+	 *
+	 *      The path of the entries will be stored in the keys of the dictionary. The uncompressed data of the entries will be stored in the values of the dictionary.
+	 *  @type:
+	 *      Zip&
+	 *  @usage:
+	 *      vlib::Zip zip;
+	 *      zip.read("/tmp/archive.zip");
+	 *      Dict<Path, String> extracted = zip.extract("/tmp/extract");
+	 } */
+	Dict<Path, String> extract() const {
+		
+		// Vars.
+		Dict<Path, String> extracted;
+		
+		// Iterate entries.
+		Path entry_dest, entry_dest_base;
+		for (auto& entry: m_archive.entries) {
+			
+			// Skip paths that start with "__MACOS/" since macos archives uses this for additional info.
+			if (entry.name.eq_first("__MACOSX/", 8)) {
+				continue;
+			}
+			
+			// Decompress.
+			String data;
+			if (entry.compressed_len == 0) {
+				data = entry.data;
+			} else {
+				data = m_compression.decompress(entry.data.data(), entry.data.len(), -15);
+			}
+			
+			// Check crc.
+			if (entry.crc != 0) {
+				uint32_t crc = calc_crc32(data.data(), data.len());
+				if (crc != entry.crc) {
+					throw CRCError("Invalid CRC-32 \"", crc, "\", should be \"", entry.crc, "\".");
+				}
+			}
+			
+			// Store.
+			extracted[entry.name] = move(data);
+			
+		}
+		
+		// Handler.
+		return extracted;
+		
+	}
     
 };
 

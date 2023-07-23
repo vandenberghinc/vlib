@@ -24,6 +24,7 @@ struct ClientTemplateArgs {
 	String 				api_secret;
 	http::Headers		headers;
 	Compression			compression;
+	Bool				debug = false;
 };
 
 template <
@@ -50,6 +51,7 @@ public:
 	http::Headers	m_headers;
 	Compression	    m_compression;
     Bool            m_was_connected = false;
+	Bool			m_debug = false;
 	
 // Private.
 private:
@@ -100,7 +102,8 @@ public:
 	m_api_secret(move(x.api_secret)),
     m_sni(move(x.sni)),
 	m_headers(move(x.headers)),
-    m_compression(move(x.compression))
+    m_compression(move(x.compression)),
+	m_debug(x.debug)
 	{
 		set_headers();
         if (m_sni.is_defined()) {
@@ -132,6 +135,11 @@ public:
 	// ---------------------------------------------------------
 	// Functions.
 
+	// Sign.
+	void	sign(const String& body) {
+		m_headers.value("API-Signature", 13) = SHA256::hmac(m_api_secret, body);
+	}
+	
 	// Create and send a request.
 	/*  @docs  {
 	 *	@parent: vlib::http::Client
@@ -231,8 +239,7 @@ public:
 		const String&	endpoint,
 		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
-		Request request(method, endpoint, m_headers, http_version);
-		return send_request(request, timeout);
+		return send_request(Request(method, endpoint, m_headers, http_version), timeout);
 	}
 	constexpr
 	Response	request(
@@ -241,11 +248,10 @@ public:
 		const String&	body,
 		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
-        if (m_api_secret.is_defined()) {
-            m_headers.value("API-Signature", 13) = SHA256::hmac(m_api_secret, body);
-        }
-		http::Request request(method, endpoint, m_headers, body, http_version);
-		return send_request(request, timeout);
+		if (m_api_secret.is_defined()) {
+			sign(body);
+		}
+		return send_request(http::Request(method, endpoint, m_headers, body, http_version), timeout);
 	}
 	constexpr
 	Response	request(
@@ -352,7 +358,7 @@ public:
 	 *		// Compressed request with a string body.
 	 *		vlib::https::Client client (...);
 	 *		vlib::http::Response response = client.compressed_request(
-	 *			vlib::http::method::get,
+	 *			vlib::http::method::post,
 	 *			"/",
 	 *			-1,
 	 *			"Hello World!"
@@ -361,7 +367,7 @@ public:
 	 *		// Compressed request with json body parameters.
 	 *		// Use query request to make a request with query parameters.
 	 *		vlib::http::Response response = client.compressed_request(
-	 *			vlib::http::method::get,
+	 *			vlib::http::method::post,
 	 *			"/",
 	 *			-1,
 	 *			{{"Hello", "World!"}}
@@ -387,11 +393,127 @@ public:
 		return compressed_request(method, endpoint, params.json(), timeout);
 	}
 	
+	// Create and send a chunked request.
+	/*  @docs  {
+	 *	@parent: vlib::http::Client
+	 *	@title: Chunked request
+	 *	@description:
+	 *		Make a chunked HTTP request.
+	 *
+	 *		Only the body will sent in chunks.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
+	 *	@parameter: {
+	 *		@name: body
+	 *		@description: The request body.
+	 *	}
+	 *	@usage:
+	 *		// Chunked request with a string body.
+	 *		vlib::http::Client client (...);
+	 *		vlib::http::Response response = client.chunked_request(
+	 *			vlib::http::method::post,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Chunked request with json body parameters.
+	 *		vlib::http::Response response = client.chunked_request(
+	 *			vlib::http::method::post,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 2
+	 } */
+	/*  @docs  {
+	 *	@parent: vlib::https::Client
+	 *	@title: Chunked request
+	 *	@description:
+	 *		Make a chunked HTTPS request.
+	 *
+	 *		Only the body will sent in chunks.
+	 *	@return:
+	 *		The functions return a <type>vlib::http::Response</type> object.
+	 *	@parameter: {
+	 *		@name: method
+	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
+	 *	}
+	 *	@parameter: {
+	 *		@name: endpoint
+	 *		@description: The endpoint url, for example `/`.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timout in milliseconds, use `-1` for no timeout.
+	 *	}
+	 *	@parameter: {
+	 *		@name: body
+	 *		@description: The request body.
+	 *	}
+	 *	@usage:
+	 *		// Chunked request with a string body.
+	 *		vlib::https::Client client (...);
+	 *		vlib::http::Response response = client.chunked_request(
+	 *			vlib::http::method::post,
+	 *			"/",
+	 *			-1,
+	 *			"Hello World!"
+	 *		)
+	 *
+	 *		// Chunked request with json body parameters.
+	 *		vlib::http::Response response = client.chunked_request(
+	 *			vlib::http::method::post,
+	 *			"/",
+	 *			-1,
+	 *			{{"Hello", "World!"}}
+	 *		)
+	 *	@funcs: 2
+	 } */
+	constexpr
+	Response	chunked_request(
+		short 			method,
+		const String& 	endpoint,
+		const String&	body,
+		int				timeout = VLIB_SOCK_TIMEOUT
+	) {
+		if (m_api_secret.is_defined()) {
+			sign(body);
+		}
+		return send_request(http::Request(method, endpoint, m_headers, body, http_version), timeout, true);
+	}
+	constexpr
+	Response	chunked_request(
+		short 			method,
+		const String& 	endpoint,
+		const Json&		params,
+		int				timeout = VLIB_SOCK_TIMEOUT
+	) {
+		const String body = params.json();
+		if (m_api_secret.is_defined()) {
+			sign(body);
+		}
+		return send_request(http::Request(method, endpoint, m_headers, body, http_version), timeout, true);
+	}
+	
 	// Send a request.
 	constexpr
 	Response	send_request(
 		const http::Request&	request,
-		int						timeout = VLIB_SOCK_TIMEOUT
+		int						timeout = VLIB_SOCK_TIMEOUT,
+		bool					chunked = false
 	) {
 		if (!m_was_connected || m_sock.is_broken() || !m_sock.is_connected()) {
             if (m_was_connected) {
@@ -400,10 +522,22 @@ public:
             m_sock.connect(timeout < 500 ? 500 : timeout);
 		}
         m_was_connected = true;
-        m_sock.send(request.data(), timeout);
-		http::Response response = Response::receive(m_sock, timeout);
+		if (m_debug) {
+			print("===================================================");
+			print(request);
+		}
+		if (chunked) {
+			m_sock.send_chunked(request, timeout);
+		} else {
+			m_sock.send(request, timeout);
+		}
+		http::Response response = m_sock.template recv<http::Response>(timeout);
 		if (response.has_body() && m_compression.is_compressed(response.body())) {
 			response.body() = m_compression.decompress(response.body());
+		}
+		if (m_debug) {
+			print("===================================================");
+			print(response);
 		}
 		return response;
 	}

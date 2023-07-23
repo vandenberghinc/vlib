@@ -12,7 +12,7 @@ namespace vlib {
 namespace http {
 
 // Type definition.
-typedef Dict<String, String> Headers;
+typedef Dict<String, String, ullong, Unique> Headers;
 
 // ---------------------------------------------------------
 // End.

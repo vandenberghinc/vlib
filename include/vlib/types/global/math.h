@@ -90,7 +90,7 @@ Type 		min(Type x, Type y, Args&&... args) {
 }
 
 // Power of.
-// - WARNING: Keep seperate since tonumeric will fail otherwise.
+// - WARNING: Keep seperate since to_num will fail otherwise.
 template <typename Type> requires (!is_floating<Type>::value) inline constexpr
 ullong pow(Type x, Type y) {
 	// if (isinf(x)) { return x; } // for fix inf loop when doing "pow(any out of range unsigned value, ...)".

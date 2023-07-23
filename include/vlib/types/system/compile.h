@@ -135,12 +135,12 @@ void     compile(
 	Array<String> cmd;
 	String& compiler = internal::check_os_json(config_path, config, "compiler").ass();
 	if (compiler.eq("clang++", 7) || compiler.eq("g++", 3)) {
-		cmd.append(tostr("/usr/bin/", compiler));
+		cmd.append(to_str("/usr/bin/", compiler));
 	} else {
 		cmd.append(compiler);
 	}
 	if (config.contains("std")) {
-		cmd.append(tostr("-std=", internal::check_os_json(config_path, config, "std").ass()));
+		cmd.append(to_str("-std=", internal::check_os_json(config_path, config, "std").ass()));
 	}
 	if (config.contains("other_flags")) {
 		for (auto& i: internal::check_os_json(config_path, config, "other_flags").asa()) {
@@ -149,12 +149,12 @@ void     compile(
 	}
 	if (config.contains("include_paths")) {
 		for (auto& i: internal::check_os_json(config_path, config, "include_paths").asa()) {
-			cmd.append(tostr("-I", i.ass()));
+			cmd.append(to_str("-I", i.ass()));
 		}
 	}
 	if (config.contains("library_paths")) {
 		for (auto& i: internal::check_os_json(config_path, config, "library_paths").asa()) {
-			cmd.append(tostr("-L", i.ass()));
+			cmd.append(to_str("-L", i.ass()));
 		}
 	}
 	String output = internal::check_os_json(config_path, config, "output").ass().replace("$SOURCE", source_dir);

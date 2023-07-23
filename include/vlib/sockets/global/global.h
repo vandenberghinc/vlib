@@ -114,6 +114,10 @@ int 	lookup_ipv6(String& ip, uint& port, const String& host) {
 
 // Returns a url-encoded version of str.
 String 	url_encode(const String& str) {
+	auto to_hex = [](char code) -> char {
+	  static constexpr const char hex[] = "0123456789abcdef";
+	  return hex[code & 15];
+	};
 	String encoded;
 	for (auto& i: str) {
 		if (isalnum(i) || i == '-' || i == '_' || i == '.' || i == '~') {
@@ -141,6 +145,12 @@ String  url_encode(const Json& params) {
 
 // Returns a url-decoded version of str.
 String 	url_decode(const String& str) {
+	
+	// Converts a hex character to its integer value.
+	auto from_hex = [](char ch) -> char {
+	  return isdigit(ch) ? ch - '0' : lowercase(ch) - 'a' + 10;
+	};
+
 	String decoded;
 	const char* data = str.c_str();
 	while (*data) {
@@ -166,7 +176,7 @@ String  private_ip() {
     int sock = socket(PF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in loopback;
     if (sock == -1) {
-        throw SocketError(tostr("Unable to initialize the socket [", ::strerror(errno), "]."));
+        throw SocketError(to_str("Unable to initialize the socket [", ::strerror(errno), "]."));
     }
     memset(&loopback, 0, sizeof(loopback));
     loopback.sin_family = AF_INET;
@@ -176,14 +186,14 @@ String  private_ip() {
     // Connect.
     if (connect(sock, reinterpret_cast<sockaddr*>(&loopback), sizeof(loopback)) == -1) {
         close(sock);
-        throw ConnectError(tostr("Unable to connect to the socket [", ::strerror(errno), "]."));
+        throw ConnectError(to_str("Unable to connect to the socket [", ::strerror(errno), "]."));
     }
     
     // Get socket info.
     socklen_t addrlen = sizeof(loopback);
     if (getsockname(sock, reinterpret_cast<sockaddr*>(&loopback), &addrlen) == -1) {
         close(sock);
-        throw SocketError(tostr("Unable to get the socket name [", ::strerror(errno), "]."));
+        throw SocketError(to_str("Unable to get the socket name [", ::strerror(errno), "]."));
     }
     
     // Close.
@@ -193,7 +203,7 @@ String  private_ip() {
     String private_ip;
     private_ip.resize(INET_ADDRSTRLEN);
     if (inet_ntop(AF_INET, &loopback.sin_addr, private_ip.data(), INET_ADDRSTRLEN) == 0x0) {
-        throw SocketError(tostr("Unable to convert the socket address to an ip [", ::strerror(errno), "]."));
+        throw SocketError(to_str("Unable to convert the socket address to an ip [", ::strerror(errno), "]."));
     }
     private_ip.len() = vlib::len(private_ip.data());
     return private_ip;

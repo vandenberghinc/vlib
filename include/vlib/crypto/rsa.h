@@ -54,7 +54,7 @@ private:
     EVP_PKEY* load_priv_key(const Path& path) {
         FILE* fp = vlib::open(path.c_str(), vlib::file::read);
         if (!fp) {
-            throw OpenError(tostr("Encountered an error while opening \"", path, "\" [", ::strerror(errno), "]."));
+            throw OpenError(to_str("Encountered an error while opening \"", path, "\" [", ::strerror(errno), "]."));
         }
         EVP_PKEY* key = PEM_read_PrivateKey(fp, nullptr, nullptr, nullptr);
         fclose(fp);

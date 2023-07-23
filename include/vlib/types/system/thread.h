@@ -301,7 +301,7 @@ public:
     // constexpr
     // auto&    join(void*& result) {
     //     if (pthread_join((*t_id), &result) != 0) {
-    //         throw JoinError(tostr("Unable to join thread \"", id(), "\"."));
+    //         throw JoinError(to_str("Unable to join thread \"", id(), "\"."));
     //     }
     //     return *this;
     // }

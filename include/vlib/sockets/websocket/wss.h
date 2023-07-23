@@ -21,17 +21,7 @@ namespace websocket {
 // - https://www.rfc-editor.org/rfc/rfc6455
 // - https://github.com/php-ion/websocket-parser
 
-template <
-    int     family =         sockets::family::ipv4,
-    int     type =           sockets::type::stream,
-    int     protocol =       sockets::protocol::undefined,
-    uint    buff_len =       1024,
-    bool    blocking =       false,
-    uint    tls_version =    tls::version::v1_3    // the minimum tls version.
-> requires (
-    family == sockets::family::ipv4 ||
-    family == sockets::family::ipv6
-)
+template <uint buff_len = 1024>
 struct WSS {
 
 // Private.
@@ -40,7 +30,8 @@ private:
 	// ---------------------------------------------------------
 	// Aliases.
 
-	using 		Socket = tls::Client<family, type, protocol, buff_len, blocking, tls_version>;
+	using TCP = sockets::Socket<sockets::family::ipv4, sockets::type::stream, sockets::protocol::undefined, buff_len>;
+	using TLS = tls::Client<sockets::family::ipv4, sockets::type::stream, sockets::protocol::undefined, buff_len>;
     
     // ---------------------------------------------------------
     // Threads.
@@ -75,7 +66,7 @@ private:
     // ---------------------------------------------------------
     // Aliases.
 
-    Socket      m_sock;
+    TLS        	m_sock;
     String      m_host;
     String      m_key;
     Parser      m_parser;
@@ -102,16 +93,10 @@ public:
     // Functions.
     
     // Connect.
-    void    connect(const Int& timeout = 60000) {
+    void    connect(const Int& timeout = 6000) {
         
         // Connect with server.
-        if (m_sock.connect(timeout.value()) != 0) {
-            throw WSSError(tostr(
-                "Unable to connect to websocket \"",
-                m_host, ":", m_sock.port(),
-                "\"."
-            ));
-        }
+		m_sock.connect(timeout.value());
         
         // Generate key.
         vlib::random::random_seed();
@@ -129,7 +114,7 @@ public:
         }
         
         // Upgrade to websocket.
-        String request = tostr(
+        String request = to_str(
             "GET ", endpoint, " HTTP/1.1\r\n"
             "Host: ", naked_url, "\r\n"
             "Origin: https://", naked_url, "\r\n"
@@ -139,19 +124,17 @@ public:
             "Sec-WebSocket-Version: 13\r\n"
             "\r\n"
         );
-        if (m_sock.send(request, timeout.value()) != 0) {
-            throw WSSError("Unable to send to the websocket.");
-        }
-        http::Response response = http::Response::receive(m_sock, timeout.value());
+		m_sock.send(request, timeout.value());
+		http::Response response = m_sock.template recv<http::Response>(timeout);
         if (response.status() != 101) {
-            throw WSSError(tostr(
+            throw WSSError(to_str(
                 "Connection error [",
                 response.status(),
                 "]: ",
-                vlib::http::status::tostr(response.status()),
+                vlib::http::status::to_str(response.status()),
                 "."
             ));
-        }
+        }	
         
         // Validate key.
         String result = response.header("Sec-WebSocket-Accept", 20);

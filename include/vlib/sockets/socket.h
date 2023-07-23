@@ -29,7 +29,7 @@
 #include "http/method.h"
 #include "http/status.h"
 #include "http/version.h"
-#include "http/wrapper.h"
+#include "http/parser.h"
 #include "http/response.h"
 #include "http/request.h"
 

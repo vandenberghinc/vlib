@@ -26,15 +26,8 @@
 	// The URL is only used for the markdown table.
     "url": "https://vandenberghinc.github.io/vlib",
     
-    // Sources to include.
-	"sources":[
-		"$SOURCE/include/vlib/types.h",
-		"$SOURCE/include/vlib/cli.h",
-		"$SOURCE/include/vlib/compression.h",
-		"$SOURCE/include/vlib/crypto.h",
-        "$SOURCE/include/vlib/encoding.h",
-		"$SOURCE/include/vlib/sockets.h",
-	],
+    // Source.
+	"source":"$SOURCE/include/vlib/",
 	
 	// Copyright.
 	"copyright": [

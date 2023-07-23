@@ -307,7 +307,7 @@ private:
             x << ".plist";
             m_path = x;
         #else
-            throw OSError(tostr("Operating system \"MacOS\" is not yet supported."));
+            throw OSError(to_str("Operating system \"MacOS\" is not yet supported."));
         #endif
 	}
 	
@@ -515,7 +515,7 @@ public:
             throw DaemonError("Root privileges required.");
         }
 		if (m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" already exists."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" already exists."));
 		}
 		String data = create_h();
 		m_path.save(data);
@@ -539,7 +539,7 @@ public:
             throw DaemonError("Root privileges required.");
         }
 		if (!m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" does not exist."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" does not exist."));
 		}
 		String data = create_h();
 		m_path.save(data);
@@ -576,7 +576,7 @@ public:
             throw DaemonError("Root privileges required.");
         }
 		if (!m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" does not exist."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" does not exist."));
 		}
 		#if OSID == 0
 			String command ("systemctl start ", 16);
@@ -603,7 +603,7 @@ public:
             throw DaemonError("Root privileges required.");
         }
 		if (!m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" does not exist."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" does not exist."));
 		}
 		#if OSID == 0
 			String command ("systemctl stop ", 15);
@@ -630,7 +630,7 @@ public:
             throw DaemonError("Root privileges required.");
         }
 		if (!m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" does not exist."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" does not exist."));
 		}
 		#if OSID == 0
 			String command ("systemctl restart ", 18);
@@ -660,13 +660,13 @@ public:
             throw DaemonError("Root privileges required.");
         }
         if (!m_path.exists()) {
-            throw DaemonError(tostr("Daemon \"", m_path, "\" does not exist."));
+            throw DaemonError(to_str("Daemon \"", m_path, "\" does not exist."));
         }
         String command;
         #if OSID == 0
-            command = tostr("sudo journalctl -u ", m_settings.name, ".service --no-pager  -n ", lines);
+            command = to_str("sudo journalctl -u ", m_settings.name, ".service --no-pager  -n ", lines);
         #elif OSID == 1
-            throw OSError(tostr("Operating system \"MacOS\" is not yet supported."));
+            throw OSError(to_str("Operating system \"MacOS\" is not yet supported."));
 			lines + 1; // to ignore unused parameter.
         #endif
         Proc proc;

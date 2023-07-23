@@ -83,7 +83,7 @@ private:
         String received = recv();
         Int status = Int::parse(received.data(), 3);
         if (m_debug) {
-            m_debugs.append(tostr(mode, ": ", received.replace_end_r("\r\n"), '.'));
+            m_debugs.append(to_str(mode, ": ", received.replace_end_r("\r\n"), '.'));
         }
         switch(status.value()) {
             case 250:
@@ -99,9 +99,9 @@ private:
                 ullong pos;
                 if ((pos = received.find("Error: ")) != NPos::npos) {
                     String err = received.slice(pos + 7).replace_end_r("\r\n");
-                    throw SMTPError("vlib::smtp::Client", tostr("Encoutered an error while ", mode, ": ", err, " [", status, "]."));
+                    throw SMTPError("vlib::smtp::Client", to_str("Encoutered an error while ", mode, ": ", err, " [", status, "]."));
                 } else {
-                    throw SMTPError("vlib::smtp::Client", tostr("Encoutered an error while ", mode, " [", status, "]."));
+                    throw SMTPError("vlib::smtp::Client", to_str("Encoutered an error while ", mode, " [", status, "]."));
                 }
             }
         }
@@ -337,9 +337,9 @@ public:
         
         // Iterate mails.
         for (auto& mail: mails) {
-            command(tostr("MAIL FROM:<", mail.sender.m_email, ">"), "sending the sender details");
+            command(to_str("MAIL FROM:<", mail.sender.m_email, ">"), "sending the sender details");
             for (auto& recipient: mail.recipients) {
-                command(tostr("RCPT TO:<", recipient.m_email, ">"), "sending the recipient details");
+                command(to_str("RCPT TO:<", recipient.m_email, ">"), "sending the recipient details");
             }
             command("DATA", "sending the mail command");
             command(m_dkim.is_defined() ? mail.build(m_domain, m_dkim) : mail.build(), "sending the mail data");

@@ -34,14 +34,14 @@ FILE*	open(const char* path, int mode, int permission = 0640) {
 	FILE* f;
 	switch (mode) {
 		case file::mode::append:
-			f = fdopen(fd, "a+");
+			f = fdopen(fd, "a");
 			break;
 		case file::mode::write:
-			f = fdopen(fd, "w+");
+			f = fdopen(fd, "w");
 			break;
 		case file::mode::read:
 		default: // on an invalid file open with read permission.
-			f = fdopen(fd, "r+");
+			f = fdopen(fd, "r");
 			break;
 	}
 	if (f == NULL) { f = nullptr; }
@@ -89,14 +89,14 @@ int 	save(
 	const char*		data, 	// the data to save.
 	ullong			len		// the data length.
 ) {
+	if (len == 0) {
+		return 0;
+	}
 	FILE *f = open(path, file::write);
 	if (!f) {
 		return file::error::open;
 	}
-    if (len == 0) {
-        fclose(f);
-        return 0;
-    }
+	fseek(f, 0, SEEK_SET);
 	if (fwrite(data, len, 1, f) != 1) {
 		fclose(f);
 		return file::error::write;

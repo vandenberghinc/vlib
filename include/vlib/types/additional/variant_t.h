@@ -627,7 +627,7 @@ public:
 	// 	else if (m_type == 6) { return m_arr->find(args...); }
 	// 	else if (m_type == 7) { return m_dict->find(args...); }
 	// 	else {
-	// 		throw TypeError("vlib::variant_t", tostr(
+	// 		throw TypeError("vlib::variant_t", to_str(
 	// 			"Function \"",
 	// 			__FUNCTION__,
 	// 			"\" is not applicable for type \"",
@@ -660,7 +660,7 @@ public:
 		} else if (x.m_type == 7) {
 			return *x.m_dict == *y.m_dict;
 		}
-		throw TypeError("vlib::variant_t", tostr(
+		throw TypeError("vlib::variant_t", to_str(
 			"Unknown type id \"",
 			x.m_type,
 			"\"." ));
@@ -675,7 +675,7 @@ public:
 	inline constexpr
 	bool 		operator >(const This& x) const {
 		if (m_type != x.m_type) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for types \"",
@@ -701,7 +701,7 @@ public:
 		} else if (m_type == 7) {
 			return *m_dict > *x.m_dict;
 		}
-		throw TypeError("vlib::variant_t", tostr(
+		throw TypeError("vlib::variant_t", to_str(
 			"Unknown type id \"",
 			m_type,
 			"\"." ));
@@ -710,7 +710,7 @@ public:
 	inline constexpr
 	bool 		operator <(const This& x) const {
 		if (m_type != x.m_type) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for types \"",
@@ -736,7 +736,7 @@ public:
 		} else if (m_type == 7) {
 			return *m_dict < *x.m_dict;
 		}
-		throw TypeError("vlib::variant_t", tostr(
+		throw TypeError("vlib::variant_t", to_str(
 			"Unknown type id \"",
 			m_type,
 			"\"." ));
@@ -745,7 +745,7 @@ public:
 	inline constexpr
 	bool 		operator >=(const This& x) const {
 		if (m_type != x.m_type) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for types \"",
@@ -771,7 +771,7 @@ public:
 		} else if (m_type == 7) {
 			return *m_dict >= *x.m_dict;
 		}
-		throw TypeError("vlib::variant_t", tostr(
+		throw TypeError("vlib::variant_t", to_str(
 			"Unknown type id \"",
 			m_type,
 			"\"." ));
@@ -780,7 +780,7 @@ public:
 	inline constexpr
 	bool 		operator <=(const This& x) const {
 		if (m_type != x.m_type) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for types \"",
@@ -806,7 +806,7 @@ public:
 		} else if (m_type == 7) {
 			return *m_dict <= *x.m_dict;
 		}
-		throw TypeError("vlib::variant_t", tostr(
+		throw TypeError("vlib::variant_t", to_str(
 			"Unknown type id \"",
 			m_type,
 			"\"." ));
@@ -817,7 +817,7 @@ public:
 	inline constexpr
 	auto& 		operator ++() {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -841,7 +841,7 @@ public:
 	template <typename Type> constexpr //@TODO wont work with "const char*"
 	This 		operator +(const Type& x) const {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -864,7 +864,7 @@ public:
 	template <typename Type> constexpr //@TODO wont work with "const char*"
 	auto& 		operator +=(const Type& x) const {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -890,7 +890,7 @@ public:
 	inline constexpr
 	auto& 		operator --() {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -914,7 +914,7 @@ public:
 	template <typename Type> constexpr //@TODO wont work with "const char*"
 	This 		operator -(const Type& x) const {
 		if (m_type == 0 || m_type == 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -937,7 +937,7 @@ public:
 	template <typename Type> constexpr //@TODO wont work with "const char*"
 	auto& 		operator -=(const Type& x) const {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -975,7 +975,7 @@ public:
 	) inline constexpr
 	auto& 		operator *=(const Numeric& x) {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -1013,7 +1013,7 @@ public:
 	) inline constexpr
 	auto& 		operator /=(const Numeric& x) {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -1051,7 +1051,7 @@ public:
 	) inline constexpr
 	auto& 		operator %=(const Numeric& x) {
 		if (m_type <= 1) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",
@@ -1077,7 +1077,7 @@ public:
 	inline constexpr
 	auto& 		operator [](const Len& index) const {
 		if (m_type <= 4) {
-			throw TypeError("vlib::variant_t", tostr(
+			throw TypeError("vlib::variant_t", to_str(
 				"Function \"",
 				__FUNCTION__,
 				"\" is not applicable for type \"",

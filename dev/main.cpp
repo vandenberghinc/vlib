@@ -1,6 +1,7 @@
 // Author: Daan van den Bergh
 // Copyright: © 2022 Daan van den Bergh.
 
+// #include "codeql/main.cpp"
 
 // #include "include/vlib/types.h"
 // #include "include/vlib/sockets/socket.h"
@@ -9,7 +10,87 @@
 //     vlib::print(vlib::dns_blacklist("84.84.132.194"));
 // }
 
-// #include "codeql/main.cpp"
+
+#include "../include/vlib/types.h"
+#include "../include/vlib/sockets.h"
+
+int main() {
+	
+	using namespace vlib::types::shortcuts;
+	
+	vlib::Regex(R"(\s*[^b]*)");
+	
+	return 0;
+	
+	using namespace vlib::types::shortcuts;
+	Dict<String, String> x = {
+		{"width", "100%"},
+		{"height", "100%"},
+		{"frameborder", "0"},
+		{"style", "border:0"},
+		{"referrerpolicy", "no-referrer-when-downgrade"},
+		{"allowfullscreen", "true"},
+	};
+	String s;
+	for (auto& [k, v]: x.iterate()) {
+		s << k->quote() << ": " << v->quote() << ",\n";
+	}
+	print(s);
+	return 0;
+
+	// vlib::http::Response obj;
+	vlib::http::Request obj;
+	vlib::http::Parser parser (obj);
+	
+	// vlib::String data = "HTTP/1.1 200 OK\r\n"
+	// 			"Content-Type: application/json\r\n"
+	// 			"Content-Length: 52\r\n"
+	// 			"\r\n"
+	// 			"{\r\n"
+	// 			"  \"id\": 1,\r\n"
+	// 			"  \"name\": \"John Doe\",\r\n"
+	// 			"  \"email\": \"johndoe@example.com\"\r\n"
+	// 			"}";
+	
+	// vlib::String requestBody = "{\"name\": \"John Doe\",\"age\": 30,\"email\": \"johndoe@example.com\"}";
+	// vlib::String data = "POST /api/users HTTP/1.1\r\n"
+	// 						  "Host: example.com\r\n"
+	// 						  "User-Agent: MyClient/1.0\r\n"
+	// 						  "Content-Type: application/json\r\n"
+	// 						  "Content-Length: " + tostr(requestBody.len()) + "\r\n"
+	// 						  "\r\n"
+	// 						  + requestBody;
+	
+	vlib::String chunk1 = "This is the first chunk";
+	vlib::String chunk2 = "This is the second chunk";
+	vlib::String chunk3 = "This is the third chunk";
+	
+	vlib::String data = "POST /api/data HTTP/1.1\r\n"
+	"Host: example.com\r\n"
+	"User-Agent: MyClient/1.0\r\n"
+	"Transfer-Encoding: chunked\r\n"
+	"\r\n"
+	+ vlib::to_hex(chunk1.len()) + "\r\n"
+	+ chunk1 + "\r\n"
+	+ vlib::to_hex(chunk2.len()) + "\r\n"
+	+ chunk2 + "\r\n"
+	+ vlib::to_hex(chunk3.len()) + "\r\n"
+	+ chunk3 + "\r\n"
+	"0\r\n\r\n";
+	
+	// vlib::print(data);
+	// vlib::print("====================================");
+	
+	parser.parse(data);
+	
+	// vlib::print(response.version());
+	// vlib::print(response.status());
+	// vlib::print(response.status_desc());
+	
+	vlib::print(obj);
+	
+	
+}
 
 // #include "../include/vlib/types.h"
 // int main() {
@@ -27,34 +108,6 @@
 // 		")");
 // 	}
 // }
-
-#include "../include/vlib/compression.h"
-
-#include <stdio.h>
-
-int main() {
-    using namespace vlib::types::shortcuts;
-	
-	
-	print(Json::load("/tmp/test").dump(4));
-
-
-    // String raw;
-    // // raw.random_r(UINT_MAX * 2);
-    // raw.random_r(10000);
-    // String compressed = vlib::compress(raw);
-    // print("MATCH: ", vlib::decompress(compressed) == raw);
-
-    // vlib::Zip zip;
-    // zip.create("//Users/administrator/Downloads/dir", "/Users/administrator/Downloads/archive.zip");
-	// zip.create("/Volumes/persistance/private/vinc/vweb/", "/Users/administrator/Downloads/archive.zip", {".git", ".gitignore", "dev/.versions"});
-    // zip.read("/Users/administrator/Downloads/archive.zip");
-    // Path::remove("/Users/administrator/Downloads/zip_extract/");
-    // zip.extract("/Users/administrator/Downloads/zip_extract/");
-    // zip.read("/Users/administrator/Downloads/macos_archive.zip");
-
-}
-
 
 
 

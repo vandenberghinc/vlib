@@ -114,7 +114,7 @@ struct wrapper {
 				} else if (pollstatus == 0) {
                     throw TimeoutError("Operation timed out.");
 				} else {
-                    throw PollError(tostr("Poll error [", ::strerror(errno), "]."));
+                    throw PollError(to_str("Poll error [", ::strerror(errno), "]."));
 				}
                 return true;
 			case SSL_ERROR_WANT_WRITE:
@@ -124,7 +124,7 @@ struct wrapper {
 				} else if (pollstatus == 0) {
                     throw TimeoutError("Operation timed out.");
 				} else {
-                    throw PollError(tostr("Poll error [", ::strerror(errno), "]."));
+                    throw PollError(to_str("Poll error [", ::strerror(errno), "]."));
 				}
                 return true;
             // case SSL_ERROR_ZERO_RETURN:
@@ -208,7 +208,7 @@ struct wrapper {
 				received.concat_r(buff, (uint) bytes);
                 return ;
 			}
-            
+			
             // Handle want read write.
             handle_want_read_write(ssl, bytes, pfd, rfd, wfd, timeout);
             // if (handle_want_read_write(ssl, bytes, pfd, rfd, wfd, timeout)) {
@@ -228,7 +228,7 @@ struct wrapper {
 		SSL*&	        ssl,
 		const char* 	data,
 		ullong 			len,
-		int 			timeout
+		Int 			timeout
 	) {
         
         /* V2 send in chunks.
@@ -245,11 +245,11 @@ struct wrapper {
                 if (errno != EAGAIN) {
                     int err = SSL_get_error(ssl, (int) status);
                     if (err != SSL_ERROR_WANT_READ && err != SSL_ERROR_WANT_WRITE) {
-                        throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
+                        throw WriteError(to_str("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
                     }
                 }
             } else if (status == 0) {
-                throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
+                throw WriteError(to_str("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
             } else {
                 sent += (ullong) status;
             }
@@ -261,18 +261,18 @@ struct wrapper {
         llong status = 0;
 		struct pollfd pfd;
 		int fd = SSL_get_fd(ssl);
-		llong end_time = Date::get_mseconds() + timeout;
+		llong end_time = Date::get_mseconds() + timeout.value();
 		while (true) {
 			if (timeout != -1 && Date::get_mseconds() >= end_time) {
 				throw TimeoutError("Operation timed out.");
 			}
-			handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout);
+			handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout.value());
 			errno = 0;
-			if ((status = SSL_write(ssl, data, len)) < 0) {
+			if ((status = SSL_write(ssl, data, (int) len)) < 0) {
 				if (errno == EAGAIN) {
 					continue;
 				}
-				throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
+				throw WriteError(to_str("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
 			}
 			break;
 		}
@@ -288,7 +288,7 @@ struct wrapper {
 		if ((status = SSL_write(ssl, data, len)) == 0) {
             return 0;
         } else if (status < 0 && !handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout)) {
-            throw WriteError(tostr("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
+            throw WriteError(to_str("Write error [", get_err(ssl, (int) status), "] [", ::strerror(errno), "]."));
         }
         // handle_want_read_write(ssl, (int) status, pfd, fd, fd, timeout);
         return (ullong) status;
@@ -299,9 +299,68 @@ struct wrapper {
     ullong  send(
 		SSL*& 			ssl,
 		const String& 	data,
-		int 		timeout = VLIB_SOCK_TIMEOUT
+		Int 			timeout = VLIB_SOCK_TIMEOUT
 	) {
 		return send(ssl, data.data(), (uint) data.len(), timeout);
+	}
+	
+	// Send chunked http response.
+	// The header "Transfer-Encoding: chunked" will automatically be added.
+	// May cause undefined behaviour if the header already exists.
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) SICE
+	ullong  send_chunked(
+		SSL*&         client,
+		const Type&   response,
+		const Int&    timeout = VLIB_SOCK_TIMEOUT
+	) {
+		
+		// Vars.
+		auto& data = response.data();
+		ullong len = data.len(), sent = 0, full_sent = 0, end_header_pos;
+		uint chunk_header_len;
+		size_t chunk;
+		const ullong chunk_size = 1024 * 32;
+		char chunk_header[16];
+		
+		// Send headers.
+		end_header_pos = data.find("\r\n\r\n");
+		if (end_header_pos == NPos::npos) {
+			throw InvalidUsageError("Could not find the end of the headers.");
+		}
+		end_header_pos += 4;
+		String headers (data.data(), end_header_pos);
+		ullong spos = headers.find("Content-Length:");
+		if (spos != NPos::npos) {
+			ullong epos = headers.find("\r\n", spos);
+			if (epos != NPos::npos) {
+				headers.replace_h(spos, epos, "Transfer-Encoding:chunked", 25);
+			}
+		}
+		send(client, headers, timeout);
+		full_sent += headers.len();
+		sent = end_header_pos;
+		
+		// Send headers.
+		while (sent < len) {
+			
+			chunk = len - sent < chunk_size ? len - sent : chunk_size;
+			snprintf(chunk_header, 16, "%zx\r\n", chunk);
+			chunk_header_len = vlib::len<uint>(chunk_header);
+			send(client, chunk_header, chunk_header_len, timeout);
+			full_sent += chunk_header_len;
+			
+			send(client, data.data() + sent, (uint) chunk, timeout);
+			full_sent += chunk;
+			
+			send(client, "\r\n", 2, timeout);
+			full_sent += 2;
+			
+			sent += chunk;
+		}
+		send(client, "0\r\n\r\n", 5, timeout);
+		full_sent += 5;
+		return full_sent;
+		
 	}
 
 	// Close a ssl connection.
@@ -341,8 +400,8 @@ struct wrapper {
         //                 ++attempts;
         //                 continue;
         //             }
-        //             print(tostr("Shut down error [", status, "] [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
-        //             throw CloseError(tostr("Shut down error [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+        //             print(to_str("Shut down error [", status, "] [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+        //             throw CloseError(to_str("Shut down error [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
         //             break;
         //     }
         // }
@@ -376,8 +435,8 @@ struct wrapper {
                     if (errno == EAGAIN) {
                         continue;
                     }
-                    print(tostr("Encountered an error while closing the ssl socket [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
-                    throw CloseError(tostr("Encountered an error while closing the ssl socket [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+                    print(to_str("Encountered an error while closing the ssl socket [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
+                    throw CloseError(to_str("Encountered an error while closing the ssl socket [", get_err(ssl, status), "] [", ::strerror(errno), "]."));
                     
             }
         }

@@ -47,8 +47,8 @@ namespace http {
 
 struct Request {
 
-// Private.
-private:
+// Public.
+public:
 	
 	// ---------------------------------------------------------
 	// Aliases.
@@ -59,14 +59,22 @@ private:
 	// ---------------------------------------------------------
 	// Attributes.
 	
-	short 					m_version; 		// the http version.
-	short 					m_method; 		// the http method.
-	SPtr<String>			m_endpoint;		// a shared pointer to the http endpoint.
-	short					m_content_type;	// the content type id.
-	Headers				    m_headers;		// a shared pointer to the headers.
-	SPtr<String>			m_body;			// a shared pointer to http message body.
-	SPtr<String>			m_data;			// a shared pointer to the entire request in string format.
+	short 			m_version = vlib::http::version::undefined; 		// the http version.
+	short 			m_method = vlib::http::method::undefined; 		// the http method.
+	String			m_endpoint;		// a shared pointer to the http endpoint.
+	short			m_content_type = vlib::http::content_type::undefined;	// the content type id.
+	Headers			m_headers;		// a shared pointer to the headers.
+	String			m_body;			// a shared pointer to http message body.
+	String			m_data;			// a shared pointer to the entire request in string format.
 	
+	// ---------------------------------------------------------
+	// Static attribute.
+	
+	SICE short type = 1; // 1 for request and 2 for response.
+
+// Private.
+private:
+
 	// ---------------------------------------------------------
 	// Private functions.
 
@@ -81,91 +89,9 @@ private:
 	//   * The method string is not comprised of uppercase characters.
 	constexpr
 	This& 	parse() {
-
-		// Init / reset.
-		if (!m_data) { return *this; }
-		m_version = vlib::http::version::undefined;
-		m_method = vlib::http::method::undefined;
-		if (m_endpoint) { m_endpoint->reset(); }
-		else { m_endpoint.init(); }
-		m_content_type = vlib::http::content_type::undefined;
-		if (!m_headers.is_undefined()) { m_headers.reset(); }
-		if (m_body) { m_body->reset(); }
-		else { m_body.init(); }
-		
-		// Variables.
-		char*& 			data = m_data->data();
-		const Length& 	len = m_data->len();
-		Length 			start_index = 0;
-		Length 			index = 0;
-		bool 			stop = false;
-		
-		// Is type variable.
-		// - 0 for the 1th item of the first line.
-		// - 1 for the 2th item of the first line
-		// - 2 for the 3th item of the first line.
-		ushort 	is_type = 0;
-		
-		// Iterate.
-		for (; index < len; ++index) {
-			switch (is_type) {
-					
-				// Is the first item of the first line.
-				case 0: {
-					switch (data[index]) {
-						case ' ': {
-							vlib::http::wrapper::parse_method(m_method, data, len, start_index);
-							is_type = 1;
-							start_index = index + 1;
-							continue;
-						}
-						default: continue;
-					}
-				}
-					
-				// Is the second item of the first line.
-				case 1: {
-					switch (data[index]) {
-						case ' ': {
-							m_endpoint.reconstruct_by_type_args(
-								data + start_index,
-								index - start_index
-							);
-							is_type = 2;
-							start_index = index + 1;
-							continue;
-						}
-						default: continue;
-					}
-				}
-					
-				// Is the third item of the first line.
-				case 2: {
-					switch (data[index]) {
-						case '\n': {
-							switch (data[index-1]) {
-								case '\r': {
-									vlib::http::wrapper::parse_version(m_version, data, len, start_index);
-									start_index = index + 1;
-									stop = true;
-									break;
-								}
-								default: continue;
-							}
-							break;
-						}
-						default: continue;
-					}
-					break;
-				}
-				default: continue;
-			}
-			if (stop) { break; }
-		}
-		++index;
-		vlib::http::wrapper::parse_headers_and_body(m_content_type, m_headers, m_body, m_data, index, start_index);
-		
-		// Handler.
+		reset();
+		Parser parser (*this);
+		parser.parse(m_data);
 		return *this;
 	}
 
@@ -190,7 +116,7 @@ public:
 	// Reconstruct.
 	constexpr
 	auto& 	reconstruct(short method, const String& endpoint, const Headers& headers, short version = http::version::v1_1) {
-		m_data->reset();
+		m_data.reset();
 		add_method(method);
 		add_endpoint(endpoint);
 		add_version(version);
@@ -201,7 +127,7 @@ public:
 	}
 	constexpr
 	auto& 	reconstruct(short method, const String& endpoint, const Headers& headers, const String& body, short version = http::version::v1_1) {
-		m_data->reset();
+		m_data.reset();
 		add_method(method);
 		add_endpoint(endpoint);
 		add_version(version);
@@ -419,16 +345,14 @@ public:
 	// Assignment operator from a data copy.
 	constexpr
 	auto&	operator =(const String& data) {
-		if (m_data) { m_data->copy(data); }
-		else { m_data = data; }
+		m_data = data;
 		return parse();
 	}
 	
 	// Assignment operator from a data swap.
 	constexpr
 	auto&	operator =(String&& data) {
-		if (m_data) { m_data->swap(data); }
-		else { m_data = data; }
+		m_data = data;
 		return parse();
 	}
 	
@@ -514,7 +438,7 @@ public:
 	} */
 	constexpr
 	bool 	has_endpoint() const {
-		return m_endpoint && m_endpoint->is_defined();
+		return m_endpoint.is_defined();
 	}
 	/*  @docs {
 		@title: Endpoint
@@ -526,11 +450,11 @@ public:
 	} */
 	constexpr
 	auto& 	endpoint() {
-		return *m_endpoint;
+		return m_endpoint;
 	}
 	constexpr
 	auto& 	endpoint() const {
-		return *m_endpoint;
+		return m_endpoint;
 	}
 
 	// Status description.
@@ -604,7 +528,7 @@ public:
 	} */
 	constexpr
 	bool 	has_body() const {
-		return m_body && m_body->is_defined();
+		return m_body.is_defined();
 	}
 	/*  @docs {
 		@title: Body
@@ -616,11 +540,11 @@ public:
 	} */
 	constexpr
 	auto& 	body() {
-		return *m_body;
+		return m_body;
 	}
 	constexpr
 	auto& 	body() const {
-		return *m_body;
+		return m_body;
 	}
 	
 	// Data.
@@ -632,7 +556,7 @@ public:
 	} */
 	constexpr
 	bool 	has_data() const {
-		return m_data && m_data->is_defined();
+		return m_data.is_defined();
 	}
 	/*  @docs {
 		@title: Data
@@ -642,11 +566,11 @@ public:
 	} */
 	constexpr
 	auto& 	data() {
-		return *m_data;
+		return m_data;
 	}
 	constexpr
 	auto& 	data() const {
-		return *m_data;
+		return m_data;
 	}
 	
 	// ---------------------------------------------------------
@@ -661,10 +585,10 @@ public:
 	This& 	reset() {
 		m_version = vlib::http::version::undefined;
 		m_method = vlib::http::method::undefined;
-		m_endpoint->reset();
+		m_endpoint.reset();
 		m_headers.reset();
-		m_body->reset();
-		m_data->reset();
+		m_body.reset();
+		m_data.reset();
 		return *this;
 	}
 	
@@ -677,8 +601,8 @@ public:
 	} */
 	constexpr
 	This& 	add_method(short method) {
-		m_data->concat_r(http::method::tostr(method));
-		m_data->append(' ');
+		m_data.concat_r(http::method::to_str(method));
+		m_data.append(' ');
 		return *this;
 	}
 	
@@ -696,9 +620,9 @@ public:
 	}
 	constexpr
 	This& 	add_endpoint(const char* endpoint, const Length len) {
-		m_data->expand(len + 1);
-		m_data->concat_no_resize_r(endpoint, len);
-		m_data->append_no_resize(' ');
+		m_data.expand(len + 1);
+		m_data.concat_no_resize_r(endpoint, len);
+		m_data.append_no_resize(' ');
 		return *this;
 	}
 
@@ -711,10 +635,10 @@ public:
 	} */
 	constexpr
 	This& 	add_version(short version) {
-		m_data->expand(10);
-		m_data->concat_no_resize_r(http::version::tostr(version));
-		m_data->append_no_resize('\r');
-		m_data->append_no_resize('\n');
+		m_data.expand(10);
+		m_data.concat_no_resize_r(http::version::to_str(version));
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
 		return *this;
 	}
 	
@@ -731,13 +655,12 @@ public:
 		const String& 				key,
 		const String& 				value
 	) {
-		vlib::http::wrapper::add_header(
-			m_data,
-			key.data(),
-			key.len(),
-			value.data(),
-			value.len()
-		);
+		m_data.expand(key.len() + value.len() + 3);
+		m_data.concat_no_resize_r(key);
+		m_data.append_no_resize(':');
+		m_data.concat_no_resize_r(value);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
 		return *this;
 	}
 	constexpr
@@ -747,9 +670,14 @@ public:
 		const char* 				value,
 		const Length		 		value_len
 	) {
-		vlib::http::wrapper::add_header(m_data, key, key_len, value, value_len);
+		m_data.expand(key_len + value_len + 3);
+		m_data.concat_no_resize_r(key, key_len);
+		m_data.append_no_resize(':');
+		m_data.concat_no_resize_r(value, value_len);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
 		return *this;
-	}
+	}	
 	
 	// Add headers to the data string.
 	/*  @docs {
@@ -777,18 +705,30 @@ public:
 	} */
 	constexpr
 	This&	add_body(const String& body) {
-		vlib::http::wrapper::add_body(m_data, body.data(), body.len());
+		m_data.expand(body.len() + 2);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
+		m_data.concat_no_resize_r(body);
+		m_data.null_terminate();
 		return *this;
 	}
 	constexpr
 	This&	add_body(const Json& body) {
 		const String dumped = body.json();
-		vlib::http::wrapper::add_body(m_data, dumped.data(), dumped.len());
+		m_data.expand(dumped.len() + 2);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
+		m_data.concat_no_resize_r(dumped);
+		m_data.null_terminate();
 		return *this;
 	}
 	constexpr
 	This&	add_body(const char* body, ullong len) {
-		vlib::http::wrapper::add_body(m_data, body, len);
+		m_data.expand(len + 2);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
+		m_data.concat_no_resize_r(body, len);
+		m_data.null_terminate();
 		return *this;
 	}
 
@@ -801,10 +741,10 @@ public:
 	} */
 	constexpr
 	This&	add_end() {
-		m_data->expand(2);
-		m_data->append_no_resize('\r');
-		m_data->append_no_resize('\n');
-		m_data->null_terminate();
+		m_data.expand(2);
+		m_data.append_no_resize('\r');
+		m_data.append_no_resize('\n');
+		m_data.null_terminate();
 		return *this;
 	}
 
@@ -815,7 +755,7 @@ public:
 	} */
 	constexpr
 	This& 	null_terminate() {
-		m_data->null_terminate();
+		m_data.null_terminate();
 		return *this;
 	}
 
@@ -839,8 +779,23 @@ public:
 
 	// Dump to pipe.
 	constexpr friend
-	auto& 	operator <<(Pipe pipe, const This& obj) {
-		return pipe << *obj.m_data;
+	auto& 	operator <<(Pipe& pipe, const This& obj) {
+		if (obj.m_data.is_defined()) {
+			return pipe << obj.m_data;
+		}
+		else {
+			pipe <<
+			vlib::http::method::to_str(obj.m_method) << ' ' <<
+			obj.m_endpoint << ' ' <<
+			vlib::http::version::to_str(obj.m_version) << "\r\n";
+			for (auto& [k,v]: obj.m_headers.iterate()) {
+				pipe << *k << ": " << *v << "\r\n";
+			}
+			if (obj.m_body.is_defined()) {
+				pipe << "\r\n" << obj.m_body;
+			}
+			return pipe;
+		}
 	}
 
 };

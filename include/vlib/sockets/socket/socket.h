@@ -104,7 +104,7 @@ public:
                         continue;
                     default:
                         x *= 10;
-                        x += todigit(c);
+                        x += to_digit(c);
                         continue;
                 }
             }
@@ -455,11 +455,11 @@ public:
         int opt = 1;
         if (setsockopt(m_fd.value(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
             ::close(m_fd.value());
-			throw SetOptionError(tostr("Failed to set option SO_REUSEADDR [", ::strerror(errno), "]."));
+			throw SetOptionError(to_str("Failed to set option SO_REUSEADDR [", ::strerror(errno), "]."));
         }
         if (setsockopt(m_fd.value(), SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0) {
             ::close(m_fd.value());
-			throw SetOptionError(tostr("Failed to set option SO_REUSEPORT [", ::strerror(errno), "]."));
+			throw SetOptionError(to_str("Failed to set option SO_REUSEPORT [", ::strerror(errno), "]."));
         }
         // int internal_buff = 200000;
         // if (setsockopt(m_fd, SOL_SOCKET, SO_SNDBUF, &internal_buff, sizeof(int))) {
@@ -484,7 +484,7 @@ public:
     void    set_send_buff(const Int& fd, const Int& buff) {
         if (setsockopt(fd.value(), SOL_SOCKET, SO_SNDBUF, &(buff.value()), sizeof(int)) < 0) {
             ::close(fd.value());
-            throw SetOptionError(tostr("Failed to set the send buffer [", ::strerror(errno), "]."));
+            throw SetOptionError(to_str("Failed to set the send buffer [", ::strerror(errno), "]."));
         }
     }
     constexpr
@@ -495,7 +495,7 @@ public:
     void    set_recv_buff(const Int& fd, const Int& buff) {
         if (setsockopt(fd.value(), SOL_SOCKET, SO_RCVBUF, &(buff.value()), sizeof(int)) < 0) {
             ::close(fd.value());
-            throw SetOptionError(tostr("Failed to set the receive buffer [", ::strerror(errno), "]."));
+            throw SetOptionError(to_str("Failed to set the receive buffer [", ::strerror(errno), "]."));
         }
     }
     constexpr
@@ -507,7 +507,7 @@ public:
         int val = enabled ? 0 : 1;
         if ((setsockopt(fd.value(), IPPROTO_TCP, TCP_NODELAY, &val, sizeof(val)) < 0)) {
             ::close(fd.value());
-            throw SetOptionError(tostr("Failed to set the nagle algorithm option [", ::strerror(errno), "]."));
+            throw SetOptionError(to_str("Failed to set the nagle algorithm option [", ::strerror(errno), "]."));
         }
     }
 
@@ -518,7 +518,7 @@ public:
         // Initialize socket.
         m_fd = ::socket(family, type, protocol);
         if (m_fd < 0) {
-			throw CreateError(tostr("Failed to create the socket [", ::strerror(errno), "]."));
+			throw CreateError(to_str("Failed to create the socket [", ::strerror(errno), "]."));
         }
 
         // Set options.
@@ -533,7 +533,7 @@ public:
         }
         else if (inet_pton(family, m_ip.c_str(), &m_addrin4.sin_addr) <= 0) {
             ::close(m_fd.value());
-			throw SocketError(tostr("Failed to convert ip \"", m_ip, "\" [", ::strerror(errno), "]."));
+			throw SocketError(to_str("Failed to convert ip \"", m_ip, "\" [", ::strerror(errno), "]."));
         }
 
         // Assign.
@@ -551,7 +551,7 @@ public:
         // Initialize socket.
         m_fd = ::socket(family, type, protocol);
         if (m_fd < 0) {
-			throw CreateError(tostr("Failed to create the socket [", ::strerror(errno), "]."));
+			throw CreateError(to_str("Failed to create the socket [", ::strerror(errno), "]."));
         }
 
         // Set options.
@@ -566,7 +566,7 @@ public:
         }
         else if (inet_pton(family, m_ip.c_str(), &m_addrin6.sin6_addr) <= 0) {
             ::close(m_fd.value());
-			throw SocketError(tostr("Failed to convert ip \"", m_ip, "\" [", ::strerror(errno), "]."));
+			throw SocketError(to_str("Failed to convert ip \"", m_ip, "\" [", ::strerror(errno), "]."));
         }
 
         // Assign.
@@ -586,7 +586,7 @@ public:
         // Initialize socket.
         m_fd = ::socket(family, type, protocol);
         if (m_fd < 0) {
-			throw CreateError(tostr("Failed to create the socket [", ::strerror(errno), "]."));
+			throw CreateError(to_str("Failed to create the socket [", ::strerror(errno), "]."));
         }
 
         // Set options.
@@ -646,7 +646,7 @@ public:
         hints.ai_next = NULL;
         if (::getaddrinfo(hostname, port.c_str(), &hints, &m_addrinfo) != 0) {
             ::close(m_fd.value());
-			throw LookupError(tostr("Failed to get address \"", m_host, "\" [", ::strerror(errno), "]."));
+			throw LookupError(to_str("Failed to get address \"", m_host, "\" [", ::strerror(errno), "]."));
         }
         m_by_ip = false;
 
@@ -664,7 +664,7 @@ public:
         // Initialize socket.
         m_fd = ::socket(family, type, protocol);
         if (m_fd < 0) {
-			throw CreateError(tostr("Failed to create the socket [", ::strerror(errno), "]."));
+			throw CreateError(to_str("Failed to create the socket [", ::strerror(errno), "]."));
         }
 
         // Set options.
@@ -683,12 +683,12 @@ public:
     void    set_blocking(const Int& fd, const Bool& to = blocking) {
         int flags = ::fcntl(fd.value(), F_GETFL);
         if (flags == -1) {
-            throw SetOptionError(tostr("Failed to get the socket flags [", ::strerror(errno), "]."));
+            throw SetOptionError(to_str("Failed to get the socket flags [", ::strerror(errno), "]."));
         }
         flags = to ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
         if (::fcntl(fd.value(), F_SETFL, flags) == -1) {
             ::close(fd.value());
-            throw SetOptionError(tostr("Failed to set the socket to non-blocking [", ::strerror(errno), "]."));
+            throw SetOptionError(to_str("Failed to set the socket to non-blocking [", ::strerror(errno), "]."));
         }
     }
 
@@ -740,25 +740,25 @@ public:
                     if (errno == EINTR) {
                         continue;
                     }
-                    throw PollError(tostr("Poll error [", ::strerror(errno), "]."));
+                    throw PollError(to_str("Poll error [", ::strerror(errno), "]."));
                 default:
                     if (pfd.revents & revents.value()) {
                         return ;
                     }
                     else if (pfd.revents & POLLNVAL) {
-                        throw SocketClosedError(tostr("Socket is closed."));
+                        throw SocketClosedError(to_str("Socket is closed."));
                     }
                     else if (pfd.revents & POLLERR) {
-                        throw SocketClosedError(tostr("Socket is closed."));
+                        throw SocketClosedError(to_str("Socket is closed."));
                     }
                     else if (pfd.revents & POLLHUP) {
-                        throw SocketClosedError(tostr("Socket is closed."));
+                        throw SocketClosedError(to_str("Socket is closed."));
                     }
                     else if (pfd.revents & POLLPRI) {
-                        throw SocketClosedError(tostr("Socket is closed."));
+                        throw SocketClosedError(to_str("Socket is closed."));
                     }
                     else {
-                        throw PollError(tostr("Uncatched poll event."));
+                        throw PollError(to_str("Uncatched poll event."));
                     }
             }
         }
@@ -798,8 +798,8 @@ public:
                 set_blocking(m_fd, blocking);
                 return ;
             } else {
-                print(tostr("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
-                throw ConnectError(tostr("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
+                print(to_str("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
+                throw ConnectError(to_str("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
             }
         } else {
             struct addrinfo *rp, *result = m_addrinfo;
@@ -813,7 +813,7 @@ public:
                     return ;
                 }
             }
-            throw ConnectError(tostr("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
+            throw ConnectError(to_str("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
         }
          */
         
@@ -821,12 +821,15 @@ public:
         if (m_by_ip) {
             errno = 0;
             if (::connect(m_fd.value(), m_addr, m_addrlen) >= 0) {
+				print("CONNECTED");
 				return ;
             }
             else if (errno == EINPROGRESS) {
+				// poll(m_fd, POLLOUT, POLLOUT, timeout);
 				poll(m_fd, POLLOUT, POLLOUT, timeout);
+				print("EINPROGRESS -> CONNECTED");
             } else {
-				throw ConnectError(tostr("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
+				throw ConnectError(to_str("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
             }
 		} else {
 			struct addrinfo *rp, *result = m_addrinfo;
@@ -847,7 +850,7 @@ public:
 					} catch (...) {}
 				}
 			}
-			throw ConnectError(tostr("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
+			throw ConnectError(to_str("Unable to connect with \"", str(), "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -861,7 +864,7 @@ public:
         
         // Check.
 		if (blocking) {
-			throw InvalidUsageError(tostr("Function \"", __FUNCTION__, "\" is only supported for non-blocking sockets."));
+			throw InvalidUsageError(to_str("Function \"", __FUNCTION__, "\" is only supported for non-blocking sockets."));
 		}
         char buf;
 		return ::recv(fd.value(), &buf, 1, MSG_PEEK) > 0;// || ::send(fd.value(), &buf, 1, MSG_PEEK) > 0;
@@ -898,7 +901,7 @@ public:
 	constexpr
 	void	bind() {
 		if (::bind(m_fd.value(), m_addr, m_addrlen) < 0) {
-			throw BindError(tostr("Unable to bind to \"", str(), "\" [", ::strerror(errno), "]."));
+			throw BindError(to_str("Unable to bind to \"", str(), "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -906,7 +909,7 @@ public:
 	constexpr
 	void	listen() {
 		if (::listen(m_fd.value(), 3) < 0) {
-			throw ListenError(tostr("Unable to listen to \"", str(), "\" [", ::strerror(errno), "]."));
+			throw ListenError(to_str("Unable to listen to \"", str(), "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -924,12 +927,17 @@ public:
 		const Int& 		timeout = VLIB_SOCK_TIMEOUT	// the timeout.
 	) requires (family == family::ipv4) {
 		int status;
+		print("accept: POLLING ", m_fd);
 		poll(m_fd, POLLIN, POLLIN, timeout);
+		print("accept: ACCEPT");
 		addr = {};
 		if ((status = ::accept(m_fd.value(), (Addr*) &addr, &addrlen4)) < 0) {
-			throw AcceptError(tostr("Unable to accept the peer [", ::strerror(errno), "]."));
+			print("accept: ACCEPT ERR");
+			throw AcceptError(to_str("Unable to accept the peer [", ::strerror(errno), "]."));
 		}
+		print("accept: SET BLOCKING");
         set_blocking(status, blocking);
+		print("accept: DONE");
         return status;
 	}
 	//
@@ -948,7 +956,7 @@ public:
 		poll(m_fd, POLLIN, POLLIN, timeout);
 		addr = {};
 		if ((status = ::accept(m_fd.value(), (Addr*) &addr, &addrlen6)) > 0) {
-			throw AcceptError(tostr("Unable to accept the peer [", ::strerror(errno), "]."));
+			throw AcceptError(to_str("Unable to accept the peer [", ::strerror(errno), "]."));
 		}
         set_blocking(status, blocking);
         return status;
@@ -966,7 +974,7 @@ public:
 	void	info(String& ip, Int& port, const Int& fd) requires (family == family::ipv4) {
 		Addrin4 addr;
 		if (::getpeername(fd.value(), (Addr*) &addr, &addrlen4) < 0) {
-			throw LookupError(tostr("Unable to get the peer info [", ::strerror(errno), "]."));
+			throw LookupError(to_str("Unable to get the peer info [", ::strerror(errno), "]."));
 		}
 		ip = inet_ntoa(addr.sin_addr);
 		port = ntohs(addr.sin_port);
@@ -982,7 +990,7 @@ public:
 	void	info(String& ip, Int& port, const Int& fd) requires (family == family::ipv6) {
 		Addrin6 addr;
 		if (::getpeername(fd.value(), (Addr*) &addr, &addrlen6) < 0) {
-			throw LookupError(tostr("Unable to get the peer info [", ::strerror(errno), "]."));
+			throw LookupError(to_str("Unable to get the peer info [", ::strerror(errno), "]."));
 		}
 		ip = (const char*) addr.sin6_addr.s6_addr;
 		port = ntohs(addr.sin6_port);
@@ -1010,13 +1018,13 @@ public:
 	constexpr
 	void	shutdown() {
 		if (::shutdown(m_fd.value(), SHUT_RDWR) < 0) {
-			throw CloseError(tostr("Unable to shut the socket down [", ::strerror(errno), "]."));
+			throw CloseError(to_str("Unable to shut the socket down [", ::strerror(errno), "]."));
 		}
 	}
 	SICE
 	void	shutdown(const Int& fd) {
 		if (::shutdown(fd.value(), SHUT_RDWR) < 0) {
-			throw CloseError(tostr("Unable to shut the socket down [", ::strerror(errno), "]."));
+			throw CloseError(to_str("Unable to shut the socket down [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -1032,6 +1040,7 @@ public:
 	) {
         
         // Poll.
+		errno = 0;
 		poll(fd, POLLIN, POLLIN, timeout);
         long bytes = 0;
         ullong total_bytes = 0;
@@ -1049,7 +1058,7 @@ public:
         // No data has been read, but poll returned an POLLIN event.
         // This may be because an EOF also triggers the POLLIN event.
         else {
-            throw SocketClosedError(tostr("Socket is closed."));
+            throw SocketClosedError("Socket is closed [", strerror(errno), "].");
         }
         return total_bytes;
 	}
@@ -1063,135 +1072,53 @@ public:
         recv<l_buff_len>(received, fd, timeout, flags);
         return received;
     }
-    
-    // Receive http request.
-    // template <int l_buff_len = buff_len, typename... Air> SICE
-    // void    recv(
-    //     http::Request&     received,
-    //     const Int&         fd,
-    //     const Int&         timeout = VLIB_SOCK_TIMEOUT,
-    //     const Int&         flags = 0
-    // ) {
-    //     String data;
-    //     recv<l_buff_len>(data, fd, timeout, flags);
-    //     received.reconstruct(move(data));
-    // }
-    
+	
     // Receive a full HTTP request over tcp.
-    SICE
-    void recv(
-        http::Request& request,
-        String& buffer,
-        const Int& fd,
-        const Int& timeout
-    ) {
-        
-        // Vars.
-        String received, header;
-        ullong index = 0, bytes = 0, headers_len = 0, content_len = 0;
-        ullong prev_crlf = 0; // index after the previous crlf.
-        short mode = 0;
-        
-        // Loop.
-        while (true) {
-            
-            // End of headers with no body.
-            if (received.len() > 0 && headers_len != 0 && content_len == 0) {
-                if (received.len() == headers_len + content_len) {
-                    break;
-                } else if (received.len() >= headers_len + content_len) {
-                    buffer.concat_r(received.data() + headers_len + content_len, received.len() - (headers_len + content_len));
-                    received.len() = headers_len + content_len;
-                }
-            }
-            
-            // Buffer.
-            if (buffer.len() > 0) {
-                received.concats_r(buffer);
-                buffer.reset();
-                bytes = received.len();
-            }
-            
-            // Receive.
-            else {
-                bytes = recv(received, fd, timeout);
-            }
-            
-            // Body mode.
-            if (mode == 1) {
-                if (content_len == 0 || received.len() == headers_len + content_len) {
-                    break;
-                } else if (content_len != 0 && received.len() >= headers_len + content_len) {
-                    buffer.concat_r(received.data() + headers_len + content_len, received.len() - (headers_len + content_len));
-                    received.len() = headers_len + content_len;
-                }
-                continue;
-            }
-            
-            // Iterate headers.
-            else {
-                index = received.len() - bytes;
-                for (auto& c: received.iterate(index, bytes)) {
-                    
-                    // Remove spaces at start of headers.
-                    if (index == prev_crlf && mode == 0 && c == ' ') {
-                        ++prev_crlf;
-                    }
-                    
-                    // Headers.
-                    switch (c) {
-                            
-                        // End of header.
-                        case '\n':
-                            
-                            // Parse header.
-                            if (index > 0 && received[index - 1] == '\r') {
-                                header.data() = received.data() + prev_crlf;
-                                header.len() = index - 1 - prev_crlf;
-                                
-                                // End of all headers.
-                                if (header.len() == 0) {
-                                    headers_len = index + 1;
-                                    mode = 1;
-                                }
-                                
-                                // Parse content length header.
-                                else if (header.eq_first("Content-Length:", 15)) {
-                                    header.data() = received.data() + prev_crlf + 15;
-                                    header.len() = index - 1 - prev_crlf + 15;
-                                    while (header.len() > 0) {
-                                        if (header.first() == ' ') {
-                                            ++header.data();
-                                            --header.len();
-                                        } else if (header.last() == ' ') {
-                                            --header.len();
-                                        }
-                                    }
-                                    content_len = tonumeric<ullong>(header.data(), header.len());
-                                }
-                                header.data() = nullptr;
-                            }
-                            
-                            // Set previous crlf.
-                            prev_crlf = index + 1;
-                            
-                            break;
-                        default: break;
-                    }
-                    
-                    // Increment index.
-                    ++index;
-                    
-                }
-            }
-            
-        }
-        
-        // Parse.
-        request.reconstruct(received);
-        
+	// Also supports chunked requests.
+	/* @docs {
+	 *	@title: Receive a HTTP request.
+	 *	@description:
+	 *		Receive a HTTP request.
+	 *
+	 *		Supports chunked requests.
+	 *	@parameter: {
+	 *		@name: fd
+	 *		@description: The file descriptor to receive on.
+	 *	}
+	 *	@parameter: {
+	 *		@name: timeout
+	 *		@description: The timeout in milliseconds.
+	 *	}
+	 *	@usage:
+	 *		vlib::Socket sock;
+	 *		...
+	 *		vlib::http::Request request = sock.recv<vlib::http::Request>(10000);
+	 *	@funcs: 1
+	 } */
+    template <typename DataType> requires (
+		http::is_Response<DataType>::value ||
+		http::is_Request<DataType>::value
+	)
+	SICE
+    DataType recv(const Int& fd, const Int& timeout) {
+		DataType request;
+		http::Parser parser(request);
+		String received;
+		while (true) {
+			recv(received, fd, timeout);
+			if (parser.parse(received)) {
+				break;
+			}
+		}
+		return request;
     }
-
+	template <typename DataType> requires (
+		http::is_Response<DataType>::value ||
+		http::is_Request<DataType>::value
+	) constexpr
+	DataType recv(const Int& timeout) {
+		return recv<DataType>(m_fd, timeout);
+	}
 
 	// Send data through the socket.
     SICE
@@ -1223,10 +1150,10 @@ public:
                         default:
                             break;
                     }
-					throw CloseError(tostr("Unable to send to the socket [", ::strerror(errno), "]."));
+					throw CloseError(to_str("Unable to send to the socket [", ::strerror(errno), "]."));
                 case 0:
                     if (attempts == 10) {
-						throw CloseError(tostr("Unable to send to the socket [", ::strerror(errno), "]."));
+						throw CloseError(to_str("Unable to send to the socket [", ::strerror(errno), "]."));
                     }
                     ++attempts;
                     break;
@@ -1240,39 +1167,39 @@ public:
     }
     
     // Send http response.
-    SICE
+    template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) SICE
     ullong  send(
-        const Int&              fd,
-        const http::Response&   data,
-        const Int&              timeout = VLIB_SOCK_TIMEOUT,
-        const Int&              flags = 0
+        const Int&    fd,
+        const Type&   data,
+        const Int&    timeout = VLIB_SOCK_TIMEOUT,
+        const Int&    flags = 0
     ) {
-        String& x = data.data();
+        auto& x = data.data();
         return send(fd, x.data(), x.len(), timeout, flags);
     }
-    constexpr
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) constexpr
     ullong  send(
-        const http::Response&   data,
-        const Int&              timeout = VLIB_SOCK_TIMEOUT,
-        const Int&              flags = 0
+        const Type&   data,
+        const Int&    timeout = VLIB_SOCK_TIMEOUT,
+        const Int&    flags = 0
     ) {
-        String& x = data.data();
+		auto& x = data.data();
         return send(m_fd, x.data(), x.len(), timeout, flags);
     }
     
     // Send chunked http response.
     // The header "Transfer-Encoding: chunked" will automatically be added.
     // May cause undefined behaviour if the header already exists.
-    SICE
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) SICE
     ullong  send_chunked(
-        const Int&              fd,
-        const http::Response&   response,
-        const Int&              timeout = VLIB_SOCK_TIMEOUT,
-        const Int&              flags = 0
+        const Int&  fd,
+        const Type&	response,
+        const Int&  timeout = VLIB_SOCK_TIMEOUT,
+        const Int&  flags = 0
     ) {
         
         // Vars.
-        String& data = response.data();
+		auto& data = response.data();
         ullong len = data.len(), sent = 0, full_sent = 0, end_header_pos, chunk_header_len;
         size_t chunk;
         const ullong chunk_size = 1024 * 32;
@@ -1318,6 +1245,14 @@ public:
         return full_sent;
         
     }
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) constexpr
+	ullong  send_chunked(
+		const Type&	response,
+		const Int&  timeout = VLIB_SOCK_TIMEOUT,
+		const Int&  flags = 0
+	) {
+		return send_chunked(m_fd, response, timeout, flags);
+	}
     
 
     // Get as string representation.

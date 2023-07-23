@@ -361,7 +361,7 @@ public:
 		}
 		m_attr->file = vlib::open(m_attr->path.c_str(), m_attr->mode);
 		if (m_attr->file == nullptr) {
-            throw OpenError(tostr("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw OpenError(to_str("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -388,7 +388,7 @@ public:
 		m_attr->mode = mode;
 		m_attr->file = vlib::open(m_attr->path.c_str(), m_attr->mode);
 		if (m_attr->file == nullptr) {
-			throw OpenError(tostr("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+			throw OpenError(to_str("Unable to open file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 	
@@ -409,7 +409,7 @@ public:
         String output;
 		output.resize(output.len() + l);
 		if (fread(output.data(), sizeof(char), l, m_attr->file) != l) {
-            throw ReadError(tostr("Unable to read file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw ReadError(to_str("Unable to read file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 		output.len() = l;
 		output.null_terminate();
@@ -440,13 +440,13 @@ public:
     void 	 write(const char* data, const Length len) {
         reopen(file::mode::write);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw WriteError(to_str("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
     void     write(const uchar* data, const Length len) {
         reopen(file::mode::write);
         if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw WriteError(to_str("Unable to write to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
         }
     }
 	
@@ -472,7 +472,7 @@ public:
     void 	append(const char* data, const Length len) {
         reopen(file::mode::append);
 		if (fwrite(data, len, 1, m_attr->file) != 1) {
-            throw WriteError(tostr("Unable to append to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw WriteError(to_str("Unable to append to file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -487,7 +487,7 @@ public:
 	} */
 	void 	flush() {
 		if (::fflush(m_attr->file) != 0) {
-            throw FlushError(tostr("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw FlushError(to_str("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 
@@ -502,7 +502,7 @@ public:
 	} */
 	void 	sync() {
 		if (::fsync(::fileno(m_attr->file)) != 0) {
-            throw SyncError(tostr("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+            throw SyncError(to_str("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
 		}
 	}
 	

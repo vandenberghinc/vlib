@@ -242,7 +242,7 @@ private:
                     
                     // Set.
                     entry.path = internal::BaseString(buff.m_arr + path_start, line_start - path_start - 1);
-                    entry.line_number = tonumeric<int>(buff.m_arr + line_start, line_end - line_start);
+                    entry.line_number = to_num<int>(buff.m_arr + line_start, line_end - line_start);
                     
                     // Clean ./ from line.
                     internal::BaseString cleaned;

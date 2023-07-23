@@ -137,9 +137,9 @@ private:
                     SSL_free(ssl);
                     ::close(fd);
 					if (errno != 0) {
-						throw AcceptError(tostr("Accept error [] [", err, "] [", ::strerror(errno), "]."));
+						throw AcceptError(to_str("Accept error [] [", err, "] [", ::strerror(errno), "]."));
 					} else {
-						throw AcceptError(tostr("Accept error [", err, "] [", error, "]."));
+						throw AcceptError(to_str("Accept error [", err, "] [", error, "]."));
 					}
                     
                 }
@@ -169,7 +169,7 @@ private:
             SSL_shutdown(ssl);
             SSL_free(ssl);
             ::close(fd);
-            throw AcceptError(tostr("Accept error [", err, "] [", ::strerror(errno), "]."));
+            throw AcceptError(to_str("Accept error [", err, "] [", ::strerror(errno), "]."));
         }
         
         // Set to non blocking.
@@ -201,7 +201,7 @@ private:
                 SSL_shutdown(ssl);
                 SSL_free(ssl);
                 ::close(fd);
-                throw AcceptError(tostr("Accept error [", err, "] [", ::strerror(errno), "]."));
+                throw AcceptError(to_str("Accept error [", err, "] [", ::strerror(errno), "]."));
             }
 
 			// Handle want read / write.
@@ -484,23 +484,26 @@ public:
 		wrapper::receive(received, client, timeout.value(), buff_len);
 	}
     static inline
-    String  recv(
-        Client&            client,
-        const Int&         timeout = VLIB_SOCK_TIMEOUT
-    ) {
+    String  recv(Client& client, const Int& timeout = VLIB_SOCK_TIMEOUT) {
         String received;
         wrapper::receive(received, client, timeout.value(), buff_len);
         return received;
     }
-    static inline
-    void 	recv(
-		http::Request&	request,
-		Client&	        client,
-		const Int& 	    timeout = VLIB_SOCK_TIMEOUT
-	) {
+	template <typename DataType> requires (
+		http::is_Response<DataType>::value ||
+		http::is_Request<DataType>::value
+	) static inline
+	DataType	recv(Client& client, const Int& timeout = VLIB_SOCK_TIMEOUT) {
+		DataType request;
+		http::Parser parser(request);
 		String received;
-        wrapper::receive(received, client, timeout.value(), buff_len);
-		request.reconstruct(move(received));
+		while (true) {
+			recv(received, client, timeout);
+			if (parser.parse(received)) {
+				break;
+			}
+		}
+		return request;
 	}
 
 	// Send.
@@ -533,60 +536,13 @@ public:
     // Send chunked http response.
     // The header "Transfer-Encoding: chunked" will automatically be added.
     // May cause undefined behaviour if the header already exists.
-    SICE
+	template <typename Type> requires (http::is_Request<Type>::value || http::is_Response<Type>::value) static
     ullong  send_chunked(
-        Client&                 client,
-        const http::Response&   response,
-        const Int&              timeout = VLIB_SOCK_TIMEOUT
+        Client&     client,
+        const Type&	response,
+        const Int&  timeout = VLIB_SOCK_TIMEOUT
     ) {
-        
-        // Vars.
-        String& data = response.data();
-		ullong len = data.len(), sent = 0, full_sent = 0, end_header_pos;
-		uint chunk_header_len;
-        size_t chunk;
-        const ullong chunk_size = 1024 * 32;
-        char chunk_header[16];
-        
-        // Send headers.
-        end_header_pos = data.find("\r\n\r\n");
-        if (end_header_pos == NPos::npos) {
-            throw InvalidUsageError("Could not find the end of the headers.");
-        }
-        end_header_pos += 4;
-        String headers (data.data(), end_header_pos);
-        ullong spos = headers.find("Content-Length:");
-        if (spos != NPos::npos) {
-            ullong epos = headers.find("\r\n", spos);
-            if (epos != NPos::npos) {
-                headers.replace_h(spos, epos, "Transfer-Encoding:chunked", 25);
-            }
-        }
-        send(client, headers, timeout);
-        full_sent += headers.len();
-        sent = end_header_pos;
-        
-        // Send headers.
-        while (sent < len) {
-            
-            chunk = len - sent < chunk_size ? len - sent : chunk_size;
-            snprintf(chunk_header, 16, "%zx\r\n", chunk);
-            chunk_header_len = vlib::len<uint>(chunk_header);
-            send(client, chunk_header, chunk_header_len, timeout);
-            full_sent += chunk_header_len;
-            
-            send(client, data.data() + sent, (uint) chunk, timeout);
-            full_sent += chunk;
-            
-            send(client, "\r\n", 2, timeout);
-            full_sent += 2;
-            
-            sent += chunk;
-        }
-        send(client, "0\r\n\r\n", 5, timeout);
-        full_sent += 5;
-        return full_sent;
-        
+		return wrapper::send_chunked(client, response, timeout);
     }
     
     // Restart.
@@ -654,22 +610,22 @@ public:
 
 		// Set the local certificate.
 		if (SSL_CTX_use_certificate_file(m_attr->ctx, m_attr->cert.null_terminate().data(), SSL_FILETYPE_PEM) <= 0) {
-            throw SocketError(tostr("Unable to load certificate \"", m_attr->cert, "\" from socket \"", ip(), ":", port(), "\"."));
+            throw SocketError(to_str("Unable to load certificate \"", m_attr->cert, "\" from socket \"", ip(), ":", port(), "\"."));
 		}
 
 		// Set the private key (may be the same as cert).
 		if (SSL_CTX_use_PrivateKey_file(m_attr->ctx, m_attr->key.null_terminate().data(), SSL_FILETYPE_PEM) <= 0) {
-            throw SocketError(tostr("Unable to load key \"", m_attr->key, "\" from socket \"", ip(), ":", port(), "\"."));
+            throw SocketError(to_str("Unable to load key \"", m_attr->key, "\" from socket \"", ip(), ":", port(), "\"."));
 		}
 
 		// Verify the private key.
 		if (!SSL_CTX_check_private_key(m_attr->ctx)) {
-            throw SocketError(tostr("Unable to verify key \"", m_attr->key, "\" from socket \"", ip(), ":", port(), "\"."));
+            throw SocketError(to_str("Unable to verify key \"", m_attr->key, "\" from socket \"", ip(), ":", port(), "\"."));
 		}
 		
 		// Load the CA bundle.
 		if (m_attr->ca_bundle.is_defined() && SSL_CTX_load_verify_locations(m_attr->ctx, m_attr->ca_bundle.c_str(), NULL) != 1) {
-			throw SocketError(tostr("Unable to load ca bundle \"", m_attr->ca_bundle, "\" from socket \"", ip(), ":", port(), "\"."));
+			throw SocketError(to_str("Unable to load ca bundle \"", m_attr->ca_bundle, "\" from socket \"", ip(), ":", port(), "\"."));
 		}
 
 	}

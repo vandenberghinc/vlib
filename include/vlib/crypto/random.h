@@ -28,7 +28,7 @@ auto random(uint len) {
     // Open file descriptor.
     if (random_stream_fd == 0) {
         if ((random_stream_fd = ::open(device, O_RDONLY)) < 0) {
-            throw OpenError(tostr("Unable to open \"", device, "\" [", ::strerror(errno), "]."));
+            throw OpenError(to_str("Unable to open \"", device, "\" [", ::strerror(errno), "]."));
         }
     }
     
@@ -42,7 +42,7 @@ auto random(uint len) {
             errno != EINTR &&
             errno != EAGAIN
         ) {
-            throw ReadError(tostr("Read error [", ::strerror(errno), "]."));
+            throw ReadError(to_str("Read error [", ::strerror(errno), "]."));
         }
         output.len() += bytes;
     }

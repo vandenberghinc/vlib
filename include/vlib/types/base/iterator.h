@@ -282,6 +282,8 @@ public:
 	short 			m_is_str_count;
 	bool 			m_is_char;
 	short 			m_is_char_count;
+	bool 			m_is_backtick;
+	short 			m_is_backtick_count;
 	bool 			m_is_comment;
 	bool 			m_is_multi_line_comment;
 	short 			m_new_comment_count;
@@ -322,6 +324,8 @@ public:
 		m_is_str_count = 0;
 		m_is_char = false;
 		m_is_char_count = 0;
+		m_is_backtick = false;
+		m_is_backtick_count = 0;
 		m_is_comment = false;
 		m_is_multi_line_comment = false;
 		m_new_comment_count = 0;
@@ -438,6 +442,12 @@ public:
 				m_is_char = false;
 			}
 		}
+		if (m_is_backtick_count > 0) {
+			m_is_backtick_count -= 1;
+			if (m_is_backtick_count == 0){
+				m_is_backtick = false;
+			}
+		}
 		
         // End of comment.
 		if (m_is_comment && ((!m_is_line_by_line && m_current == '\n') || (m_is_line_by_line && index + 1 == m_len))) {
@@ -450,7 +460,7 @@ public:
 		}
 
         // Begin of comment.
-        if (!m_is_str && !m_is_char) {
+        if (!m_is_str && !m_is_char && !m_is_backtick) {
             if (m_current == '/' && m_next == '/') {
                 m_is_comment = true;
 				return ;
@@ -466,7 +476,7 @@ public:
 			// Open string / char.
             switch (m_current) { // && (m_prev != '\\' || (m_prev == '\\' && m_pprev == '\\'))
                 case '"':
-					if (m_is_char) { break; }
+					if (m_is_char || m_is_backtick) { break; }
 					else if (m_prev == '\\' && m_pprev != '\\') { break; }
                     if (m_is_str) {
                         m_is_str_count = 1;
@@ -475,7 +485,7 @@ public:
                     }
 					return ;
                 case '\'':
-					if (m_is_str) { break; }
+					if (m_is_str || m_is_backtick) { break; }
 					else if (m_prev == '\\' && m_pprev != '\\') { break; }
                     if (m_is_char) {
                         m_is_char_count = 1;
@@ -483,11 +493,20 @@ public:
                         m_is_char = true;
                     }
 					return ;
+				case '`': // for js support.
+					if (m_is_str || m_is_char) { break; }
+					else if (m_prev == '\\' && m_pprev != '\\') { break; }
+					if (m_is_backtick) {
+						m_is_backtick_count = 1;
+					} else {
+						m_is_backtick = true;
+					}
+					return ;
                 default: break;
             }
 			
 			// Increase / decrease depth of: "( ) [ ] < >".
-			if (!m_is_str && !m_is_char) {
+			if (!m_is_str && !m_is_char && !m_is_backtick) {
 				switch (m_current) {
 					case '(':
 						m_parentheses_depth += 1;
@@ -561,7 +580,7 @@ public:
 	// is a code character.
 	constexpr
 	bool is_code() const {
-		return !m_is_str && !m_is_char && !m_is_comment && !m_is_multi_line_comment;
+		return !m_is_str && !m_is_char && !m_is_backtick && !m_is_comment && !m_is_multi_line_comment;
 	}
 
 	// is a space character.
@@ -578,6 +597,12 @@ public:
 
 	// is inside a string block.
 	constexpr
+	bool is_any_str() const {
+		return m_is_str || m_is_char || m_is_backtick;
+	}
+	
+	// is inside a string block.
+	constexpr
 	auto& is_str() const {
 		return m_is_str;
 	}
@@ -586,6 +611,12 @@ public:
 	constexpr
 	auto& is_char() const {
 		return m_is_char;
+	}
+	
+	// is inside a backtick block.
+	constexpr
+	auto& is_backtick() const {
+		return m_is_backtick;
 	}
 
 	// inside depth.

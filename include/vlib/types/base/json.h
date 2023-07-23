@@ -611,7 +611,7 @@ public:
             case types::null:
                 return vlib::null;
             default:
-                throw TypeError(tostr("Value type is not \"Null\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Null\" but \"", strtype(m_type), "\"."));
                 return vlib::null;
         }
     }
@@ -625,7 +625,7 @@ public:
             case types::boolean:
                 return *m_bool;
             default:
-                throw TypeError(tostr("Value type is not \"Bool\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Bool\" but \"", strtype(m_type), "\"."));
                 return *m_bool;
         }
     }
@@ -639,7 +639,7 @@ public:
             case types::floating:
                 return *m_double;
             default:
-                throw TypeError(tostr("Value type is not \"Floating\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Floating\" but \"", strtype(m_type), "\"."));
                 return *m_double;
         }
     }
@@ -653,7 +653,7 @@ public:
             case types::integer:
                 return *m_int;
             default:
-                throw TypeError(tostr("Value type is not \"Integer\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Integer\" but \"", strtype(m_type), "\"."));
                 return *m_int;
         }
     }
@@ -667,7 +667,7 @@ public:
             case types::len:
                 return *m_len;
             default:
-                throw TypeError(tostr("Value type is not \"Length\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Length\" but \"", strtype(m_type), "\"."));
                 return *m_len;
         }
     }
@@ -681,7 +681,7 @@ public:
             case types::string:
                 return *m_str;
             default:
-                throw TypeError(tostr("Value type is not \"String\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"String\" but \"", strtype(m_type), "\"."));
                 return *m_str;
         }
     }
@@ -695,7 +695,7 @@ public:
             case types::array:
                 return *m_arr;
             default:
-                throw TypeError(tostr("Value type is not \"Array\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Array\" but \"", strtype(m_type), "\"."));
                 return *m_arr;
         }
     }
@@ -709,7 +709,7 @@ public:
             case types::json:
                 return *m_json;
             default:
-                throw TypeError(tostr("Value type is not \"Json\" but \"", strtype(m_type), "\"."));
+                throw TypeError(to_str("Value type is not \"Json\" but \"", strtype(m_type), "\"."));
                 return *m_json;
         }
     }
@@ -722,7 +722,7 @@ public:
             case types::json:
                 return m_json->value(index);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -731,7 +731,7 @@ public:
             case types::json:
                 return m_json->value(index);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -740,7 +740,7 @@ public:
             case types::json:
                 return m_json->value(key);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -749,7 +749,7 @@ public:
             case types::json:
                 return m_json->value(key);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -758,7 +758,7 @@ public:
             case types::json:
                 return m_json->value(key, len);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -767,7 +767,7 @@ public:
             case types::json:
                 return m_json->value(key, len);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     
@@ -782,7 +782,7 @@ public:
             case types::len:
                 return *m_len;
             default:
-                throw ParseError(tostr("Unable to parse a numeric from type \"", m_type, "\"."));
+                throw ParseError(to_str("Unable to parse a numeric from type \"", m_type, "\"."));
         }
     }
     
@@ -804,7 +804,7 @@ public:
                 return arr;
             }
             default:
-                throw ParseError(tostr("Unable to parse a numeric from type \"", m_type, "\"."));
+                throw ParseError(to_str("Unable to parse a numeric from type \"", m_type, "\"."));
         }
     }
     
@@ -876,7 +876,7 @@ public:
 		case types::json:
 			return m_json->str();
 		default:
-			throw TypeError(tostr("Unknown type: ", m_type, "."));
+			throw TypeError(to_str("Unknown type: ", m_type, "."));
 		}
 	}
 
@@ -901,7 +901,7 @@ public:
 		case types::json:
 			return m_json->json();
 		default:
-			throw TypeError(tostr("Unknown type: ", m_type, "."));
+			throw TypeError(to_str("Unknown type: ", m_type, "."));
 		}
 	}
 
@@ -949,7 +949,7 @@ public:
             case types::json:
                 return m_json->operator[](index);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -962,7 +962,7 @@ public:
             case types::json:
                 return m_json->operator[](index);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -971,7 +971,7 @@ public:
             case types::json:
                 return m_json->operator[](key);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
     constexpr
@@ -980,7 +980,7 @@ public:
             case types::json:
                 return m_json->operator[](key);
             default:
-                throw TypeError(tostr("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
+                throw TypeError(to_str("Function \"", __FUNCTION__, "\" is not supported for type \"", m_type, "\"."));
         }
     }
 
@@ -1196,7 +1196,7 @@ public:
 
 	// Move assignment operator.
 	constexpr
-	This&	operator =(This&& x) {
+	This&	operator =(This&& x) {					
 		swap(x);
 		return *this;
 	}
@@ -1275,16 +1275,7 @@ public:
                     indented << dump(value.asj(), indent, start_indent + indent);
                     break;
                 case types::string: {
-                    String j = value.json();
-                    indented << '"';
-                    for (auto& c: j.iterate(1, j.len() - 1)) {
-                        if (is_escape_sequence(c)) {
-                            indented << '\\' << c;
-                        } else {
-                            indented << c;
-                        }
-                    }
-                    indented << '"';
+					indented << '"' << value.ass().escape() << '"';
                     break;
                 }
                 default:
@@ -1342,16 +1333,7 @@ public:
                     indented << dump(value.asj(), indent, start_indent + indent);
                     break;
                 case types::string: {
-                    String j = value.json();
-                    indented << '"';
-                    for (auto& c: j.iterate(1, j.len() - 1)) {
-                        if (is_escape_sequence(c)) {
-                            indented << '\\' << c;
-                        } else {
-                            indented << c;
-                        }
-                    }
-                    indented << '"';
+					indented << '"' << value.ass().escape() << '"';
                     break;
                 }
                 default:
@@ -1498,7 +1480,7 @@ public:
 				case '"': {
 					++value_start;
 					--value_end;
-					json.append(String(arr + value_start, value_end - value_start));
+					json.append(String::unescape(arr + value_start, value_end - value_start));
 					break;
 				}
 				case '{': {
@@ -1523,17 +1505,17 @@ public:
 					break;
 				case '-': {
 					if (has_dot()) {
-						json.append(tonumeric<ldouble>(arr + value_start, value_end - value_start));
+						json.append(to_num<ldouble>(arr + value_start, value_end - value_start));
 					} else {
-						json.append(tonumeric<llong>(arr + value_start, value_end - value_start));
+						json.append(to_num<llong>(arr + value_start, value_end - value_start));
 					}
 					break;
 				}
 				default: {
 					if (has_dot()) {
-						json.append(tonumeric<ldouble>(arr + value_start, value_end - value_start));
+						json.append(to_num<ldouble>(arr + value_start, value_end - value_start));
 					} else {
-						auto num = tonumeric<ullong>(arr + value_start, value_end - value_start);
+						auto num = to_num<ullong>(arr + value_start, value_end - value_start);
 						if (num >= limits<llong>::max) {
 							json.append(num);
 						} else {
@@ -1551,7 +1533,13 @@ public:
 		for (; index < l_len; ++index) {
 			if (is_str) {
 				switch (arr[index]) {
-					case '"': { is_str = false; break; }
+					case '"': {
+						if (arr[index - 1] == '\\') {
+							break;
+						}
+						is_str = false;
+						break;
+					}
 					default: break;
 				}
             } else if (is_comment && depth == 0) {
@@ -1575,7 +1563,13 @@ public:
 					}
 
 					// Found string start / end.
-					case '"': { is_str = !is_str; break; }
+					case '"': {
+						if (arr[index - 1] == '\\') {
+							break;
+						}
+						is_str = !is_str;
+						break;
+					}
                         
                     // Found comment start.
                     case '/': {
@@ -1710,11 +1704,14 @@ public:
 			return false;
 		};
 		auto append_key_and_value = [&]() {
-			json.m_keys->append(Key(arr + key_start, key_end - key_start));
+			json.m_keys->append(String::unescape(arr + key_start, key_end - key_start));
 			switch (arr[value_start]) {
 				case '"': {
 					++value_start;
 					--value_end;
+					json.m_values->append(String::unescape(arr + value_start, value_end - value_start));
+					break;
+					/*
                     // Manually add string so a value can also be created like this.
                     // {"somekey": "Hello"
                     // " World!"}
@@ -1722,12 +1719,12 @@ public:
                     String val;
                     val.resize(value_end - value_start);
                     bool val_is_str = true;
-                    for (auto& i: Range(value_start, value_end)) {
+					for (ullong i = value_start; i < value_end; ++i) {
                         auto& c = arr[i];
                         switch (c) {
                             case '"': {
                                 if (arr[i - 1] == '\\') {
-                                    val.append_no_resize(c);
+                                    val.append(c);
                                 } else {
                                     val_is_str = !val_is_str;
                                 }
@@ -1735,13 +1732,49 @@ public:
                             }
                             default:
                                 if (val_is_str) {
-                                    val.append_no_resize(c);
+									val.append(c);
+									// switch (c) {
+									// 	case '\\':
+									// 		if (i + 1 == value_end) {
+									// 			val.append(c);
+									// 			break;
+									// 		}
+									// 		++i;
+									// 		switch (arr[i]) {
+									// 			case '\\':
+									// 				val.concat_r("\\\\", 2);
+									// 				break;
+									// 			case '\n':
+									// 				val.concat_r("\\n", 2);
+									// 				break;
+									// 			case '\r':
+									// 				val.concat_r("\\r", 2);
+									// 				break;
+									// 			case '\t':
+									// 				val.concat_r("\\t", 2);
+									// 				break;
+									// 			case '\b':
+									// 				val.concat_r("\\b", 2);
+									// 				break;
+									// 			case '\f':
+									// 				val.concat_r("\\f", 2);
+									// 				break;
+									// 			default:
+									// 				val.append(arr[i]);
+									// 				break;
+									// 		}
+									// 		break;
+									// 	default:
+									// 		val.append(c);
+									// 		break;
+									// }
                                 }
                                 break;
                         }
                     }
 					json.m_values->append(move(val));
 					break;
+					*/
 				}
 				case '{': {
 					json.m_values->append(parse_curly_brackets(arr + value_start, value_end - value_start));
@@ -1765,17 +1798,17 @@ public:
 					break;
 				case '-': {
 					if (has_dot()) {
-						json.m_values->append(tonumeric<ldouble>(arr + value_start, value_end - value_start));
+						json.m_values->append(to_num<ldouble>(arr + value_start, value_end - value_start));
 					} else {
-						json.m_values->append(tonumeric<llong>(arr + value_start, value_end - value_start));
+						json.m_values->append(to_num<llong>(arr + value_start, value_end - value_start));
 					}
 					break;
 				}
 				default: {
 					if (has_dot()) {
-						json.m_values->append(tonumeric<ldouble>(arr + value_start, value_end - value_start));
+						json.m_values->append(to_num<ldouble>(arr + value_start, value_end - value_start));
 					} else {
-						auto num = tonumeric<ullong>(arr + value_start, value_end - value_start);
+						auto num = to_num<ullong>(arr + value_start, value_end - value_start);
 						if (num >= limits<llong>::max) {
 							json.m_values->append(num);
 						} else {
@@ -1793,7 +1826,12 @@ public:
 		for (; index < l_len; ++index) {
             if (is_str) {
                 switch (arr[index]) {
-                    case '"': { is_str = false; break; }
+                    case '"': {
+						if (arr[index - 1] == '\\') {
+							break;
+						}
+						is_str = false; break;
+					}
                     default: break;
                 }
             } else if (is_comment && depth == 0) {
@@ -1818,7 +1856,13 @@ public:
                     }
                         
                     // Found string start / end.
-                    case '"': { is_str = !is_str; break; }
+                    case '"': {
+						if (arr[index - 1] == '\\') {
+							break;
+						}
+						is_str = !is_str;
+						break;
+					}
                         
                     // Found comment start.
                     case '/': {

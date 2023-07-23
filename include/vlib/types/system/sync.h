@@ -61,15 +61,15 @@ struct ScanInfo {
 							mode = 1;
 							break;
 						case 1:
-							info.atime = vlib::tonumeric<time_t>(data + start, i - start);
+							info.atime = vlib::to_num<time_t>(data + start, i - start);
 							mode = 2;
 							break;
 						case 2:
-							info.mtime = vlib::tonumeric<time_t>(data + start, i - start);
+							info.mtime = vlib::to_num<time_t>(data + start, i - start);
 							mode = 3;
 							break;
 						case 3:
-							info.permission = vlib::tonumeric<short>(data + start, i - start);
+							info.permission = vlib::to_num<short>(data + start, i - start);
 							mode = 4;
 							break;
 						case 4:
@@ -119,7 +119,7 @@ ScanInfo scan_file(const char* path) {
 		} else if (sinfo.st_mode & S_IFDIR) {
 			info.is_dir = true;
 		} else {
-			throw ParseError(tostr("Type of path \"", path, "\" is not supported."));
+			throw ParseError(to_str("Type of path \"", path, "\" is not supported."));
 		}
 		info.permission = sinfo.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 		info.uid = sinfo.st_uid;
@@ -141,7 +141,7 @@ ScanInfo scan_file(const char* path) {
 		throw OSError("vss:Sync", "Function not supported for current operating system.");
 #endif
 	} else {
-		throw ParseError(tostr("Unable to scan path \"", path, "\"."));
+		throw ParseError(to_str("Unable to scan path \"", path, "\"."));
 	}
 	return info;
 }
@@ -203,7 +203,7 @@ void    scan_dir(Array<ScanInfo>& paths, const String& base, const char* path, u
 		free(ent);
 	}
 	else {
-		throw ParseError(tostr("Unable to read the content of directory \"", path, "\"."));
+		throw ParseError(to_str("Unable to read the content of directory \"", path, "\"."));
 	}
 }
 Array<ScanInfo> scan_dir(const Path& path) {

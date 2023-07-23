@@ -64,7 +64,7 @@ struct Serial {
 	void	open() {
         // fd = ::open(port.c_str(), O_RDWR | O_NOCTTY | O_SYNC | O_NONBLOCK);
         if ((fd = ::open(port.c_str(), O_RDWR | O_NONBLOCK)) < 0) {
-			throw SerialError(tostr("Unable to open serial port \"", port, "\" [", ::strerror(errno), "]."));
+			throw SerialError(to_str("Unable to open serial port \"", port, "\" [", ::strerror(errno), "]."));
 		}
 	}
 	
@@ -84,7 +84,7 @@ struct Serial {
 		
 		/* Get currently set options for the tty */
 		if (tcgetattr(fd.value(), &toptions) != 0) {
-			throw SerialError(tostr("Unable to get the termios attributes of the file descriptor [", ::strerror(errno), "]."));
+			throw SerialError(to_str("Unable to get the termios attributes of the file descriptor [", ::strerror(errno), "]."));
 		}
 		
 		/* Set custom options */
@@ -122,7 +122,7 @@ struct Serial {
 		
 		/* commit the options */
 		if (tcsetattr(fd.value(), TCSANOW, &toptions) != 0) {
-			throw SerialError(tostr("Unable to set the termios attributes of the file descriptor [", ::strerror(errno), "]."));
+			throw SerialError(to_str("Unable to set the termios attributes of the file descriptor [", ::strerror(errno), "]."));
 		}
 	}
 	
@@ -135,7 +135,7 @@ struct Serial {
 				break;
 		}
 		if (::tcflush(fd.value(), TCIFLUSH) != 0) {
-			throw SerialError(tostr("Unable to flush the serial buffer [", ::strerror(errno), "]."));
+			throw SerialError(to_str("Unable to flush the serial buffer [", ::strerror(errno), "]."));
 		}
 	}
 	
@@ -162,7 +162,7 @@ struct Serial {
 				switch (c) {
 					case ':':
 						++content_index;
-						vlib::tonumeric_r(content_len, tmp_data.data(), content_index);
+						vlib::to_num_r(content_len, tmp_data.data(), content_index);
 						frame_len = content_index + content_len;
 						return ;
 					default:
@@ -189,7 +189,7 @@ struct Serial {
 			// Read.
 			if ((int) (bytes = ::read(fd.value(), tmp_data.data() + tmp_data.len(), BuffLen)) == -1) {
                 m_buff.concat_r(tmp_data);
-				throw ReadError(tostr("Encountered an error while reading from the serial [", ::strerror(errno), "]."));
+				throw ReadError(to_str("Encountered an error while reading from the serial [", ::strerror(errno), "]."));
 			} else if (bytes > 0) {
 				tmp_data.len() += bytes;
 				tmp_data.resize(tmp_data.len() + BuffLen);
@@ -256,9 +256,9 @@ struct Serial {
 			
 			// Write.
 			if ((int) (bytes = ::write(fd.value(), frame.data() + written, frame.len() - written)) == -1) {
-				throw WriteError(tostr("Encountered an error while reading from the serial [", ::strerror(errno), "]."));
+				throw WriteError(to_str("Encountered an error while reading from the serial [", ::strerror(errno), "]."));
 			} else if (bytes == 0) {
-				throw WriteError(tostr("Encountered an error while reading from the serial [Written zero bytes]."));
+				throw WriteError(to_str("Encountered an error while reading from the serial [Written zero bytes]."));
 			} else {
 				written += bytes;
 			}
@@ -288,7 +288,7 @@ struct Serial {
 			case 0:
 				throw TimeoutError("Operation timed out.");
 			case -1:
-				throw SerialError(tostr("Unknown poll error [", ::strerror(errno), "]."));
+				throw SerialError(to_str("Unknown poll error [", ::strerror(errno), "]."));
 			default:
 				if (pfd.revents & revents.value()) { return ; }
 				else if (pfd.revents & POLLNVAL) {

@@ -497,7 +497,7 @@ public:
             }
             arr[args.len()] = (char*)0;
             if (::execvp(arr[0], (char**) arr) == -1) {
-                String err = tostr("ERROR: ", ::strerror(errno), ".");
+                String err = to_str("ERROR: ", ::strerror(errno), ".");
                 ::write(epipe[wpend], err.data(), err.len());
                 ::exit(EXIT_FAILURE);
             } else {

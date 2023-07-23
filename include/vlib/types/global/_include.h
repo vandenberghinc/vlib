@@ -120,6 +120,6 @@
 #include "file.h"
 #include "ptr.h"
 #include "array.h"
-#include "cast.h"
 #include "str.h"
+#include "cast.h"
 #include "backtrace.h"
