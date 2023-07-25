@@ -172,6 +172,66 @@ struct JavaScript {
 		
 	}
 	
+	// Join lines like ["Hello World!" "\n"] to ["Hello World!\n"].
+	static
+	String	join_strings(const Code& code) {
+		
+		// Vars.
+		String js;
+		String join_str_batch;
+		bool is_str = false;
+		ullong str_end_index = 0;
+		String allowed_between_str_chars = "\n\t ";
+		
+		// Iterate.
+		for (auto& i: code.iterate()) {
+			
+			// Append.
+			bool append = str_end_index == 0;
+			if (str_end_index != 0 && i.is_any_str()) {
+				join_str_batch.reset();
+				str_end_index = 0;
+				--js.len();
+				append = false;
+			} else if (str_end_index != 0) {
+				if (allowed_between_str_chars.contains(i.character())) {
+					join_str_batch.append(i.character());
+					append = false;
+				} else {
+					str_end_index = 0;
+					js.concat_r(join_str_batch);
+					join_str_batch.reset();
+					append = true;
+				}
+			}
+			
+			// Start of string.
+			if (!is_str && i.is_any_str()) {
+				is_str = true;
+			}
+			
+			// End of string.
+			else if (is_str && !i.is_any_str()) {
+				is_str = false;
+				if (allowed_between_str_chars.contains(i.character())) {
+					str_end_index = i.index;
+					join_str_batch.append(i.character());
+					append = false;
+				}
+			}
+			
+			// Append.
+			if (append) {
+				js.append(i.character());
+			}
+			
+		}
+		
+		// Handler.
+		return js;
+		
+	}
+	
 };
 
 // ---------------------------------------------------------
