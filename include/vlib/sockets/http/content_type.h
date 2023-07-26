@@ -76,8 +76,11 @@ auto& to_str(int status) {
 }
 
 // Convert string to content type.
-template <typename Num = short> constexpr
-Num		fromstr(const char* data, ullong len) {
+constexpr
+short	from_str(const char* data, ullong len = NPos::npos) {
+	if (len == NPos::npos) {
+		len = vlib::len(data);
+	}
 	if (desc::html.eq(data, len)) {
 		return vlib::http::content_type::html;
 	} else if (desc::json.eq(data, len)) {
@@ -98,11 +101,64 @@ Num		fromstr(const char* data, ullong len) {
 	}
 }
 constexpr
-Int     fromstr(const String& content_type) {
-	return fromstr(content_type.data(), content_type.len());
+short	from_str(const String& content_type) {
+	return from_str(content_type.data(), content_type.len());
 }
 
-}; 		// End namespace content_type.
+// End namespace content_type.
+};
+
+// Content type.
+struct ContentType {
+	
+	// Attributes.
+	short 	value;
+	
+	// Constructor.
+	constexpr ContentType() : value(vlib::http::content_type::undefined) {}
+	
+	// Constructor by short.
+	constexpr ContentType(short content_type) : value(content_type) {}
+	
+	// Constructor by string.
+	constexpr ContentType(const char* content_type, ullong len = NPos::npos) : value(vlib::http::content_type::from_str(content_type, len)) {}
+	constexpr ContentType(const String& content_type) : value(vlib::http::content_type::from_str(content_type)) {}
+	
+	// Is defined.
+	constexpr
+	bool	is_defined() const {
+		return value != vlib::http::content_type::undefined;
+	}
+	
+	// Is undefined.
+	constexpr
+	bool	is_undefined() const {
+		return value == vlib::http::content_type::undefined;
+	}
+	
+	// To string.
+	constexpr
+	String 	str() const {
+		return vlib::http::content_type::to_str(value);
+	}
+	
+	// Equals.
+	constexpr friend bool operator == (const ContentType& x, short y) {
+		return x.value == y;
+	}
+	constexpr friend bool operator == (const ContentType& x, const ContentType& y) {
+		return x.value == y.value;
+	}
+	
+	// Not equals.
+	constexpr friend bool operator != (const ContentType& x, short y) {
+		return x.value != y;
+	}
+	constexpr friend bool operator != (const ContentType& x, const ContentType& y) {
+		return x.value != y.value;
+	}
+};
+
 }; 		// End namespace http.
 
 // Shortcuts.

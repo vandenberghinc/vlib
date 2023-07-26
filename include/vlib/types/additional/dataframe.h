@@ -5900,9 +5900,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<DataFrame, DataFrame>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename T> 	struct is_DataFrame 						{ SICEBOOL value = false; };
 template<> 				struct is_DataFrame<DataFrame> 				{ SICEBOOL value = true;  };

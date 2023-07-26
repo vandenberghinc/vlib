@@ -100,9 +100,6 @@ constexpr const Null null;
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Null, Null>		{ SICEBOOL value = true;  };
-
 // Is null type.
 template<typename Type> struct is_Null 						{ SICEBOOL value = false; };
 template<> 				struct is_Null<Null> 				{ SICEBOOL value = true;  };

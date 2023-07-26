@@ -1714,10 +1714,6 @@ using sDict = Dict<Key, Value, Length, Shared>;
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<typename Key, typename Value, typename Length, typename Status>
-struct is_instance<Dict<Key, Value, Length, Status>, Dict<Key, Value, Length, Status>>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type>
 struct is_Dict 										{ SICEBOOL value = false; };

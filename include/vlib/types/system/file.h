@@ -562,9 +562,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>				struct is_instance<File, File>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_File 					{ SICEBOOL value = false; };
 template<> 				struct is_File<File> 			{ SICEBOOL value = true;  };

@@ -293,9 +293,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>				struct is_instance<Script, Script>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Script 						{ SICEBOOL value = false; };
 template<> 				struct is_Script<Script> 			{ SICEBOOL value = true;  };

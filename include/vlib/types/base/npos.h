@@ -115,9 +115,6 @@ const NPos npos;
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 	struct is_instance<NPos, NPos>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename T> 	struct is_NPos 					{ SICEBOOL value = false; };
 template<> 				struct is_NPos<NPos> 				{ SICEBOOL value = true;  };

@@ -554,9 +554,6 @@ Bool 	is_compressed(const char* data, ullong len) {
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Compression, Compression>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type>	struct is_Compression 							{ SICEBOOL value = false; };
 template<> 				struct is_Compression<Compression> 				{ SICEBOOL value = true;  };

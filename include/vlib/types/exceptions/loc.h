@@ -248,9 +248,6 @@ using Loc =		vlib::Loc;
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Loc, Loc>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Loc 					{ SICEBOOL value = false; };
 template<> 				struct is_Loc<Loc> 				{ SICEBOOL value = true;  };

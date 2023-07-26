@@ -191,9 +191,6 @@ struct Bool {
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Bool, Bool>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Bool 					{ SICEBOOL value = false; };
 template<> 				struct is_Bool<Bool> 			{ SICEBOOL value = true;  };

@@ -1012,9 +1012,6 @@ auto&     Path::link(
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>                struct is_instance<Proc, Proc>    { SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Proc                     { SICEBOOL value = false; };
 template<>                 struct is_Proc<Proc>             { SICEBOOL value = true;  };

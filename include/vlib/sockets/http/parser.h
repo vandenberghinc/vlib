@@ -472,7 +472,7 @@ public:
 										output->m_content_type == http::content_type::undefined &&
 										key.eq("Content-Type", 12)
 									) {
-										output->m_content_type = http::content_type::fromstr(value.data(), value.len());
+										output->m_content_type = http::content_type::from_str(value.data(), value.len());
 									}
 									else if (
 										content_len == 0 &&

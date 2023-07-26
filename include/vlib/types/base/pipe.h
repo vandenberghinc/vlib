@@ -366,9 +366,6 @@ Pipe err(STDERR_FILENO);
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Pipe, Pipe>		{ SICEBOOL value = true;  };
-
 // Is pipe type.
 template<typename Type> struct is_Pipe 						{ SICEBOOL value = false; };
 template<> 				struct is_Pipe<Pipe> 				{ SICEBOOL value = true;  };

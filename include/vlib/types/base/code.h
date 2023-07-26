@@ -937,9 +937,6 @@ private:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Code, Code>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Code 					{ SICEBOOL value = false; };
 template<> 				struct is_Code<Code> 			{ SICEBOOL value = true;  };

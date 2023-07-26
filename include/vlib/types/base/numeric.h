@@ -97,22 +97,22 @@ private:
 	// Private functions.
 	
 	// Get the numeric value.
-	template <typename Cast = Type, typename Num> requires (is_any_numeric<Num>::value && is_instance<Cast, Num>::value)
+	template <typename Cast = Type, typename Num> requires (is_any_numeric<Num>::value && is_instance<Cast, Num>)
 	constexpr
 	auto&	get_numeric(const Num& x) const {
 		return x;
 	}
-	template <typename Cast = Type, typename Num> requires (is_any_numeric<Num>::value && !is_instance<Cast, Num>::value)
+	template <typename Cast = Type, typename Num> requires (is_any_numeric<Num>::value && !is_instance<Cast, Num>)
 	constexpr
 	auto	get_numeric(const Num& x) const {
 		return (Cast) x;
 	}
-	template <typename Cast = Type, typename Num> requires (is_any_numeric<typename Num::value_type>::value && is_instance<Cast, typename Num::value_type>::value)
+	template <typename Cast = Type, typename Num> requires (is_any_numeric<typename Num::value_type>::value && is_instance<Cast, typename Num::value_type>)
 	constexpr
 	auto&	get_numeric(const Num& x) const {
 		return x.m_numeric;
 	}
-	template <typename Cast = Type, typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<Cast, typename Num::value_type>::value)
+	template <typename Cast = Type, typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<Cast, typename Num::value_type>)
 	constexpr
 	auto	get_numeric(const Num& x) const {
 		return (Cast) x.m_numeric;
@@ -148,7 +148,7 @@ public:
     {}
 	
 	// Constructor from other Numeric.
-	template <typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<Type, typename Num::value_type>::value) constexpr
+	template <typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<Type, typename Num::value_type>) constexpr
 	Numeric(const Num& x) :
 	m_numeric((Type) x.m_numeric)
     {}
@@ -177,7 +177,7 @@ public:
 	}
 	
 	// Constructor from other Numeric.
-	template <typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<typename Num::value_type, Type>::value) constexpr
+	template <typename Num> requires (is_any_numeric<typename Num::value_type>::value && !is_instance<typename Num::value_type, Type>) constexpr
 	This&	operator =(const Num& x) {
 		m_numeric = (Type) x.m_numeric;
 		return *this;
@@ -686,11 +686,11 @@ public:
 		@description:
 			Get as integral numeric or another Numeric.
 	} */
-	template <typename Cast> requires (is_instance<Type, Cast>::value) constexpr
+	template <typename Cast> requires (is_instance<Type, Cast>) constexpr
 	Cast	as() const {
 		return m_numeric;
 	}
-	template <typename Cast> requires (!is_instance<Type, Cast>::value && is_any_numeric<Cast>::value) constexpr
+	template <typename Cast> requires (!is_instance<Type, Cast> && is_any_numeric<Cast>::value) constexpr
 	Cast	as() const {
 		return (Cast) m_numeric;
 	}
@@ -849,15 +849,15 @@ typedef		Numeric<ullong> 		Len;
 // Instances.
 
 // Is instance.
-template<>     struct is_instance<Short, Short>        { SICEBOOL value = true;  };
-template<>     struct is_instance<UShort, UShort>        { SICEBOOL value = true;  };
-template<> 	struct is_instance<Int, Int>		{ SICEBOOL value = true;  };
-template<> 	struct is_instance<UInt, UInt>		{ SICEBOOL value = true;  };
-template<> 	struct is_instance<Float, Float>	{ SICEBOOL value = true;  };
-template<> 	struct is_instance<Double, Double>	{ SICEBOOL value = true;  };
-template<> 	struct is_instance<Long, Long>		{ SICEBOOL value = true;  };
-template<> 	struct is_instance<LLong, LLong>		{ SICEBOOL value = true;  };
-template<> 	struct is_instance<Len, Len>		{ SICEBOOL value = true;  };
+// template<>     struct is_instance<Short, Short>        { SICEBOOL value = true;  };
+// template<>     struct is_instance<UShort, UShort>        { SICEBOOL value = true;  };
+// template<> 	struct is_instance<Int, Int>		{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<UInt, UInt>		{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<Float, Float>	{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<Double, Double>	{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<Long, Long>		{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<LLong, LLong>		{ SICEBOOL value = true;  };
+// template<> 	struct is_instance<Len, Len>		{ SICEBOOL value = true;  };
 
 // Is short type.
 template<typename Num>     struct is_Short                         { SICEBOOL value = false; };
@@ -1013,12 +1013,12 @@ inline constexpr
 auto&	abs(const From& x) {
 	return x.abs();
 }
-template <typename To, typename From>  requires (is_any_Numeric<From>::value && !is_instance<To, From>::value)
+template <typename To, typename From>  requires (is_any_Numeric<From>::value && !is_instance<To, From>)
 inline constexpr
 auto	abs(const From& x) {
 	return x.template abs<To>();
 }
-template <typename To, typename From>  requires (is_any_Numeric<From>::value && is_instance<To, From>::value)
+template <typename To, typename From>  requires (is_any_Numeric<From>::value && is_instance<To, From>)
 inline constexpr
 auto&	abs(const From& x) {
 	return x;

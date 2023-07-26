@@ -198,9 +198,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>				struct is_instance<Logger, Logger>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Logger 					{ SICEBOOL value = false; };
 template<> 				struct is_Logger<Logger> 			{ SICEBOOL value = true;  };

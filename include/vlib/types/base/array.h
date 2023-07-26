@@ -4100,10 +4100,6 @@ struct Array {
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<typename Type>	struct is_instance<Array<Type>, Array<Type>>		{ SICEBOOL value = true;  };
-template<> 				struct is_instance<String, String>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> 		struct is_Array 												{ SICEBOOL value = false; };
 template<typename Type, typename Length>	struct is_Array<Array<Type, Length>> 					{ SICEBOOL value = true;  };

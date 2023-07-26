@@ -81,41 +81,100 @@ auto& to_str(short version) {
 }
 
 // Get method id from string.
-SICE
-Int     fromstr(const String& method) {
-    if (method == desc::get) {
+constexpr
+short	from_str(const char* method, ullong len = NPos::npos) {
+	if (len == NPos::npos) {
+		len = vlib::len(method);
+	}
+    if (desc::get.eq(method, len)) {
         return vlib::http::method::get;
     }
-    else if (method == desc::head) {
+    else if (desc::head.eq(method, len)) {
         return vlib::http::method::head;
     }
-    else if (method == desc::post) {
+    else if (desc::post.eq(method, len)) {
         return vlib::http::method::post;
     }
-    else if (method == desc::put) {
+    else if (desc::put.eq(method, len)) {
         return vlib::http::method::put;
     }
-    else if (method == desc::del) {
+    else if (desc::del.eq(method, len)) {
         return vlib::http::method::del;
     }
-    else if (method == desc::connect) {
+    else if (desc::connect.eq(method, len)) {
         return vlib::http::method::connect;
     }
-    else if (method == desc::options) {
+    else if (desc::options.eq(method, len)) {
         return vlib::http::method::options;
     }
-    else if (method == desc::trace) {
+    else if (desc::trace.eq(method, len)) {
         return vlib::http::method::trace;
     }
-    else if (method == desc::patch) {
+    else if (desc::patch.eq(method, len)) {
         return vlib::http::method::patch;
     } else {
         return vlib::http::method::undefined;
     }
 }
+constexpr
+short	from_str(const String& method) {
+	return from_str(method.data(), method.len());
+}
 
-}; 		// End namespace method.
+// End namespace method.
+};
+
+// Method.
+struct Method {
+	
+	// Attributes.
+	short 	value;
+	
+	// Constructor.
+	constexpr Method() : value(vlib::http::method::undefined) {}
+	
+	// Constructor by short.
+	constexpr Method(short method) : value(method) {}
+	
+	// Constructor by string.
+	constexpr Method(const char* method, ullong len = NPos::npos) : value(vlib::http::method::from_str(method, len)) {}
+	constexpr Method(const String& method) : value(vlib::http::method::from_str(method)) {}
+	
+	// Is defined.
+	constexpr
+	bool	is_defined() const {
+		return value != vlib::http::method::undefined;
+	}
+	
+	// Is undefined.
+	constexpr
+	bool	is_undefined() const {
+		return value == vlib::http::method::undefined;
+	}
+	
+	// To string.
+	constexpr
+	String 	str() const {
+		return vlib::http::method::to_str(value);
+	}
+	
+	// Equals.
+	constexpr friend bool operator == (const Method& x, short y) {
+		return x.value == y;
+	}
+	constexpr friend bool operator == (const Method& x, const Method& y) {
+		return x.value == y.value;
+	}
+	
+	// Not equals.
+	constexpr friend bool operator != (const Method& x, short y) {
+		return x.value != y;
+	}
+	constexpr friend bool operator != (const Method& x, const Method& y) {
+		return x.value != y.value;
+	}
+};
+
 }; 		// End namespace http.
-
 }; 		// End namespace vlib.
 #endif 	// End header.

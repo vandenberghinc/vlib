@@ -28,6 +28,24 @@ typedef unsigned long long 	ullong;
 typedef long double 		ldouble;
 
 // ---------------------------------------------------------
+// Is instance.
+
+template <typename T, typename U>
+struct is_instance_h {
+	static constexpr bool value = false;
+	constexpr operator bool() { return value; }
+};
+
+template <typename T>
+struct is_instance_h<T, T> {
+	static constexpr bool value = true;
+	constexpr operator bool() { return value; }
+};
+
+template <typename T, typename U>
+constexpr bool is_instance = is_instance_h<T, U>::value;
+
+// ---------------------------------------------------------
 // Is integral type.
 
 // Is shared type.
@@ -282,28 +300,6 @@ struct 							Shared 										{ SICEBOOL value = false; };
 // Is type.
 template<typename Type> 		struct is_Shared 								{ SICEBOOL value = false; };
 template<> 						struct is_Shared<Shared> 					{ SICEBOOL value = true;  };
-
-// ---------------------------------------------------------
-// Is instance.
-
-// Only supports the non const lvalue of the type.
-template<typename X, typename Y> 	struct is_instance 												{ SICEBOOL value = false; };
-template<> 							struct is_instance<bool, bool> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<int, int> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<uint, uint> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<char, char> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<uchar, uchar> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<float, float> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<double, double> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<ldouble, ldouble> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<long, long> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<ulong, ulong> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<llong, llong> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<ullong, ullong> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<Forwards, Forwards> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<Backwards, Backwards> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<Unique, Unique> 					{ SICEBOOL value = true;  };
-template<> 							struct is_instance<Shared, Shared> 					{ SICEBOOL value = true;  };
 
 // ---------------------------------------------------------
 // Shortcuts.

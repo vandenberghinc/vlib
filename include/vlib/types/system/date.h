@@ -1610,9 +1610,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<Date, Date>	{ SICEBOOL value = true;  };
-
 // Is path type.
 template<typename Type> struct is_Date 					{ SICEBOOL value = false; };
 template<> 				struct is_Date<Date> 			{ SICEBOOL value = true;  };

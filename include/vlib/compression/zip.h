@@ -1626,9 +1626,6 @@ const ExceptionID Zip::entry_not_found_err = "Unable to find an entry that match
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>                 struct is_instance<Zip, Zip>    { SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type>    struct is_Zip                     { SICEBOOL value = false; };
 template<>                 struct is_Zip<Zip>                 { SICEBOOL value = true;  };

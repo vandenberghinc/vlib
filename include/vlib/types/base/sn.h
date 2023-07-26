@@ -232,9 +232,6 @@ public:
 // Alias.
 typedef SN scientific_notation_t;
 
-// Is instance.
-template<> 						struct is_instance<SN, SN> 				{ SICEBOOL value = true;  };
-
 // Is sn type.
 template<typename Type>			struct is_SN 								{ SICEBOOL value = false; };
 template<> 						struct is_SN<SN> 						{ SICEBOOL value = true;  };

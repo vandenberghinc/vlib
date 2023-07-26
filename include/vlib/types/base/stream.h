@@ -232,10 +232,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<typename Type>
-struct is_instance<Stream<Type>, Stream<Type>>  { SICEBOOL value = true;  };
-
 // Is pipe type.
 template<typename Type> struct is_Stream                { SICEBOOL value = false; };
 template<typename Type> struct is_Stream<Stream<Type>>  { SICEBOOL value = true;  };

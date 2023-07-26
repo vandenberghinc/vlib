@@ -465,9 +465,6 @@ Response<Type> error(Message&& msg, int status = -1) {
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<typename Type> 						struct is_instance<Response<Type>, Response<Type>> 				{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type>							struct is_Response 								{ SICEBOOL value = false; };
 template<typename Type> 						struct is_Response<Response<Type>> 						{ SICEBOOL value = true;  };

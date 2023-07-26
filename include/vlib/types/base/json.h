@@ -1946,11 +1946,6 @@ using 	Json = 		json::Json;
 using   JsonValue = json::JsonValue<Json>;
 using 	JArray = 	Array<JsonValue>;
 
-// Is instance.
-template<>     struct is_instance<JsonValue, JsonValue>     { SICEBOOL value = true;  };
-template<> 	struct is_instance<Json, Json>					{ SICEBOOL value = true;  };
-template<> 	struct is_instance<JArray, JArray>				{ SICEBOOL value = true;  };
-
 // Is JsonValue.
 template<typename Type>     struct is_JsonValue             { SICEBOOL value = false; };
 template<>                  struct is_JsonValue<JsonValue>  { SICEBOOL value = true;  };

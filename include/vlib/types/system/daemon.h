@@ -681,9 +681,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 					struct is_instance<Daemon, Daemon>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> 	struct is_Daemon 							{ SICEBOOL value = false; };
 template<> 					struct is_Daemon<Daemon> 				{ SICEBOOL value = true;  };

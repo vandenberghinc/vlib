@@ -521,10 +521,6 @@ using SPtr =		vlib::Ptr<Type, Shared>;
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<typename Type, typename Status>
-struct is_instance<Ptr<Type, Status>, Ptr<Type, Status>>		{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type>
 struct is_Ptr 								{ SICEBOOL value = false; };

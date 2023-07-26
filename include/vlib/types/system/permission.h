@@ -324,9 +324,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>				struct is_instance<Permission, Permission>	{ SICEBOOL value = true;  };
-
 // Is path type.
 template<typename Type> struct is_Permission 					{ SICEBOOL value = false; };
 template<> 				struct is_Permission<Permission> 			{ SICEBOOL value = true;  };

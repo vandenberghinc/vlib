@@ -907,9 +907,6 @@ public:
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<>				struct is_instance<Group, Group>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_Group 						{ SICEBOOL value = false; };
 template<> 				struct is_Group<Group> 				{ SICEBOOL value = true;  };

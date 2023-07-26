@@ -472,9 +472,6 @@ struct CString {
 // ---------------------------------------------------------
 // Instances.
 
-// Is instance.
-template<> 				struct is_instance<CString, CString>	{ SICEBOOL value = true;  };
-
 // Is type.
 template<typename Type> struct is_CString 					{ SICEBOOL value = false; };
 template<> 				struct is_CString<CString> 			{ SICEBOOL value = true;  };
