@@ -24,7 +24,7 @@ template <
     int     protocol =       sockets::protocol::undefined,
     uint    buff_len =       1024,
     bool    blocking =       false,
-    uint    tls_version =    tls::version::v1_3    // the minimum tls version.
+    uint    tls_version =    tls::version::any    // the minimum tls version.
 > requires (
 	family == sockets::family::ipv4 ||
 	family == sockets::family::ipv6

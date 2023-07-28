@@ -589,7 +589,7 @@ public:
 		return vlib::round<Type>(m_numeric, precision);
 	}
 	constexpr
-	This&	round_r(short precision = 0) const requires (is_floating<Type>::value) {
+	This&	round_r(short precision = 0) requires (is_floating<Type>::value) {
 		m_numeric = vlib::round<Type>(m_numeric, precision);
 		return *this;
 	}

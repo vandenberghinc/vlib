@@ -121,7 +121,7 @@ public:
 		add_endpoint(endpoint);
 		add_version(version);
 		add_headers(headers);
-        add_header("Content-Length", 14, "0", 1);
+        // add_header("Content-Length", 14, "0", 1);
 		add_end();
 		return *this;
 	}

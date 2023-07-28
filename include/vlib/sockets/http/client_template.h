@@ -24,6 +24,7 @@ struct ClientTemplateArgs {
 	String 				api_secret;
 	http::Headers		headers;
 	Compression			compression;
+	Bool				query = true; // automatically use query requests on GET.
 	Bool				debug = false;
 };
 
@@ -51,6 +52,7 @@ public:
 	http::Headers	m_headers;
 	Compression	    m_compression;
     Bool            m_was_connected = false;
+	Bool			m_query = true; // automatically use query requests on GET.
 	Bool			m_debug = false;
 	
 // Private.
@@ -103,6 +105,7 @@ public:
     m_sni(move(x.sni)),
 	m_headers(move(x.headers)),
     m_compression(move(x.compression)),
+	m_query(x.query),
 	m_debug(x.debug)
 	{
 		set_headers();
@@ -248,6 +251,9 @@ public:
 		const String&	body,
 		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
+		if (m_query && method == vlib::http::method::get) {
+			return query_request(method, endpoint, body, timeout);
+		}
 		if (m_api_secret.is_defined()) {
 			sign(body);
 		}
@@ -260,6 +266,9 @@ public:
 		const Json&		params,
 		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
+		if (m_query && method == vlib::http::method::get) {
+			return query_request(method, endpoint, params.json(), timeout);
+		}
 		if (params.len() > 0) {
 			return request(method, endpoint, params.json(), timeout);
 		} else {
@@ -278,6 +287,17 @@ public:
 		}
 		String new_endpoint (endpoint);
 		new_endpoint << '?' << url_encode(params);
+		return request(method, new_endpoint, timeout);
+	}
+	constexpr
+	Response	query_request(
+		short 			method,
+		const String& 	endpoint,
+		const String&	params,
+		int				timeout = VLIB_SOCK_TIMEOUT
+	) {
+		String new_endpoint (endpoint);
+		new_endpoint << '?' << params;
 		return request(method, new_endpoint, timeout);
 	}
 
@@ -381,6 +401,9 @@ public:
 		const String&	body,
 		int				timeout = VLIB_SOCK_TIMEOUT
 	) {
+		if (m_query && method == vlib::http::method::get) {
+			return query_request(method, endpoint, m_compression.compress(body), timeout);
+		}
 		return request(method, endpoint, m_compression.compress(body), timeout);
 	}
 	constexpr
@@ -401,6 +424,8 @@ public:
 	 *		Make a chunked HTTP request.
 	 *
 	 *		Only the body will sent in chunks.
+	 *
+	 *		Does not yet support query requests with `query = true`.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
 	 *	@parameter: {
@@ -445,6 +470,8 @@ public:
 	 *		Make a chunked HTTPS request.
 	 *
 	 *		Only the body will sent in chunks.
+	 *
+	 *		Does not yet support query requests with `query = true`.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
 	 *	@parameter: {

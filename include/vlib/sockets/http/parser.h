@@ -52,7 +52,8 @@ private:
 	ullong 		start_index = 0;			// start index of value to parse.
 	bool		is_chunked = false;			// is chunked request.
 	ullong		content_len = 0;			// content len header value.
-	ullong		remaining_content_len = 0; 	// only used when the a non chunked body is received in pieces.
+	// ullong		remaining_content_len = 0; 	// only used when the a non chunked body is received in pieces.
+	ullong 		body_start = 0;				// only used for non chunked transmissions.
 	ullong 		chunk_len = 0; 				// the chunk length for chunked transmissions.
 	ullong 		chunk_start = 0; 			// the start index of the chunk.
 	ullong 		chunk_end = 0; 				// the actual last index of the chunk, not +1 like with len.
@@ -405,18 +406,45 @@ public:
 									++index;
 									if (index != len) {
 										
-										// Remove optional CRLF at the end of the body.
-										ullong value_end = len - 1; // including (not length format).
-										while (true) {
-											switch (data[value_end]) {
-												case '\r': { --value_end; continue; }
-												case '\n': { --value_end; continue; }
-												default: break;
+										// Set body start.
+										body_start = index;
+										
+										// Check if the full body is present.
+										if (len - body_start >= content_len) {
+											
+											// Assign body.
+											output->m_body.reconstruct(
+												data + body_start,
+												len - body_start
+											);
+											
+											// Decompress.
+											if (is_compressed(output->m_body)) {
+												output->m_body = decompress(output->m_body);
 											}
-											break;
+											
+											// Remove optional CRLF at the end of the body.
+											while (output->m_body.len() > 0) {
+												switch (output->m_body.last()) {
+													case '\r':
+													case '\n': { --output->m_body.len(); continue; }
+													default: break;
+												}
+												break;
+											}
+											
+											return true;
 										}
 										
+										// Body not fully present so proceed parsing.
+										mode = 5;
+										return false;
+										
+										
+										/*
+										
 										// Reconstruct.
+										ullong value_end = len - 1; // including (not length format).
 										ullong bl = value_end - index + 1;
 										ullong body_len = bl > content_len ? content_len : bl;
 										output->m_body.reconstruct(
@@ -433,7 +461,21 @@ public:
 										if (finished && is_compressed(output->m_body)) {
 											output->m_body = decompress(output->m_body);
 										}
+										
+										// Remove optional CRLF at the end of the body.
+										if (finished) {
+											while (output->m_body.len() > 0) {
+												switch (output->m_body.last()) {
+													case '\r':
+													case '\n': { --output->m_body.len(); continue; }
+													default: break;
+												}
+												break;
+											}
+										}
+										
 										return finished;
+										 */
 										
 									}
 									continue;
@@ -506,6 +548,37 @@ public:
 					// Not chunked.
 					if (!is_chunked) {
 						
+						// Check if the full body is present.
+						if (len - body_start >= content_len) {
+							
+							// Assign body.
+							output->m_body.reconstruct(
+								data + body_start,
+								len - body_start
+							);
+							
+							// Decompress.
+							if (is_compressed(output->m_body)) {
+								output->m_body = decompress(output->m_body);
+							}
+							
+							// Remove optional CRLF at the end of the body.
+							while (output->m_body.len() > 0) {
+								switch (output->m_body.last()) {
+									case '\r':
+									case '\n': { --output->m_body.len(); continue; }
+									default: break;
+								}
+								break;
+							}
+							
+							return true;
+						}
+						
+						/*
+						print("CONTENT LENGTH: ", remaining_content_len);
+						print(full_data);
+						
 						// Concat to body.
 						ullong body_len = len > remaining_content_len ? remaining_content_len : len;
 						output->m_body.reconstruct(
@@ -522,6 +595,7 @@ public:
 							output->m_body = decompress(output->m_body);
 						}
 						return finished;
+						 */
 						
 					}
 					
