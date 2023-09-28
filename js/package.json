@@ -1,0 +1,14 @@
+{
+  "name": "vlib",
+  "version": "1.0.0",
+  "description": "VLib",
+  "main": "vlib.js",
+  "scripts": {
+    "start": "node vlib.js"
+  },
+  "keywords": [
+    "vlib",
+    "vinc"
+  ],
+  "author": "Daan van den Bergh",
+}

@@ -405,7 +405,7 @@ public:
 	} */
 	String 	read() {
         reopen(file::mode::read);
-		const Length l = len();
+        Length l = len();
         String output;
 		output.resize(output.len() + l);
 		if (fread(output.data(), sizeof(char), l, m_attr->file) != l) {
@@ -414,6 +414,37 @@ public:
 		output.len() = l;
 		output.null_terminate();
 		return output;
+	}
+	/*  @docs {
+		@title: Read
+		@description:
+			Read all the data from the file.
+	 
+			Reopening the file for the required mode is handled automatically.
+		@parameter: {
+			@name: buff
+			@description: Custom buffer, will be reset upon calling `read()`.
+		}
+		@parameter: {
+			@name: buff_size
+			@description: Custom buffer size, leave `0` to read the entire file.
+		}
+		@return: Returns the amount of read bytes.
+		@usage:
+			vlib::File file("/tmp/myfile.txt");
+			vlib::String output = file.read();
+	} */
+	Length 	read(String& buff, const Length& buff_size = 0) {
+        reopen(file::mode::read);
+        buff.reset();
+		buff.resize(buff_size);
+		Length read;
+		if ((read = fread(buff.data(), sizeof(char), buff_size, m_attr->file)) < 0) {
+            throw ReadError(to_str("Unable to read file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
+		}
+		buff.len() = read;
+		buff.null_terminate();
+		return read;
 	}
 	
 	// Write.
