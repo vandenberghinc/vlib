@@ -3,13 +3,12 @@
  * Copyright: © 2022 - 2023 Daan van den Bergh.
  */
 
-
 // ---------------------------------------------------------
 // Utils.
 
 const utils = {};
 
-// Rename object keys.
+// Edit object keys.
 utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     remove.iterate((key) => {
         delete obj[key];

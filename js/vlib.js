@@ -4,21 +4,24 @@
  */
 
 // ---------------------------------------------------------
-// Library.
-
-// Define the lib.
-const vlib = {};
-
-// ---------------------------------------------------------
 // Files that only edit the default prototypes.
 
-require("global/array.js")
-require("global/string.js")
+require("./global/array.js")
+require("./global/string.js")
 
 // ---------------------------------------------------------
-// Imports.
+// Build library.
 
-require("types/path.js")
+const vlib = {};
+
+// Types.
+vlib.Path = require("./types/path.js");
+
+// System.
+vlib.Proc = require("./system/process.js");
+
+// CLI.
+vlib.CLI = require("./cli/cli.js");
 
 // ---------------------------------------------------------
 // Exports.

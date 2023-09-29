@@ -3,14 +3,18 @@
  * Copyright: © 2022 - 2023 Daan van den Bergh.
  */
 
+// ---------------------------------------------------------
+// Libraries.
+
+const libfs = require('fs');
+const libfsextra = require('fs-extra');
+const libos = require('os');
+const libpath = require('path');
 
 // ---------------------------------------------------------
 // Imports.
 
-const libfs = require('fs');
-const libfsextra = require('fsextra');
-const libpath = require('path');
-const utils = require('global/utils.js');
+const utils = require('../global/utils.js');
 
 // ---------------------------------------------------------
 // Path object.
@@ -31,10 +35,18 @@ class Path {
 
     // Clean the path.
     _clean() {
-        this._path = this._path.replaceAll("//","/").replaceAll("./","");
+        this._path = this._path.replace(/\/+/g, '/').replaceAll("/./","");
         if (this._path.length > 0 && this._path.charAt(this._path.length - 1) === "/") {
             this._path = this._path.substr(0, this._path.length - 1);
         }
+    }
+
+    // to string.
+    toString() {
+        return this._path;
+    }
+    str() {
+        return this._path;
     }
 
     // ---------------------------------------------------------
@@ -45,8 +57,8 @@ class Path {
         if (this._stat !== undefined) {
             return this._stat;
         }
-        this._stat = utils.rename_obj_keys(
-            libfd.statSync(this._path),
+        this._stat = utils.edit_obj_keys(
+            libfs.statSync(this._path),
             [
                 ["atimeMs", "atime"],
                 ["mtimeMs", "mtime"],
@@ -60,6 +72,7 @@ class Path {
                 "birthtime",
             ]
         );
+        return this._stat;
     }
 
     // Get stat attributes.
@@ -106,16 +119,6 @@ class Path {
         return this.stat.birthtime;
     }
 
-    // Is directory.
-    is_dir() {
-        return this.stat.isDirectory();
-    }
-
-    // Exists.
-    exists() {
-        return libfs.existsSync(this._path);
-    }
-
     // ---------------------------------------------------------
     // Functions.
 
@@ -128,6 +131,16 @@ class Path {
         this._extension = undefined;
         this._base = undefined;
         this._abs = undefined;
+    }
+
+    // Is directory.
+    is_dir() {
+        return this.stat.isDirectory();
+    }
+
+    // Exists.
+    exists() {
+        return libfs.existsSync(this._path);
     }
 
     // Get path name.
@@ -152,11 +165,11 @@ class Path {
         this._extension = "";
         for (let i = this._name.length - 1; i >= 0; i--) {
             const c = this._name.charAt(i);
+            this._extension += c;
             if (c === ".") {
                 this._extension = this._extension.reverse();
                 return this._extension;
             }
-            this._extension += c;
         }
         this._extension = "";
     }
@@ -164,7 +177,7 @@ class Path {
     // Get the base path.
     // Returns null when the path does not have a base path.
     base(back = 1) {
-        if (back === ! && this._base !== undefined) { return this._base; }
+        if (back === 1 && this._base !== undefined) { return this._base; }
         let count = 0, end = 0;
         for (end = this._path.length - 1; end >= 0; end--) {
             const c = this._path.charAt(end);
@@ -187,7 +200,7 @@ class Path {
     }
 
     // Get the absolute path.
-    abs(back = 1) {
+    abs() {
         if (this._abs !== undefined) { return this._abs; }
         this._abs = new Path(libpath.resolve(this._path));
         return this._abs;
@@ -248,30 +261,33 @@ class Path {
 
     // Move the path to the trash directory.
     async trash() {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const name = this.name();
             let trash;
             switch (libos.platform()) {
                 case 'darwin': // macOS
                     trash = libpath.join(libos.homedir(), '.Trash');
+                    break;
                 case 'linux':
                     // Check if the XDG_DATA_HOME environment variable is set, otherwise fallback to the default path
                     const xdgDataHome = process.env.XDG_DATA_HOME || libpath.join(libos.homedir(), '.local', 'share');
                     trash = libpath.join(xdgDataHome, 'Trash');
+                    break;
                 default:
                     return reject("Unsupported platform.");
             }
             if (trash == null) {
                 return reject("Unsupported platform.");
             }
-            let destination = `${trash}/${name}`;
-            let counts = 0;
-            while (libfs.existsSync(destination)) {
-                ++counts;
-                destination = `${trash}/${name}-${counts}`
-            }
+            let destination;
             try {
-                this.mv(destination);
+                destination = `${trash}/${name}`;
+                let counts = 0;
+                while (libfs.existsSync(destination)) {
+                    ++counts;
+                    destination = `${trash}/${name}-${counts}`
+                }
+                await this.mv(destination);
             } catch (err) {
                 return reject(err);
             }
@@ -314,7 +330,7 @@ class Path {
     // Save data to the path.
     async save(data) {
         return new Promise((resolve, reject) => {
-            libfs.saveFile(this._path, data, (err) => {
+            libfs.writeFile(this._path, data, (err) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -328,7 +344,7 @@ class Path {
     // Get the child paths of a directory.
     // @note: throws an error when the path is not a directory.
     async paths(data, recursive = false) {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (!this.is_dir()) {
                 return reject(`Path "${this._path}" is not a directory.`);
             }
@@ -337,7 +353,7 @@ class Path {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(files.map((name) => (this.join(name)));
+                        resolve(files.map((name) => (this.join(name))));
                     }
                 });
             } else {
@@ -349,7 +365,7 @@ class Path {
                                 reject(err);
                             } else {
                                 let err = null;
-                                files.iterate((name) => {
+                                files.iterate(async (name) => {
                                     const child = path.join(name);
                                     files.push(child);
                                     if (child.is_dir()) {
@@ -386,4 +402,4 @@ class Path {
 // ---------------------------------------------------------
 // Exports.
 
-vlib.Path = Path;
+module.exports = Path;
