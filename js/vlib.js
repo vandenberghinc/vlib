@@ -10,20 +10,17 @@ require("./global/array.js")
 require("./global/string.js")
 
 // ---------------------------------------------------------
-// Build library.
-
-const vlib = {};
-
-// Types.
-vlib.Path = require("./types/path.js");
-
-// System.
-vlib.Proc = require("./system/process.js");
-
-// CLI.
-vlib.CLI = require("./cli/cli.js");
-
-// ---------------------------------------------------------
 // Exports.
 
-module.exports = vlib;
+module.exports = {
+    // Types.
+    ...require("./types/path.js"),
+
+    // System.
+    ...require("./system/colors.js"),
+    ...require("./system/print.js"),
+    ...require("./system/process.js"),
+
+    // CLI.
+    ...require("./cli/cli.js"),
+};

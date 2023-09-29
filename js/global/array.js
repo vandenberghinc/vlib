@@ -25,7 +25,7 @@ Array.prototype.iterate = function(start, end, handler) {
     }
     for (let i = start; i < end; i++) {    
         const res = handler(this[i]);
-        if (res != null) {
+        if (res != null && !(res instanceof Promise)) {
             return res;
         }
     }
@@ -46,7 +46,7 @@ Array.prototype.iterate_reversed = function(start, end, handler) {
     }
     for (let i = end - 1; i >= start; i--) {    
         const res = handler(this[i]);
-        if (res != null) {
+        if (res != null && !(res instanceof Promise)) {
             return res;
         }
     }

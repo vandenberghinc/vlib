@@ -35,9 +35,35 @@ class Path {
 
     // Clean the path.
     _clean() {
+        if (this._path == null) {
+            throw Error(`Invalid path "${this._path}".`);
+        }
         this._path = this._path.replace(/\/+/g, '/').replaceAll("/./","");
         if (this._path.length > 0 && this._path.charAt(this._path.length - 1) === "/") {
             this._path = this._path.substr(0, this._path.length - 1);
+        }
+        const start = 0, end = this._path.length;
+        for (let i = 0; i < this._path.length; i++) {
+            const c = this._path.charAt(i);
+            if (c == " " || c == "\t") {
+                ++start;
+            } else {
+                break;
+            }
+        }
+        for (let i = end - 1; i >= 0; i--) {
+            const c = this._path.charAt(i);
+            if (c == " " || c == "\t") {
+                --end;
+            } else {
+                break;
+            }
+        }
+        if (start != 0 || end != this._path.length) {
+            this._path = this._path.susbtr(start, end - start);
+        }
+        if (this._path.length === 0) {
+            throw Error(`Invalid path "${this._path}".`);
         }
     }
 
@@ -360,13 +386,13 @@ class Path {
                 const files = [];
                 const traverse = (path) => {
                     return new Promise((resolve, reject) => {
-                        libfs.readdir(path, (err, files) => {
+                        libfs.readdir(path, async (err, files) => {
                             if (err) {
                                 reject(err);
                             } else {
                                 let err = null;
-                                files.iterate(async (name) => {
-                                    const child = path.join(name);
+                                for (let i = 0; i < files.length; i++) {
+                                    const child = path.join(files[i]);
                                     files.push(child);
                                     if (child.is_dir()) {
                                         try {
@@ -376,7 +402,7 @@ class Path {
                                             return false;
                                         }
                                     }
-                                })
+                                }
                                 if (err === null) {
                                     resolve();
                                 } else {
@@ -402,4 +428,4 @@ class Path {
 // ---------------------------------------------------------
 // Exports.
 
-module.exports = Path;
+module.exports = {Path};

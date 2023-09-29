@@ -6,7 +6,7 @@
 // ---------------------------------------------------------
 // Imports.
 
-const libproc = require("proc");
+const libproc = require("child_process");
 
 // ---------------------------------------------------------
 // The process class.
@@ -49,10 +49,6 @@ class Proc {
         interactive = true,
         detached = false,
     }) {
-        if (!SETTINGS.electron) {
-            console.error("Unsupported");
-            return null;
-        }
 
         // Set promise.
         this.promise = new Promise((resolve) => {
@@ -89,8 +85,8 @@ class Proc {
             });
             this.proc.on('exit', (code, status) => {
                 this.exit_status = code;
-                if (code != 0 && err == "") {
-                    err += `Child process exited with code ${code}.`;
+                if (code !== 0 && (this.err == null || this.err.length === 0)) {
+                    this.err = `Child process exited with code ${code}.`;
                 }
                 if (this.on_exit !== undefined) {
                     this.on_exit(code, status);
@@ -141,4 +137,4 @@ class Proc {
 // ---------------------------------------------------------
 // Exports.
 
-module.exports = Proc;
+module.exports = {Proc};
