@@ -14,7 +14,8 @@ const libproc = require("child_process");
 class Proc {
 
     // Constructor.
-    constructor() {
+    constructor({debug = false} = {}) {
+        this.debug = debug;
         this.proc = null;
         this.promise = null;
         this.err = null;
@@ -48,42 +49,59 @@ class Proc {
         working_directory = null,
         interactive = true,
         detached = false,
+        env = null,
     }) {
 
         // Set promise.
         this.promise = new Promise((resolve) => {
 
             // Spawn.
+            if (this.debug) {
+                console.log(`Start: ${command} ${args.join(" ")}`);
+            }
+            const opts = {
+                cwd: working_directory,
+                stdio: [interactive ? "pipe" : "ignore", "pipe", "pipe"],
+                shell: interactive,
+                detached: detached,
+            }
+            if (env != null) {
+                opts.env = env;
+            }
             this.proc = libproc.spawn(
                 command,
                 args,
-                {
-                    cwd: working_directory,
-                    stdio: [interactive ? "pipe" : "ignore", "pipe", "pipe"],
-                    shell: interactive,
-                    detached: detached,
-                    env: {
-                         ...process.env,
-                        "GIT_TERMINAL_PROMPT": "0",
-                    },
-                },
+                opts,
             );
+            // if (!interactive) {
+            //     console.log(this.proc.stdin);
+            //     this.proc.stdin.end();
+            // }
 
             // Set handlers.
             let closed = 0;
             this.proc.stdout.on('data', (data) => {
+                if (this.debug) {
+                    console.log("OUT:",data.toString());
+                }
                 if (this.on_output !== undefined) {
                     this.on_output(data.toString())
                 }
             })
             this.proc.stderr.on('data', (data) => {
                 data = data.toString();
+                if (this.debug) {
+                    console.log("ERR:",data);
+                }
                 this.err += data;
                 if (this.on_error !== undefined) {
                     this.on_error(data);
                 }
             });
             this.proc.on('exit', (code, status) => {
+                if (this.debug && closed === 1) {
+                    console.log(`Child process exited with code ${code}.`);
+                }
                 this.exit_status = code;
                 if (code !== 0 && (this.err == null || this.err.length === 0)) {
                     this.err = `Child process exited with code ${code}.`;
@@ -97,6 +115,9 @@ class Proc {
                 }
             });
             this.proc.on('close', (code, status) => {
+                if (this.debug && closed === 1) {
+                    console.log(`Child process exited with code ${code}.`);
+                }
                 ++closed;
                 if (closed == 2) {
                     resolve();

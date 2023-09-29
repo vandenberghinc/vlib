@@ -64,8 +64,8 @@ class CLI {
     constructor({
         name = null,
         version = null,
-        commands = []
-        start_index = 2;
+        commands = [],
+        start_index = 2,
     }) {
         this.name = name;
         this.version = version;
@@ -155,12 +155,18 @@ class CLI {
     }
 
     // Log an error.
-    error(err) {
-        err = err.toString();
+    error(...err) {
+        err = err.join("").toString();
         if (err.eq_first("Error: ") || err.eq_first("error: ")) {
             err = err.substr(7).trim();
         }
         console.log(`${colors.red}Error${colors.end}: ${err}`)
+    }
+
+    // Throw an error and stop with exit code 1.
+    throw_error(...err) {
+        this.error(...err);
+        process.exit(1);
     }
 
     // Log the docs of an array of command or a single command.

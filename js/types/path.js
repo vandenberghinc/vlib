@@ -352,6 +352,10 @@ class Path {
             });
         });
     }
+    load_sync() {
+        const data = libfs.readFileSync(this._path);
+        return data.toString();
+    }
 
     // Save data to the path.
     async save(data) {
@@ -365,6 +369,9 @@ class Path {
                 }
             });
         });
+    }
+    save_sync(data) {
+        libfs.writeFileSync(this._path, data);
     }
 
     // Get the child paths of a directory.

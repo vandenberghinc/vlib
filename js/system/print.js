@@ -21,17 +21,17 @@ function printe(...args) {
 
 // Print marker.
 function print_marker(...args) {
-    print(colors.blue, ">>> ", vlib.colors.end, ...args);
+    print(colors.blue, ">>> ", colors.end, ...args);
 }
 
 // Print warning.
 function print_warning(...args) {
-    print(colors.yellow, ">>> ", vlib.colors.end, ...args);
+    print(colors.yellow, ">>> ", colors.end, ...args);
 }
 
 // Print error.
 function print_error(...args) {
-    printe(colors.red, ">>> ", vlib.colors.end, ...args);
+    printe(colors.red, ">>> ", colors.end, ...args);
 }
 
 // ---------------------------------------------------------

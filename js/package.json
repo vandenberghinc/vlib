@@ -1,20 +1,22 @@
 {
-  "name": "vlib",
-  "version": "1.1.1",
-  "description": "VLib",
-  "main": "vlib.js",
-  "scripts": {
-    "start": "node vlib.js",
-    "build:linux": "pkg cli.js -t node14-linux-x64 -o my-cli-program",
-    "test": "node test.js"
-  },
-  "keywords": [
-    "vlib",
-    "vinc"
-  ],
-  "author": "Daan van den Bergh",
-  "dependencies": {
-    "fs-extra": "^11.1.1",
-    "proc": "^0.2.2"
-  }
+    "name": "@vandenberghinc/vlib",
+    "version": "1.1.4",
+    "description": "vlib",
+    "main": "vlib.js",
+    "scripts": {
+        "start": "node vlib.js",
+        "build:linux": "pkg cli.js -t node14-linux-x64 -o my-cli-program",
+        "test": "node test.js"
+    },
+    "keywords": [
+        "vlib",
+        "vinc"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "author": "Daan van den Bergh",
+    "dependencies": {
+        "fs-extra": "^11.1.1"
+    }
 }
