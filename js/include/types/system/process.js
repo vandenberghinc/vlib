@@ -4,14 +4,9 @@
  */
 
 // ---------------------------------------------------------
-// Imports.
-
-const libproc = require("child_process");
-
-// ---------------------------------------------------------
 // The process class.
 
-class Proc {
+vlib.Proc = class Proc {
 
     // Constructor.
     constructor({debug = false} = {}) {
@@ -154,8 +149,3 @@ class Proc {
         return this;
     }
 }
-
-// ---------------------------------------------------------
-// Exports.
-
-module.exports = {Proc};

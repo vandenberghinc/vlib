@@ -6,10 +6,10 @@
 // ---------------------------------------------------------
 // Utils.
 
-const utils = {};
+vlib.utils = {};
 
 // Edit object keys.
-utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
+vlib.utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     remove.iterate((key) => {
         delete obj[key];
     })
@@ -19,8 +19,3 @@ utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     })
     return obj;
 }
-
-// ---------------------------------------------------------
-// Exports.
-
-module.exports = utils;

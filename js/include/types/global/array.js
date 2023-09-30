@@ -6,7 +6,7 @@
 // Get the first and last item.
 Array.prototype.first = function() {
     return this[0];
-};
+}; // Get the first and last item.
 Array.prototype.last = function() {
     return this[this.length - 1];
 };

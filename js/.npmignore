@@ -1,5 +1,6 @@
 # Project dependent files.
-# ...
+/include
+/bundle.js
 
 # Git files.
 /.git*

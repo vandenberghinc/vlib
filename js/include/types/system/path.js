@@ -4,23 +4,10 @@
  */
 
 // ---------------------------------------------------------
-// Libraries.
-
-const libfs = require('fs');
-const libfsextra = require('fs-extra');
-const libos = require('os');
-const libpath = require('path');
-
-// ---------------------------------------------------------
-// Imports.
-
-const utils = require('../global/utils.js');
-
-// ---------------------------------------------------------
 // Path object.
 // When the operating system's path changes function `reset()` should be called again.
 
-class Path {
+vlib.Path = class Path {
     constructor(path) {
 
         // Attributes.
@@ -83,7 +70,7 @@ class Path {
         if (this._stat !== undefined) {
             return this._stat;
         }
-        this._stat = utils.edit_obj_keys(
+        this._stat = vlib.utils.edit_obj_keys(
             libfs.statSync(this._path),
             [
                 ["atimeMs", "atime"],
@@ -431,8 +418,3 @@ class Path {
     }
 
 }
-
-// ---------------------------------------------------------
-// Exports.
-
-module.exports = {Path};

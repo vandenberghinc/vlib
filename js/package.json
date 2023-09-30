@@ -5,8 +5,8 @@
     "main": "vlib.js",
     "scripts": {
         "start": "node vlib.js",
-        "build:linux": "pkg cli.js -t node14-linux-x64 -o my-cli-program",
-        "test": "node test.js"
+        "test": "node test.js",
+        "bundle": "node bundle.js"
     },
     "keywords": [
         "vlib",
