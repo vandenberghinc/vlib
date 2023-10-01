@@ -1,0 +1,22 @@
+{
+    "build_system": "none",
+    "compiler": "g++",
+    "compile_args": [],
+    "source_files": [],
+    "ip": "127.0.0.1",
+    "port": "8000",
+    "executable_args": [],
+    "excluded_path_patterns": [
+        "*.DS_Store",
+        "*.git",
+        "*.xcodeproj",
+        "*node_modules",
+        "bin",
+        "js/package-lock.json"
+    ],
+    "excluded_code_scanning_path_patterns": [],
+    "ssh_remotes": [],
+    "git_username": null,
+    "git_email": null,
+    "git_remotes": []
+}

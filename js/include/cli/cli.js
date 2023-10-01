@@ -6,7 +6,7 @@
 // ---------------------------------------------------------
 // CLI object.
 
-vlib.cli = class CLI {
+vlib.CLI = class CLI {
 
     // ---------------------------------------------------------
     // Constructor.
@@ -50,7 +50,7 @@ vlib.cli = class CLI {
      *              },
      *              callback: ({name = null, age = 0}) => {}
      *          }
-     *          - Valid values for `type` are `string` and `number`.
+     *          - Valid values for `type` are [`string`, `boolean` and `number`].
      *          - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
      *            When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
      *            An id like `--my-arg` will be passed as `my_arg`.
@@ -155,7 +155,7 @@ vlib.cli = class CLI {
         if (err.eq_first("Error: ") || err.eq_first("error: ")) {
             err = err.substr(7).trim();
         }
-        console.log(`${colors.red}Error${colors.end}: ${err}`)
+        console.log(`${vlib.colors.red}Error${vlib.colors.end}: ${err}`)
     }
 
     // Throw an error and stop with exit code 1.
@@ -274,17 +274,17 @@ vlib.cli = class CLI {
                 docs += `\nExamples:\n`;
                 if (typeof obj.examples === "string") {
                     if (obj.examples.charAt(0) === "$") {
-                        docs += `    ${colors.italic}${obj.examples}${colors.end}\n`;
+                        docs += `    ${vlib.colors.italic}${obj.examples}${vlib.colors.end}\n`;
                     } else {
-                        docs += `    ${colors.italic}$ ${obj.examples}${colors.end}\n`;
+                        docs += `    ${vlib.colors.italic}$ ${obj.examples}${vlib.colors.end}\n`;
                     }
                 }
                 else if (Array.isArray(obj.examples)) {
                     obj.examples.iterate((item) => {
                         if (item.charAt(0) === "$") {
-                            docs += `    ${colors.italic}${item}${colors.end}\n`;
+                            docs += `    ${vlib.colors.italic}${item}${vlib.colors.end}\n`;
                         } else {
-                            docs += `    ${colors.italic}$ ${item}${colors.end}\n`;
+                            docs += `    ${vlib.colors.italic}$ ${item}${vlib.colors.end}\n`;
                         }
                     })
                 }
@@ -295,9 +295,9 @@ vlib.cli = class CLI {
                         const list_item = [`    ${desc}:`];
                         const example = obj.examples[desc];
                         if (example.charAt(0) === "$") {
-                            list_item[1] = `${colors.italic}${example}${colors.end}\n`;
+                            list_item[1] = `${vlib.colors.italic}${example}${vlib.colors.end}\n`;
                         } else {
-                            list_item[1] = `${colors.italic}$ ${example}${colors.end}\n`;
+                            list_item[1] = `${vlib.colors.italic}$ ${example}${vlib.colors.end}\n`;
                         }
                         list.push(list_item);
                     })   
@@ -349,7 +349,7 @@ vlib.cli = class CLI {
                             }
                         }
                         if (arg.type === "bool" || arg.type === "boolean") {
-                            callback_args[id_name] = this.present()
+                            callback_args[id_name] = this.present(arg.id)
                         } else {
                             const value = this.get({
                                 id: arg.id,

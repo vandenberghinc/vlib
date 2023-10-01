@@ -11,23 +11,65 @@ String.prototype.last = function() {
     return this[this.length - 1];
 };
 
-// Get the first non whitespace char, does not count \n as whitespace.
-String.prototype.first_non_whitespace = function() {
+// Get the first non whitespace char, does not count \n as whitespace by default.
+String.prototype.first_non_whitespace = function(line_break = false) {
     for (let i = 0; i < this.length; i++) {
         const char = this.charAt(i);
-        if (char != " " && char != "\t") {
+        if (char != " " && char != "\t" && (line_break == false || char != "\n")) {
             return char;
         }
     }
     return null;
 };
 
-// Get the last non whitespace char, does not count \n as whitespace.
-String.prototype.last_non_whitespace = function() {
+// Get the last non whitespace char, does not count \n as whitespace by default.
+String.prototype.last_non_whitespace = function(line_break = false) {
     for (let i = this.length - 1; i >= 0; i--) {
         const char = this.charAt(i);
-        if (char != " " && char != "\t") {
+        if (char != " " && char != "\t" && (line_break == false || char != "\n")) {
             return char;
+        }
+    }
+    return null;
+};
+
+// Get the first non excluded character (index).
+String.prototype.first_not_of = function(exclude = [], start_index = 0) {
+    for (let i = start_index; i < this.length; i++) {
+        if (!exclude.includes(this.charAt(i))) {
+            return i;
+        }
+    }
+    return null;
+};
+String.prototype.first_index_not_of = function(exclude = [], start_index = 0) {
+    for (let i = start_index; i < this.length; i++) {
+        if (!exclude.includes(this.charAt(i))) {
+            return this.charAt(i);
+        }
+    }
+    return null;
+};
+
+// Get the last non excluded character (index).
+String.prototype.last_not_of = function(exclude = [], start_index = null) {
+    if (start_index === null) {
+        start_index = this.length - 1;
+    }
+    for (let i = start_index; i >= 0; i--) {
+        if (!exclude.includes(this.charAt(i))) {
+            return i;
+        }
+    }
+    return null;
+};
+String.prototype.last_index_not_of = function(exclude = [], start_index = null) {
+    if (start_index === null) {
+        start_index = this.length - 1;
+    }
+    for (let i = start_index; i >= 0; i--) {
+        if (!exclude.includes(this.charAt(i))) {
+            return this.charAt(i);
         }
     }
     return null;
@@ -64,8 +106,23 @@ String.prototype.eq_first = function(substr, start_index = 0) {
     return true;
 }
 
-// Capitalize the first letter.
-String.prototype.capitalize_first_letter = function() {
+// Check if the last chars of the main string equals a substring.
+String.prototype.eq_last = function(substr) {
+    if (substr.length > this.length) {
+        return false;
+    }
+    let y = 0;
+    for (let x = this.length - substr.length; x < this.length; x++) {
+        if (this.charAt(x) != substr.charAt(y)) {
+            return false;
+        }
+        ++y;
+    }
+    return true;
+}
+
+// Capitalize as a word (only the first letter).
+String.prototype.capitalize_word = function() {
     if ("abcdefghijklmopqrstuvwxyz".includes(this.charAt(0))) {
         return this.charAt(0).toUpperCase() + this.substr(1);
     }
@@ -79,4 +136,69 @@ String.prototype.reverse = function() {
     	reversed += this.charAt(i);
     }
     return reversed;
+}
+
+// Check if a string is a integer in string format
+String.prototype.is_integer_string = function() {
+    const chars = '0123456789';
+    for (let i = 0; i < this.length; i++) {
+        if (chars.indexOf(this.charAt(i)) === -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Check if a string is a floating in string format
+String.prototype.is_floating_string = function() {
+    const chars = '0123456789';
+    let decimal = false;
+    for (let i = 0; i < this.length; i++) {
+        const char = this.charAt(i);
+        if (char === '.') {
+            if (decimal) { return false; }
+            decimal = true;
+        } else if (chars.indexOf(char) === -1) {
+            return false;
+        }
+    }
+    return decimal;
+}
+
+// Check if a string is a numeric in string format
+String.prototype.is_numeric_string = function(info = false) {
+    const chars = '0123456789';
+    let decimal = false;
+    for (let i = 0; i < this.length; i++) {
+        const char = this.charAt(i);
+        if (char === '.') {
+            if (decimal) { return false; }
+            decimal = true;
+        } else if (chars.indexOf(char) === -1) {
+            if (info) {
+                return {integer: false, floating: false};
+            }
+            return false;
+        }
+    }
+    if (info) {
+        return {integer: decimal === false, floating: decimal === true};
+    }
+    return true;
+}
+
+// Unquote a string.
+String.prototype.unquote = function() {
+    if ((this.startsWith('"') && this.endsWith('"')) || (this.startsWith("'") && this.endsWith("'"))) {
+        return this.slice(1, -1);
+    }
+    return this;
+}
+
+// Quote a string.
+String.prototype.quote = function() {
+    if ((this.startsWith('"') && this.endsWith('"')) || (this.startsWith("'") && this.endsWith("'"))) {
+        return this;
+    }
+    return `"${this}"`;
 }

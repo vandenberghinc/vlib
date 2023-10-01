@@ -10,20 +10,58 @@ return this[0];
 String.prototype.last=function(){
 return this[this.length-1];
 };
-String.prototype.first_non_whitespace=function(){
+String.prototype.first_non_whitespace=function(line_break=false){
 for (let i=0;i<this.length;i++){
 const char=this.charAt(i);
-if (char!=" "&&char!="\t"){
+if (char!=" "&&char!="\t"&&(line_break==false||char!="\n")){
 return char;
 }
 }
 return null;
 };
-String.prototype.last_non_whitespace=function(){
+String.prototype.last_non_whitespace=function(line_break=false){
 for (let i=this.length-1;i>=0;i--){
 const char=this.charAt(i);
-if (char!=" "&&char!="\t"){
+if (char!=" "&&char!="\t"&&(line_break==false||char!="\n")){
 return char;
+}
+}
+return null;
+};
+String.prototype.first_not_of=function(exclude=[],start_index=0){
+for (let i=start_index;i<this.length;i++){
+if (!exclude.includes(this.charAt(i))){
+return i;
+}
+}
+return null;
+};
+String.prototype.first_index_not_of=function(exclude=[],start_index=0){
+for (let i=start_index;i<this.length;i++){
+if (!exclude.includes(this.charAt(i))){
+return this.charAt(i);
+}
+}
+return null;
+};
+String.prototype.last_not_of=function(exclude=[],start_index=null){
+if (start_index===null){
+start_index=this.length-1;
+}
+for (let i=start_index;i>=0;i--){
+if (!exclude.includes(this.charAt(i))){
+return i;
+}
+}
+return null;
+};
+String.prototype.last_index_not_of=function(exclude=[],start_index=null){
+if (start_index===null){
+start_index=this.length-1;
+}
+for (let i=start_index;i>=0;i--){
+if (!exclude.includes(this.charAt(i))){
+return this.charAt(i);
 }
 }
 return null;
@@ -53,7 +91,20 @@ return false;
 }
 return true;
 }
-String.prototype.capitalize_first_letter=function(){
+String.prototype.eq_last=function(substr){
+if (substr.length>this.length){
+return false;
+}
+let y=0;
+for (let x=this.length-substr.length;x<this.length;x++){
+if (this.charAt(x)!=substr.charAt(y)){
+return false;
+}
+++y;
+}
+return true;
+}
+String.prototype.capitalize_word=function(){
 if ("abcdefghijklmopqrstuvwxyz".includes(this.charAt(0))){
 return this.charAt(0).toUpperCase()+this.substr(1);
 }
@@ -65,6 +116,61 @@ for (let i=this.length-1;i>=0;i--){
 reversed+=this.charAt(i);
 }
 return reversed;
+}
+String.prototype.is_integer_string=function(){
+const chars='0123456789';
+for (let i=0;i<this.length;i++){
+if (chars.indexOf(this.charAt(i))===-1){
+return false;
+}
+}
+return true;
+}
+String.prototype.is_floating_string=function(){
+const chars='0123456789';
+let decimal=false;
+for (let i=0;i<this.length;i++){
+const char=this.charAt(i);
+if (char==='.'){
+if (decimal){ return false;}
+decimal=true;
+} else if (chars.indexOf(char)===-1){
+return false;
+}
+}
+return decimal;
+}
+String.prototype.is_numeric_string=function(info=false){
+const chars='0123456789';
+let decimal=false;
+for (let i=0;i<this.length;i++){
+const char=this.charAt(i);
+if (char==='.'){
+if (decimal){ return false;}
+decimal=true;
+} else if (chars.indexOf(char)===-1){
+if (info){
+return {integer:false,floating:false};
+}
+return false;
+}
+}
+if (info){
+return {integer:decimal===false,floating:decimal===true};
+}
+return true;
+}
+String.prototype.unquote=function(){
+if ((this.startsWith('"')&&this.endsWith('"'))||(this.startsWith("'")&&this.endsWith("'"))){
+return this.slice(1,-1);
+}
+return this;
+}
+String.prototype.quote=function(){
+if ((this.startsWith('"')&&this.endsWith('"'))||(this.startsWith("'")&&this.endsWith("'"))){
+return this;
+}
+return `"${this}"`;
 }
 Array.prototype.first=function(){
 return this[0];
@@ -215,27 +321,42 @@ vlib.printe=function(...args){
 console.error(args.join(""));
 }
 vlib.print_marker=function(...args){
-print(vlib.colors.blue,">>> ",vlib.colors.end,...args);
+vlib.print(vlib.colors.blue,">>> ",vlib.colors.end,...args);
 }
 vlib.print_warning=function(...args){
-print(vlib.colors.yellow,">>> ",vlib.colors.end,...args);
+vlib.print(vlib.colors.yellow,">>> ",vlib.colors.end,...args);
 }
 vlib.print_error=function(...args){
-printe(vlib.colors.red,">>> ",vlib.colors.end,...args);
+vlib.printe(vlib.colors.red,">>> ",vlib.colors.end,...args);
 }
 vlib.Path=class Path{
-constructor(path){
+constructor(path,clean=true){
+if (path==null){
+throw Error(`Invalid path "${path}".`);
+}
+else if (path instanceof vlib.Path){
+this._path=path._path;
+} else {
+if (clean){
+this._path="";
+const max_i=path.length-1;
+for (let i=0;i<path.length;i++){
+const c=path.charAt(i);
+if (c==="/"&&(this._path.charAt(this._path.length-1)==="/"||i==max_i)){
+continue;
+}
+else if (c==="."&&path.charAt(i-1)==="/"&&path.charAt(i+1)==="/"){
+continue;
+} else {
+this._path+=c;
+}
+}
+} else {
 this._path=path;
-this._clean();
 }
-_clean(){
-if (this._path==null){
-throw Error(`Invalid path "${this._path}".`);
 }
-this._path=this._path.replace(/\/+/g,'/').replaceAll("/./","");
-if (this._path.length>0&&this._path.charAt(this._path.length-1)==="/"){
-this._path=this._path.substr(0, this._path.length-1);
 }
+trim(){
 const start=0,end=this._path.length;
 for (let i=0;i<this._path.length;i++){
 const c=this._path.charAt(i);
@@ -265,6 +386,12 @@ return this._path;
 }
 str(){
 return this._path;
+}
+get length(){
+return this._path.length;
+}
+get len(){
+return this._path.length;
 }
 get stat(){
 if (this._stat!==undefined){
@@ -335,6 +462,7 @@ this._name=undefined;
 this._extension=undefined;
 this._base=undefined;
 this._abs=undefined;
+return this;
 }
 is_dir(){
 return this.stat.isDirectory();
@@ -396,8 +524,8 @@ if (this._abs!==undefined){ return this._abs;}
 this._abs=new Path(libpath.resolve(this._path));
 return this._abs;
 }
-join(subpath){
-return new Path(`${this._path}/${subpath}`);
+join(subpath,clean=true){
+return new Path(`${this._path}/${subpath}`,clean);
 }
 async cp(destination){
 return new Promise(async (resolve,reject)=>{
@@ -431,6 +559,17 @@ resolve();
 }
 async del(){
 return new Promise((resolve,reject)=>{
+if (this.exists()){
+if (this.is_dir()){
+libfs.rmdir(this._path,(err)=>{
+if (err){
+reject(err);
+} else {
+this._stat=undefined;
+resolve();
+}
+});
+} else {
 libfs.unlink(this._path,(err)=>{
 if (err){
 reject(err);
@@ -439,7 +578,19 @@ this._stat=undefined;
 resolve();
 }
 });
+}
+}
 })
+}
+del_sync(){
+if (this.exists()){
+if (this.is_dir()){
+libfs.rmdirSync(this._path);
+} else {
+libfs.unlinkSync(this._path);
+}
+}
+return this;
 }
 async trash(){
 return new Promise(async (resolve,reject)=>{
@@ -476,6 +627,9 @@ resolve();
 }
 async mkdir(){
 return new Promise((resolve,reject)=>{
+if (this.exists()){
+return resolve();
+}
 libfs.mkdir(this._path,{recursive:true },(err)=>{
 if (err){
 reject(err);
@@ -486,12 +640,19 @@ resolve();
 });
 });
 }
+mkdir_sync(){
+if (this.exists()){
+return ;
+}
+libfs.mkdirSync(this._path,{recursive:true })
+return this;
+}
 async touch(){
 return this.save("");
 }
-async load(){
+async load(encoding=null){
 return new Promise((resolve,reject)=>{
-libfs.readFile(this._path,(err,data)=>{
+libfs.readFile(this._path,encoding,(err,data)=>{
 if (err){
 reject(err);
 } else {
@@ -500,8 +661,8 @@ resolve(data.toString());
 });
 });
 }
-load_sync(){
-const data=libfs.readFileSync(this._path);
+load_sync(encoding=null){
+const data=libfs.readFileSync(this._path,encoding);
 return data.toString();
 }
 async save(data){
@@ -518,6 +679,7 @@ resolve();
 }
 save_sync(data){
 libfs.writeFileSync(this._path,data);
+return this;
 }
 async paths(data,recursive=false){
 return new Promise(async (resolve,reject)=>{
@@ -570,6 +732,27 @@ return reject(err);
 resolve(files);
 }
 });
+}
+paths_sync(data,recursive=false){
+if (!this.is_dir()){
+throw Error(`Path "${this._path}" is not a directory.`);
+}
+if (recursive===false){
+return libfs.readdirSync(this._path).map((name)=>(this.join(name)));
+} else {
+const files=[];
+const traverse=(path)=>{
+libfs.readdirSync(path).iterate((name)=>{
+const child=path.join(name);
+files.push(child);
+if (child.is_dir()){
+traverse(child);
+}
+});
+}
+traverse(this);
+return files;
+}
 }
 }
 vlib.Proc=class Proc{
@@ -675,7 +858,7 @@ this.proc.kill(signal);
 return this;
 }
 }
-vlib.cli=class CLI{
+vlib.CLI=class CLI{
     constructor({
         name = null,
         version = null,
@@ -775,7 +958,7 @@ vlib.cli=class CLI{
         if (err.eq_first("Error: ") || err.eq_first("error: ")) {
             err = err.substr(7).trim();
         }
-        console.log(`${colors.red}Error${colors.end}: ${err}`)
+        console.log(`${vlib.colors.red}Error${vlib.colors.end}: ${err}`)
     }
 
     // Throw an error and stop with exit code 1.
@@ -894,17 +1077,17 @@ vlib.cli=class CLI{
                 docs += `\nExamples:\n`;
                 if (typeof obj.examples === "string") {
                     if (obj.examples.charAt(0) === "$") {
-                        docs += `    ${colors.italic}${obj.examples}${colors.end}\n`;
+                        docs += `    ${vlib.colors.italic}${obj.examples}${vlib.colors.end}\n`;
                     } else {
-                        docs += `    ${colors.italic}$ ${obj.examples}${colors.end}\n`;
+                        docs += `    ${vlib.colors.italic}$ ${obj.examples}${vlib.colors.end}\n`;
                     }
                 }
                 else if (Array.isArray(obj.examples)) {
                     obj.examples.iterate((item) => {
                         if (item.charAt(0) === "$") {
-                            docs += `    ${colors.italic}${item}${colors.end}\n`;
+                            docs += `    ${vlib.colors.italic}${item}${vlib.colors.end}\n`;
                         } else {
-                            docs += `    ${colors.italic}$ ${item}${colors.end}\n`;
+                            docs += `    ${vlib.colors.italic}$ ${item}${vlib.colors.end}\n`;
                         }
                     })
                 }
@@ -915,9 +1098,9 @@ vlib.cli=class CLI{
                         const list_item = [`    ${desc}:`];
                         const example = obj.examples[desc];
                         if (example.charAt(0) === "$") {
-                            list_item[1] = `${colors.italic}${example}${colors.end}\n`;
+                            list_item[1] = `${vlib.colors.italic}${example}${vlib.colors.end}\n`;
                         } else {
-                            list_item[1] = `${colors.italic}$ ${example}${colors.end}\n`;
+                            list_item[1] = `${vlib.colors.italic}$ ${example}${vlib.colors.end}\n`;
                         }
                         list.push(list_item);
                     })   
@@ -969,7 +1152,7 @@ vlib.cli=class CLI{
                             }
                         }
                         if (arg.type === "bool" || arg.type === "boolean") {
-                            callback_args[id_name] = this.present()
+                            callback_args[id_name] = this.present(arg.id)
                         } else {
                             const value = this.get({
                                 id: arg.id,

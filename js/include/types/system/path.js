@@ -8,27 +8,40 @@
 // When the operating system's path changes function `reset()` should be called again.
 
 vlib.Path = class Path {
-    constructor(path) {
+    constructor(path, clean = true) {
 
-        // Attributes.
-        this._path = path;
-
-        // Clean.
-        this._clean();
+        // Assign cleaned path.
+        if (path == null) {
+            throw Error(`Invalid path "${path}".`);
+        }
+        else if (path instanceof vlib.Path) {
+            this._path = path._path;
+        } else {
+            if (clean) {
+                this._path = "";
+                const max_i = path.length - 1;
+                for (let i = 0; i < path.length; i++) {
+                    const c = path.charAt(i);
+                    if (c === "/" && (this._path.charAt(this._path.length - 1) === "/" || i == max_i)) {
+                        continue;
+                    }
+                    else if (c === "." && path.charAt(i - 1) === "/" && path.charAt(i + 1) === "/") {
+                        continue;
+                    } else {
+                        this._path += c;
+                    }
+                }
+            } else {
+                this._path = path;
+            }
+        }
     }
 
     // ---------------------------------------------------------
     // Utils.
 
-    // Clean the path.
-    _clean() {
-        if (this._path == null) {
-            throw Error(`Invalid path "${this._path}".`);
-        }
-        this._path = this._path.replace(/\/+/g, '/').replaceAll("/./","");
-        if (this._path.length > 0 && this._path.charAt(this._path.length - 1) === "/") {
-            this._path = this._path.substr(0, this._path.length - 1);
-        }
+    // Trim the whitespace from the start and end of the path.
+    trim() {
         const start = 0, end = this._path.length;
         for (let i = 0; i < this._path.length; i++) {
             const c = this._path.charAt(i);
@@ -64,6 +77,14 @@ vlib.Path = class Path {
 
     // ---------------------------------------------------------
     // Properties.
+
+    // Get length attributes.
+    get length() {
+        return this._path.length;
+    }
+    get len() {
+        return this._path.length;
+    }
 
     // Get stat object.
     get stat() {
@@ -144,6 +165,7 @@ vlib.Path = class Path {
         this._extension = undefined;
         this._base = undefined;
         this._abs = undefined;
+        return this;
     }
 
     // Is directory.
@@ -220,8 +242,8 @@ vlib.Path = class Path {
     }
 
     // Join the path with another name / subpath.
-    join(subpath) {
-        return new Path(`${this._path}/${subpath}`);
+    join(subpath, clean = true) {
+        return new Path(`${this._path}/${subpath}`, clean);
     }
 
     // Copy the path to another location.
@@ -261,15 +283,38 @@ vlib.Path = class Path {
     // Delete the path.
     async del() {
         return new Promise((resolve, reject) => {
-            libfs.unlink(this._path, (err) => {
-                if (err) {
-                    reject(err);
+            if (this.exists()) {
+                if (this.is_dir()) {
+                    libfs.rmdir(this._path, (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            this._stat = undefined;
+                            resolve();
+                        }
+                    });
                 } else {
-                    this._stat = undefined;
-                    resolve();
+                    libfs.unlink(this._path, (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            this._stat = undefined;
+                            resolve();
+                        }
+                    });
                 }
-            });
+            }
         })
+    }
+    del_sync() {
+        if (this.exists()) {
+            if (this.is_dir()) {
+                libfs.rmdirSync(this._path);
+            } else {
+                libfs.unlinkSync(this._path);
+            }
+        }
+        return this;
     }
 
     // Move the path to the trash directory.
@@ -311,6 +356,9 @@ vlib.Path = class Path {
     // Create a directory.
     async mkdir() {
         return new Promise((resolve, reject) => {
+            if (this.exists()) {
+                return resolve();
+            }
             libfs.mkdir(this._path, { recursive: true }, (err) => {
                 if (err) {
                     reject(err);
@@ -321,6 +369,13 @@ vlib.Path = class Path {
             });
         });
     }
+    mkdir_sync() {
+        if (this.exists()) {
+            return ;
+        }
+        libfs.mkdirSync(this._path, { recursive: true })
+        return this;
+    }
 
     // Create a file.
     async touch() {
@@ -328,9 +383,9 @@ vlib.Path = class Path {
     }
 
     // Load the data from the path.
-    async load() {
+    async load(encoding = null) {
         return new Promise((resolve, reject) => {
-            libfs.readFile(this._path, (err, data) => {
+            libfs.readFile(this._path, encoding, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -339,8 +394,8 @@ vlib.Path = class Path {
             });
         });
     }
-    load_sync() {
-        const data = libfs.readFileSync(this._path);
+    load_sync(encoding = null) {
+        const data = libfs.readFileSync(this._path, encoding);
         return data.toString();
     }
 
@@ -359,6 +414,7 @@ vlib.Path = class Path {
     }
     save_sync(data) {
         libfs.writeFileSync(this._path, data);
+        return this;
     }
 
     // Get the child paths of a directory.
@@ -415,6 +471,27 @@ vlib.Path = class Path {
                 
             }
         });
+    }
+    paths_sync(data, recursive = false) {
+        if (!this.is_dir()) {
+            throw Error(`Path "${this._path}" is not a directory.`);
+        }
+        if (recursive === false) {
+            return libfs.readdirSync(this._path).map((name) => (this.join(name)));
+        } else {
+            const files = [];
+            const traverse = (path) => {
+                libfs.readdirSync(path).iterate((name) => {
+                    const child = path.join(name);
+                    files.push(child);
+                    if (child.is_dir()) {
+                        traverse(child);
+                    }
+                });
+            }
+            traverse(this);
+            return files;
+        }
     }
 
 }
