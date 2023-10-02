@@ -15,7 +15,18 @@
         "js/package-lock.json"
     ],
     "excluded_code_scanning_path_patterns": [],
-    "ssh_remotes": [],
+    "ssh_remotes": [
+        {
+            "alias": "dev.vinc",
+            "destination": "/Volumes/persistance/private/vinc/vlib/",
+            "enabled": true
+        },
+        {
+            "alias": "vinc",
+            "destination": "/vserver/storages/vinc/vlib/",
+            "enabled": true
+        }
+    ],
     "git_username": null,
     "git_email": null,
     "git_remotes": []

@@ -7,7 +7,14 @@
 // Bundle library.
 
 const libpath = require("path");
-const {JSCompiler} = require("/Volumes/persistance/private/vinc/vhighlight/vhighlight.js");
+const libfs = require("fs");
+let vhighlight;
+if (libfs.existsSync("/Volumes/persistance")) {
+    vhighlight = require("/Volumes/persistance/private/vinc/vhighlight/vhighlight.js");
+} else {
+    vhighlight = require("/Users/administrator/persistance/private/vinc/vhighlight/vhighlight.js");
+}
+const {JSCompiler} = vhighlight;
 
 // Source file.
 const source = __dirname;

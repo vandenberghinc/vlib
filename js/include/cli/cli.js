@@ -40,6 +40,7 @@ vlib.CLI = class CLI {
      *                      id: "--name", // (optional)
      *                      type: "string", // (default)
      *                      required: true, // (optional).
+     *                      default: "Hello World!", // (optional).
      *                      description: "Your name." // (optional)
      *                  },
      *                  {
@@ -54,6 +55,8 @@ vlib.CLI = class CLI {
      *          - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
      *            When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
      *            An id like `--my-arg` will be passed as `my_arg`.
+     *          - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
+     *            When the argument has not been passed then the default value defined in the callback parameters will be used.
      *  }
      } */
     constructor({
@@ -121,21 +124,21 @@ vlib.CLI = class CLI {
         if (index != null) {
             const value = process.argv[this.start_index + index];
             if (value === undefined) {
-                return def;
+                return {found: false, value: def};
             }
-            return this._cast(value, type);
+            return {found: true, value: this._cast(value, type)};
         }
         const is_array = Array.isArray(id);
         for (let i = this.start_index; i < process.argv.length; i++) {
             if ((is_array && id.includes(process.argv[i])) || (is_array === false && process.argv[i] === id)) {
                 const value = process.argv[i + 1];
                 if (value === undefined || (exclude_args && value.charAt(0) === "-")) {
-                    return def;
+                    return {found: true, value: def}; // keep as true since the id is found.
                 }
-                return this._cast(value, type);
+                return {found: true, value: this._cast(value, type)};
             }
         }
-        return def;
+        return {found: false, value: def};
     }
 
     // Present.
@@ -316,9 +319,12 @@ vlib.CLI = class CLI {
     }
 
     // Build.
-    start() {
+    async start() {
+
         const help = this.present(["-h", "--help"])
-        const matched = this.commands.iterate((command) => {
+        let matched = false;
+        for (let i = 0; i < this.commands.length; i++) {
+            const command = this.commands[i];
             if (this.present(command.id)) {
 
                 // Show command help.
@@ -332,6 +338,8 @@ vlib.CLI = class CLI {
                 let arg_index = 0;
                 const err = command.args.iterate((arg) => {
                     try {
+
+                        // Convert arg id name.
                         let id_name;
                         if (arg.id == null) {
                             id_name = `arg${arg_index}`;
@@ -345,26 +353,37 @@ vlib.CLI = class CLI {
                             }
                             id_name = id_name.replaceAll("-", "_");
                             if (id_name == "") {
-                                throw Error(`Invalid argument id "${arg.id}".`);
+                                return `Invalid argument id "${arg.id}".`;
                             }
                         }
+
+                        // Type bool.
                         if (arg.type === "bool" || arg.type === "boolean") {
                             callback_args[id_name] = this.present(arg.id)
-                        } else {
-                            const value = this.get({
+                        }
+
+                        // Get and cast.
+                        else {
+                            let {found, value} = this.get({
                                 id: arg.id,
                                 index: arg.id == null ? arg_index : null,
                                 type: arg.type, 
-                                default: undefined
+                                def: undefined,
                             });
-                            if (arg.required === true && value === undefined) {
+                            if (found === false && arg.required === true) {
                                 return `Define parameter "${arg.id}".`;
                             }
-                            if (value !== undefined) {
+                            if (found === true && value == null && arg.default !== undefined) {
+                                value = arg.default;
+                            }
+                            if (value != null) {
                                 callback_args[id_name] = value;
                             }
                         }
-                    } catch (err) {
+                    }
+
+                    // Handle error.
+                    catch (err) {
                         return err;
                     }
                     ++arg_index;
@@ -379,7 +398,10 @@ vlib.CLI = class CLI {
 
                 // Call the callback.
                 try {
-                    command.callback(callback_args);
+                    const res = command.callback(callback_args);
+                    if (res instanceof Promise) {
+                        await res;
+                    }
                 } catch (err) {
                     this.docs(command);
                     this.error(err);
@@ -387,9 +409,10 @@ vlib.CLI = class CLI {
                 }
 
                 // Set to matched.
-                return true;
+                matched = true;
+                break;
             }
-        })
+        }
 
         // Show help.
         if (!matched && help) {

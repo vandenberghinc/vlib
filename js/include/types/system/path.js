@@ -76,6 +76,14 @@ vlib.Path = class Path {
     }
 
     // ---------------------------------------------------------
+    // Static functions.
+
+    // Get the home dir.
+    static home() {
+        return new Path(libos.homedir());
+    }
+
+    // ---------------------------------------------------------
     // Properties.
 
     // Get length attributes.
