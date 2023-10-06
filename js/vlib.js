@@ -110,6 +110,23 @@ return this.charAt(0).toUpperCase()+this.substr(1);
 }
 return this;
 }
+String.prototype.drop=function(char){
+const is_array=Array.isArray(char);
+let dropped="";
+for (let i=0;i<this.length;i++){
+const c=this.charAt(i);
+if (is_array){
+if (char.includes(c)===false){
+dropped+=c;
+}
+} else {
+if (char!==c){
+dropped+=c;
+}
+}
+}
+return dropped;
+}
 String.prototype.reverse=function(){
 let reversed="";
 for (let i=this.length-1;i>=0;i--){
@@ -777,6 +794,7 @@ working_directory=null,
 interactive=true,
 detached=false,
 env=null,
+colors=false,
 }){
 this.promise=new Promise((resolve)=>{
 if (this.debug){
@@ -790,6 +808,11 @@ detached:detached,
 }
 if (env!=null){
 opts.env=env;
+if (colors){
+opts.env.FORCE_COLOR=true;
+}
+} else if (colors){
+opts.env={...process.env,FORCE_COLOR:true };
 }
 this.proc=libproc.spawn(
 command,

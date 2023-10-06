@@ -45,6 +45,7 @@ vlib.Proc = class Proc {
         interactive = true,
         detached = false,
         env = null,
+        colors = false,
     }) {
 
         // Set promise.
@@ -62,6 +63,11 @@ vlib.Proc = class Proc {
             }
             if (env != null) {
                 opts.env = env;
+                if (colors) {
+                    opts.env.FORCE_COLOR = true;
+                }
+            } else if (colors) {
+                opts.env = { ...process.env, FORCE_COLOR: true };
             }
             this.proc = libproc.spawn(
                 command,

@@ -129,6 +129,25 @@ String.prototype.capitalize_word = function() {
     return this;
 }
 
+// Drop a single char or an array of characters.
+String.prototype.drop = function(char) {
+    const is_array = Array.isArray(char);
+    let dropped = "";
+    for (let i = 0; i < this.length; i++) {
+        const c = this.charAt(i);
+        if (is_array) {
+            if (char.includes(c) === false) {
+                dropped += c;
+            }
+        } else {
+            if (char !== c) {
+                dropped += c;   
+            }
+        }
+    }
+    return dropped;
+}
+
 // Reverse the string.
 String.prototype.reverse = function() {
     let reversed = "";
