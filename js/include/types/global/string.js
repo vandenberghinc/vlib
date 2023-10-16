@@ -37,7 +37,7 @@ String.prototype.last_non_whitespace = function(line_break = false) {
 String.prototype.first_not_of = function(exclude = [], start_index = 0) {
     for (let i = start_index; i < this.length; i++) {
         if (!exclude.includes(this.charAt(i))) {
-            return i;
+            return this.charAt(i);
         }
     }
     return null;
@@ -45,7 +45,7 @@ String.prototype.first_not_of = function(exclude = [], start_index = 0) {
 String.prototype.first_index_not_of = function(exclude = [], start_index = 0) {
     for (let i = start_index; i < this.length; i++) {
         if (!exclude.includes(this.charAt(i))) {
-            return this.charAt(i);
+            return i;
         }
     }
     return null;
@@ -58,7 +58,7 @@ String.prototype.last_not_of = function(exclude = [], start_index = null) {
     }
     for (let i = start_index; i >= 0; i--) {
         if (!exclude.includes(this.charAt(i))) {
-            return i;
+            return this.charAt(i);
         }
     }
     return null;
@@ -69,7 +69,7 @@ String.prototype.last_index_not_of = function(exclude = [], start_index = null) 
     }
     for (let i = start_index; i >= 0; i--) {
         if (!exclude.includes(this.charAt(i))) {
-            return this.charAt(i);
+            return i;
         }
     }
     return null;

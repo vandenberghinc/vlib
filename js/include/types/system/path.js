@@ -391,20 +391,46 @@ vlib.Path = class Path {
     }
 
     // Load the data from the path.
-    async load(encoding = null) {
+    async load({type = "string", encoding = null} = {}) {
         return new Promise((resolve, reject) => {
             libfs.readFile(this._path, encoding, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(data.toString());
+                    if (type == null) {
+                        resolve(data);
+                    } else if (type === "string") {
+                        resolve(data.toString());
+                    } else if (type === "array" || type === "object") {
+                        resolve(JSON.parse(data));
+                    } else if (type === "number") {
+                        resolve(parseFloat(data.toString()));
+                    } else if (type === "boolean") {
+                        data = data.toString();
+                        resolve(data = "1" || data === "true" || data === "TRUE" || data === "True");
+                    } else {
+                        reject(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
+                    }
                 }
             });
         });
     }
-    load_sync(encoding = null) {
+    load_sync({type = "string", encoding = null} = {}) {
         const data = libfs.readFileSync(this._path, encoding);
-        return data.toString();
+        if (type == null) {
+            return data;
+        } else if (type === "string") {
+            return data.toString();
+        } else if (type === "array" || type === "object") {
+            return JSON.parse(data);
+        } else if (type === "number") {
+            return parseFloat(data.toString());
+        } else if (type === "boolean") {
+            data = data.toString();
+            return data = "1" || data === "true" || data === "TRUE" || data === "True";
+        } else {
+            throw Error(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
+        }
     }
 
     // Save data to the path.
@@ -427,7 +453,7 @@ vlib.Path = class Path {
 
     // Get the child paths of a directory.
     // @note: throws an error when the path is not a directory.
-    async paths(data, recursive = false) {
+    async paths(recursive = false) {
         return new Promise(async (resolve, reject) => {
             if (!this.is_dir()) {
                 return reject(`Path "${this._path}" is not a directory.`);
@@ -480,7 +506,7 @@ vlib.Path = class Path {
             }
         });
     }
-    paths_sync(data, recursive = false) {
+    paths_sync(recursive = false) {
         if (!this.is_dir()) {
             throw Error(`Path "${this._path}" is not a directory.`);
         }

@@ -31,7 +31,7 @@ return null;
 String.prototype.first_not_of=function(exclude=[],start_index=0){
 for (let i=start_index;i<this.length;i++){
 if (!exclude.includes(this.charAt(i))){
-return i;
+return this.charAt(i);
 }
 }
 return null;
@@ -39,7 +39,7 @@ return null;
 String.prototype.first_index_not_of=function(exclude=[],start_index=0){
 for (let i=start_index;i<this.length;i++){
 if (!exclude.includes(this.charAt(i))){
-return this.charAt(i);
+return i;
 }
 }
 return null;
@@ -50,7 +50,7 @@ start_index=this.length-1;
 }
 for (let i=start_index;i>=0;i--){
 if (!exclude.includes(this.charAt(i))){
-return i;
+return this.charAt(i);
 }
 }
 return null;
@@ -61,7 +61,7 @@ start_index=this.length-1;
 }
 for (let i=start_index;i>=0;i--){
 if (!exclude.includes(this.charAt(i))){
-return this.charAt(i);
+return i;
 }
 }
 return null;
@@ -214,6 +214,45 @@ return res;
 }
 return null;
 };
+Array.prototype.iterate_async=function(start,end,handler){
+if (typeof start==="function"){
+handler=start;
+start=null;
+}
+if (start==null){
+start=0;
+}
+if (end==null){
+end=this.length;
+}
+let promises=[];
+for (let i=start;i<end;i++){
+const res=handler(this[i]);
+if (res!=null&&res instanceof Promise){
+promises.push(res);
+}
+}
+return promises;
+};
+Array.prototype.iterate_async_await=async function(start,end,handler){
+if (typeof start==="function"){
+handler=start;
+start=null;
+}
+if (start==null){
+start=0;
+}
+if (end==null){
+end=this.length;
+}
+for (let i=start;i<end;i++){
+const res=handler(this[i]);
+if (res!=null&&res instanceof Promise){
+await res;
+}
+}
+return null;
+};
 Array.prototype.iterate_reversed=function(start,end,handler){
 if (handler==null&&start!=null){
 handler=start;
@@ -229,6 +268,45 @@ for (let i=end-1;i>=start;i--){
 const res=handler(this[i]);
 if (res!=null&&!(res instanceof Promise)){
 return res;
+}
+}
+return null;
+};
+Array.prototype.iterate_reversed_async=function(start,end,handler){
+if (handler==null&&start!=null){
+handler=start;
+start=null;
+}
+if (start==null){
+start=0;
+}
+if (end==null){
+end=this.length;
+}
+let promises=[];
+for (let i=end-1;i>=start;i--){
+const res=handler(this[i]);
+if (res!=null&&res instanceof Promise){
+promises.push(res);
+}
+}
+return promises;
+};
+Array.prototype.iterate_reversed_async_await=async function(start,end,handler){
+if (handler==null&&start!=null){
+handler=start;
+start=null;
+}
+if (start==null){
+start=0;
+}
+if (end==null){
+end=this.length;
+}
+for (let i=end-1;i>=start;i--){
+const res=handler(this[i]);
+if (res!=null&&res instanceof Promise){
+await res;
 }
 }
 return null;
@@ -670,20 +748,46 @@ return this;
 async touch(){
 return this.save("");
 }
-async load(encoding=null){
+async load({type="string",encoding=null}={}){
 return new Promise((resolve,reject)=>{
 libfs.readFile(this._path,encoding,(err,data)=>{
 if (err){
 reject(err);
 } else {
+if (type==null){
+resolve(data);
+} else if (type==="string"){
 resolve(data.toString());
+} else if (type==="array"||type==="object"){
+resolve(JSON.parse(data));
+} else if (type==="number"){
+resolve(parseFloat(data.toString()));
+} else if (type==="boolean"){
+data=data.toString();
+resolve(data="1"||data==="true"||data==="TRUE"||data==="True");
+} else {
+reject(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
+}
 }
 });
 });
 }
-load_sync(encoding=null){
+load_sync({type="string",encoding=null}={}){
 const data=libfs.readFileSync(this._path,encoding);
+if (type==null){
+return data;
+} else if (type==="string"){
 return data.toString();
+} else if (type==="array"||type==="object"){
+return JSON.parse(data);
+} else if (type==="number"){
+return parseFloat(data.toString());
+} else if (type==="boolean"){
+data=data.toString();
+return data="1"||data==="true"||data==="TRUE"||data==="True";
+} else {
+throw Error(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
+}
 }
 async save(data){
 return new Promise((resolve,reject)=>{
@@ -701,7 +805,7 @@ save_sync(data){
 libfs.writeFileSync(this._path,data);
 return this;
 }
-async paths(data,recursive=false){
+async paths(recursive=false){
 return new Promise(async (resolve,reject)=>{
 if (!this.is_dir()){
 return reject(`Path "${this._path}" is not a directory.`);
@@ -753,7 +857,7 @@ resolve(files);
 }
 });
 }
-paths_sync(data,recursive=false){
+paths_sync(recursive=false){
 if (!this.is_dir()){
 throw Error(`Path "${this._path}" is not a directory.`);
 }

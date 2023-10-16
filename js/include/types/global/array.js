@@ -31,6 +31,45 @@ Array.prototype.iterate = function(start, end, handler) {
     }
     return null;
 };
+Array.prototype.iterate_async = function(start, end, handler) {
+    if (typeof start === "function") {
+        handler = start;
+        start = null;
+    }
+    if (start == null) {
+        start = 0;
+    }
+    if (end == null) {
+        end = this.length;
+    }
+    let promises = [];
+    for (let i = start; i < end; i++) {    
+        const res = handler(this[i]);
+        if (res != null && res instanceof Promise) {
+            promises.push(res);
+        }
+    }
+    return promises;
+};
+Array.prototype.iterate_async_await = async function(start, end, handler) {
+    if (typeof start === "function") {
+        handler = start;
+        start = null;
+    }
+    if (start == null) {
+        start = 0;
+    }
+    if (end == null) {
+        end = this.length;
+    }
+    for (let i = start; i < end; i++) {    
+        const res = handler(this[i]);
+        if (res != null && res instanceof Promise) {
+            await res;
+        }
+    }
+    return null;
+};
 
 // Iterate an array reversed.
 Array.prototype.iterate_reversed = function(start, end, handler) {
@@ -48,6 +87,45 @@ Array.prototype.iterate_reversed = function(start, end, handler) {
         const res = handler(this[i]);
         if (res != null && !(res instanceof Promise)) {
             return res;
+        }
+    }
+    return null;
+};
+Array.prototype.iterate_reversed_async = function(start, end, handler) {
+    if (handler == null && start != null) {
+        handler = start;
+        start = null;
+    }
+    if (start == null) {
+        start = 0;
+    }
+    if (end == null) {
+        end = this.length;
+    }
+    let promises = [];
+    for (let i = end - 1; i >= start; i--) {    
+        const res = handler(this[i]);
+        if (res != null && res instanceof Promise) {
+            promises.push(res);
+        }
+    }
+    return promises;
+};
+Array.prototype.iterate_reversed_async_await = async function(start, end, handler) {
+    if (handler == null && start != null) {
+        handler = start;
+        start = null;
+    }
+    if (start == null) {
+        start = 0;
+    }
+    if (end == null) {
+        end = this.length;
+    }
+    for (let i = end - 1; i >= start; i--) {    
+        const res = handler(this[i]);
+        if (res != null && res instanceof Promise) {
+            await res;
         }
     }
     return null;
