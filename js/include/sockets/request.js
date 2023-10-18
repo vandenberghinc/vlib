@@ -51,12 +51,20 @@ const zlib = require('zlib');
  *      @name: query
  *		@desc: Automatically add the params as query string when the method is `GET`.
  *		@type: boolean
+ *  @param:
+ *      @name: json
+ *		@desc: Try to parse the response body to json.
+ *		@type: boolean
+ *  @param:
+ *      @name: reject_unauthorized
+ *		@desc: Reject unauthorized tls certificates.
+ *		@type: boolean
  *  @usage:
  *      ...
- *      vlib.request({host: "https://google.com"});
+ *      const {error, body, status} = await vlib.request({host: "https://google.com"});
  } */
 
-async function request({
+vlib.request = async function({
 	host,
 	port = 432,
 	endpoint,
@@ -66,8 +74,10 @@ async function request({
 	compress = false,
 	decompress = true,
 	query = true,
+	json = false,
+	reject_unauthorized = true,
 }) {
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		
 		// Uppercase method.
 		method = method.toUpperCase();
@@ -106,55 +116,71 @@ async function request({
 			path: endpoint,
 			method: method,
 			headers: headers,
+			rejectUnauthorized: reject_unauthorized,
 		};
+
+		// Vars.
+		let error = null, body = "", status = null;
+
+		// On end.
+		const on_end = () => {
+			// Parse json.
+			if (body.length > 0 && json) {
+				try { body = JSON.parse(body); }
+				catch (e) {}
+			}
+
+			// Resolve.
+			resolve({
+				body,
+				error,
+				status,
+			})
+		}
 		
 		// Make request.
-		let error, body = "", status;
 		const req = libhttps.request(options, (res) => {
 			
 			// Set status code.
 			status = res.statusCode;
 
 			// Decompress data.
-			if (decompress) {
-				const content_encoding = res.headers['content-encoding'];
-				if (content_encoding === "gzip") {
-					res.pipe(zlib.createGunzip());
-				} else if (content_encoding === "deflate") {
-					res.pipe(zlib.createInflate());
-				}
-			}
-			
-			// On data.
-			res.on("data", (chunk) => {
-				body += chunk;
-			});
+	        const content_encoding = res.headers['content-encoding'];
+	        if (content_encoding === "gzip" || content_encoding === "deflate") {
+	            let stream;
+	            if (content_encoding === "gzip") {
+	                stream = zlib.createGunzip();
+	            } else if (content_encoding === "deflate") {
+	                stream = zlib.createInflate();
+	            }
+	            res.pipe(stream)
+	            stream.on("data", (chunk) => {
+	                body += chunk.toString();
+	            })
+                stream.on("end", on_end)
+	        }
 
-			// On end.
-			res.on("end", () => {
-				resolve({
-					body,
-					error,
-					status,
-				})
-			});
+	        // Create a promise to await the incoming data.
+	        else {
+	            res.on("data", (chunk) => {
+	                body += chunk.toString();
+	            })
+                res.on("end", on_end)
+	        }
 		});
 
 		// Handle error.
-		req.on("error", (error) => {
+		req.on("error", (e) => {
+			error = e;
 			if (error.response) {
 				status = error.response.statusCode;
 			}
-			reject({
-				body,
-				error,
-				status,
-			})
+			on_end()
 		});
 		
 		// Write params.
 		if (params != null) {
-			res.write(params);
+			req.write(params);
 		}
 
 		// End.

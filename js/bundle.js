@@ -46,6 +46,9 @@ compiler.bundle({
         // CLI.
         libpath.join(source, "include/cli/cli.js"),
 
+        // Sockets.
+        libpath.join(source, "include/sockets/request.js"),
+
         // Exports.
         libpath.join(source, "include/exports.js"),
     ],

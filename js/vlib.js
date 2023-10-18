@@ -1284,4 +1284,96 @@ return false;
 return true;
 }
 }
+const libhttps=require("https")
+const zlib=require('zlib');
+vlib.request=async function({
+host,
+port=432,
+endpoint,
+method,
+headers={},
+params=null,
+compress=false,
+decompress=true,
+query=true,
+json=false,
+reject_unauthorized=true,
+}){
+return new Promise((resolve)=>{
+method=method.toUpperCase();
+if (query&&method==="GET"&&params!=null){
+if (typeof params==="object"){
+params=Object.entries(params).map(([key,value])=>`${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+} else {
+throw Error("Invalid value type for parameter \"params\", the valid type is \"object\".");
+}
+endpoint+=`?${params}`;
+params=null;
+}
+if (typeof params==="object"){
+params=JSON.stringify(params);
+}
+if (compress){
+params=zlib.gzipSync(params);
+headers["Content-Encoding"]="gzip";
+}
+if (params!=null){
+headers["Content-Length"]=params.length;
+}
+options={
+hostname:host,
+port:port,
+path:endpoint,
+method:method,
+headers:headers,
+rejectUnauthorized:reject_unauthorized,
+};
+let error=null,body="",status=null;
+const on_end=()=>{
+if (body.length>0&&json){
+try {body=JSON.parse(body);}
+catch (e){}
+}
+resolve({
+body,
+error,
+status,
+})
+}
+const req=libhttps.request(options,(res)=>{
+status=res.statusCode;
+const content_encoding=res.headers['content-encoding'];
+if (content_encoding==="gzip"||content_encoding==="deflate"){
+let stream;
+if (content_encoding==="gzip"){
+stream=zlib.createGunzip();
+} else if (content_encoding==="deflate"){
+stream=zlib.createInflate();
+}
+res.pipe(stream)
+stream.on("data",(chunk)=>{
+body+=chunk.toString();
+})
+stream.on("end",on_end)
+}
+else {
+res.on("data",(chunk)=>{
+body+=chunk.toString();
+})
+res.on("end",on_end)
+}
+});
+req.on("error",(e)=>{
+error=e;
+if (error.response){
+status=error.response.statusCode;
+}
+on_end()
+});
+if (params!=null){
+req.write(params);
+}
+req.end();
+});
+}
 module.exports=vlib;
