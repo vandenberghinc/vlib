@@ -10,7 +10,9 @@ const libhttps = require("https")
 const zlib = require('zlib');
 
 // ---------------------------------------------------------
-// Request
+// Request.
+
+// Make a request.
 /*  @docs {
  *  @title: Request
  *  @description:
@@ -63,7 +65,6 @@ const zlib = require('zlib');
  *      ...
  *      const {error, body, status} = await vlib.request({host: "https://google.com"});
  } */
-
 vlib.request = async function({
 	host,
 	port = 432,
@@ -124,6 +125,7 @@ vlib.request = async function({
 
 		// On end.
 		const on_end = () => {
+			
 			// Parse json.
 			if (body.length > 0 && json) {
 				try { body = JSON.parse(body); }
@@ -135,7 +137,7 @@ vlib.request = async function({
 				body,
 				error,
 				status,
-			})
+			});
 		}
 		
 		// Make request.
