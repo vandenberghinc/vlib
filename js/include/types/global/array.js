@@ -65,7 +65,10 @@ Array.prototype.iterate_async_await = async function(start, end, handler) {
     for (let i = start; i < end; i++) {    
         const res = handler(this[i]);
         if (res != null && res instanceof Promise) {
-            await res;
+            const pres = await res;
+            if (pres != null) {
+                return pres;
+            }
         }
     }
     return null;
@@ -125,7 +128,10 @@ Array.prototype.iterate_reversed_async_await = async function(start, end, handle
     for (let i = end - 1; i >= start; i--) {    
         const res = handler(this[i]);
         if (res != null && res instanceof Promise) {
-            await res;
+            const pres = await res;
+            if (pres != null) {
+                return pres;
+            }
         }
     }
     return null;
@@ -188,3 +194,67 @@ Array.prototype.remove = function(item) {
     })
     return removed;
 };
+
+// Check if an array equals another array.
+// When the second parameter is not passed `this` will be used as `x` and `x` will be used as `y`.
+Array.prototype.eq = function(x = null, y = null) {
+    const eq = (x, y) => {
+
+        // Arrays.
+        if (Array.isArray(x)) {
+            if (
+                Array.isArray(y) === false ||
+                x.length !== y.length
+            ) {
+                return false;
+            }
+            for (let i = 0; i < x.length; i++) {
+                if (typeof x[i] === "object" || typeof y[i] === "object") {
+                    const result = eq(x[i], y[i]);
+                    if (result === false) {
+                        return false;
+                    }
+                } else if (x[i] !== y[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Objects.
+        else if (typeof x === "object") {
+            if (
+                typeof y !== "object" ||
+                Array.isArray(y)
+            ) {
+                return false;
+            }
+            const x_keys = Object.keys(x);
+            const y_keys = Object.keys(y);
+            if (eq(x_keys, y_keys) === false) {
+                return false;
+            }
+            for (let i = 0; i < x_keys.length; i++) {
+                if (typeof x[x_keys[i]] === "object" || typeof y[y_keys[i]] === "object") {
+                    const result = eq(x[x_keys[i]], y[y_keys[i]]);
+                    if (result === false) {
+                        return false;
+                    }
+                } else if (x[x_keys[i]] !== y[y_keys[i]]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Others.
+        else if (typeof x !== typeof y) { return false; }
+        return x === y;
+    }
+    if (y == null) {
+        y = x;
+        x = this;
+    }
+    return eq(x, y);
+}
+

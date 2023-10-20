@@ -248,7 +248,10 @@ end=this.length;
 for (let i=start;i<end;i++){
 const res=handler(this[i]);
 if (res!=null&&res instanceof Promise){
-await res;
+const pres=await res;
+if (pres!=null){
+return pres;
+}
 }
 }
 return null;
@@ -306,7 +309,10 @@ end=this.length;
 for (let i=end-1;i>=start;i--){
 const res=handler(this[i]);
 if (res!=null&&res instanceof Promise){
-await res;
+const pres=await res;
+if (pres!=null){
+return pres;
+}
 }
 }
 return null;
@@ -359,6 +365,60 @@ removed.push(i);
 })
 return removed;
 };
+Array.prototype.eq=function(x=null,y=null){
+const eq=(x,y)=>{
+if (Array.isArray(x)){
+if (
+Array.isArray(y)===false||
+x.length!==y.length
+){
+return false;
+}
+for (let i=0;i<x.length;i++){
+if (typeof x[i]==="object"||typeof y[i]==="object"){
+const result=eq(x[i],y[i]);
+if (result===false){
+return false;
+}
+} else if (x[i]!==y[i]){
+return false;
+}
+}
+return true;
+}
+else if (typeof x==="object"){
+if (
+typeof y!=="object"||
+Array.isArray(y)
+){
+return false;
+}
+const x_keys=Object.keys(x);
+const y_keys=Object.keys(y);
+if (eq(x_keys,y_keys)===false){
+return false;
+}
+for (let i=0;i<x_keys.length;i++){
+if (typeof x[x_keys[i]]==="object"||typeof y[y_keys[i]]==="object"){
+const result=eq(x[x_keys[i]],y[y_keys[i]]);
+if (result===false){
+return false;
+}
+} else if (x[x_keys[i]]!==y[y_keys[i]]){
+return false;
+}
+}
+return true;
+}
+else if (typeof x!==typeof y){ return false;}
+return x===y;
+}
+if (y==null){
+y=x;
+x=this;
+}
+return eq(x,y);
+}
 vlib.utils={};
 vlib.utils.edit_obj_keys=(obj={},rename=[["old","new"]],remove=[])=>{
 remove.iterate((key)=>{
@@ -1338,7 +1398,7 @@ resolve({
 body,
 error,
 status,
-})
+});
 }
 const req=libhttps.request(options,(res)=>{
 status=res.statusCode;
