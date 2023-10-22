@@ -119,7 +119,6 @@ public:
     /*  @docs {
      *  @title: Private Key
      *  @description: Get the private key attribute.
-     *  @attribute: true
      } */
     constexpr auto& private_key() { return *m_priv; }
     constexpr auto& private_key() const { return *m_priv; }
@@ -128,7 +127,6 @@ public:
     /*  @docs {
      *  @title: Is defined
      *  @description: Check if the object is defined.
-     *  @attribute: true
      } */
     constexpr bool is_defined() const { return m_priv.is_defined(); }
     
@@ -136,7 +134,6 @@ public:
     /*  @docs {
      *  @title: Is undefined
      *  @description: Check if the object is undefined.
-     *  @attribute: true
      } */
     constexpr bool is_undefined() const { return m_priv.is_undefined(); }
     

@@ -261,7 +261,6 @@ public:
     /*  @docs {
      *  @title: Is defined
      *  @description: Check if the object is defined.
-     *  @attribute: true
      } */
     constexpr bool is_defined() const { return m_email.is_defined(); }
     
@@ -269,7 +268,6 @@ public:
     /*  @docs {
      *  @title: Is undefined
      *  @description: Check if the object is undefined.
-     *  @attribute: true
      } */
     constexpr bool is_undefined() const { return m_email.is_undefined(); }
     
@@ -277,7 +275,6 @@ public:
     /*  @docs {
      *  @title: Socket
      *  @description: Get the underlying socket attribute.
-     *  @attribute: true
      } */
     constexpr auto& sock() const { return m_sock; }
     
@@ -285,7 +282,6 @@ public:
     /*  @docs {
      *  @title: Email
      *  @description: Get the email attribute used for authentication.
-     *  @attribute: true
      } */
     constexpr auto& email() const { return m_email; }
     

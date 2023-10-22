@@ -118,7 +118,6 @@ struct Compression {
 	 *	@title: Level
 	 *	@description:
 	 *	    Get the compression level attribute.
-	 *	@attribute: true
      } */
     constexpr auto& level() { return m_level; }
 	constexpr auto&	level() const { return m_level; }

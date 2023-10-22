@@ -851,7 +851,6 @@ public:
      *  @title: Compression Level
      *  @description:
      *      Get the underlying compression level attribute.
-     *  @attribute: true
      *  @usage:
      *      vlib::Zip zip;
      *      zip.compression_level() = ...;
@@ -866,7 +865,6 @@ public:
      *      Get all the file names from the archive.
      *
      *      The archive must have been initialized by one of the `Zip` member functions. For example `read()`.
-     *  @attribute: true
      *  @type:
      *      Array<Zip::Entry>&
      *  @usage:
