@@ -110,6 +110,22 @@ return this.charAt(0).toUpperCase()+this.substr(1);
 }
 return this;
 }
+String.prototype.capitalize_words=function(){
+let batch="";
+let capitalized="";
+for (let i=0;i<this.length;i++){
+const c=this.charAt(i);
+if (c===" "||c==="\t"||c==="\n"){
+capitalized+=batch.capitalize_word();
+batch="";
+capitalized+=c;
+} else {
+batch+=c;
+}
+}
+capitalized+=batch.capitalize_word();
+return capitalized;
+}
 String.prototype.drop=function(char){
 const is_array=Array.isArray(char);
 let dropped="";
@@ -636,7 +652,12 @@ return this.stat.isDirectory();
 exists(){
 return libfs.existsSync(this._path);
 }
-name(){
+name(with_extension=true){
+if (with_extension===false){
+const name=this.name();
+const ext=this.extension();
+return name.substr(0,name.length-ext.length);
+}
 if (this._name!==undefined){ return this._name;}
 this._name="";
 for (let i=this._path.length-1;i>=0;i--){

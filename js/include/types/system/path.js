@@ -187,7 +187,12 @@ vlib.Path = class Path {
     }
 
     // Get path name.
-    name() {
+    name(with_extension = true) {
+        if (with_extension === false) {
+            const name = this.name();
+            const ext = this.extension();
+            return name.substr(0, name.length - ext.length);
+        }
         if (this._name !== undefined) { return this._name; }
         this._name = "";
         for (let i = this._path.length - 1; i >= 0; i--) {

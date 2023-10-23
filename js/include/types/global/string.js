@@ -129,6 +129,24 @@ String.prototype.capitalize_word = function() {
     return this;
 }
 
+// Capitalize the first letter of each word seperated by whitespace in a string.
+String.prototype.capitalize_words = function() {
+    let batch = "";
+    let capitalized = "";
+    for (let i = 0; i < this.length; i++) {
+        const c = this.charAt(i);
+        if (c === " " || c === "\t" || c === "\n") {
+            capitalized += batch.capitalize_word();
+            batch = "";
+            capitalized += c;
+        } else {
+            batch += c;
+        }
+    }
+    capitalized += batch.capitalize_word();
+    return capitalized;
+}
+
 // Drop a single char or an array of characters.
 String.prototype.drop = function(char) {
     const is_array = Array.isArray(char);
