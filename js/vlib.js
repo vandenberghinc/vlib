@@ -77,6 +77,12 @@ let edited=this.substr(0,start);
 edited+=this.substr(end);
 return edited;
 };
+String.prototype.replace_indices=function(substr,start,end){
+let edited=this.substr(0,start);
+edited+=substr;
+edited+=this.substr(end);
+return edited;
+};
 String.prototype.eq_first=function(substr,start_index=0){
 if (start_index+substr.length>this.length){
 return false;

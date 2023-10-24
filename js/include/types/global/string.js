@@ -90,6 +90,14 @@ String.prototype.remove_indices = function(start, end) {
     return edited;
 };
 
+// Remove substr at index.
+String.prototype.replace_indices = function(substr, start, end) {
+    let edited = this.substr(0, start);
+    edited += substr;
+    edited += this.substr(end);
+    return edited;
+};
+
 // Check if the first chars of the main string equals a substring, optionally with start index.
 String.prototype.eq_first = function(substr, start_index = 0) {
     if (start_index + substr.length > this.length) {
