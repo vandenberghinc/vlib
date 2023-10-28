@@ -1020,8 +1020,8 @@ public:
 //   A problem when a copy constructor is invoked, the keys and values that use the buffer ...
 //   Will still point to the old buffer, which may go out of scope.
 //
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: JSON
 	@description:
 		Dynamic json dictionary.
@@ -1035,7 +1035,7 @@ public:
 			{"c": null},
 			{"d": "Hello World!"},
 		});
-} */
+*/
 
 struct Json : public vlib::Dict<String, JsonValue<Json>> {
 

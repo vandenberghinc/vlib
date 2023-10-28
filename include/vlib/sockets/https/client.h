@@ -20,7 +20,7 @@ namespace https {
 //   You can use the "Request" functions seperately to create a request that conforms to your wishes.
 //
 
-/*  @docs {
+/*  @docs
  *  @chapter: HTTPS
  *  @name: Client
  *  @title: Client
@@ -29,7 +29,7 @@ namespace https {
  *  @usage:
  *      #include <vlib/sockets/https.h>
  *      vlib::https::Client client;
- } */
+ */
 
 template <
 	uchar	family = 		sockets::family::ipv4,
@@ -58,87 +58,79 @@ struct Client : public vlib::http::ClientTemplate<tls::Client<family, type, prot
 	Client () : Base() {}
 
 	// Constructor.
-    /*  @docs {
+    /*  @docs
      *  @title: Constructor
      *  @description:
      *  Construct a client object.
-     *  @parameter: {
+     *  @parameter:
      *      @name: ip
      *      @description: The server's ip address.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: port
      *      @description: The server's port.
-     *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     } */
+     */
 	constexpr
 	Client (String ip, uint port) :
 	Base(move(ip), port) {}
-    /*  @docs {
+    /*  @docs
      *  @title: Constructor
      *  @description:
      *      Construct a client object.
-     *  @parameter: {
+     *  @parameter:
      *      @name: ip
      *      @description: The server's ip address.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: port
      *      @description: The server's port.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: headers
      *      @description: The default headers.
-     *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     } */
+     */
 	constexpr
 	Client (String ip, uint port, http::Headers headers) :
 	Base(move(ip), port, move(headers)) {}
 
 	// Constructor from hostname.
-    /*  @docs {
+    /*  @docs
      *  @title: Constructor
      *  @description:
      *      Construct a client object.
-     *  @parameter: {
+     *  @parameter:
      *      @name: host
      *      @description: The server's host address.
-     *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     *} */
+     **/
 	constexpr
 	Client (String host) :
 	Base(move(host)) {}
-    /*  @docs {
+    /*  @docs
      *  @title: Constructor
      *  @description:
      *      Construct a client object.
-     *  @parameter: {
+     *  @parameter:
      *      @name: host
      *      @description: The server's host address.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: headers
      *      @description: The default headers.
-     *  }
      *  @usage:
      *      vlib::http::Client client("127.0.0.1", 9000);
-     *} */
+     **/
 	constexpr
 	Client (String host, http::Headers headers) :
 	Base(move(host), move(headers)) {}
 	
 	// Constructor from args.
-	/* @docs {
+	/* @docs
 	 *  @title: Constructor
 	 *  @description:
 	 *      Construct a client object from arguments.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: args
 	 *      @description:
 	 *			The template arguments.
@@ -163,7 +155,7 @@ struct Client : public vlib::http::ClientTemplate<tls::Client<family, type, prot
 	 *			.sni = ...,
 	 *			.headers = ...,
 	 *		});
-	 *} */
+	 **/
 	constexpr
 	Client (http::ClientTemplateArgs args) :
 	Base(move(args)) {}

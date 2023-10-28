@@ -19,6 +19,18 @@ namespace sockets {
 // - Host address construction only supports the following protocols: [http, https].
 //
 
+/*  @docs
+ *  @chapter: Sockets
+ *  @title: Socket
+ *  @description:
+ *      Socket base type.
+ *  @notes:
+ *      <bullet> Does not automatically close on destruction.
+ *      <bullet> Host address construction only supports the following protocols: [http, https].
+ *  @usage:
+ *      #include <vlib/sockets/socket.h>
+ *      vlib::https::Socket<...> socket;
+ */
 template <
 	int				family = 		family::ipv4,
 	int 			type = 			type::stream,
@@ -694,19 +706,18 @@ public:
 
 	// Peek the number of bytes available for reading.
 	//
-	/* @docs {
+	/* @docs
 	 *	@title: Peek
 	 *	@description:
 	 *		Peek the number of bytes available for reading.
 	 *	@return:
 	 *		Returns the number of bytes ready to be read or `< 0` when an error has occured.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: fd
 	 *		@description: The file descriptor to peek.
-	 *	}
 	 *	@usage:
 	 *		llong ready = vlib::Socket::peek(fd);
-	 } */
+	 */
 	static
 	llong	peek(const Int& fd) {
 		llong ready = 0;
@@ -1075,26 +1086,24 @@ public:
 	
     // Receive a full HTTP request over tcp.
 	// Also supports chunked requests.
-	/* @docs {
+	/* @docs
 	 *	@title: Receive a HTTP request.
 	 *	@description:
 	 *		Receive a HTTP request.
 	 *
 	 *		Supports chunked requests.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: fd
 	 *		@description: The file descriptor to receive on.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timeout in milliseconds.
-	 *	}
 	 *	@usage:
 	 *		vlib::Socket sock;
 	 *		...
 	 *		vlib::http::Request request = sock.recv<vlib::http::Request>(10000);
 	 *	@funcs: 1
-	 } */
+	 */
     template <typename DataType> requires (
 		http::is_Response<DataType>::value ||
 		http::is_Request<DataType>::value

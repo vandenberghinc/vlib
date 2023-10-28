@@ -9,8 +9,8 @@
 namespace vlib {
 
 // CString type.
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: CString
 	@description:
 		CString type.
@@ -19,7 +19,7 @@ namespace vlib {
 	@usage:
         #include <vlib/types.h>
 		vlib::CString x ("Hello World!", 12);
-} */
+*/
 struct CString {
 
 	// ---------------------------------------------------------
@@ -130,14 +130,14 @@ struct CString {
 	// Functions.
 	
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	  @title: Is undefined
 	  @description:
 			Check if the object is undefined.
 	  @usage:
 			CString x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	inline constexpr
 	bool 		is_undefined() const {
 		return m_len == 0;
@@ -145,11 +145,11 @@ struct CString {
 
 	
 	// Length.
-	/* @docs {
+	/* @docs
 	  @title: Len
 	  @description:
 			Get the length of the object.
-	} */
+	*/
 	inline constexpr
 	auto&	len() const {
 		return m_len;
@@ -163,14 +163,14 @@ struct CString {
 	}
 	
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	  @title: Reset
 	  @description:
 			Reset all attributes.
 	  @usage:
 			Array<char> x = "Hello World!";
 			x.reset(); ==> nullptr
-	} */
+	*/
 	inline constexpr
 	auto& 	reset() {
 		m_arr = nullptr;

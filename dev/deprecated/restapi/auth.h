@@ -14,14 +14,14 @@ namespace vlib {
 namespace restapi {
 
 // Authentication methods.
-/* 	@docs: {
-	@chapter: restapi
+/* 	@docs:
+	@chapter: REST API
 	@title: Authentication
 	@description: RESTAPI authentication methods.
 	@usage:
 		#include <vlib/sockets/restapi.h>
 		short auth = vlib::restapi::auth::api | vlib::restapi::auth::sign | vlib::restapi::auth::token;
-} */
+*/
 enum auth {
 	key = (1u << 0),
 	token = (1u << 1),

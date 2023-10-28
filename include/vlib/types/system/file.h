@@ -11,8 +11,8 @@ namespace vlib {
 // ---------------------------------------------------------
 // File type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: File
 	@description:
 		File type.
@@ -26,7 +26,7 @@ namespace vlib {
 	@usage:
         #include <vlib/types.h>
 		vlib::File file("/tmp/myfile.txt");
-} */
+*/
 struct File {
 
 // Public.
@@ -80,22 +80,22 @@ public:
 	m_attr(attr{}) {}
 
 	// Constructor from path.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from path and mode.
-		@parameter: {
+		@parameter:
 			@name: path
 			@description: The path of the file.
 		}
-		@parameter: {
+		@parameter:
 			@name: mode
 			@description: The file mode.
 		}
 		@usage:
 			vlib::File file("/tmp/myfile.txt", vlib::file::mode::append);
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	File (Path path, int mode = vlib::file::append) :
 	m_attr(attr{ .path = move(path), .mode = mode }) {}
@@ -142,15 +142,15 @@ public:
 	// Construct functions.
 
 	// Reconstruct.
-	/*  @docs {
+	/*  @docs
 		@title: Reconstruct
 		@description:
 			Reconstruct from path and mode.
-		@parameter: {
+		@parameter:
 			@name: path
 			@description: The path of the file.
 		}
-		@parameter: {
+		@parameter:
 			@name: mode
 			@description: The file mode.
 		}
@@ -160,7 +160,7 @@ public:
 			vlib::File file (...);
 			file.reconstruct("/tmp/myfile.txt", vlib::file::mode::append);
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This&	reconstruct(const Path& path, int mode = vlib::file::append) {
 		close();
@@ -199,20 +199,20 @@ public:
 	// Properties.
 
 	// Path.
-	/*  @docs {
+	/*  @docs
 		@title: Path
 		@type: Path&
 		@description: Get the file path attribute.
-	} */
+	*/
 	constexpr
 	auto& 	path() { return m_attr->path; }
 
 	// Length of the file data.
-	/*  @docs {
+	/*  @docs
 		@title: Length
 		@type: ullong
 		@description: Get the length of the file data.
-	} */
+	*/
 	constexpr
 	Length 	len() {
 		if (m_attr->file == nullptr) { return 0; }
@@ -223,45 +223,45 @@ public:
 	}
 
 	// The file pointer.
-	/*  @docs {
+	/*  @docs
 		@title: File pointer
 		@type: FILE*&
 		@description: Get the file pointer.
-	} */
+	*/
 	constexpr
 	auto& 	file() { return m_attr->file; }
     
     // The file number.
-    /*  @docs {
+    /*  @docs
         @title: File number
         @description: Get the file number.
-    } */
+    */
     int     fileno() { return ::fileno(m_attr->file); }
 	
 	// The file mode.
-	/*  @docs {
+	/*  @docs
 		@title: Mode
 		@type: short&
 		@description: Get the file mode.
-	} */
+	*/
 	constexpr
 	auto& 	mode() { return m_attr->mode; }
 
 	// Is defined.
-	/*  @docs {
+	/*  @docs
 		@title: Is defined
 		@type: bool
 		@description: Check if the file is defined.
-	} */
+	*/
 	constexpr
 	bool 	is_defined() const { return m_attr->path.is_defined(); }
 
 	// Is undefined.
-	/*  @docs {
+	/*  @docs
 		@title: Is defined
 		@type: bool
 		@description: Check if the file is undefined.
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const { return m_attr->file == nullptr; }
 
@@ -269,20 +269,20 @@ public:
 	// Functions.
 
 	// Exists.
-	/*  @docs {
+	/*  @docs
 		@title: Exists
 		@description: Check if the file path exists.
 		@return: Returns a boolean indicating whether the file exists.
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			bool exists = file.exists();
-	} */
+	*/
 	bool 	exists() {
 		return ::access(m_attr->path.c_str(), F_OK) == 0;
 	}
 
 	// Access.
-	/*  @docs {
+	/*  @docs
 		@title: Access
 		@description: Check if the executing user has access to the file.
 		@return: Returns a boolean indicating whether the executing user has access to the file.
@@ -290,7 +290,7 @@ public:
 			vlib::File file("/tmp/myfile.txt");
 			bool exists = file.access();
 		@funcs: 4
-	} */
+	*/
 	bool 	access() {
 		return ::access(m_attr->path.c_str(), F_OK) == 0;
 	}
@@ -305,19 +305,19 @@ public:
 	}
 
 	// Create.
-	/*  @docs {
+	/*  @docs
 		@title: Create
 		@description: Create the file.
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.create();
-	} */
+	*/
 	void 	create(ushort permission = 0740) {
         m_attr->path.touch(permission);
 	}
 
 	// Remove.
-	/*  @docs {
+	/*  @docs
 		@title: Remove
 		@description:
 			Remove the file.
@@ -326,7 +326,7 @@ public:
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.remove();
-	} */
+	*/
     void 	remove() {
 		close();
         m_attr->path.remove();
@@ -341,7 +341,7 @@ public:
 	}
 	
 	// Open.
-	/*  @docs {
+	/*  @docs
 		@title: Open
 		@description:
 			Open the file.
@@ -350,7 +350,7 @@ public:
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.open();
-	} */
+	*/
 	constexpr
 	void 	open() {
 		if (m_attr->file != nullptr) {
@@ -366,14 +366,14 @@ public:
 	}
 
 	// Reopen with mode.
-	/*  @docs {
+	/*  @docs
 		@title: Reopen
 		@description:
 			Reopen the file with a defined mode.
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.reopen(vlib::file::mode::write);
-	} */
+	*/
 	constexpr
 	void 	reopen(int mode) {
 		if (m_attr->mode == mode && m_attr->file != nullptr) {
@@ -393,7 +393,7 @@ public:
 	}
 	
 	// Read.
-	/*  @docs {
+	/*  @docs
 		@title: Read
 		@description:
 			Read all the data from the file.
@@ -402,7 +402,7 @@ public:
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			vlib::String output = file.read();
-	} */
+	*/
 	String 	read() {
         reopen(file::mode::read);
         Length l = len();
@@ -415,17 +415,17 @@ public:
 		output.null_terminate();
 		return output;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Read
 		@description:
 			Read all the data from the file.
 	 
 			Reopening the file for the required mode is handled automatically.
-		@parameter: {
+		@parameter:
 			@name: buff
 			@description: Custom buffer, will be reset upon calling `read()`.
 		}
-		@parameter: {
+		@parameter:
 			@name: buff_size
 			@description: Custom buffer size, leave `0` to read the entire file.
 		}
@@ -433,7 +433,7 @@ public:
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			vlib::String output = file.read();
-	} */
+	*/
 	Length 	read(String& buff, const Length& buff_size = 0) {
         reopen(file::mode::read);
         buff.reset();
@@ -448,7 +448,7 @@ public:
 	}
 	
 	// Write.
-	/*  @docs {
+	/*  @docs
 		@title: Write
 		@description:
 			Write data to the file.
@@ -456,7 +456,7 @@ public:
 			Reopening the file for the required mode is handled automatically.
 	 
 			Function `write()` overwrites all previously written data, use `append()` to append to the file.
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The data to write to the file.
 		}
@@ -464,7 +464,7 @@ public:
 			vlib::File file("/tmp/myfile.txt");
 			file.write("Hello World!\n");
 		@funcs: 2
-	} */
+	*/
 	void 	 write(const String& data) {
 		return write(data.data(), data.len());
 	}
@@ -482,13 +482,13 @@ public:
     }
 	
 	// Append.
-	/*  @docs {
+	/*  @docs
 		@title: Append
 		@description:
 			Append data to the file.
 		
 			Reopening the file for the required mode is handled automatically.
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The data to append to the file.
 		}
@@ -496,7 +496,7 @@ public:
 			vlib::File file("/tmp/myfile.txt");
 			int status = file.append("Hello World!\n");
 		@funcs: 2
-	} */
+	*/
 	void 	append(const String& data) {
 		return append(data.data(), data.len());
 	}
@@ -508,14 +508,14 @@ public:
 	}
 
 	// Flush.
-	/*  @docs {
+	/*  @docs
 		@title: Flush
 		@description:
 			Flush the file.
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.flush();
-	} */
+	*/
 	void 	flush() {
 		if (::fflush(m_attr->file) != 0) {
             throw FlushError(to_str("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
@@ -523,14 +523,14 @@ public:
 	}
 
 	// Sync.
-	/*  @docs {
+	/*  @docs
 		@title: Sync
 		@description:
 			Synchronize the file buffer with the system.
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.sync();
-	} */
+	*/
 	void 	sync() {
 		if (::fsync(::fileno(m_attr->file)) != 0) {
             throw SyncError(to_str("Unable to flush file \"", m_attr->path, "\" [", ::strerror(errno), "]."));
@@ -538,7 +538,7 @@ public:
 	}
 	
 	// Get line.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get line
 	 *	@description:
 	 *		Get the current line.
@@ -552,7 +552,7 @@ public:
 	 *		String line;
 	 *		Bool success = file.read_line(line);
 	 *	@funcs: 2
-	} */
+	*/
 	Bool 	get_line(String& line) {
 		reopen(vlib::file::mode::read);
 		switch (line.capacity()) {
@@ -568,7 +568,7 @@ public:
 	}
 
 	// Close.
-	/*  @docs {
+	/*  @docs
 		@title: Close
 		@description:
 			Close the file.
@@ -579,7 +579,7 @@ public:
 		@usage:
 			vlib::File file("/tmp/myfile.txt");
 			file.close();
-	} */
+	*/
 	constexpr
 	void 	close() {
 		if (m_attr->file != nullptr) {

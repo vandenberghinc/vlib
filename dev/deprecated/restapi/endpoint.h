@@ -22,8 +22,8 @@ typedef http::Response (*EndpointFunc)(const String&, const Json&, const http::H
 // ---------------------------------------------------------
 // RestAPI endpoint type.
 
-/* @docs {
-	@chapter: restapi
+/* @docs
+	@chapter: REST API
 	@title: Endpoint
 	@description:
 		RESTAPI Endpoint type.
@@ -32,7 +32,7 @@ typedef http::Response (*EndpointFunc)(const String&, const Json&, const http::H
 	@usage:
 		#include <vlib/sockets/restapi.h>
 		vlib::Endpoint endpoint;
-} */
+*/
 template <
 	int			http_version = 	http::version::v1_1 	// the http version
 >
@@ -47,7 +47,7 @@ public:
 	// ---------------------------------------------------------
 	// Attributes.
 	
-	/*  @docs {
+	/*  @docs
 		@title: Endpoint attributes
 		@description:
 			Attributes for a `Endpoint` object.
@@ -56,7 +56,7 @@ public:
 		@notes:
 			Authentication methods can be joined like ` { .auth = vlib::restapi::auth::token | vlib::restapi::auth::api_key | vlib::restapi::auth::sign }`
 		
-	} */
+	*/
 	struct attr {
 		short					content_type = http::content_type::undefined;	// the content type.
 		short 					method = http::method::get;						// the endpoint method.
@@ -100,13 +100,13 @@ public:
 	m_attr(attr{ .content_type = content_type, .method = method, .endpoint = endpoint, .func = func }) {}
 
 	// Constructor from attributes.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from attributes.
 		@notes:
 			Authentication methods can be joined like ` { .auth = vlib::restapi::auth::token | vlib::restapi::auth::api_key | vlib::restapi::auth::sign }`
-		@parameter: {
+		@parameter:
 			@name: a
 			@description: The endpoint attributes.
 		}
@@ -124,7 +124,7 @@ public:
 				.rate_limit_format = rate_limit::sec,
 				.func = hello_world,
 			});
-	} */
+	*/
 	constexpr
 	Endpoint(const attr& a) :
 	m_attr(a) {}
@@ -163,70 +163,70 @@ public:
 	// Attribute functions.
 
 	// Content type.
-	/*  @docs {
+	/*  @docs
 		@title: Content type
 		@type: short&
 		@description:
 			Get the content type attribute.
-	} */
+	*/
 	constexpr
 	auto& 	content_type() { return m_attr->content_type; }
 
 	// Method.
-	/*  @docs {
+	/*  @docs
 		@title: Method
 		@type: short&
 		@description:
 			Get the method attribute.
-	} */
+	*/
 	constexpr
 	auto& 	method() { return m_attr->method; }
 
 	// Endpoint.
-	/*  @docs {
+	/*  @docs
 		@title: Endpoint
 		@type: String&
 		@description:
 			Get the endpoint attribute.
-	} */
+	*/
 	constexpr
 	auto& 	endpoint() { return m_attr->endpoint; }
 	
 	// Requires authentication.
-	/*  @docs {
+	/*  @docs
 		@title: Authentication
 		@type: short&
 		@description:
 			Get the auth attribute.
-	} */
+	*/
 	constexpr
 	auto& 	auth() { return m_attr->auth; }
 	
 	// Function.
-	/*  @docs {
+	/*  @docs
 		@title: Function
 		@description:
 			Get the function attribute.
-	} */
+	*/
 	constexpr
 	auto& 	func() { return m_attr->func; }
 	
 	// Compression.
-	/*  @docs {
+	/*  @docs
 		@title: Compression
 		@type: vlib::Compression&
 		@description:
 			Get the compression attribute.
-	} */
+	*/
 	constexpr
 	auto& 	compression() { return m_attr->compression; }
 
 	// Is undefined.
-	/*  @docs {
+	/*  @docs
 		@title: Is undefined
 		@description:
 			Check if the object is undefined.
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() { return m_attr->endpoint.is_undefined(); }
 
@@ -234,11 +234,11 @@ public:
 	// Functions.
 
 	// Equals.
-	/*  @docs {
+	/*  @docs
 		@title: Equals
 		@description:
 			Get the endpoint equals a content type, method and endpoint.
-	} */
+	*/
 	constexpr
 	bool 	eq(const short& content_type, const short& method, const String& endpoint) {
 		return (
@@ -249,12 +249,12 @@ public:
 	}
 	
 	// Verify the rate limit for a uid.
-	/*  @docs {
+	/*  @docs
 		@title: Verify rate limit
 		@type: ullong
 		@description:
 			Verify the rate limit for an ip.
-	} */
+	*/
 	constexpr
 	int 	verify_rate_limit(const ullong& ip) {
 		

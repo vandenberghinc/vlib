@@ -15,8 +15,8 @@ namespace vlib {
 // Sources:
 // - https://coliru.stacked-crooked.com/a/a6c607514601b013
 //
-/* @docs {
-	@chapter: system
+/* @docs
+	@chapter: System
 	@title: Thread
 	@description:
 		Thread type.
@@ -83,7 +83,7 @@ namespace vlib {
 			 return 0;
 
 		 }
-} */
+*/
 
 template <typename Derived = vlib::Null>
 struct Thread {
@@ -181,21 +181,21 @@ public:
 	// Propeties.
 	
 	// Id.
-	/*  @docs {
+	/*  @docs
 		@title: Id
 		@description: Get thread id attribute as integer.
-	} */
+	*/
 	constexpr
 	ullong 	id() const {
 		return (ullong) *t_id;
 	}
 	
 	// Mutex.
-	/*  @docs {
+	/*  @docs
 		@title: Mutex
 		@type: mutex&
 		@description: Get mutex attribute.
-	} */
+	*/
     // constexpr
     // auto&     mutex() {
     //     return t_mutex;
@@ -209,13 +209,13 @@ public:
 	// Functions.
 
 	// Start.
-	/*  @docs {
+	/*  @docs
 		@title: Start
 		@description:
 			Start a derived thread class.
 		@notes:
 			- The derived class must have the function `void* run(void)`.
-	} */
+	*/
 	constexpr
 	auto&    start() requires (!is_Null<Derived>::value) {
 		if (pthread_create(&(*t_id), NULL, &run_s, (void*) &*this) != 0) {
@@ -223,17 +223,17 @@ public:
 		}
         return *this;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Start
 		@description:
 			Start a thread function without any arguments.
-		@parameter: {
+		@parameter:
 			@name: func
 			@description: A reference to the function.
 		}
 		@notes:
 			- The function should be like `void* somefunc(void*)`.
-	} */
+	*/
 	template <typename Func> requires (is_Null<Derived>::value) constexpr
 	auto&    start(Func&& func)  {
 		if (pthread_create(&(*t_id), NULL, func, NULL) != 0) {
@@ -241,21 +241,21 @@ public:
 		}
         return *this;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Start
 		@description:
 			Start a thread function with arguments.
-		@parameter: {
+		@parameter:
 			@name: func
 			@description: A reference to the function.
 		}
-		@parameter: {
+		@parameter:
 			@name: args
 			@description: The function arguments.
 		}
 		@notes:
 			- The function should be like `void* somefunc(...)`.
-	} */
+	*/
 	template <typename Func, typename... Args> requires (is_Null<Derived>::value) constexpr
 	auto&    start(Func&& func, Args&&... args) {
         auto l = new auto(
@@ -276,11 +276,11 @@ public:
 	}
 
 	// Join.
-	/*  @docs {
+	/*  @docs
 		@title: Join
 		@description: Join and await the thread.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto&    join() {
         short status;
@@ -324,10 +324,10 @@ public:
     }
 
 	// Detach.
-	/*  @docs {
+	/*  @docs
 		@title: Detach
 		@description: Detach from the thread.
-	} */
+	*/
 	constexpr
     auto&    detach() {
 		if (pthread_detach(*t_id) != 0) {
@@ -337,10 +337,10 @@ public:
 	}
     
     // Sleep.
-    /*  @docs {
+    /*  @docs
         @title: Sleep
         @description: Put the thread to sleep.
-    } */
+    */
     constexpr
     auto&    sleep() {
         if (pthread_mutex_init(t_mutex.ptr(), NULL) != 0) {
@@ -360,10 +360,10 @@ public:
     }
     
     // Wake.
-    /*  @docs {
+    /*  @docs
         @title: Wake
         @description: Wake the sleeping thread.
-    } */
+    */
     constexpr
     auto&    wake() {
         if (pthread_cond_signal(&(*t_cond)) != 0) {
@@ -373,10 +373,10 @@ public:
     }
     
     // Signal.
-    /*  @docs {
+    /*  @docs
         @title: Signal
         @description: Send a signal to the thread.
-     } */
+     */
     constexpr
     auto&    signal(const Int& signal) {
         if (pthread_kill(*t_id, signal.value()) != 0) {
@@ -386,10 +386,10 @@ public:
     }
     
     // Kill.
-    /*  @docs {
+    /*  @docs
         @title: Kill
         @description: Kill and exit the thread.
-     } */
+     */
     constexpr
     auto&    kill() {
         if (pthread_cancel(*t_id) != 0) {
@@ -399,10 +399,10 @@ public:
     }
     
     // Reset.
-    /*  @docs {
+    /*  @docs
         @title: Reset
         @description: Reset the thread.
-    } */
+    */
     constexpr
     auto&    reset() {
         t_id = pthread_t();
@@ -433,8 +433,8 @@ using FThread = Thread<Null>;
 
 // ---------------------------------------------------------
 // Thread pool for FThreads.
-/* @docs {
-    @chapter: system
+/* @docs
+    @chapter: System
     @title: Thread Pool
     @description:
         Thread Pool type.
@@ -498,7 +498,7 @@ using FThread = Thread<Null>;
               return 0;
 
           }
-} */
+*/
 struct ThreadPool {
 
 // Private.
@@ -526,15 +526,14 @@ public:
     // Constructors.
     
     // Default constructor.
-    /*  @docs {
+    /*  @docs
         @title: Contructor
         @description:
             Initialize the `ThreadPool` object.
-        @parameter {
+        @parameter:
             @name: max_threads
             @description: Specify the amount of maximum threads.
-        }
-    } */
+    */
     constexpr
     ThreadPool(const UInt& max_threads = 25) :
     m_max_threads(max_threads),
@@ -549,55 +548,55 @@ public:
     // Attributes.
     
     // Max threads.
-    /*  @docs {
+    /*  @docs
         @title: Max Threads
         @description:
             Get the max threads integer attribute.
-    } */
+    */
     constexpr
     auto& max_threads() const {
         return m_max_threads;
     }
     
     // Running threads.
-    /*  @docs {
+    /*  @docs
         @title: Running Threads
         @description:
             Get the running threads integer attribute.
-    } */
+    */
     constexpr
     auto& running_threads() const {
         return m_running_threads;
     }
     
     // Threads.
-    /*  @docs {
+    /*  @docs
         @title: Threads
         @description:
             Get the threads array attribute.
-    } */
+    */
     constexpr
     auto& threads() const {
         return m_threads;
     }
     
     // Is running.
-    /*  @docs {
+    /*  @docs
         @title: Is Running
         @description:
             Get the is running array attribute.
-    } */
+    */
     constexpr
     auto& is_running() const {
         return m_is_running;
     }
     
     // Is running.
-    /*  @docs {
+    /*  @docs
         @title: Mutex
         @description:
             Get the is mutex attribute.
-    } */
+    */
     constexpr
     auto& mutex() {
         return m_mutex;
@@ -611,11 +610,11 @@ public:
     // Functions.
     
     // Claim thread, waits till one is available.
-    /*  @docs {
+    /*  @docs
         @title: Claim Thread
         @description:
             Claim a thread index, waits indefinitely till one is available.
-    } */
+    */
     constexpr
     uint claim_id() {
         m_running_threads = 0;
@@ -653,40 +652,40 @@ public:
     }
     
     // Get thread by id.
-    /*  @docs {
+    /*  @docs
         @title: Get Thread
         @description:
             Get a thread by index.
-    } */
+    */
     constexpr
     auto& thread(uint index) {
         return m_threads[index];
     }
     
     // Set thread id to running.
-    /*  @docs {
+    /*  @docs
         @title: Set Running
         @description:
             Set a thread's status to running.
-    } */
+    */
     constexpr
     void set_running(uint index) {
         m_is_running[index] = 2;
     }
     
     // Set thread id to finished.
-    /*  @docs {
+    /*  @docs
         @title: Set Finished
         @description:
             Set a thread's status to finished running.
-    } */
+    */
     constexpr
     void set_finished(uint index) {
         m_is_running[index] = 1;
     }
     
     // Start a thread.
-    /*  @docs {
+    /*  @docs
         @title: Start
         @description:
             Start a thread.
@@ -697,7 +696,7 @@ public:
             for (auto& thread: thread_pool) {
                 ...
             }
-    } */
+    */
     template <typename Func, typename... Args> constexpr
     void start(Func&& func, Args&&... args) {
         uint tid = claim_id();
@@ -724,7 +723,7 @@ public:
     }
     
     // Join.
-    /*  @docs {
+    /*  @docs
         @title: Join
         @description:
             Join all threads.
@@ -734,7 +733,7 @@ public:
                 ...
             }
             thread_pool.join();
-    } */
+    */
     constexpr
     void    join() {
         for (auto& index: m_threads.indexes()) {
@@ -750,7 +749,7 @@ public:
     }
     
     // Iterate threads.
-    /*  @docs {
+    /*  @docs
         @title: Iterate
         @description:
             Iterate threads.
@@ -760,7 +759,7 @@ public:
                 ...
             }
         @funcs: 4
-    } */
+    */
     constexpr
     auto& begin() {
         return m_threads.begin();
@@ -779,7 +778,7 @@ public:
     }
     
     // Iterate thread indexes.
-    /*  @docs {
+    /*  @docs
         @title: Iterate Indexes
         @description:
             Iterate the thread indexes.
@@ -788,7 +787,7 @@ public:
             for (auto& index: thread_pool.indexes()) {
                 ...
             }
-    } */
+    */
     constexpr
     auto indexes() {
         return m_threads.indexes();

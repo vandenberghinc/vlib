@@ -15,8 +15,8 @@ namespace crypto {
 namespace mode {
 
 // Encryption & encoding modes.
-/*  @docs {
-    @chapter: crypto
+/*  @docs
+    @chapter: Crypto
     @title: Modes
     @description:
         Encryption and encoding modes
@@ -25,7 +25,7 @@ namespace mode {
         int cbc = vlib::crypto::mode::cbc;
         int sha256 = vlib::crypto::mode::sha256;
 	@show_code: true
-} */
+*/
 enum modes {
 	cbc = 		3,
 	cfb = 		4,

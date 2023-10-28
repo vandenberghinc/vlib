@@ -27,14 +27,14 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Process type
-/*     @docs {
-    @chapter: system
+/*     @docs
+    @chapter: System
     @title: Serial
 	@warning:
 		Function family `read` is not thread safe when framing is enabled.
     @description:
         Serial port communication.
-} */
+*/
 struct Serial {
 
     // ---------------------------------------------------------

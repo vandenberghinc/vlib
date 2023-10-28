@@ -11,12 +11,12 @@ namespace vlib {
 // ---------------------------------------------------------
 // Daemon type.
 
-/*     @docs {
-    @chapter: system
+/*     @docs
+    @chapter: System
     @title: SharedMemory
     @description:
         Shared memory between threads.
-} */
+*/
 template <typename Type>
 struct SharedMemory {
     
@@ -65,7 +65,7 @@ public:
     // Public functions.
     
     // Get the underlying data.
-    /* @docs {
+    /* @docs
         @title: Data
         @description:
             Get the underlying data.

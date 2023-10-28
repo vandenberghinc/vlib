@@ -18,6 +18,17 @@ namespace tls {
 // - The socket is always non-blocking.
 //
 
+/*  @docs
+ *  @chapter: TLS
+ *  @title: Client
+ *  @description:
+ *      TLS client type.
+ *
+ *		The tls socket acts as a shared pointer, the socket automatically closes when there are no more shared links to the socket.
+ *  @usage:
+ *      #include <vlib/sockets/tls.h>
+ *      vlib::tls::Client<...> client(...);
+ */
 template <
     int     family =         sockets::family::ipv4,
     int     type =           sockets::type::stream,
@@ -296,21 +307,20 @@ public:
     }
 	
 	// Receive a full HTTP request over tls.
-	/* @docs {
+	/* @docs
 	 *	@title: Receive a HTTP request.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timeout in milliseconds.
-	 *	}
 	 *	@description:
 	 *		Receive a HTTP request.
 	 *
 	 *		Supports chunked requests.
 	 *	@usage:
-	 *		vlib::Socket sock;
+	 *		vlib::tls::Client<...> sock(...);
 	 *		...
 	 *		vlib::http::Request request = sock.recv<vlib::http::Request>(10000);
-	 } */
+	 */
 	template <typename DataType> requires (
 		http::is_Response<DataType>::value ||
 		http::is_Request<DataType>::value

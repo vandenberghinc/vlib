@@ -30,8 +30,8 @@ void 	to_bool_r(bool& value, const char* arr) {
 }
 
 // Cast with return.
-/* 	@docs {
-	@chapter: casts
+/* 	@docs
+	@chapter: Casts
 	@title: To bool
 	@description:
 		Cast to a bool.
@@ -39,7 +39,7 @@ void 	to_bool_r(bool& value, const char* arr) {
         #include <vlib/types.h>
 		vlib::to_bool("true") ==> true;
 		vlib::to_bool("false") ==> false;
-} */
+*/
 template <typename... Args> inline constexpr
 bool 	to_bool(Args&&... args) {
 	bool value;
@@ -72,8 +72,8 @@ void 	to_char_r(char& value, const Type& digit) {
 }
 
 // Cast with return.
-/* 	@docs {
- *	@chapter: casts
+/* 	@docs
+ *	@chapter: Casts
  *	@title: To char
  *	@description:
  *		Cast to a char.
@@ -84,7 +84,7 @@ void 	to_char_r(char& value, const Type& digit) {
  *		vlib::to_char(9) ==> '9';
  *		vlib::to_char(100) ==> '0'; // ERROR: the digit's range is [0..9].
  *	@funcs: 2
-} */
+*/
 template 		<typename... Args> inline constexpr
 char	to_char(Args&&... args) {
 	char value;
@@ -282,15 +282,15 @@ void 	to_num_r(Cast& value, const char* arr) {
 }
 
 // Cast with return.
-/* 	@docs {
-	@chapter: casts
+/* 	@docs
+	@chapter: Casts
 	@title: To numeric
 	@description:
 		Cast to any numeric.
 	@usage:
         #include <vlib/types.h>
 		vlib::to_num<int>("1") ==> 1;
-} */
+*/
 template 		<typename Cast, typename... Args> inline constexpr
 Cast	to_num(Args&&... args) {
 	Cast value;

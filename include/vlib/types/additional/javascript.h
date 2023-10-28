@@ -15,6 +15,12 @@ namespace vlib {
 // ---------------------------------------------------------
 // Values type.
 
+/*  @docs
+ *  @chapter: JavaScript
+ *  @title: JavaScript
+ *  @description:
+ *      JavaScript compile class.
+ */
 struct JavaScript {
 			
 	// Bundle javascript files.
@@ -28,11 +34,11 @@ struct JavaScript {
 		Bool 			whitespace = false; // allow whitespace.
 		Bool 			comments = false; // allow comments.
 	};
-	/* 	@docs {
+	/* 	@docs
 	 * 	@title: Bundle javascript
 	 * 	@description:
 	 * 		Bundle javascript files into a single file.
-	 * 	@parameter: {
+	 * 	@parameter:
 	 * 		@name: args
 	 * 		@description:
 	 *			The bundle arguments.
@@ -48,8 +54,7 @@ struct JavaScript {
 	 *				Bool 			comments = false; // allow comments.
 	 *			};
 	 *			```
-	 *	}
-	 }*/
+	 */
 	static
 	String	bundle(const BundleArgs& args) {
 		
@@ -91,15 +96,14 @@ struct JavaScript {
 		Bool whitespace = false; // allow whitespace.
 		Bool comments = false; // allow comments.
 	};
-	/* 	@docs {
+	/* 	@docs
 	 * 	@title: Trim javascript
 	 * 	@description:
 	 * 		Trim a javascript code file.
-	 * 	@parameter: {
+	 * 	@parameter:
 	 * 		@name: code
 	 * 		@description: The javascript code to trim.
-	 *	}
-	 * 	@parameter: {
+	 * 	@parameter:
 	 * 		@name: args
 	 * 		@description:
 	 *			The trim arguments.
@@ -111,9 +115,8 @@ struct JavaScript {
 	 *				Bool comments = false; // allow comments.
 	 *			};
 	 *			```
-	 *	}
 	 *	@funcs: 2
-	 }*/
+	 */
 	static
 	String	trim(const Code& data, const TrimArgs& args) {
 		String js;

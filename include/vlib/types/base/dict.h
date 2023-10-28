@@ -16,8 +16,8 @@ namespace vlib {
 )
 
 // Dictionary type.
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: Dictionary
 	@description:
 		Dictionary type.
@@ -28,7 +28,7 @@ namespace vlib {
             {"B", 2},
             {"C", 3},
         });
-} */
+*/
 // @TODO docs, some still have Array in usage.
 template <
 	typename Key,
@@ -93,7 +93,7 @@ struct Dict {
 	}
 
 	// Swap.
-	/* @docs {
+	/* @docs
 	  @title: Swap
 	  @description:
 			Swap dictionaries.
@@ -103,7 +103,7 @@ struct Dict {
 			y.swap(x);
 			x ==> {};
 			y ==> { ... };
-	} */
+	*/
 	constexpr
 	auto& 	swap(This& obj) {
 		if (this == &obj) { return *this; }
@@ -129,7 +129,7 @@ struct Dict {
 	m_values(ValueArray()) {}
 	
 	// Constructor from initializer list.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a `Dict` object.
@@ -139,7 +139,7 @@ struct Dict {
 				{"B", 2},
 				{"C", 3},
 			});
-	} */
+	*/
 	constexpr
 	Dict (const std::initializer_list<PairType>& x) :
 	m_keys(KeyArray()),
@@ -202,11 +202,11 @@ struct Dict {
 	// Functions.
 	
 	// Copy the data of the dictionary to a new dictionary.
-	/* 	@docs {
+	/* 	@docs
 		@title: Copy
 		@description:
 			Copy the data of the dictionary to a new dictionary.
-	} */
+	*/
 	constexpr
 	This 		copy() {
 		return *this;
@@ -217,14 +217,14 @@ struct Dict {
 	}
 
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	  @title: Reset
 	  @description:
 			Reset all attributes.
 	  @usage:
 			Array<char> x = "Hello World!";
 			x.reset(); ==> ""
-	} */
+	*/
 	constexpr
 	auto& 		reset() {
 		m_keys->reset();
@@ -234,13 +234,13 @@ struct Dict {
 	
 	// Automatically resize an array to the required length.
 	//  - Only resizes when required.
-	/*  @docs {
+	/*  @docs
 		@title: Resize
 		@description:
 			Resize the dictionary to a required capacity.
 	 
 			Does not edit the length, only the capactity.
-	} */
+	*/
 	constexpr
 	auto&		resize(
 		const Length	req_len = 1   		// the required alloc length.
@@ -251,13 +251,13 @@ struct Dict {
 	}
 
 	// Automatically expand an array to with a length.
-	/*  @docs {
+	/*  @docs
 		@title: Expand
 		@description:
 			Expand the dictionary with a capacity.
 	 
 			Does not edit the length, only the capactity.
-	} */
+	*/
 	constexpr
 	auto&		expand(
 		const Length 	with_len   			// the arrays length by reference. to expand alloc length with.
@@ -268,63 +268,63 @@ struct Dict {
 	}
 	
 	// Is undefined.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is undefined
 		@description:
 			Check if the object is undefined.
 		@usage:
 			Dict<...> x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const {
 		return m_keys.is_undefined() || m_keys->is_undefined();
 	}
 	
 	// Is defined.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is defined
 		@description:
 			Check if the object is defined.
 		@usage:
 			Dict<...> x;
 			x.is_undefined(); ==> false;
-	} */
+	*/
 	constexpr
 	bool 	is_defined() const {
 		return m_keys->is_defined();
 	}
 	
 	// Length.
-	/* 	@docs {
+	/* 	@docs
 		@title: Length
 		@type: ullong&
 		@description:
 			Get the length of the dictionary.
-	} */
+	*/
 	constexpr
 	auto&	len() const {
 		return m_keys->len();
 	}
 	
 	// Allocated length.
-	/* 	@docs {
+	/* 	@docs
 		@title: Capacity
 		@type: ullong&
 		@description:
 			Get the capacity of the dictionary.
-	} */
+	*/
 	constexpr
 	auto& 	capacity() const {
 		return m_keys->m_capacity;
 	}
 	
 	// Get a key by index.
-	/* 	@docs {
+	/* 	@docs
 		@title: Key
 		@description:
 			Get a key by index.
-	} */
+	*/
 	constexpr
 	Key& 	key(const Length index) {
 		return m_keys->get(index);
@@ -335,11 +335,11 @@ struct Dict {
 	}
 
 	// Get a value by index.
-	/* 	@docs {
+	/* 	@docs
 		@title: Value
 		@description:
 			Get a value by index.
-	} */
+	*/
 	constexpr
 	Value& 	value(const Length index) requires (!is_any_integer<Key>::value) {
 		return m_values->get(index);
@@ -350,11 +350,11 @@ struct Dict {
 	}
 
 	// Get a value by key.
-	/* 	@docs {
+	/* 	@docs
 		@title: Value
 		@description:
 			Get a value by key.
-	} */
+	*/
 	constexpr
 	Value& 	value(const Key& key) {
 		for (auto& i: indexes()) {
@@ -389,7 +389,7 @@ struct Dict {
 	}
 
 	// Set a key and value by index.
-	/* @docs {
+	/* @docs
 	  @title: Set
 	  @description:
 			Set a key and value by index.
@@ -405,7 +405,7 @@ struct Dict {
 			dict<String, String> x;
 			x.expand(1);
 			x.set(0, "my_key", "my_value"); ==> {"my_key": "my_value"};
-	} */
+	*/
 	constexpr
 	This&	set(
 		const Length 		index,				// the requested index.
@@ -448,32 +448,32 @@ struct Dict {
 	}
 
 	// First element.
-	/*  @docs {
+	/*  @docs
 		@title: First
 		@description: Get the first value of the dictionary.
 		@warning: Will cause a segfault if the array's length is `0`.
-	} */
+	*/
 	constexpr
 	Value& 	first() const {
 		return m_values->first();
 	}
 
 	// Last element.
-	/*  @docs {
+	/*  @docs
 		@title: Last
 		@description: Get the last value of the dictionary.
 		@warning: Will cause a segfault if the array's length is `0`.
-	} */
+	*/
 	constexpr
 	Value& 	last() const {
 		return m_values->last();
 	}
 	
 	// Equals.
-	/*  @docs {
+	/*  @docs
 		@title: Equals
 		@description: Check if the dictionary is equal to another dictionary.
-	} */
+	*/
 	constexpr
 	bool 	eq(
 		const This& 	obj				// the second array of the comparison.
@@ -483,13 +483,13 @@ struct Dict {
 	
 	// Append item(s) to an array.
 	//  - Make sure the key is not already appended.
-	/*  @docs {
+	/*  @docs
 		@title: Append
 		@description:
 			Append a key and value to the dictionary.
 		@warning:
 			Causes undefined behaviour if the key is already present.
-	} */
+	*/
 	constexpr
 	This&	append(
 		const Key& 		key,				// the key to append.
@@ -528,7 +528,7 @@ struct Dict {
 	}
 	
 	// Concat with another Dict.
-	/* 	@docs {
+	/* 	@docs
 		@title: Concatenate
 		@description:
 			Concatenate one or multiple dictoinaries.
@@ -539,7 +539,7 @@ struct Dict {
 			Array<int> b = {3};
 			a.concat_r(y); a ==> {1, 2, 3};
 		@funcs: 2
-	} */
+	*/
 	template <typename... Args> constexpr
 	This&	concat_r(const This& obj, Args&&... args) {
         for (auto& index: obj.indexes()) {
@@ -555,7 +555,7 @@ struct Dict {
     This&    concat_r() { return *this; }
 	
 	// Remove a key & value by index.
-	/* 	@docs {
+	/* 	@docs
 		@title: Pop
 		@description:
 			Pop a key & value by index, optionally with a default return.
@@ -564,7 +564,7 @@ struct Dict {
 		@warning:
 			Will cause a segfault if the index is higher or equal to the array's length attribute.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	Value 	pop(ullong index) requires (!is_ullong<Key>::value) {
 		m_keys->pop(index);
@@ -577,7 +577,7 @@ struct Dict {
 	}
 
 	// Remove a key`` & value by key.
-	/* 	@docs {
+	/* 	@docs
 		@title: Pop
 		@description:
 			Pop a key & value by key, optionally with a default return.
@@ -586,7 +586,7 @@ struct Dict {
 	 
 			Throws a `KeyError` if the default return is not specified and the key does not exist.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	Value	pop(const Key& key) {
 		ullong i = m_keys->find(key);
@@ -613,11 +613,11 @@ struct Dict {
 	}
 
 	// Find the index of a key.
-	/* 	@docs {
+	/* 	@docs
 		@title: Find
 		@description:
 			Find the index of a key.
-	} */
+	*/
 	constexpr
 	ullong	find(const Key& key) const {
 		return m_keys->find(key);
@@ -631,11 +631,11 @@ struct Dict {
 	}
 
 	// Find the index of a value.
-	/* 	@docs {
+	/* 	@docs
 		@title: Find value
 		@description:
 			Find the index of a value.
-	} */
+	*/
 	constexpr
 	ullong 	find_value(const Value& value) const {
 		return m_values->find(value);
@@ -649,7 +649,7 @@ struct Dict {
 	}
 
 	// Check if dictionary contains a key.
-	/* 	@docs {
+	/* 	@docs
 		@title: Contains
 		@description:
 			Check if dictionary contains a key.
@@ -660,7 +660,7 @@ struct Dict {
 			};
 			x.contains("b") ==> true
 			x.contains("c") ==> false
-	} */
+	*/
 	constexpr
 	bool 	contains(const Key& key) const {
 		return m_keys->find(key) != NPos::npos;
@@ -671,7 +671,7 @@ struct Dict {
 	}
 
 	// Find the index of a value.
-	/* @docs {
+	/* @docs
 	  @title: Contains value
 	  @description:
 			Find the index of a value.
@@ -682,7 +682,7 @@ struct Dict {
 			};
 			x.contains_value(14) ==> true
 			x.contains_value(15) ==> false
-	} */
+	*/
 	constexpr
 	bool 	contains_value(const Value& value) const {
 		return m_values->find(value) != NPos::npos;
@@ -693,7 +693,7 @@ struct Dict {
 	}
 	
 	// Slice the array.
-	/* 	@docs {
+	/* 	@docs
 		@title: Slice
 		@description:
 			Slice the dictionary by indexes.
@@ -704,7 +704,7 @@ struct Dict {
 	 
 			Slices nothing when eiter `sindex` / `eindex` is out of range.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This& 	slice_r(ullong sindex, ullong eindex = NPos::npos) {
 		m_keys->slice_r(sindex, eindex);
@@ -717,14 +717,14 @@ struct Dict {
 	}
 	
 	// Replace item in array.
-	/* 	@docs {
+	/* 	@docs
 		@title: Replace
 		@description:
 			Replace a value with another value.
 			
 			Function `replace_r` updates the current dictionary, while `replace` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename... Args> constexpr
 	This& 		replace_r(
 		const Value&			from,				// the from item.
@@ -795,14 +795,14 @@ struct Dict {
 	}
 
 	// Sort by keys.
-	/* 	@docs {
+	/* 	@docs
 		@title: Sort by keys
 		@description:
 			Sort the dictionary by keys.
 	 
 			Function `sort_r` updates the current dictionary, while `sort` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This& 	sort_r(bool reversed = false) {
 		This obj;
@@ -817,14 +817,14 @@ struct Dict {
 	}
 
 	// Sort by values.
-	/* 	@docs {
+	/* 	@docs
 		@title: Sort by values
 		@description:
 			Sort the dictionary by values.
 	 
 			Function `sort_r` updates the current dictionary, while `sort` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This& 	sort_values_r(bool reversed = false) {
 		This obj;
@@ -839,7 +839,7 @@ struct Dict {
 	}
 	
 	// Reverse
-	/* 	@docs {
+	/* 	@docs
 		@title: Reverse
 		@description:
 			Reverse the dictionary.
@@ -853,7 +853,7 @@ struct Dict {
 				{"a", 1}
 			}
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto& 	reverse_r() {
 		m_keys->reverse_r();
@@ -871,7 +871,7 @@ struct Dict {
 	// @TODO
 	
 	// Multiply.
-	/* 	@docs {
+	/* 	@docs
 		@title: Multiply
 		@description:
 			Multiply the dictionary.
@@ -881,7 +881,7 @@ struct Dict {
 			Dict<int, int> x = {{0, 0}};
 			x.mult_r(2); x ==> {{0, 0}, {0, 0}};
 		@funcs: 2
-	} */
+	*/
 	template <typename Numeric> requires (is_any_numeric<Numeric>::value || is_any_Numeric<Numeric>::value) constexpr
 	This& 	mult_r(const Numeric& x) {
 		m_keys->mult_r(x);
@@ -894,7 +894,7 @@ struct Dict {
 	}
 	
 	// Divide.
-	/* 	@docs {
+	/* 	@docs
 		@title: Divide
 		@description:
 			Divide the dictionary.
@@ -904,7 +904,7 @@ struct Dict {
 			Dict<int, int> x = {{0, 0}, {0, 0}};
 			x.div_r(2); x ==> {{0, 0}};
 		@funcs: 2
-	} */
+	*/
 	template <typename Numeric> requires (is_any_numeric<Numeric>::value || is_any_Numeric<Numeric>::value) constexpr
 	This&	div_r(const Numeric& x) {
 		m_keys->div_r(x);
@@ -917,7 +917,7 @@ struct Dict {
 	}
 	
 	// mod.
-	/* 	@docs {
+	/* 	@docs
 		@title: Modulo
 		@description:
 			Get the modulo of the dictionary.
@@ -927,7 +927,7 @@ struct Dict {
 			Dict<int, int> x = {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
 			x.mod_r(3); x ==> {{0, 0}};
 		@funcs: 2
-	} */
+	*/
 	template <typename Numeric> requires (is_any_numeric<Numeric>::value || is_any_Numeric<Numeric>::value) constexpr
 	This& 	mod_r(const Numeric& x) {
 		m_keys->mod_r(x);
@@ -1037,11 +1037,11 @@ struct Dict {
 	}
 
 	// Dump.
-	/* 	@docs {
+	/* 	@docs
 		@title: Join
 		@description:
 			Join the dictionary keys and values into a string.
-	}*/
+	*/
 	constexpr
 	String 	join() const {
 		Pipe pipe;
@@ -1113,11 +1113,11 @@ struct Dict {
 	
 	// Parse from json formatted const char*.
 	static inline // do not place a constexpr tag since this will create a nasty llvm bug on linux.
-	/* 	@docs {
+	/* 	@docs
 		@title: Parse
 		@description:
 			Parse a json formatted dictionary from a `const char*`.
-	}*/
+	*/
 	auto 	parse(const char* arr, ullong len) {
 		
 		// Checks.
@@ -1221,13 +1221,13 @@ struct Dict {
 	}
 	
 	// Load a file.
-	/* @docs {
+	/* @docs
 		@title: Load
 		@type: This&
 		@description: Load from a file.
 		@usage:
 			Dict<...> x = Dict<...>::load("./mydict");
-	}*/
+	*/
 	SICE
 	auto 	load(const char* path) {
 		char* data = nullptr;
@@ -1253,14 +1253,14 @@ struct Dict {
 	}
 
 	// Save a file.
-	/* @docs {
+	/* @docs
 		@title: Save
 		@type: This&
 		@description: Save the dictionary to a file.
 		@usage:
 		    Dict<...> x = ...;
 		    x.save("./mydict");
-	}*/
+	*/
 	constexpr
 	auto&	save(const char* path) const {
 		Pipe pipe;
@@ -1274,17 +1274,17 @@ struct Dict {
 	}
 	
 	// Get the keys.
-	/* 	@docs {
+	/* 	@docs
 		@title: Keys
 		@description: Get the keys array.
-	} */
+	*/
 	auto& 	keys() const { return *m_keys; }
 
 	// Get the values
-	/* 	@docs {
+	/* 	@docs
 		@title: Values
 		@description: Get the values array.
-	} */
+	*/
 	auto& 	values() const { return *m_values; }
 	
 	// ---------------------------------------------------------
@@ -1356,7 +1356,7 @@ struct Dict {
     };
 
 	// Iterate.
-	/* 	@docs {
+	/* 	@docs
 		@title: Iterate
 		@description:
 			Iterate from index till index.
@@ -1373,12 +1373,12 @@ struct Dict {
             for (auto& [key, value]: x.iterate<Backwards>()) {
                 print(*key, ": ", *value);
             }
-		@parameter: {
+		@parameter:
 			@name: args
 			@description: The arguments for `indexes()`.
 		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Iter = Forwards, typename... Args> requires (
         is_Forwards<Iter>::value ||
         is_Backwards<Iter>::value
@@ -1392,7 +1392,7 @@ struct Dict {
 	}
 
 	// Iterate indexes.
-	/* 	@docs {
+	/* 	@docs
 		@title: Indexes
 		@description:
 			Iterate the indexes from index till index.
@@ -1404,7 +1404,7 @@ struct Dict {
 			Array<int> x ({0, 1, 2, 3});
 			for (auto& i: x.iterate(1, 2)) { ... }
 		@funcs: 2
-	} */
+	*/
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value || is_Backwards<Iter>::value) constexpr
 	auto 	indexes() const {
 		return Range<Iter, Length>(0, m_keys->len());
@@ -1421,13 +1421,13 @@ struct Dict {
 	// Casts.
 
 	// As string.
-	/* @docs {
+	/* @docs
 		@title: String
 		@description: Get the dictionary as a string.
 		@usage:
 			Dict<...> x = { ... };
 			String y = x.str();
-	} */
+	*/
 	constexpr
 	String 	str() const {
 		Pipe pipe;
@@ -1436,10 +1436,10 @@ struct Dict {
 	}
 
 	// As json formatted string.
-	/* @docs {
+	/* @docs
 		@title: JSON
 		@description: Get the dictionary as json formatted string.
-	} */
+	*/
 	constexpr
 	String 	json() const {
 		Pipe pipe;
@@ -1648,7 +1648,7 @@ struct Dict {
 	}
 	
 	// Get a key by index.
-	/* @docs {
+	/* @docs
 	  @title: operator[]
 	  @description:
 			Get a value by index.
@@ -1658,14 +1658,14 @@ struct Dict {
 				{"my_key", "Hello World!"}
 			};
 			x[0] ==> my_key
-	} */
+	*/
 	constexpr
 	auto& 	operator [](const Length index) requires (!is_any_integer<Key>::value) {
 		return m_values->operator[](index);
 	}
 
 	// Get a value by key.
-	/* @docs {
+	/* @docs
 	  @title: operator[]
 	  @description:
 			Get a value by key.
@@ -1675,7 +1675,7 @@ struct Dict {
 				{"my_key", "Hello World!"}
 			};
 			x["my_key"] ==> Hello World!
-	} */
+	*/
 	constexpr
 	auto& 	operator [](const Key& key) {
 		for (auto& i: indexes()) {

@@ -283,7 +283,7 @@ struct desc {
 // String representation.
 
 // Convert an error number to a string description.
-/*  @docs {
+/*  @docs
 	@chapter: Errors
 	@title: String error
 	@description:
@@ -292,7 +292,7 @@ struct desc {
         #include <vlib/types.h>
 		int status = ...;
 		vlib::print("Error: ", vlib::strerr(status));
-} */
+*/
 
 inline constexpr
 auto& strerr(int err) {

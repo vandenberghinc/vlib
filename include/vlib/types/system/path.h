@@ -26,8 +26,8 @@ namespace vlib {
 // ---------------------------------------------------------
 // Path type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Path
 	@description:
 		Path type.
@@ -35,7 +35,7 @@ namespace vlib {
         #include <vlib/types.h>
 		vlib::Path my_dir("/tmp/mydir");
 		vlib::Path my_file("/tmp/myfile.txt");
-} */
+*/
 // @TODO undefined behaviour for destructor.
 // @TODO dont inherit String but rather a member as m_path, func like replace and forgotten funcs dont call post_edit and clean etc.
 struct Path : public String {
@@ -228,22 +228,22 @@ public:
 	}
 
 	// Constructor from an array with length.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from a char array with length.
-		@parameter: {
+		@parameter:
 			@name: arr
 			@type: const char*
 			@description: The char array.
 		}
-		@parameter: {
+		@parameter:
 			@name: len
 			@description: The length of the char array.
 		}
 		@usage:
 			vlib::Path path("/tmp", 4);
-	} */
+	*/
 	constexpr
 	Path (const char* arr, ullong len) :
 	String(arr, len)
@@ -252,18 +252,18 @@ public:
 	}
 
 	// Constructor from a char array.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from a null-terminated char array.
-		@parameter: {
+		@parameter:
 			@name: arr
 			@type: const char*
 			@description: The null-terminated char array.
 		}
 		@usage:
 			vlib::Path path("/tmp");
-	} */
+	*/
 	constexpr
 	Path (const char* arr) :
 	String(arr)
@@ -280,18 +280,18 @@ public:
 	}
 
 	// Copy constructor from "Pipe / CString / String".
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from a `Pipe`, `CString` or `String`.
-		@parameter: {
+		@parameter:
 			@name: x
 			@description: The object to construct from, supported types are: `Pipe`, `CString` and `String`.
 		}
 		@usage:
 			String x("/tmp");
 			vlib::Path path(x);
-	} */
+	*/
 	template <typename Array> requires (
 	   is_char<char>::value &&
 	   (
@@ -402,7 +402,7 @@ public:
 	// Property functions.
 	
 	// Get or set the type.
-	/* 	@docs {
+	/* 	@docs
 		@title: Type
 		@description:
 			Get or set the type.
@@ -415,7 +415,7 @@ public:
 			x.type() == Path::types::unknown; ==> true;
 			y.type() = Path::types::file;
 			x.type() == Path::types::file; ==> true;
-	} */
+	*/
 	constexpr
 	auto& 	type() {
 		if (p_info.is_undefined() || p_info->type == types::unknown) { stat_wrapper(); }
@@ -423,13 +423,13 @@ public:
 	}
 	
 	// Get atime.
-	/* @docs {
+	/* @docs
 		@title: Access time
 		@description:
 			Get the timestamp of the access in milliseconds.
 		@warning:
 			When the path does not exist or the attribute is undefined, the atime is always "-1".
-	} */
+	*/
 	constexpr
 	auto& 	atime() {
 		if (p_info.is_undefined() || p_info->atime == -1) { stat_wrapper(); }
@@ -437,13 +437,13 @@ public:
 	}
 	
 	// Get mtime.
-	/* @docs {
+	/* @docs
 		@title: Modification time
 		@description:
 			Get the timestamp of the modification in milliseconds.
 		@warning:
 			When the path does not exist or the attribute is undefined, the mtime is always "-1".
-	} */
+	*/
 	constexpr
 	auto& 	mtime() {
 		if (p_info.is_undefined() || p_info->mtime == -1) { stat_wrapper(); }
@@ -451,13 +451,13 @@ public:
 	}
 	
 	// Get ctime.
-	/* @docs {
+	/* @docs
 		@title: Change time
 		@description:
 			Get the timestamp of the change in milliseconds.
 		@warning:
 			When the path does not exist or the attribute is undefined, the ctime is always "-1".
-	} */
+	*/
 	constexpr
 	auto& 	ctime() {
 		if (p_info.is_undefined() || p_info->ctime == -1) { stat_wrapper(); }
@@ -465,13 +465,13 @@ public:
 	}
 
 	// Get the file size.
-	/* @docs {
+	/* @docs
 		@title: Size
 		@description:
 			Get the total file size in bytes.
 		@warning:
 			When the path does not exist or the attribute is undefined, the size is always "-1".
-	} */
+	*/
 	constexpr
 	auto&	size() {
 		if (p_info.is_undefined() || p_info->size == -1) { stat_wrapper(); }
@@ -479,13 +479,13 @@ public:
 	}
 
 	// Get the path's permission.
-	/* @docs {
+	/* @docs
 		@title: Permission
 		@description:
 			Get the path's permission.
 		@warning:
 			When the path does not exist or the attribute is undefined, the permission is always undefined.
-	} */
+	*/
 	constexpr
 	auto&	permission() {
 		if (p_info.is_undefined() || p_info->permission.is_undefined()) { stat_wrapper(); }
@@ -493,26 +493,26 @@ public:
 	}
 
 	// Get the path's user.
-	/* @docs {
+	/* @docs
 		@title: User
 		@description:
 			Get the path's user.
 		@warning:
 			When the path does not exist or the attribute is undefined, the user is always undefined.
-	} */
+	*/
 	constexpr
 	auto&	user() {
 		if (p_info.is_undefined() || p_info->user.is_undefined()) { stat_wrapper(); }
 		return p_info->user;
 	}
 	
-	/* @docs {
+	/* @docs
 		@title: User id
 		@description:
 			Get the path's user id.
 		@warning:
 			When the path does not exist or the attribute is undefined, the user id is always undefined.
-	} */
+	*/
 	constexpr
 	auto&	uid() {
 		if (p_info.is_undefined() || p_info->user.is_undefined()) { stat_wrapper(); }
@@ -520,13 +520,13 @@ public:
 	}
 
 	// Get the path's group.
-	/* @docs {
+	/* @docs
 		@title: Group id
 		@description:
 			Get the path's group id.
 		@warning:
 			When the path does not exist or the attribute is undefined, the group is always undefined.
-	} */
+	*/
 	constexpr
 	auto&	gid() {
 		if (p_info.is_undefined() || p_info->gid == -1) { stat_wrapper(); }
@@ -534,14 +534,14 @@ public:
 	}
 
 	// Get the path's name with the extension.
-	/* @docs {
+	/* @docs
 	  @title: Full name
 	  @description:
 			Get the path's full name (with the extension).
 	  @usage:
 			vlib::Path x("/tmp/myfile.txt");
 			x.full_name(); ==> "myfile.txt";
-	} */
+	*/
 	constexpr
 	String& full_name() {
 		if (p_info.is_undefined()) { p_info = info{}; }
@@ -568,14 +568,14 @@ public:
     }
 
 	// Get the path's name without the extension.
-	/* @docs {
+	/* @docs
 	  @title: Name
 	  @description:
 			Get the path's name without the extension.
 	  @usage:
 			vlib::Path x("/tmp/myfile.txt");
 			x.name(); ==> "myfile";
-	} */
+	*/
 	constexpr
 	String& name() {
 		if (p_info.is_undefined()) { p_info = info{}; }
@@ -598,7 +598,7 @@ public:
 	}
 
 	// Get the path's extension.
-	/* @docs {
+	/* @docs
 	  @title: Extension
 	  @description:
 			Get the path's extension.
@@ -606,7 +606,7 @@ public:
 	  @usage:
 			vlib::Path x("/tmp/myfile.txt");
 			x.extension(); ==> "txt";
-	} */
+	*/
 	constexpr
 	String& extension() {
 		if (p_info.is_undefined()) { p_info = info{}; }
@@ -622,14 +622,14 @@ public:
 	}
     
     // Check if the path is a file.
-    /* @docs {
+    /* @docs
         @title: Is File
         @description:
             Check if the path is a file.
         @usage:
             vlib::Path x("/tmp");
             x.is_file() ==> false;
-    } */
+    */
     constexpr
     Bool    is_file() {
         if (p_info.is_undefined() || p_info->type == types::unknown) { stat_wrapper(); }
@@ -637,14 +637,14 @@ public:
     }
     
     // Check if the path is a directory.
-    /* @docs {
+    /* @docs
         @title: Is File
         @description:
             Check if the path is a file.
         @usage:
             vlib::Path x("/tmp");
             x.is_dir() ==> true;
-    } */
+    */
     constexpr
     Bool    is_dir() {
         if (p_info.is_undefined() || p_info->type == types::unknown) { stat_wrapper(); }
@@ -655,14 +655,14 @@ public:
 	// Functions.
 
 	// Copy the object.
-	/* @docs {
+	/* @docs
 	  @title: Copy
 	  @description:
 			Copy the object.
 	  @usage:
 			vlib::Path x = "/tmp/dir";
 			x.copy().join("myfile.txt"); ==> "/tmp/dir/myfile.txt"
-	} */
+	*/
 	constexpr
 	This 	copy() {
 		This obj(m_arr, m_len, m_capacity);
@@ -677,14 +677,14 @@ public:
 	}
 
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	  @title: Reset
 	  @description:
 			Reset all attributes.
 	  @usage:
 			vlib::Path x = "/tmp/myfile.txt";
 			x.reset(); ==> ""
-	} */
+	*/
 	constexpr
 	This& 	reset() {
 		m_len = 0;
@@ -694,14 +694,14 @@ public:
 	}
 
 	// Clean the path.
-	/* @docs {
+	/* @docs
 	  @title: Clean
 	  @description:
 			Clean the path.
 	  @usage:
 			vlib::Path x(" //tmp/myfile.txt ");
 			x.clean(); ==> "/tmp/myfile.txt";
-	} */
+	*/
 	constexpr
 	This& 	clean() {
 		unquote_r();
@@ -716,14 +716,14 @@ public:
 	}
 
 	// Check if the current user has access to the path.
-	/* @docs {
+	/* @docs
 	  @title: Access
 	  @description:
 			Check if the current user has access to the path.
 	  @usage:
 			vlib::Path x("/");
 			x.access(); ==> false; // when executed without root permission.
-	} */
+	*/
 	bool 	access() {
 		return ::access(c_str(), F_OK) == 0;
 	}
@@ -742,7 +742,7 @@ public:
 	// https://jameshfisher.com/2017/02/24/what-is-mode_t/
 
 	// Check if the path exists.
-	/* @docs {
+	/* @docs
 	  @title: Exists
 	  @description:
 		Check if the path exists.
@@ -750,7 +750,7 @@ public:
 			$ mkdir /tmp/mydir
 			vlib::Path x("/tmp/mydir");
 			x.exists(); ==> true;
-	} */
+	*/
 	bool 	exists() const {
 		return ::access(c_str(), F_OK) == 0;
 	}
@@ -764,7 +764,7 @@ public:
     }
 
 	// Get the path's base directory.
-	/* 	@docs {
+	/* 	@docs
 		@title: Base
 		@description:
 			Get the path's base directory.
@@ -777,7 +777,7 @@ public:
 			x.base(3); ==> "/";
 			x.base(4).is_undefined(); ==> true;
 		@funcs: 3
-	} */
+	*/
 	constexpr
 	This& 	base_r() {
 		const ullong index = find<Backwards>('/', 0, m_len);
@@ -818,14 +818,14 @@ public:
 	}
 
 	// Join with a subpath.
-	/* @docs {
+	/* @docs
 		@title: Join
 		@description: Join with a subpath.
 		@usage:
 			vlib::Path x("/tmp/dir");
 			x.join("myfile.txt"); ==> "/tmp/dir/myfile.txt";
 		@funcs: 4
-	}*/
+	*/
 	constexpr
 	This&	join_r(const char* subpath) {
         if (m_len != 0) {
@@ -868,7 +868,7 @@ public:
 	}
 
 	// Get the absolute path.
-	/* 	@docs {
+	/* 	@docs
 		@title: Absolute path
 		@description:
 			Get the absolute path.
@@ -877,7 +877,7 @@ public:
 		@usage:
 			vlib::Path x("/tmp/dir/../file");
 			x.abs_r(); ==> "/tmp/file";
-	}*/
+	*/
 	auto&	abs_r() {
 		This tmp;
 		tmp.resize(PATH_MAX + 1);
@@ -903,7 +903,7 @@ public:
 	}
 	
 	// Create an empty file.
-	/* @docs {
+	/* @docs
 		@title: Touch
 		@description: Create an empty file.
 		@usage:
@@ -911,7 +911,7 @@ public:
 			x.touch();
         @notes:
             Only creates the file when the file does not exist.
-	}*/
+	*/
 	void    touch(ushort permission = 0740) const {
         if (!exists()) {
             int fd;
@@ -938,7 +938,7 @@ public:
 	}
 	
 	// Create a directory.
-	/*  @docs {
+	/*  @docs
 	 *  @title: Create directory
      *  @description:
      *      Create a directory.
@@ -950,7 +950,7 @@ public:
      *      vlib::Path x("/tmp/dir");
      *      x.mkdir();
      *  @funcs: 5
-     }*/
+     */
 	void    mkdir(ushort permission = 0740) const {
         mkdir(c_str(), permission);
 	}
@@ -978,13 +978,13 @@ public:
     }
 	
 	// Set the owner & group of a path.
-	/* @docs {
+	/* @docs
 		@title: Set owner and group
 		@description: Set the owner & group of a path.
 		@usage:
 			vlib::Path x("/tmp/dir");
 			x.chown("someuser", "somegroup");
-	}*/
+	*/
 	void    chown(uint uid, uint gid) {
 		switch (::chown(c_str(), uid, gid)) {
 			case 0: {
@@ -1008,13 +1008,13 @@ public:
 	}
 	
 	// Set the owner & group of a path.
-	/* @docs {
+	/* @docs
 		@title: Set permission
 		@description: Set the octal permission of a path.
 		@usage:
 			vlib::Path x("/tmp/dir");
 			x.chmod(0740);
-	}*/
+	*/
 	void    chmod(ushort permission) {
 		switch (::chmod(c_str(), permission)) {
 			case 0: {
@@ -1037,13 +1037,13 @@ public:
 	}
     
     // Set the atime & mtime of a path.
-    /* @docs {
+    /* @docs
         @title: Set time
         @description: Set the atime & mtime in seconds of a path.
         @usage:
             vlib::Path x("/tmp/dir");
             x.set_time(time(NULL), time(NULL));
-    }*/
+    */
     void    set_time(const time_t& atime, const time_t& mtime) {
         struct utimbuf totime {atime, mtime};
         switch (::utime(c_str(), &totime)) {
@@ -1071,7 +1071,7 @@ public:
     }
 	
 	// Copy the path to another path.
-	/* @docs {
+	/* @docs
 		@title: Copy
 		@description:
 			Copy the file path to another file path.
@@ -1082,7 +1082,7 @@ public:
 			vlib::Path x("/tmp/src");
 			x.cp("/tmp/dest");
 		@funcs: 5
-	}*/
+	*/
 	void	cp(const Path& dest) {
 		cp(c_str(), dest.c_str());
 	}
@@ -1229,14 +1229,14 @@ public:
 	}
 	
 	// Move the path to another path.
-	/* @docs {
+	/* @docs
 		@title: Move
 		@description: Move the path to another path.
 		@usage:
 			vlib::Path x("/tmp/src");
 			x.mv("/tmp/dest");
 		@funcs: 4
-	}*/
+	*/
 	void	mv(const Path& dest) {
 		mv(c_str(), dest.c_str());
 	}
@@ -1257,13 +1257,13 @@ public:
 	}
 
 	// Remove a file.
-	/* @docs {
+	/* @docs
 		@title: Remove
 		@description: Remove a file.
 		@usage:
 			vlib::Path x("/tmp/dir");
 			x.remove();
-	}*/
+	*/
 	void	remove() {
         remove(c_str(), len());
         p_info = info{};
@@ -1310,13 +1310,13 @@ public:
 	}
 
 	// Load a file.
-	/* @docs {
+	/* @docs
 		@title: Load
 		@description: Load a file.
 		@usage:
 			vlib::Path x("/tmp/myfile.txt");
 			String str0 = x.load();
-	}*/
+	*/
 	String	load() const {
 		return String::load(c_str());
 	}
@@ -1326,13 +1326,13 @@ public:
     }
 
 	// Save a file.
-	/* @docs {
+	/* @docs
 		@title: Save
 		@description: Save data to a file.
 		@usage:
 			vlib::Path x("/tmp/myfile.txt");
 			x.save("Hello World!");
-	}*/
+	*/
 	auto& 	save(
 		const String& 	data				// the file data.
 	) const {
@@ -1370,7 +1370,7 @@ public:
     }
 	
 	// Sync.
-	/* @docs {
+	/* @docs
 		@title: Sync
 		@description: Synchronize local paths.
 		@notes: Function `sync` can be used for files & directories.
@@ -1378,7 +1378,7 @@ public:
 			vlib::Path x("/tmp/src");
 			x.sync("/tmp/dest");
 		@funcs: 3
-	}*/
+	*/
 	void	sync(
 		const Path&   		dest,
 		const SyncOptions&  options = { .del = false, .overwrite = false }
@@ -1429,13 +1429,13 @@ public:
     // }
     
     // Link.
-    /* @docs {
+    /* @docs
         @title: Link
         @description: Create a symbolic link.
         @usage:
             vlib::Path x("/tmp/myfile.txt");
             x.link("/tmp/myotherfile.txt");
-    }*/
+    */
     constexpr
     auto&     link(
         const String&   remote,
@@ -1459,18 +1459,18 @@ public:
     }
 	
 	// Get all paths from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Paths
 	 *	@description: Get all paths from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The path names to exclude.
 	 *  }
@@ -1478,7 +1478,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").paths()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> paths(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1488,18 +1488,18 @@ public:
 	}
 
 	// Get all files from a directory.
-	/* @docs {
+	/* @docs
 	 *	@title: Files
 	 *	@description: Get all files from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1511,7 +1511,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").files()) {
 	 *			 vlib::out << i << " (" << i.size() << " bytes). \n";
 	 *		 }
-	 }*/
+	 */
     Array<Path> files(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1521,18 +1521,18 @@ public:
 	}
 	
 	// Get all directories from a directory.
-	/* @docs {
+	/* @docs
 	 *	@title: Directories
 	 *	@description: Get all directories from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1544,7 +1544,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").dirs()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> dirs(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1554,18 +1554,18 @@ public:
 	}
 
 	// Get all symbolic links from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Links
 	 *	@description: Get all symbolic links from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1577,7 +1577,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").links()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> links(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1587,18 +1587,18 @@ public:
 	}
 
 	// Get all socket paths from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Sockets
 	 *	@description: Get all socket paths from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1610,7 +1610,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").sockets()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> sockets(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1620,18 +1620,18 @@ public:
 	}
 
 	// Get all block device paths from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Block devices
 	 *	@description: Get all block device paths from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1643,7 +1643,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").bdevices()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> bdevices(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1653,18 +1653,18 @@ public:
 	}
 
 	// Get all char device paths from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Char devices
 	 *	@description: Get all char device paths from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1676,7 +1676,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").cdevices()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> cdevices(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1686,18 +1686,18 @@ public:
 	}
 
 	// Get all pipe paths from a directory.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Pipes
 	 *	@description: Get all pipe paths from a directory.
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: recursive
 	 *      @description: Get all the paths recursively for each sub directory.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
@@ -1709,7 +1709,7 @@ public:
 	 *		 for (auto& i: vlib::Path("/tmp/").pipes()) {
 	 *			 ...
 	 *		 }
-	 }*/
+	 */
     Array<Path> pipes(
 		bool recursive = false,
 		const Array<String>& exclude = {},
@@ -1827,14 +1827,14 @@ public:
 	// Casts.
 
 	// Get as String.
-	/* @docs {
+	/* @docs
 	  @title: str
 	  @description:
 			Get as `String`.
 	  @usage:
 			vlib::Path x(...);
 			String y = x.str();
-	} */
+	*/
 	constexpr
 	String	str() const {
 		return *this;

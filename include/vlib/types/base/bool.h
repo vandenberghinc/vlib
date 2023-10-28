@@ -9,15 +9,15 @@
 namespace vlib {
 
 // Boolean type.
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: Boolean
 	@description:
 		A boolean type.
 	@usage:
         #include <vlib/types.h>
 		vlib::Bool x = true;
-} */
+*/
 struct Bool {
 
 	// ---------------------------------------------------------
@@ -38,13 +38,13 @@ struct Bool {
 	Bool() : m_bool(false) {}
 
 	// Constructor from void.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a `Bool` object.
 		@usage:
 			Bool x (true);
-	} */
+	*/
 	constexpr
 	Bool(bool x) : m_bool(x) {}
 
@@ -84,19 +84,19 @@ struct Bool {
 	// Functions.
 
 	// Is undefined.
-	/*  @docs {
+	/*  @docs
         @title: Is undefined
         @description:
 			Check if the object is undefined.
         @usage:
 			vlib::Bool x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool	is_undefined() const { return m_bool == bool(); }
 
 	// Reverse.
-	/*  @docs {
+	/*  @docs
         @title: Reverse
         @description:
 			Reverses a `Bool` with value `true` to `false` and a `Bool` with value `false` to `true`.
@@ -106,7 +106,7 @@ struct Bool {
 			vlib::Bool x = false;
 			vlib::Bool y = x.reverse(); y ==> true;
         @funcs: 2
-	} */
+	*/
     constexpr
     This    reverse() {
         return !m_bool;
@@ -118,12 +118,12 @@ struct Bool {
 	}
 	
 	// Raw value.
-	/*  @docs {
+	/*  @docs
 		@title: Value
 		@type: bool&
 		@description:
 			Get the underlying bool attribute.
-	} */
+	*/
 	constexpr
 	auto&	value() {
 		return m_bool;
@@ -133,7 +133,7 @@ struct Bool {
 	// Casts.
 
 	// Parse from a const char*.
-    /*  @docs {
+    /*  @docs
         @title: Parse
         @description:
             Parse a boolean from a char array with length.
@@ -141,7 +141,7 @@ struct Bool {
             Returns a `Bool` object.
         @usage:
             vlib::Bool x = vlib::Bool::parse("true", 4);
-    } */
+    */
 	SICE
 	This	parse(const char*, ullong len) {
 		switch (len) {
@@ -151,22 +151,22 @@ struct Bool {
 	}
 
 	// As str.
-	/*  @docs {
+	/*  @docs
 		@title: String
 		@type: String
 		@description:
 			Get as string.
-	} */
+	*/
 	constexpr
 	auto	str() const;
 
 	// As json formatted String
-	/*  @docs {
+	/*  @docs
 		@title: JSON
 		@type: String
 		@description:
 			Get as json formatted `String`.
-	} */
+	*/
 	constexpr
 	auto	json() const;
 

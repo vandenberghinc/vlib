@@ -18,7 +18,7 @@ typedef short content_type_t;
 namespace content_type {
 
 // HTTP content type.
-/* 	@docs: {
+/* 	@docs:
  * 	@chapter: HTTP
  * 	@title: Content types
  * 	@description: HTTP content types, does not include all available content types.
@@ -26,7 +26,7 @@ namespace content_type {
  * 		#include <vlib/sockets/http.h>
  * 		vlib::http::content_type_t content_type = vlib::http::content_type::json;
  * 	@show_code: true
- } */
+ */
 enum content_types {
 	undefined = 	0, // must always remain zero for vweb.
 	unknown = 		1,

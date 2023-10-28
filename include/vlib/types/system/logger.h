@@ -11,8 +11,8 @@ namespace vlib {
 // ---------------------------------------------------------
 // Logger type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Logger
 	@description:
 		Used for logging to the console and saving the logs to a file.
@@ -21,7 +21,7 @@ namespace vlib {
 	@usage:
         #include <vlib/types.h>
 		vlib::Logger logger("/tmp/logs/logs.txt");
-} */
+*/
 class Logger {
 
 // Private.
@@ -48,22 +48,22 @@ public:
     Logger () = default;
 
 	// Constructor from path.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from path and mode.
-		@parameter: {
+		@parameter:
 			@name: path
 			@description: The path of the file.
 		}
-		@parameter: {
+		@parameter:
 			@name: mode
 			@description: The file mode.
 		}
 		@usage:
 			vlib::File file("/tmp/myfile.txt", vlib::file::mode::append);
 		@funcs: 2
-	} */
+	*/
 	constexpr
     Logger(const File& file) :
 	m_file(file) {}
@@ -102,15 +102,15 @@ public:
 	// Construct functions.
 
 	// Reconstruct.
-	/*  @docs {
+	/*  @docs
 		@title: Reconstruct
 		@description:
 			Reconstruct from path and mode.
-		@parameter: {
+		@parameter:
 			@name: path
 			@description: The path of the file.
 		}
-		@parameter: {
+		@parameter:
 			@name: mode
 			@description: The file mode.
 		}
@@ -120,7 +120,7 @@ public:
 			vlib::File file (...);
 			file.reconstruct("/tmp/myfile.txt", vlib::file::mode::append);
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This&	reconstruct(const File& file) {
         m_file = file;
@@ -150,27 +150,27 @@ public:
 	// Properties.
 
 	// Path.
-	/*  @docs {
+	/*  @docs
 		@title: File
 		@type: File&
 		@description: Get the file attribute.
-	} */
+	*/
 	constexpr
 	auto& 	file() { return m_file; }
 
 	// Is defined.
-	/*  @docs {
+	/*  @docs
 		@title: Is defined
 		@description: Check if the file is defined.
-	} */
+	*/
 	constexpr
 	Bool 	is_defined() const { return m_file.is_defined(); }
 
 	// Is undefined.
-	/*  @docs {
+	/*  @docs
 		@title: Is defined
 		@description: Check if the file is undefined.
-	} */
+	*/
 	constexpr
 	Bool 	is_undefined() const { return m_file.is_undefined(); }
 
@@ -178,10 +178,10 @@ public:
 	// Functions.
 
 	// Exists.
-	/*  @docs {
+	/*  @docs
 		@title: Log
 		@description: Log to the console and save to Athe file.
-	} */
+	*/
     void 	log(const String& msg, const Bool& console = true) {
         return log(msg.data(), msg.len(), console);
     }

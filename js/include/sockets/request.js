@@ -13,7 +13,7 @@ const zlib = require('zlib');
 // Request.
 
 // Make a request.
-/*  @docs {
+/*  @docs
  *  @title: Request
  *  @description:
  *      Make a request
@@ -64,7 +64,7 @@ const zlib = require('zlib');
  *  @usage:
  *      ...
  *      const {error, body, status} = await vlib.request({host: "https://google.com"});
- } */
+ */
 vlib.request = async function({
 	host,
 	port = 432,

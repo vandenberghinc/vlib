@@ -15,7 +15,7 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Hex static struct.
-/* @docs {
+/* @docs
     @chapter: Encoding
     @title: Base64
     @description:
@@ -23,7 +23,7 @@ namespace vlib {
     @usage:
         #include <vlib/crypto.h>
         vlib::Base64:: ... ;
-} */
+*/
 struct Base64 {
 
     // ---------------------------------------------------------
@@ -49,22 +49,22 @@ struct Base64 {
     // Functions.
 
     // Encode to base64.
-    /*  @docs {
+    /*  @docs
         @title: Encode
         @description:
             Encode a string.
-        @parameter: {
+        @parameter:
             @name: output
             @description: A reference to the output string.
         }
-        @parameter: {
+        @parameter:
             @name: input
             @description: The input data to encode.
         }
         @usage:
             vlib::String = vlib::Base64::encode("Hello World!", 12);
         @funcs: 2
-    } */
+    */
     SICE
     String     encode(const String& input) {
         return encode(input.data(), input.len());
@@ -113,22 +113,22 @@ struct Base64 {
     }
 
     // Decode from base64.
-    /*  @docs {
+    /*  @docs
         @title: Decode
         @description:
             Decode a string.
-        @parameter: {
+        @parameter:
             @name: output
             @description: A reference to the output string.
         }
-        @parameter: {
+        @parameter:
             @name: input
             @description: The input data to decode.
         }
         @usage:
             vlib::String decoded = vlib::Base64::decode("XXX");
         @funcs: 2
-    } */
+    */
     SICE
     String     decode(const String& input) {
         return decode(input.data(), input.len());

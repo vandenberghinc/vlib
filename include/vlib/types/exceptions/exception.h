@@ -58,8 +58,8 @@ struct ExceptionID {
 };
 
 // Exception type.
-/* 	@docs {
-	@chapter: exceptions
+/* 	@docs
+	@chapter: Exceptions
 	@title: Exception
 	@description:
 		Exception type.
@@ -70,7 +70,7 @@ struct ExceptionID {
 	@usage:
         #include <vlib/types.h>
 		vlib::Exception x (...);
-} */
+*/
 struct Exception {
 
 // Private:

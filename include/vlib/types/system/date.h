@@ -20,15 +20,15 @@ typedef long mtime_t;
 // Date type
 // - Most of the const property functions are omitted since these are intensive functions.
 // - Valid till the year 10000 (lol).
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Date
 	@description:
 		Date type.
 	@usage:
         #include <vlib/types.h>
 		vlib::Date date = vlib::Date::now();
-} */
+*/
 struct Date {
 
 // ---------------------------------------------------------
@@ -596,17 +596,17 @@ public:
 	m_mtime(-1), m_parsed(false), m_str(nullptr) {}
 	
 	// Constructor from a unix timestamp in milliseconds.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from a unix timestamp in milliseconds.
-		@parameter: {
+		@parameter:
 			@name: time
 			@description: The unix timestamp in milliseconds.
 		}
 		@usage:
 			vlib::Date date(0);
-	} */
+	*/
 	constexpr
 	Date	(const mtime_t& time) :
 	m_mtime(time), m_parsed(false), m_str(nullptr) {}
@@ -653,20 +653,20 @@ public:
 	// Property functions.
 	
 	// Get as unix timestamp in milliseconds.
-	/* 	@docs {
+	/* 	@docs
 		@title: Milliseconds
 		@description: Get as unix timestamp in milliseconds.
-	} */
+	*/
 	constexpr
 	auto& 	mtime() const {
 		return m_mtime;
 	}
 	
 	// Get as seconds.
-	/* @docs {
+	/* @docs
 	   @title: Seconds
 	   @description: Get as seconds (0-60).
-	} */
+	*/
 	constexpr
 	auto& 	seconds() {
 		safe_parse_tm();
@@ -679,10 +679,10 @@ public:
 	}
 	
 	// Get as minutes.
-	/* @docs {
+	/* @docs
 	   @title: Minutes
 	   @description: Get as minutes (0-59).
-	} */
+	*/
 	constexpr
 	auto& 	minutes() {
 		safe_parse_tm();
@@ -695,10 +695,10 @@ public:
 	}
 	
 	// Get as hour.
-	/* @docs {
+	/* @docs
 	   @title: Hour
 	   @description: Get as hour (0-23).
-	} */
+	*/
 	constexpr
 	auto& 	hour() {
 		safe_parse_tm();
@@ -713,10 +713,10 @@ public:
 	}
 	
 	// Get as day of the month.
-	/* @docs {
+	/* @docs
 	   @title: Day of the month
 	   @description: Get as day of the month (1-31).
-	} */
+	*/
 	constexpr
 	auto& 	mday() {
 		safe_parse_tm();
@@ -729,10 +729,10 @@ public:
 	}
 	
 	// Get as day of the week.
-	/* @docs {
+	/* @docs
 	   @title: Day of the week
 	   @description: Get as day of the week (0-6, Sunday = 0).
-	} */
+	*/
 	constexpr
 	auto& 	wday() {
 		safe_parse_tm();
@@ -745,10 +745,10 @@ public:
 	}
 	
 	// Get as day of the year.
-	/* @docs {
+	/* @docs
 	   @title: Day of the year
 	   @description: Get as day of the year (0-365, 1 Jan = 0).
-	} */
+	*/
 	constexpr
 	auto& 	yday() {
 		safe_parse_tm();
@@ -761,10 +761,10 @@ public:
 	}
 	
 	// Get the day name.
-	/* @docs {
+	/* @docs
 	   @title: Day name
 	   @description: Get the day name (e.g., Sunday).
-	} */
+	*/
 	constexpr
 	auto 	day_name() {
 		safe_parse_tm();
@@ -795,10 +795,10 @@ public:
 	}
 	
 	// Get the day name abbreviation.
-	/* @docs {
+	/* @docs
 	   @title: Day name abbreviation
 	   @description: Get the day name abbreviation (e.g., Sun).
-	} */
+	*/
 	constexpr
 	auto 	day_name_abr() {
 		safe_parse_tm();
@@ -829,10 +829,10 @@ public:
 	}
 	
 	// Get as month.
-	/* @docs {
+	/* @docs
 	   @title: Month
 	   @description: Get as month (0-11).
-	} */
+	*/
 	constexpr
 	auto& 	month() {
 		safe_parse_tm();
@@ -845,10 +845,10 @@ public:
 	}
 	
 	// Get the month name.
-	/* @docs {
+	/* @docs
 	   @title: Month name
 	   @description: Get the month name (e.g., January).
-	} */
+	*/
 	constexpr
 	auto 	month_name() {
 		safe_parse_tm();
@@ -889,10 +889,10 @@ public:
 	}
 	
 	// Get the month name abbreviation.
-	/* @docs {
+	/* @docs
 	   @title: Month name abbreviation
 	   @description: Get the month name abbreviation (e.g., Jan).
-	} */
+	*/
 	constexpr
 	auto 	month_name_abr() {
 		safe_parse_tm();
@@ -933,10 +933,10 @@ public:
 	}
 	
 	// Get as year.
-	/* @docs {
+	/* @docs
 	   @title: Year
 	   @description: Get as year (YYYY).
-	} */
+	*/
 	constexpr
 	auto 	year() {
 		safe_parse_tm();
@@ -949,10 +949,10 @@ public:
 	}
 	
 	// Get the timezone offset from UTC in seconds.
-	/* @docs {
+	/* @docs
 	   @title: Offset
 	   @description: Get the timezone offset from UTC in seconds.
-	} */
+	*/
 	constexpr
 	auto& 	offset() {
 		safe_parse_tm();
@@ -1015,10 +1015,10 @@ public:
 	}
 	
 	// Get the timezone name.
-	/* @docs {
+	/* @docs
 	   @title: Timezone
 	   @description: Get the timezone name.
-	} */
+	*/
 	constexpr
 	const char* timezone() {
 		safe_parse_tm();
@@ -1036,10 +1036,10 @@ public:
 	}
 	
 	// Get the week number.
-	/* @docs {
+	/* @docs
 	   @title: Week
 	   @description: Get the week number (1..52).
-	} */
+	*/
 	constexpr
 	int 	week(bool start_at_sunday = true) {
 		safe_parse_tm();
@@ -1077,10 +1077,10 @@ public:
 	// Functions.
 	
 	// Copy the object.
-	/* @docs {
+	/* @docs
 	   @title: Copy
 	   @description: Copy the object.
-	} */
+	*/
 	constexpr
 	auto 	copy() {
 		return *this;
@@ -1091,10 +1091,10 @@ public:
 	}
 	
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	   @title: Reset
 	   @description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	auto& 	reset() {
 		m_mtime = -1;
@@ -1103,25 +1103,25 @@ public:
 	}
 	
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	   @title: Is undefined
 	   @description: Check if the object is undefined.
 	   @usage:
 			timestamp_t x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const {
 		return m_mtime == -1;
 	}
 	
 	// Get a Date with the present time data.
-	/* @docs {
+	/* @docs
 	   @title: Now
 	   @description: Get a Date with the present time data.
 	   @usage:
 			Date now = Date::now();
-	} */
+	*/
 	static
 	This 	now() {
 		struct timespec time;
@@ -1130,12 +1130,12 @@ public:
 	}
 	
 	// Get milliseconds.
-	/* @docs {
+	/* @docs
 		@title: Milliseconds
 		@description: Get the current milliseconds.
 		@usage:
 			vlib::mtime_t now = vlib::Date::get_mseconds();
-	} */
+	*/
 	static inline
 	mtime_t	get_mseconds() {
 		struct timespec time;
@@ -1148,12 +1148,12 @@ public:
 	}
 	
 	// Get seconds.
-	/* @docs {
+	/* @docs
 		@title: Seconds
 		@description: Get the current seconds.
 		@usage:
 			time_t now = vlib::Date::get_mseconds();
-	} */
+	*/
 	static inline
 	time_t	get_seconds() {
 		struct timespec time;
@@ -1166,12 +1166,12 @@ public:
 	}
 	
 	// Minute start.
-	/* 	@docs {
+	/* 	@docs
 	 *	@title: Minute start
 	 *	@description: Get the start of the minute timesamp from the current `Date` object.
 	 *	@usage:
 	 *		Date minute_start = vlib::Date::now().minute_start();
-	 } */
+	 */
 	constexpr
 	Date	minute_start() {
 		safe_parse_tm();
@@ -1189,12 +1189,12 @@ public:
 	}
 	
 	// Hour start.
-	/* 	@docs {
+	/* 	@docs
 	 *	@title: Hour start
 	 *	@description: Get the start of the hour timesamp from the current `Date` object.
 	 *	@usage:
 	 *		Date hour_start = vlib::Date::now().hour_start();
-	 } */
+	 */
 	constexpr
 	Date	hour_start() {
 		safe_parse_tm();
@@ -1213,12 +1213,12 @@ public:
 	}
 	
 	// Day start.
-	/* 	@docs {
+	/* 	@docs
 	 *	@title: Day start
 	 *	@description: Get the start of the day timesamp from the current `Date` object.
 	 *	@usage:
 	 *		Date day_start = vlib::Date::now().day_start();
-	 } */
+	 */
 	constexpr
 	Date	day_start() {
 		safe_parse_tm();
@@ -1238,12 +1238,12 @@ public:
 	}
 	
 	// Month start.
-	/* 	@docs {
+	/* 	@docs
 	 *	@title: Month start
 	 *	@description: Get the start of the month timesamp from the current `Date` object.
 	 *	@usage:
 	 *		Date month_start = vlib::Date::now().month_start();
-	} */
+	*/
 	constexpr
 	Date	month_start() {
 		safe_parse_tm();
@@ -1264,7 +1264,7 @@ public:
 	}
 	
 	// Add.
-	/* 	@docs {
+	/* 	@docs
 		@title: Add
 		@description: Add milliseconds to attribute `m_time`.
 		@usage:
@@ -1272,12 +1272,11 @@ public:
 			now.add_r(10); ==> 10
 		@return:
 			Function `add` returns a new object while function `add_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: x
 			@description: The type to perform the math operation with, supports be the following types: any integral numeric, `Numeric` & `Date`.
-		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Type> constexpr
 	This 	add(const Type& x) const {
 		return copy().add_r(x);
@@ -1290,7 +1289,7 @@ public:
 	}
 	
 	// Subtract.
-	/* 	@docs {
+	/* 	@docs
 		@title: Subtract
 		@description: Subtract milliseconds from attribute `m_time`.
 		@usage:
@@ -1298,12 +1297,11 @@ public:
 			now.sub_r(10); ==> 0
 		@return:
 			Function `sub` returns a new object while function `sub_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: x
 			@description: The type to perform the math operation with, supports be the following types: any integral numeric, `Numeric` & `Date`.
-		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Type> constexpr
 	This 	sub(const Type& x) const {
 		return copy().sub_r(x);
@@ -1316,7 +1314,7 @@ public:
 	}
 	
 	// mult.
-	/* 	@docs {
+	/* 	@docs
 		@title: Multiply
 		@description: Multiply attribute `m_time`.
 		@usage:
@@ -1324,12 +1322,11 @@ public:
 			now.mult_r(2); ==> 20
 		@return:
 			Function `mult` returns a new object while function `mult_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: x
 			@description: The type to perform the math operation with, supports be the following types: any integral numeric, `Numeric` & `Date`.
-		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Type> constexpr
 	This 	mult(const Type& x) const {
 		return copy().mult(x);
@@ -1342,7 +1339,7 @@ public:
 	}
 	
 	// div.
-	/* 	@docs {
+	/* 	@docs
 		@title: Divide
 		@description: Divide attribute `m_time`.
 		@usage:
@@ -1350,12 +1347,11 @@ public:
 			now.div_r(2); ==> 5
 		@return:
 			Function `div` returns a new object while function `div_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: x
 			@description: The type to perform the math operation with, supports be the following types: any integral numeric, `Numeric` & `Date`.
-		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Type> constexpr
 	This 	div(const Type& x) const {
 		return copy().div_r(x);
@@ -1368,7 +1364,7 @@ public:
 	}
 	
 	// mod.
-	/* 	@docs {
+	/* 	@docs
 		@title: Modulo
 		@description: Calculate the modulo of attribute `m_time` divided by x.
 		@usage:
@@ -1376,12 +1372,11 @@ public:
 			now.mod_r(3); ==> 1
 		@return:
 			Function `mod` returns a new object while function `mod_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: x
 			@description: The type to perform the math operation with, supports be the following types: any integral numeric, `Numeric` & `Date`.
-		}
 		@funcs: 2
-	} */
+	*/
 	template <typename Type> constexpr
 	This 	mod(const Type& x) const {
 		return copy().mod_r(x);
@@ -1397,10 +1392,10 @@ public:
 	// Casts.
 	
 	// Parse from const char*.
-	/* 	@docs {
+	/* 	@docs
 		@title: parse
 		@description: Parse from a const char* (unix timestamp milliseconds).
-	} */
+	*/
 	SICE
 	This	parse(const char* unix, ullong len) {
 		return to_num<long>(unix, len);
@@ -1411,10 +1406,10 @@ public:
 	}
 	
 	// Parse from a formatted date string.
-	/* 	@docs {
+	/* 	@docs
 		@title: parse
 		@description: Parse from a const char* (unix timestamp milliseconds).
-	} */
+	*/
 	static inline
 	This	parse(const char* timestamp, const char* format) {
 		struct tm tm = {};
@@ -1425,20 +1420,20 @@ public:
 	}
 	
 	// As json.
-	/* 	@docs {
+	/* 	@docs
 		@title: JSON
 		@description: Cast to a unix milliseconds json formatted string.
 		@usage:
 			vlib::Date date(0);
 			date.json(); ==> "0"
-	} */
+	*/
 	constexpr
 	String	json() const {
 		return String(m_mtime);
 	}
 	
 	// As str.
-	/* @docs {
+	/* @docs
 		@title: String
 		@description:
 			Cast to string formatted like `%Y-%m-%dT%H:%M:%S%:z`.
@@ -1447,7 +1442,7 @@ public:
 		@usage:
 			vlib::Date date(0);
 			date.str(); ==> "1970-01-01T01:00:00+01:00"
-	} */
+	*/
 	// @TODO perhaps switch to strptime like.
 	String&	str() {
 		// if (m_str) { return *m_str; }
@@ -1458,16 +1453,16 @@ public:
 		m_str = new String (formatted);
 		return *m_str;
 	}
-	/* 	@docs {
+	/* 	@docs
 		@title: String
 		@description: Cast to string.
-		@parameter: {
+		@parameter:
 			@name: format
 			@description: The date format (posix formats).
 		@usage:
 			vlib::Date date(0);
 			date.str("%Y-%m-%dT%H:%M:%S%:z"); ==> "1970-01-01T01:00:00+01:00"
-	} */
+	*/
 	constexpr
 	String&	str(const char* format) {
 		// if (m_str) { return *m_str; }

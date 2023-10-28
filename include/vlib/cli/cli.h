@@ -10,7 +10,7 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // CLI Type.
-/*  @docs {
+/*  @docs
  *	@chapter: CLI
  *	@title: CLI
  *	@description:
@@ -21,7 +21,7 @@ namespace vlib {
  *			vlib::CLI cli(argc, argv);
  *			...
  *		}
- } */
+ */
 
 struct CLI {
 	
@@ -167,7 +167,7 @@ public:
 	// Constructor.
 	
 	// Default constructor.
-	/* @docs {
+	/* @docs
 	 *	@title: Constructor
 	 *	@description:
 	 *		Construct the cli object with the `argc` and `argv` arguments.
@@ -177,7 +177,7 @@ public:
 	 *			vlib::CLI cli(argc, argv);
 	 *			...
 	 *		}
-	 } */
+	 */
 	constexpr
 	CLI(int argc = 0, char** argv = nullptr)
 	{
@@ -195,7 +195,7 @@ public:
 	// Functions.
 	
 	// Set the docs.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Add docs
 	 *	@description:
 	 *		Add a docs chapter with a docs string.
@@ -203,7 +203,7 @@ public:
 	 *		cli.add_docs("Help", to_str(
 	 *			"--help: Show the cli documentation."
 	 *		));
-	 } */
+	 */
 	constexpr
 	void	add_docs(const String& chapter, String&& docs) {
 		if (docs.len() > 0 && docs.last() == '\n') {
@@ -217,7 +217,7 @@ public:
 	}
 	
 	// Get the docs string.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get docs
 	 *	@description:
 	 *		Get the docs in a string representation.
@@ -226,7 +226,7 @@ public:
 	 *	@usage:
 	 *		vlib::out << cli.docs();
 	 *		vlib::out << cli.docs("Help");
-	 } */
+	 */
 	constexpr
 	String	docs(const String& chapter = nullptr) {
 		String str;
@@ -240,13 +240,13 @@ public:
 	}
 	
 	// Length.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Length
 	 *	@description:
 	 *		Get the arguments length.
 	 *	@usage:
 	 *		ullong len = cli.len();
-	 } */
+	 */
 	constexpr
 	auto&	len() { return m_args.len(); }
 	
@@ -260,34 +260,32 @@ public:
 		}
 		return false;
 	}
-	/*  @docs {
+	/*  @docs
 	 *	@title: Present
 	 *	@description:
 	 *		Check if an argument is present.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: id
 	 *		@description: The id of the requested argument.
-	 *	}
 	 *	@usage:
 	 *		bool present = cli.present("--help");
-	 } */
+	 */
 	constexpr
 	bool	present(const String& id) {
 		return present(id.data(), id.len());
 	}
 	
 	// Check if one of the ids is present.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Present
 	 *	@description:
 	 *		Check if one of multiple arguments is present.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
-	 *	}
 	 *	@usage:
 	 *		bool present = cli.present({"--help", "-h"});
-	 } */
+	 */
 	constexpr
 	bool	present(const Array<String>& ids) {
 		for (auto& i: ids) {
@@ -299,19 +297,18 @@ public:
 	}
     
     // Find te index of an argument.
-    /*	@docs {
+    /*	@docs
      *  @title: Find
      *  @description:
      *      Find the index of an argument.
      *   @notes:
      *       Returns `NPos::npos` when the argument is not found.
-     *  @parameter: {
+     *  @parameter:
      *      @name: id
      *      @description: The arguments id.
-     *  }
      *  @usage:
      *      ullong index = cli.find("--help");
-     } */
+     */
     constexpr
     ullong    find(const String& id) {
         ullong index = 0;
@@ -328,25 +325,24 @@ public:
 	// Get an argument.
 	//
 	// Get by index.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by index.
-	 *	 @warning:
+	 *	@warning:
 	 *		 Will cause a segfault when the index is out of range.
 	 *	@warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@notes:
+	 *		 <bullet> Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *		 <bullet> Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *		 <bullet> Casting to a `Json` or `JArray` is not supported.
+	 *	@parameter:
 	 *		@name: index
 	 *		@description: The index of the requested argument.
-	 *	}
 	 *	@usage:
 	 *		String arg = cli.get(0);
-	 } */
+	 */
 	constexpr
 	auto&	get(ullong index) {
 		return m_args.get(index);
@@ -367,7 +363,7 @@ public:
 		}
 		return def;
 	}
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by id.
@@ -379,24 +375,22 @@ public:
 	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: id
 	 *		@description: The id of the requested argument.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: def
 	 *		@description: The returned value when the argument is not present.
-	 *	}
 	 *	@usage:
 	 *		String arg = cli.get("--hello-world");
-	 } */
+	 */
 	constexpr
 	auto	get(const String& id, const String& def = null) {
 		return get_h(id.data(), id.len(), def);
 	}
 	//
 	// Get one of the ids.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by multiple id's for the same argument.
@@ -408,17 +402,15 @@ public:
 	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
-	 *	 }
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: def
 	 *		@description: The returned value when the argument is not present.
-	 *	 }
 	 *	@usage:
 	 *		String arg = cli.get({"--hello-world", "-hw"});
-	 } */
+	 */
 	constexpr
 	auto	get(const Array<String>& ids, const String& def = null) {
 		for (auto& id: ids) {
@@ -442,7 +434,7 @@ public:
 	// - Does not support casts to json.
 	//
 	// Get by index.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by index with a type cast.
@@ -454,13 +446,12 @@ public:
 	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: index
 	 *		@description: The index of the requested argument.
-	 *	}
 	 *	@usage:
 	 *		Int arg = cli.get<Int>(0);
-	 } */
+	 */
 	template <typename As> constexpr
 	As		get(ullong index) {
 		return cast<As>(m_args.get(index));
@@ -497,7 +488,7 @@ public:
 		}
 		return def;
 	}
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *	 	Get an argument by id with a type cast.
@@ -509,20 +500,19 @@ public:
 	 *	 	- Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *	 	- Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *	 	- Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *	 	@name: id
 	 *	 	@description: The id of the requested argument.
-	 *	}
 	 *	@usage:
 	 *	 	Int arg = cli.get<Int>("--some-int");
 	 *	@funcs: 2
-	} */
+	*/
 	template <typename As> constexpr
 	As		get(const String& id) {
 		return get_h<As>(id.data(), id.len());
 	}
     
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by id with a type cast.
@@ -534,24 +524,22 @@ public:
 	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: id
 	 *		@description: The id of the requested argument.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: def
 	 *		@description: The returned value when the argument is not present.
-	 *	}
 	 *	@usage:
 	 *		Int arg = cli.get<Int>("--some-int", 0);
-	 } */
+	 */
 	template <typename As> constexpr
 	As		get(const String& id, const As& def) {
 		return get_h<As>(id.data(), id.len(), def);
 	}
 	//
 	// Get one of the ids.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by multiple id's for the same argument with a type cast.
@@ -563,13 +551,12 @@ public:
 	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		 - Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
-	 *	}
 	 *	@usage:
 	 *		Int arg = cli.get<Int>({"--some-int", "-si"});
-	 } */
+	 */
 	template <typename As> constexpr
 	As		get(const Array<String>& ids) {
 		for (auto& id: ids) {
@@ -587,7 +574,7 @@ public:
 		}
 		return As();
 	}
-	/*  @docs {
+	/*  @docs
 	 *	@title: Get
 	 *	@description:
 	 *		Get an argument by multiple id's for the same argument with a type cast.
@@ -599,17 +586,15 @@ public:
 	 *		- Arrays should be formatted like: `--some-array "0,1,2"`.
 	 *		- Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
 	 *		- Casting to a `Json` or `JArray` is not supported.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: def
 	 *		@description: The returned value when the argument is not present.
-	 *	}
 	 *	@usage:
 	 *		Int arg = cli.get<Int>({"--some-int", "-si"}, 0);
-	 } */
+	 */
 	template <typename As> constexpr
 	As		get(const Array<String>& ids, const As& def) {
 		for (auto& id: ids) {
@@ -629,19 +614,18 @@ public:
 	}
 	
 	// Dump docs.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Dump docs
 	 *	@description:
 	 *		Dump the cli documentation to the console.
 	 *
 	 *		Optionally specify a chapter.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: chapter
 	 *		@description: The chapter, when the chapter is undefined, the entire docs will be dumped.
-	 *	}
 	 *	@usage:
 	 *		cli.dump_docs();
-	 } */
+	 */
 	void 	dump_docs(const String& chapter = null) {
 		if (m_docs.is_defined()) {
 			vlib::out << docs(chapter) << "\n";
@@ -649,21 +633,19 @@ public:
 	}
 	
 	// Dump docs, throw an invalid argument(s) error and exit with an exit status
-	/*  @docs {
+	/*  @docs
 	 *	@title: Throw an invalid argument error
 	 *	@description:
 	 *		Dump the documentation, throw an invalid argument error and exit with an exit status.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: chapter
 	 *		@description: The chapter, when the chapter is undefined, the entire docs will be dumped.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: status
 	 *		@description: The exit status.
-	 *	}
 	 *	@usage:
 	 *		cli.throw_invalid();
-	 } */
+	 */
 	void 	throw_invalid(const String& chapter = null, int status = 1) {
 		if (m_docs.is_defined()) {
 			vlib::out << docs(chapter) << "\n";
@@ -679,25 +661,22 @@ public:
 	}
 	
 	// Dump docs, throw a define argument error and exit with an exit status
-	/*  @docs {
+	/*  @docs
 	 *	@title: Throw a define argument error
 	 *	@description:
 	 *		Dump the documentation, throw a define argument error and exit with an exit status.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: arg
 	 *		@description: The id of the argument that should be defined.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: chapter
 	 *		@description: The chapter, when the chapter is undefined, the entire docs will be dumped.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: status
 	 *		@description: The exit status.
-	 *	}
 	 *	@usage:
 	 *		cli.throw_define_arg("--hello-world");
-	 } */
+	 */
 	void 	throw_define_arg(const String& arg, const String& chapter = null, int status = 1) {
 		if (m_docs.is_defined()) {
 			vlib::out << docs(chapter) << "\n";
@@ -713,21 +692,19 @@ public:
 	}
 	
 	// Throw an error and exit with an exit status
-	/*  @docs {
+	/*  @docs
 	 *	@title: Throw a custom error
 	 *	@description:
 	 *		Throw a custom error and exit with an exit status.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: e
 	 *		@description: The custom error message.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: status
 	 *		@description: The exit status.
-	 *	}
 	 *	@usage:
 	 *		cli.throw_error("Some error.");
-	 } */
+	 */
 	void 	throw_error(const String& e, int status = 1) {
 		vlib::err <<
 		colors::bold <<
@@ -740,17 +717,16 @@ public:
 	}
 
 	// Show a warning.
-	/*  @docs {
+	/*  @docs
 	 *	@title: Throw warning
 	 *	@description:
 	 *		Throw a custom warning message.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: e
 	 *		@description: The custom warning message.
-	 *	}
 	 *	@usage:
 	 *		cli.throw_warning("Some warning.");
-	 } */
+	 */
 	void 	throw_warning(const String& e) {
 		vlib::err <<
 		colors::bold <<

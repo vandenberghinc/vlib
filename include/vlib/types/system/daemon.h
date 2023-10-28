@@ -11,15 +11,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Daemon type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Daemon
 	@description:
 		Daemon type.
     @usage:
         #include <vlib/types.h>
         vlib::Daemon daemon ({ ... });
-} */
+*/
 struct Daemon {
 	
 	// ---------------------------------------------------------
@@ -146,143 +146,143 @@ struct Daemon {
 	// Properties.
 	
 	// Name.
-	/*  @docs {
+	/*  @docs
 		@title: Name
 		@type: String&
 		@description: Get daemon's name.
-	} */
+	*/
 	constexpr
 	auto&	name() { return m_settings.name; }
 	constexpr
 	auto&	name() const { return m_settings.name; }
 	
 	// User.
-	/*  @docs {
+	/*  @docs
 		@title: User
 		@type: String&
 		@description: Get daemon's executing user.
-	} */
+	*/
 	constexpr
 	auto&	user() { return m_settings.user; }
 	constexpr
 	auto&	user() const { return m_settings.user; }
 	
 	// Group.
-	/*  @docs {
+	/*  @docs
 		@title: Group
 		@type: String&
 		@description: Get daemon's executing group.
-	} */
+	*/
 	constexpr
 	auto&	group() { return m_settings.group; }
 	constexpr
 	auto&	group() const { return m_settings.group; }
 	
 	// Command.
-	/*  @docs {
+	/*  @docs
 		@title: Command
 		@type: String&
 		@description: Get daemon's start command.
-	} */
+	*/
 	constexpr
 	auto&	command() { return m_settings.command; }
 	constexpr
 	auto&	command() const { return m_settings.command; }
 	
 	// Args.
-	/*  @docs {
+	/*  @docs
 		@title: Args
 		@type: Array<String>&
 		@description: Get daemon's start arguments.
-	} */
+	*/
 	constexpr
 	auto&	args() { return m_settings.args; }
 	constexpr
 	auto&	args() const { return m_settings.args; }
     
     // Env.
-    /*  @docs {
+    /*  @docs
         @title: Env
         @type: Dict<String, String>&
         @description: Get daemon's environment dict.
-    } */
+    */
     constexpr
     auto&    env() { return m_settings.env; }
     constexpr
     auto&    env() const { return m_settings.env; }
 	
 	// Desc.
-	/*  @docs {
+	/*  @docs
 		@title: Description
 		@type: String&
 		@description: Get daemon's description.
-	} */
+	*/
 	constexpr
 	auto&	desc() { return m_settings.desc; }
 	constexpr
 	auto&	desc() const { return m_settings.desc; }
 	
 	// Restart.
-	/*  @docs {
+	/*  @docs
 		@title: Auto restart
 		@type: bool&
 		@description: Get the auto restart boolean.
-	} */
+	*/
 	constexpr
 	auto&	auto_restart() { return m_settings.auto_restart; }
 	constexpr
 	auto&	auto_restart() const { return m_settings.auto_restart; }
 	
 	// Restart limit.
-	/*  @docs {
+	/*  @docs
 		@title: Restart limit
 		@type: int&
 		@description: Get the restart limit, not used on macos.
-	} */
+	*/
 	constexpr
 	auto&	restart_limit() { return m_settings.auto_restart_limit; }
 	constexpr
 	auto&	restart_limit() const { return m_settings.auto_restart_limit; }
 	
 	// Restart_delay.
-	/*  @docs {
+	/*  @docs
 		@title: Restart delay
 		@type: int&
 		@description: Get the restart delay in seconds.
-	} */
+	*/
 	constexpr
 	auto&	restart_delay() { return m_settings.auto_restart_delay; }
 	constexpr
 	auto&	restart_delay() const { return m_settings.auto_restart_delay; }
 	
 	// Logs.
-	/*  @docs {
+	/*  @docs
 		@title: Logs
 		@type: Path&
 		@description: Get log file path.
-	} */
+	*/
 	constexpr
 	auto&	logs() { return m_settings.logs; }
 	constexpr
 	auto&	logs() const { return m_settings.logs; }
 	
 	// Errors.
-	/*  @docs {
+	/*  @docs
 		@title: Errors
 		@type: Path&
 		@description: Get error file path.
-	} */
+	*/
 	constexpr
 	auto&	errors() { return m_settings.errors; }
 	constexpr
 	auto&	errors() const { return m_settings.errors; }
 	
 	// Daemon config path.
-	/*  @docs {
+	/*  @docs
 		@title: Path
 		@type: Path&
 		@description: Get daemon config path.
-	} */
+	*/
 	constexpr
 	auto&	path() { return m_path; }
 	constexpr
@@ -337,7 +337,7 @@ private:
             data << "Environment=\"" << m_settings.env.key(index) << "=" << m_settings.env.value(index) << "\"\n";
         }
 
-		# // Group.
+		// Group.
 		if (m_settings.group.is_defined()) {
 			data <<
 			"Group=" << m_settings.group << "\n";
@@ -484,7 +484,7 @@ public:
     // @TODO still implement systemctl daemon-reload for linux.
 	
 	// Check if the daemon exists.
-	/* @docs {
+	/* @docs
 		@title: Exists
 		@description:
 			Check if the daemon's exists.
@@ -501,7 +501,7 @@ public:
 	}
 	
 	// Create the daemon.
-	/* @docs {
+	/* @docs
 		@title: Create
 		@description:
 			Create the daemon's configuration file.
@@ -525,7 +525,7 @@ public:
 	}
 	
 	// Update the daemon.
-	/* @docs {
+	/* @docs
 		@title: Update
 		@description:
 			Update the daemon's configuration file.
@@ -547,7 +547,7 @@ public:
 	}
 	
 	// Remove the daemon.
-	/* @docs {
+	/* @docs
 		@title: Remove
 		@description:
 			Remove the daemon's configuration file.
@@ -564,7 +564,7 @@ public:
 	}
 	
 	// Start the daemon.
-	/* @docs {
+	/* @docs
 		@title: Start
 		@description:
 			Start the daemon.
@@ -591,7 +591,7 @@ public:
 	}
 	
 	// Stop the daemon.
-	/* @docs {
+	/* @docs
 		@title: stop
 		@description:
 			Stop the daemon.
@@ -618,7 +618,7 @@ public:
 	}
 	
 	// Restart the daemon.
-	/* @docs {
+	/* @docs
 		@title: restart
 		@description:
 			Restart the daemon.
@@ -648,7 +648,7 @@ public:
 	}
     
     // Tail the daemon logs.
-    /* @docs {
+    /* @docs
         @title: tail
         @description:
             Tail the daemon logs.

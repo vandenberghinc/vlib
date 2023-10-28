@@ -9,8 +9,8 @@
 namespace vlib {
 
 // Normal iteration range type.
-/* @docs {
-	@chapter: types
+/* @docs
+	@chapter: Types
 	@title: Range
 	@description:
 		Iterate a certain range.
@@ -37,7 +37,7 @@ namespace vlib {
 		// This causes an infinite loop.
 		while (++vlib::Range(0, 10)) { ... }
  
-}*/
+*/
 template <typename Iter = Forwards, typename Type = ullong>
 struct Range {
 

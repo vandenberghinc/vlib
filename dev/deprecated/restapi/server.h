@@ -24,15 +24,15 @@ namespace restapi {
 // - GET request parameters are by default passed in the payload body. Since HTTP/1.1 no longer forbids this.
 //
 
-/*  @docs {
-	@chapter: restapi
+/*  @docs
+	@chapter: REST API
 	@title: Server
 	@description:
 		The RESTAPI server object.
 	@usage:
 		#include <vlib/sockets/restapi.h>
 		vlib::restapi::Server server;
-} */
+*/
 template <
 	uchar	family = 		sockets::family::ipv4,
 	int 	type = 			sockets::type::stream,
@@ -669,13 +669,13 @@ public:
 	}
 	
 	// Send the stop signal to the server thread.
-	/*  @docs {
+	/*  @docs
 		@title: Stop
 		@description:
 			Send the stop signal to the server thread.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-	} */
+	*/
 	constexpr
 	int 	stop() {
 		m_attr->status = 0;
@@ -686,13 +686,13 @@ public:
 	// Functions.
 
 	// Initialize before start.
-	/*  @docs {
+	/*  @docs
 		@title: Inititialize
 		@description:
 			Initialize the server, is required to be called before `start()`.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-	} */
+	*/
 	constexpr
 	int 	initialize() {
 		random::random_seed(); // for key generation.
@@ -707,15 +707,15 @@ public:
 	}
 	
 	// Sign data with the master sha key.
-	/*  @docs {
+	/*  @docs
 		@title: Sign data
 		@description:
 			Sign data with the master sha key.
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The data to sign.
 		}
-	} */
+	*/
 	constexpr
 	String  hmac(const String& data) {
         return SHA256::hmac(m_attr->master_sha, data);
@@ -725,18 +725,18 @@ public:
 	// Endpoints.
 	
 	// Create an endpoint.
-	/*  @docs {
+	/*  @docs
 		@title: Endpoint
 		@type: vlib::http::Endpoint
 		@description:
 			Create an endpoint.
 		@return:
 			Returns an endpoint object.
-		@parameter: {
+		@parameter:
 			@name: a
 			@description: The endpoint attributes.
 		}
-	} */
+	*/
     constexpr
     auto    endpoint(const typename Endpoint::attr& x) {
         return Endpoint(x);
@@ -745,20 +745,20 @@ public:
 	// Add endpoints.
 	constexpr
 	void	add_endpoints() {}
-	/*  @docs {
+	/*  @docs
 		@title: Add endpoints
 		@description:
 			Add endpoints to the server.
-		@parameter: {
+		@parameter:
 			@name: endpoint
 			@description: The endpoint object.
 		}
-		@parameter: {
+		@parameter:
 			@name: endpoints
 			@description: The other endpoint objects.
 		}
 		@funcs: 2
-	} */
+	*/
 	template <typename... Endpoints> constexpr
 	void	add_endpoints(Endpoint&& endpoint, Endpoints&&... endpoints) {
 		m_attr->endpoints.append(endpoint);
@@ -774,25 +774,25 @@ public:
 	// Users.
 	
 	// Create user.
-	/*  @docs {
+	/*  @docs
 		@title: Create user
 		@description:
 			Create a new user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The new username.
 		}
-		@parameter: {
+		@parameter:
 			@name: password
 			@description: The user's new password.
 		}
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The user's storage data.
 		}
-	} */
+	*/
 	constexpr
 	int		create_user(
 		const String&	username,		// the user's username.
@@ -833,17 +833,17 @@ public:
 	}
 	
 	// Delete a user.
-	/*  @docs {
+	/*  @docs
 		@title: Delete user
 		@description:
 			Delete an existing user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The existing username.
 		}
-	} */
+	*/
 	constexpr
 	int		delete_user(const String& username) {
 		
@@ -872,25 +872,25 @@ public:
 	}
 	
 	// Create an api key for a user.
-	/*  @docs {
+	/*  @docs
 		@title: Create API key
 		@description:
 			Create an API key and API secret for an existing user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: A reference to the output API key string.
 		}
-		@parameter: {
+		@parameter:
 			@name: api_secret
 			@description: A reference to the output API secret string.
 		}
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-	} */
+	*/
 	constexpr
 	int		create_api_key(
 		String& 			api_key,		// a reference to the user's api key (will be assigned).
@@ -925,21 +925,21 @@ public:
 	}
 	
 	// Delete an api key.
-	/*  @docs {
+	/*  @docs
 		@title: Delete API key
 		@description:
 			Delete an existing API key and API secret from a user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: The API key to delete from the user.
 		}
-	} */
+	*/
 	constexpr
 	int		delete_api_key(const String& username, const String& api_key) {
 		
@@ -971,25 +971,25 @@ public:
 	}
 	
 	// Create an access token for a user.
-	/*  @docs {
+	/*  @docs
 		@title: Create access token
 		@description:
 			Create an access token for an existing user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: access_token
 			@description: A reference to the output access token string.
 		}
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: expires_in
 			@description: Expires in seconds.
 		}
-	} */
+	*/
 	constexpr
 	int		create_access_token(String& access_token, const String& username, const time_t& expires_in = 86400) {
 		
@@ -1020,21 +1020,21 @@ public:
 	}
 	
 	// Delete an access token.
-	/*  @docs {
+	/*  @docs
 		@title: Delete access token
 		@description:
 			Delete an existing access token from a user.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: access_token
 			@description: The acces token to delete from the user.
 		}
-	} */
+	*/
 	constexpr
 	int		delete_access_token(const String& username, const String& access_token) {
 		
@@ -1066,21 +1066,21 @@ public:
 	}
 	
 	// Verify a username and password combination.
-	/*  @docs {
+	/*  @docs
 		@title: Verify user
 		@description:
 			Verify a username and password combiniation.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: password
 			@description: The raw password of the user.
 		}
-	} */
+	*/
 	constexpr
 	int		verify_user(const String& username, const String& password) {
 		int status;
@@ -1096,21 +1096,21 @@ public:
 	}
 	
 	// Load a user.
-	/*  @docs {
+	/*  @docs
 		@title: Load user
 		@description:
 			Load the user's data.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: A reference to the output json data.
 		}
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-	} */
+	*/
 	constexpr
 	int		load_user(Json& data, const String& username) {
 		
@@ -1130,21 +1130,21 @@ public:
 	}
 	
 	// Save a user's data.
-	/*  @docs {
+	/*  @docs
 		@title: Save user
 		@description:
 			Save the user's data.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The json data to save.
 		}
-	} */
+	*/
 	constexpr
 	int		save_user(const String& username, const Json& data) {
 		
@@ -1164,39 +1164,39 @@ public:
 	}
 	
 	// Check if a user exists.
-	/*  @docs {
+	/*  @docs
 		@title: User exists
 		@description:
 			Check if a user exists by username.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-	} */
+	*/
 	constexpr
 	bool	user_exists(const String& username) {
 		return m_attr->users_sys_path.join(username).exists();
 	}
 	
 	// Get a uid from the api key / access token.
-	/*  @docs {
+	/*  @docs
 		@title: Get username by api key
 		@description:
 			Get the username from the encoded API key.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: A reference to the output username string.
 		}
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: The API key to retrieve the username from.
 		}
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	int		get_username_by_api_key(String& username, const String& api_key) {
 		username.reset();
@@ -1225,7 +1225,7 @@ public:
 	}
 	
 	// Verify a user's api key.
-	/*  @docs {
+	/*  @docs
 		@title: Verify API key
 		@description:
 			Verify an API key.
@@ -1233,12 +1233,12 @@ public:
 			Optionally also verify the signature provided by the client.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: The api key to verify.
 		}
 		@funcs: 3
-	} */
+	*/
 	constexpr
 	int		verify_api_key(const String& api_key) {
 		int status;
@@ -1279,47 +1279,47 @@ public:
 	}
 	
 	// Verify a user's signature.
-	/*  @docs {
+	/*  @docs
 		@title: Verify signature
 		@description:
 			Verify a user's signature
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: The API key of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: signature
 			@description: The provided signature.
 		}
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The data that has been used to create the signature.
 		}
-	} */
+	*/
 	constexpr
 	int		verify_signature(const String& username, const String& api_key, const String& signature, const String& data) {
 		return verify_api_key(username, api_key, signature, data);
 	}
 	
 	// Verify a user's access token.
-	/*  @docs {
+	/*  @docs
 		@title: Verify access token
 		@description:
 			Verify an access token.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: access_token
 			@description: The access token to verify.
 		}
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	int		verify_access_token(const String& access_token) {
 		int status;
@@ -1365,29 +1365,29 @@ public:
 	}
 	
 	// Sign data with a user's secret key.
-	/*  @docs {
+	/*  @docs
 		@title: Sign data
 		@description:
 			Sign data with a user's secret key.
 		@return:
 			Returns `0` upon success, and the error code upon failure (`< 0`).
-		@parameter: {
+		@parameter:
 			@name: output
 			@description: A reference to the output object.
 		}
-		@parameter: {
+		@parameter:
 			@name: username
 			@description: The username of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: api_key
 			@description: The api key of the user.
 		}
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The data to sign.
 		}
-	} */
+	*/
 	constexpr
 	int		sign(String& output, const String& username, const String& api_key, const String& data) {
 		int status;
@@ -1407,27 +1407,27 @@ public:
 	// New responses.
 	
 	// Server response.
-	/*  @docs {
+	/*  @docs
 		@title: Response
 		@type: vlib::http::Response
 		@description:
 			Create a server response object.
 		@return:
 			Returns a response object.
-		@parameter: {
+		@parameter:
 			@name: status
 			@description: The response status.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The response headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: body
 			@description: The response body.
 		}
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto 	response(const int& status, const http::Headers& headers, const String& body) {
 		return http::Response(http_version, status, headers, body);
@@ -1436,27 +1436,27 @@ public:
 	auto 	response(const int& status, const http::Headers& headers, const Json& body) {
 		return http::Response(http_version, status, headers, body.json());
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Compressed response
 		@type: vlib::http::Response
 		@description:
 			Create a compressed server response object.
 		@return:
 			Returns a compressed response object.
-		@parameter: {
+		@parameter:
 			@name: status
 			@description: The response status.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The response headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: body
 			@description: The response body.
 		}
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto 	compressed_response(const int& status, const http::Headers& headers, const String& body) {
         http::Headers new_headers = headers;

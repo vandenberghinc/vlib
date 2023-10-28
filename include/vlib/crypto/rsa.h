@@ -17,15 +17,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Static SHA256 struct.
 
-/* @docs {
-    @chapter: crypto
+/* @docs
+    @chapter: Crypto
     @title: RSA
     @description:
         Very simple RSA object.
     @usage:
         #include <vlib/crypto.h>
         vlib::RSA rsa(...);
-} */
+*/
 struct RSA {
 
 // Public.
@@ -116,36 +116,36 @@ public:
     // Attributes.
     
     // Get the private key.
-    /*  @docs {
+    /*  @docs
      *  @title: Private Key
      *  @description: Get the private key attribute.
-     } */
+     */
     constexpr auto& private_key() { return *m_priv; }
     constexpr auto& private_key() const { return *m_priv; }
     
     // Is defined.
-    /*  @docs {
+    /*  @docs
      *  @title: Is defined
      *  @description: Check if the object is defined.
-     } */
+     */
     constexpr bool is_defined() const { return m_priv.is_defined(); }
     
     // Is undefined.
-    /*  @docs {
+    /*  @docs
      *  @title: Is undefined
      *  @description: Check if the object is undefined.
-     } */
+     */
     constexpr bool is_undefined() const { return m_priv.is_undefined(); }
     
     // ---------------------------------------------------------
     // Functions.
     
 	// Sign data.
-    /*  @docs {
+    /*  @docs
         @title: Sign
         @description:
             Sign data with the private key.
-        @parameter: {
+        @parameter:
             @name: data
             @description: The data to sign.
         }
@@ -153,7 +153,7 @@ public:
             vlib::RSA rsa ("/path/to/private_key")
             vlib::String output = rsa.sign("Hello World!");
         @funcs: 2
-    } */
+    */
     template <int Algorithm = crypto::mode::sha256>
     String  sign(const String& data) const {
         return sign<Algorithm>(data.data(), data.len());

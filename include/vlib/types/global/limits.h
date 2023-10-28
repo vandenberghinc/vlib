@@ -15,15 +15,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Static limits type.
 
-/* @docs {
-	@chapter: types
+/* @docs
+	@chapter: Types
 	@title: Limits
 	@description:
 		Numeric limits structure.
 	@usage:
 		#include <vlib/types.h>
 		int int_max = vlib::limits<int>::max;
-} */
+*/
 template <typename Type>
 struct limits {};
 

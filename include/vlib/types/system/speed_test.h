@@ -11,12 +11,12 @@ namespace vlib {
 // ---------------------------------------------------------
 // Daemon type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: SpeedTest
 	@description:
 		Speed object to test performance.
-} */
+*/
 struct SpeedTest {
 	
 	// ---------------------------------------------------------
@@ -44,7 +44,7 @@ public:
 	// Public functions.
 	
 	// Get the timestamp.
-	/* @docs {
+	/* @docs
 		@title: Time
 		@description:
 			Get the current timestamp.
@@ -55,7 +55,7 @@ public:
 	}
 	
 	// Add a speed mark.
-	/* @docs {
+	/* @docs
 		@title: Add
 		@description:
 			Add a performance test.
@@ -65,7 +65,7 @@ public:
 	}
 	
 	// Dump.
-	/* @docs {
+	/* @docs
 		@title: Dump
 		@description:
 			Dump the performance test.

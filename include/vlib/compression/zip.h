@@ -23,8 +23,8 @@ namespace vlib {
 // * ZIP file format: https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
 // * Extra fields: https://libzip.org/specifications/extrafld.txt
 
-/*  @docs {
- *  @chapter: compression
+/*  @docs
+ *  @chapter: Compression
  *  @title: Zip
  *  @description:
  *      Create or extract a zip archive.
@@ -42,7 +42,7 @@ namespace vlib {
  *      vlib::Zip zip;
  *      ...
  *  @warning: This class is experimental and still in development.
- } */
+ */
 struct Zip {
 
 // Public.
@@ -52,7 +52,7 @@ public:
     // Public structs.
     
     // Zip entry structure.
-    /*  @docs {
+    /*  @docs
      *  @title: Entry
      *  @description:
      *      A zip archive file entry.
@@ -78,7 +78,7 @@ public:
      *      for (auto& entry: zip.entries()) {
      *          ...
      *      }
-     } */
+     */
     struct Entry {
         
         // ---------------------------------------------------------
@@ -847,19 +847,19 @@ public:
     // Attributes.
     
     // Add a file to an archive.
-    /*  @docs {
+    /*  @docs
      *  @title: Compression Level
      *  @description:
      *      Get the underlying compression level attribute.
      *  @usage:
      *      vlib::Zip zip;
      *      zip.compression_level() = ...;
-     } */
+     */
     constexpr auto& compression_level() { return m_compression.level(); }
     constexpr auto& compression_level() const { return m_compression.level(); }
     
     // Get all entries.
-    /*  @docs {
+    /*  @docs
      *  @title: Entries
      *  @description:
      *      Get all the file names from the archive.
@@ -876,12 +876,12 @@ public:
      *      for (auto& entry: zip.entries()) {
      *          print(entry.name);
      *      }
-     } */
+     */
     constexpr auto& entries() { return m_archive.entries; }
     constexpr auto& entries() const { return m_archive.entries; }
     
     // Get all the file names.
-    /*  @docs {
+    /*  @docs
      *  @title: File names
      *  @description:
      *      Get all the file names from the archive.
@@ -904,7 +904,7 @@ public:
      *      for (auto& entry: zip.entries()) {
      *          print(entry.name);
      *      }
-     } */
+     */
     constexpr
     Array<String> file_names() const {
         Array<String> names;
@@ -918,7 +918,7 @@ public:
     // Functions.
 
     // Reset the attributes.
-    /*  @docs {
+    /*  @docs
      *  @title: Reset
      *  @description:
      *      Reset all attributes.
@@ -929,7 +929,7 @@ public:
      *      zip.add("file1", "/tmp/dir/file1");
      *      zip.reset();
      *      ...
-     } */
+     */
     Zip&	reset() {
         m_archive = {};
         m_compression.level() = Z_BEST_COMPRESSION;
@@ -937,7 +937,7 @@ public:
     }
     
     // Find an entry by offset.
-    /*  @docs {
+    /*  @docs
      *  @title: Find Entry
      *  @description:
      *      Find an entry by offset.
@@ -945,15 +945,14 @@ public:
      *      Throws an `EntryNotFoundError` when the entry is not found.
      *  @type:
      *      Zip::Entry&
-     *  @parameter: {
+     *  @parameter:
      *      @name: offset
      *      @description: The offset of the entry.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.find_entry_by_offset(0);
-     } */
+     */
 	auto&	find_entry_by_offset(uint64_t offset) {
         return find_entry(m_archive, offset);
     }
@@ -962,7 +961,7 @@ public:
     }
     
     // Find an entry by name.
-    /*  @docs {
+    /*  @docs
      *  @title: Find Entry
      *  @description:
      *      Find an entry by name.
@@ -972,15 +971,14 @@ public:
      *      Throws an `EntryNotFoundError` when the entry is not found.
      *  @type:
      *      Zip::Entry&
-     *  @parameter: {
+     *  @parameter:
      *      @name: name
      *      @description: The filename of the entry.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.find_entry_by_offset("dir/myfile");
-     } */
+     */
 	auto&	find_entry_by_name(const String& name) {
         return find_entry(m_archive, name);
     }
@@ -989,26 +987,24 @@ public:
     }
     
     // Add a file to an archive.
-    /*  @docs {
+    /*  @docs
      *  @title: Add
      *  @description:
      *      Add a zip file to a new archive.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: name
      *      @description: The name of the file, should be the subpath to the absolute dir.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: path
      *      @description: The path to the file.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.add("file1", "/tmp/dir/file1");
      *      zip.add("dir/file2", "/tmp/dir/dir/file2");
      *  @funcs: 2
-     } */
+     */
 	auto&	add(const String& name, Path& path) {
 		
 		// Already compressed file extensions.
@@ -1135,20 +1131,18 @@ public:
     }
     
     // Write the archive to a stream or file.
-    /*  @docs {
+    /*  @docs
      *  @title: Write
      *  @description:
      *      Write the archive to a stream or file.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: stream
      *      @description: A `vlib::Stream` or `vlib::File` object to write the archive to.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: archive
      *      @description: The archive to write out.
-     *  }
      *  @usage:
      *      // Create zip.
      *      vlib::Zip zip;
@@ -1162,7 +1156,7 @@ public:
      *      // Or write to a stream.
      *      vlib::Stream stream;
      *      zip.write(stream);
-     } */
+     */
     template <typename Stream> requires (is_File<Stream>::value || is_Stream<Stream>::value)
 	auto&	write(Stream& stream) {
         
@@ -1194,7 +1188,7 @@ public:
     }
     
     // Create zip archive and write to file.
-    /*  @docs {
+    /*  @docs
      *  @title: Create
      *  @description:
      *      Create a zip archive from a source file or directory and write it out to the destination path.
@@ -1202,26 +1196,24 @@ public:
      *      No other functions are required to create a zip archive when using this function.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: _source
      *      @description: The source file or directory.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: dest
      *      @description: The destination path of the created archive.
-     *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.create("/tmp/dir/", "/tmp/zip.archive");
-     } */
+     */
 	auto&	create(
 		const Path& _source,
 		const Path& dest,
@@ -1280,7 +1272,7 @@ public:
     }
     
     // Create zip archive and write to a stream.
-    /*  @docs {
+    /*  @docs
      *  @title: Create
      *  @description:
      *      Create a zip archive from a source file or directory and write it out to a stream.
@@ -1288,22 +1280,21 @@ public:
      *      No other functions are required to create a zip archive when using this function.
      *  @type:
      *      Stream
-     *  @parameter: {
+     *  @parameter:
      *      @name: _source
      *      @description: The source file or directory.
-     *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude
 	 *      @description: The sub paths to exclude.
 	 *  }
-	 *  @parameter: {
+	 *  @parameter:
 	 *      @name: exclude_names
 	 *      @description: The full name of paths to exclude.
 	 *  }
      *  @usage:
      *      vlib::Zip zip;
      *      vlib::Stream stream = zip.create("/tmp/dir/");
-     } */
+     */
     template <typename Stream> requires (is_Stream<Stream>::value)
     Stream  create(
 		const Path& _source,
@@ -1344,7 +1335,7 @@ public:
     }
 
     // Read a zip archive.
-    /*  @docs {
+    /*  @docs
      *  @title: Read
      *  @description:
      *      Read a zip archive.
@@ -1352,15 +1343,14 @@ public:
 	 *		Function `read` reads the data from a path, and function `read_data` reads the loaded archive data directly.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: path
      *      @description: The path to the archive to read.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
 	 *	@funcs: 2
-     } */
+     */
 	Zip&	read(const Path& path) {
         
         // Load data.
@@ -1437,23 +1427,22 @@ public:
 	}
     
     // Extract an entry.
-    /*  @docs {
+    /*  @docs
      *  @title: Extract
      *  @description:
      *      Extract a zip entry.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: dest
      *      @description: The destination path to where the entry will be written to.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
      *      vlib::Zip::Entry& entry = zip.entries()[0];
      *      zip.extract("/tmp/myfile", entry);
      *  @funcs: 2
-     } */
+     */
 	auto&	extract(Path& dest, const Entry& entry) const {
         
         // Directory
@@ -1506,7 +1495,7 @@ public:
     }
     
     // Extract a zip archive.
-    /*  @docs {
+    /*  @docs
      *  @title: Extract
      *  @description:
      *      Extract a zip archive.
@@ -1514,15 +1503,14 @@ public:
      *      A `FileAlreadyExists` exception will be thrown if the destination path already exists.
      *  @type:
      *      Zip&
-     *  @parameter: {
+     *  @parameter:
      *      @name: dest
      *      @description: The destination path of the extracted zip.
-     *  }
      *  @usage:
      *      vlib::Zip zip;
      *      zip.read("/tmp/archive.zip");
      *      zip.extract("/tmp/extract");
-     } */
+     */
 	auto&	extract(const Path& _dest) const {
         
         // Vars.
@@ -1561,7 +1549,7 @@ public:
     }
 	
 	// Extract a zip archive into a dict.
-	/*  @docs {
+	/*  @docs
 	 *  @title: Extract as dict
 	 *  @description:
 	 *      Extract a zip archive into a dict.
@@ -1573,7 +1561,7 @@ public:
 	 *      vlib::Zip zip;
 	 *      zip.read("/tmp/archive.zip");
 	 *      Dict<Path, String> extracted = zip.extract("/tmp/extract");
-	 } */
+	 */
 	Dict<Path, String> extract() const {
 		
 		// Vars.

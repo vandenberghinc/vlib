@@ -19,7 +19,7 @@ namespace version {
 
 // HTTP response status.
 // -
-/* 	@docs: {
+/* 	@docs:
  * 	@chapter: HTTP
  * 	@title: Version
  * 	@description:
@@ -30,7 +30,7 @@ namespace version {
  * 		#include <vlib/sockets/http.h>
  * 		vlib::http::version_t version = vlib::http::version::v1_1;
  * 	@show_code: true
- } */
+ */
 enum versions {
 	undefined = 0,
 	v0_9 = 		9,

@@ -13,8 +13,8 @@ namespace vlib {
 
 // Numeric type.
 //  -
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: Numeric
 	@description:
 		Numeric type.
@@ -29,7 +29,7 @@ namespace vlib {
 		`typedef Numeric<llong> LLong`
 		`typedef Numeric<ullong> Len`
  
-} */
+*/
 template <typename Type> requires (is_any_numeric<Type>::value)
 struct Numeric {
 
@@ -135,13 +135,13 @@ public:
     {}
 
 	// Constructor from type.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct an `Numeric` object.
 		@usage:
 			Int x (0);
-	} */
+	*/
 	constexpr
 	Numeric(const Type& x) :
 	m_numeric(x)
@@ -194,7 +194,7 @@ public:
 	// Attribute functions.
 	
 	// Is floating.
-	/*  @docs {
+	/*  @docs
 		@title: Is floating
 		@description:
 			Check if a numeric is floating.
@@ -203,21 +203,21 @@ public:
 			x.is_floating(); ==> false;
 			Float y;
 			y.is_floating(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	floating() const requires (is_floating<Type>::value){ return true; }
 	constexpr
 	bool 	floating() const requires (!is_floating<Type>::value){ return false; }
 
 	// Get the integral value.
-	/* 	@docs {
+	/* 	@docs
 		@title: Value
 		@description:
 			Get the integral value.
 		@usage:
 			Int x = 100;
 			x.value() ==> 100;
-	} */
+	*/
 	constexpr
 	auto&	value() { return m_numeric; }
     constexpr
@@ -237,11 +237,11 @@ public:
 	}
 
 	// Equals.
-	/*  @docs {
+	/*  @docs
 		@title: Equals
 		@description:
 			Check if the numeric equals another numeric or integral numeric.
-	} */
+	*/
 	template <typename Num> requires (!is_floating<Type>::value && (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value)) constexpr
 	bool 	eq(const Num& x) const {
 		return m_numeric == get_numeric(x);
@@ -253,58 +253,58 @@ public:
 	}
 	
 	// Less.
-	/*  @docs {
+	/*  @docs
 		@title: Less
 		@description:
 			Check if the numeric is less than another numeric.
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	bool 	less(const Num& x) const {
 		return m_numeric < get_numeric(x);
 	}
 	
 	// Less equals.
-	/*  @docs {
+	/*  @docs
 		@title: Less equals
 		@description:
 			Check if the numeric is less than or equal to another numeric.
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	bool 	less_eq(const Num& x) const {
 		return m_numeric <= get_numeric(x);
 	}
 	
 	// Greater.
-	/*  @docs {
+	/*  @docs
 		@title: Greater
 		@description:
 			Check if the numeric is greater than another numeric.
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	bool 	greater(const Num& x) const {
 		return m_numeric > get_numeric(x);
 	}
 	
 	// Greater equals.
-	/*  @docs {
+	/*  @docs
 		@title: Greater equals
 		@description:
 			Check if the numeric is greater than or equal to another numeric.
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	bool 	greater_eq(const Num& x) const {
 		return m_numeric >= get_numeric(x);
 	}
 
 	// Min.
-	/*  @docs {
+	/*  @docs
 		@title: Min
 		@description:
 			Get the minimum between two numerics.
 	 
 			Function `min_r` updates the current object, while `min` creates a copy.
 		@funcs: 4
-	} */
+	*/
 	constexpr
 	This	min(const Type& x) const {
 		if (greater(x)) {
@@ -330,14 +330,14 @@ public:
 	}
 
 	// Max.
-	/*  @docs {
+	/*  @docs
 		@title: Max
 		@description:
 			Get the maximum between two numerics.
 	 
 			Function `max_r` updates the current object, while `max` creates a copy.
 		@funcs: 4
-	} */
+	*/
 	constexpr
 	This 	max(const Type& x) const {
 		if (less(x)) {
@@ -363,14 +363,14 @@ public:
 	}
 	
 	// Absolute value.
-	/*  @docs {
+	/*  @docs
 		@title: Abs
 		@description:
 			Get the absolute value of a numeric.
 	 
 			Function `abs_r` updates the current object, while `abs` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This	abs() const requires (is_signed<Type>::value || is_floating<Type>::value) {
 		if (m_numeric < 0) {
@@ -395,17 +395,17 @@ public:
 	}
 	
 	// Absolute value with cast.
-	/*  @docs {
+	/*  @docs
 		@title: Abs with cast
 		@description:
 			Get the absolute value of a numeric with a cast.
 	 
-		@template: {
+		@template:
 			@name: Cast
 			@description:
 				The type must be any integral numeric or a `Numeric`.
 		}
-	} */
+	*/
 	template <typename Cast> requires (is_any_numeric<Cast>::value) constexpr
 	Cast	abs() const {
 		return vlib::abs<Cast>(m_numeric);
@@ -416,14 +416,14 @@ public:
 	}
 
 	// Add.
-	/*  @docs {
+	/*  @docs
 		@title: Add
 		@description:
 			Add a numeic to the object.
 	 
 			Function `add_r` updates the current object, while `add` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	This 	add(const Num& x) const {
 		return m_numeric + get_numeric(x);
@@ -435,14 +435,14 @@ public:
 	}
 
 	// Substract.
-	/*  @docs {
+	/*  @docs
 		@title: Subtract
 		@description:
 			Subtract a numeric from the object.
 	 
 			Function `sub_r` updates the current object, while `sub` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	This 	sub(const Num& x) const {
 		return m_numeric - get_numeric(x);
@@ -454,14 +454,14 @@ public:
 	}
 	
 	// Multiply.
-	/*  @docs {
+	/*  @docs
 		@title: Multiply
 		@description:
 			Multiply the object by a numeric.
 	 
 			Function `mult_r` updates the current object, while `mult` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	This 	mult(const Num& x) const {
 		return m_numeric * get_numeric(x);
@@ -473,14 +473,14 @@ public:
 	}
 
 	// Divide.
-	/*  @docs {
+	/*  @docs
 		@title: Divide
 		@description:
 			Divide the object by a numeric.
 	 
 			Function `div_r` updates the current object, while `div` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value) constexpr
 	This 	div(const Num& x) const {
 		return m_numeric / get_numeric(x);
@@ -492,14 +492,14 @@ public:
 	}
 	
 	// Modulo.
-	/*  @docs {
+	/*  @docs
 		@title: Modulo
 		@description:
 			Calculate the modulo of a division.
 	 
 			Function `mod_r` updates the current object, while `mod` creates a copy.
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (is_any_integer<Type>::value && (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value)) constexpr
 	This	mod(const Num& x) const {
 		return m_numeric % get_numeric(x);
@@ -511,7 +511,7 @@ public:
 	}
 
 	// Power of.
-	/*  @docs {
+	/*  @docs
 		@title: Power of
 		@description:
 			Calculate the power of with a numeric.
@@ -520,7 +520,7 @@ public:
 	 
 			Parameter `x` can be negative when the numeric is floating. The power of will than act as a division. For example `Double(10.0).pow(-1)` will return `0.1`. The underlying formula is `numeric / pow(abs(numeric), (-x)+1)`
 		@funcs: 2
-	} */
+	*/
 	template <typename Num> requires (!is_floating<Type>::value && (is_any_numeric<Num>::value || is_any_numeric<typename Num::value_type>::value)) constexpr
 	This 	pow(const Num& x) const {
 		return vlib::pow(m_numeric, (Type) get_numeric(x));
@@ -555,14 +555,14 @@ public:
 	}
 
 	// Square root.
-	/*  @docs {
+	/*  @docs
 		@title: Square root
 		@description:
 			Calculate the square root of the numeric.
 		
 			Function `sqrt_r` updates the current object, while `sqrt` creates a copy.
 		@funcs: 2
-	} */
+	*/
     constexpr
 	This	sqrt() const {
 		return ::sqrt(m_numeric);
@@ -574,7 +574,7 @@ public:
 	}
 	
 	// Round to decimals.
-	/*  @docs {
+	/*  @docs
 		@title: Round
 		@description:
 			Round the numeric to a number of decimals.
@@ -583,7 +583,7 @@ public:
 	 
 			Only applicable for floating types.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This	round(short precision = 0) const requires (is_floating<Type>::value) {
 		return vlib::round<Type>(m_numeric, precision);
@@ -595,11 +595,11 @@ public:
 	}
 
 	// Random number.
-	/*  @docs {
+	/*  @docs
 		@title: Round
 		@description:
 			Generate a random numeric within a range.
-	} */
+	*/
 	SICE
 	This 	random(const Type& min = 0, const Type& max = 999999999999999999) requires (is_any_integer<Type>::value) {
 		return vlib::random::generate<Type>(min, max);
@@ -610,7 +610,7 @@ public:
 	// }
 	
 	// Subscript.
-	/* @docs {
+	/* @docs
 	  @title: subscript
 	  @description:
 			Subscript an index.
@@ -620,7 +620,7 @@ public:
 			Len(10).subscript(10); ==> 10;
 			Len(11).subscript(10); ==> npos;
 			Len(npos).subscript(10); ==> 10;
-	} */
+	*/
 	template <typename Num> requires (is_unsigned<Type>::value && is_any_numeric<Num>::value) constexpr
 	ullong 	subscript(const Num& x) const {
 		if (m_numeric == NPos::npos) { return x; }
@@ -650,42 +650,42 @@ public:
 	// Casts.
 
 	// Parse from a const char*.
-	/*  @docs {
+	/*  @docs
 		@title: Parse
 		@description:
 			Parse from a `const char*`.
-	} */
+	*/
 	SICE
 	This	parse(const char* arr, ullong len) {
 		return to_num<Type>(arr, len);
 	}
 
 	// As String
-	/*  @docs {
+	/*  @docs
 		@title: String
 		@type: String
 		@description:
 			Get as string.
-	} */
+	*/
 	constexpr
 	auto	str() const;
 	
 	// As json formatted String
-	/*  @docs {
+	/*  @docs
 		@title: JSON
 		@type: String
 		@description:
 			Get as json formatted string.
-	} */
+	*/
 	constexpr
 	auto	json() const;
 	
 	// As numeric.
-	/*  @docs {
+	/*  @docs
 		@title: As
 		@description:
 			Get as integral numeric or another Numeric.
-	} */
+	*/
 	template <typename Cast> requires (is_instance<Type, Cast>) constexpr
 	Cast	as() const {
 		return m_numeric;

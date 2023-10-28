@@ -16,8 +16,8 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Mutex type.
-/* @docs {
-	@chapter: system
+/* @docs
+	@chapter: System
 	@title: Mutex
 	@description:
 		Mutex type.
@@ -26,7 +26,7 @@ namespace vlib {
 	@usage:
 		#include <vlib/types.h>
 		vlib::Mutex mutex;
-} */
+*/
 struct Mutex {
 
 // Private.
@@ -49,13 +49,13 @@ public:
 	// Constructors.
 
 	// Default constructor.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			The default constructor.
 		@usage:
 			vlib::mutex mutex;
-	} */
+	*/
 	constexpr
     Mutex() :
 	m_mutex(pthread_mutex_t())
@@ -64,11 +64,11 @@ public:
 	}
 
 	// Constructor with mutex.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Constructor from pthread mutex.
-		@parameter: {
+		@parameter:
 			@name: mutex
 			@description: The uninitialized pthread mutex object.
 		}
@@ -76,7 +76,7 @@ public:
 			pthread_mutex_t pmutex;
 			vlib::mutex mutex(pmutex);
 		@funcs: 2
-	} */
+	*/
 	constexpr
     Mutex(const pthread_mutex_t& mutex) :
 	m_mutex(mutex)
@@ -121,14 +121,14 @@ public:
 	// Functions.
 
 	// Copy.
-	/*  @docs {
+	/*  @docs
 		@title: Lock
 		@description:
 			Lock the mutex.
 		@usage:
 			vlib::mutex mutex;
 			mutex.lock();
-	} */
+	*/
 	void		lock() const {
 		if (pthread_mutex_lock(&(*m_mutex)) != 0 && errno != EDEADLK) {
             throw LockError("Encoutered an error while locking the mutex.");
@@ -136,14 +136,14 @@ public:
 	}
 
 	// Unlock mutex.
-	/*  @docs {
+	/*  @docs
 		@title: Unlock
 		@description:
 			Unlock the mutex.
 		@usage:
 			vlib::mutex mutex;
 			mutex.unlock();
-	} */
+	*/
 	void		unlock() const {
 		if (pthread_mutex_unlock(&(*m_mutex)) != 0) {
             throw UnlockError("Encoutered an error while locking the mutex.");
@@ -154,8 +154,8 @@ public:
 
 // ---------------------------------------------------------
 // Shared Mutex type.
-/* @docs {
-    @chapter: system
+/* @docs
+    @chapter: System
     @title: Shared Mutex
     @description:
         Shared Mutex type.
@@ -168,7 +168,7 @@ public:
         };
         static SharedData* shared_data = NULL;
         vlib::SharedMutex mutex (shared_data);
-} */
+*/
 template <typename SharedData>
 struct SharedMutex {
 
@@ -192,13 +192,13 @@ public:
     // Constructors.
 
     // Default constructor.
-    /*  @docs {
+    /*  @docs
         @title: Constructor
         @description:
             The default constructor.
         @usage:
             vlib::mutex mutex;
-    } */
+    */
     constexpr
     SharedMutex(SharedData*& data, int prot = PROT_READ | PROT_WRITE, int flags = MAP_SHARED | MAP_ANONYMOUS)
     {
@@ -225,14 +225,14 @@ public:
     // Functions.
 
     // Copy.
-    /*  @docs {
+    /*  @docs
         @title: Lock
         @description:
             Lock the mutex.
         @usage:
             vlib::mutex mutex;
             mutex.lock();
-    } */
+    */
     constexpr
     void        lock() {
         if (pthread_mutex_lock(&m_data->mutex) != 0) {
@@ -241,14 +241,14 @@ public:
     }
 
     // Unlock mutex.
-    /*  @docs {
+    /*  @docs
         @title: Unlock
         @description:
             Unlock the mutex.
         @usage:
             vlib::mutex mutex;
             mutex.unlock();
-    } */
+    */
     constexpr
     void        unlock() {
         if (pthread_mutex_unlock(&m_data->mutex) != 0) {

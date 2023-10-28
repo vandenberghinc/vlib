@@ -15,15 +15,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Group type
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Group
 	@description:
 		Group type.
 	@usage:
         #include <vlib/types.h>
 		vlib::Group group;
-} */
+*/
 // @TODO make docs.
 // @TODO should generate scripts and save them to the local computer, since calling Script everytime is super super super dumb.
 struct Group {
@@ -160,36 +160,36 @@ public:
 	m_gid(-1) {}
 	
 	// Constructor from gid.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from the group's id.
-		@parameter: {
+		@parameter:
 			@name: gid
 			@description: The group's id.
 		}
 		@usage:
 			vlib::Group group(0);
-	} */
+	*/
 	constexpr
 	Group	(const Type& gid) :
 	m_gid(gid) {}
 
 	// Constructor from name.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from the group's name.
 		@warning:
 			Throws an exception when the group does not exist, use `vlib::Group::exists(const String&)` to check if the group exists.
-		@parameter: {
+		@parameter:
 			@name: name
 			@description: The group's name.
 		}
 		@usage:
 			vlib::Group group("mygroup");
 		@funcs: 2
-	} */
+	*/
 	Group	(const String& name) {
 		struct group gr;
 		getgrnam_wrapper(name.c_str(), gr, m_buff, true);
@@ -276,10 +276,10 @@ public:
 	// Functions.
 	
 	// Copy the object.
-	/* @docs {
+	/* @docs
 	   @title: copy
 	   @description: Copy the object.
-	} */
+	*/
 	constexpr
 	auto 	copy() {
 		return *this;
@@ -290,10 +290,10 @@ public:
 	}
 	
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	   @title: reset
 	   @description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	auto& 	reset() {
 		m_gid = -1;
@@ -304,33 +304,33 @@ public:
 	}
 	
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	   @title: Is undefined
 	   @description: Check if the object is undefined.
 	   @usage:
 			Group x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const {
 		return m_gid == -1;
 	}
 	
 	// Get the gid.
-	/* @docs {
+	/* @docs
 	   @title: gid
 	   @description: Get the gid.
-	} */
+	*/
 	constexpr
 	auto& 	gid() const {
 		return m_gid;
 	}
 
 	// Get the group name.
-	/* @docs {
+	/* @docs
 	   @title: gid
 	   @description: Get the group name.
-	} */
+	*/
 	constexpr
 	auto& 	name() {
 		safe_parse();
@@ -341,18 +341,18 @@ public:
 	/* docs {
 	   @title: pass
 	   @description: Get the group pass.
-	} */
+	*/
 	/*constexpr
 	auto& 		pass() {
 		safe_parse();
 		return m_pass;
-	}*/
+	*/
 
 	// Get the group members.
-	/* @docs {
+	/* @docs
 	   @title: members
 	   @description: Get the group members.
-	} */
+	*/
 	constexpr
 	auto& 	members() {
 		safe_parse();
@@ -360,16 +360,16 @@ public:
 	}
 
 	// Check if the group exists.
-	/* 	@docs {
+	/* 	@docs
 		@title: exists
 		@description: Check if the group exists.
-	} */
+	*/
 	bool 	exists() { return parse(); }
-	/* 	@docs {
+	/* 	@docs
 		@title: Exists
 		@description: Check if a group exists.
 		@funcs: 3
-	} */
+	*/
 	static inline
 	bool 	exists(const String& name) {
 		return exists(name.c_str());
@@ -392,28 +392,28 @@ public:
 	}
 
 	// Create a group.
-	/*  @docs {
+	/*  @docs
 		@title: Create
 		@description:
 			Create a group.
 	 
 			- Automatically adds user `root` to the group.
 			- Must be executed as user `root`.
-		@parameter: {
+		@parameter:
 			@name: name
 			@description: The group's name.
 		}
-		@parameter: {
+		@parameter:
 			@name: pass
 			@description: The group's password, use `*` for no password.
 		}
-		@parameter: {
+		@parameter:
 			@name: gid
 			@description: The new group id, must be unique.
 		}
 		@usage:
 			vlib::Group::create("mynewgroup");
-	} */
+	*/
 	SICE
     void 	create(
 		const char* 	name,								// the group name.
@@ -422,7 +422,7 @@ public:
 	);
 
 	// Delete a group.
-	/*  @docs {
+	/*  @docs
 		@title: Delete
 		@description:
 			Delete a group.
@@ -431,12 +431,12 @@ public:
 		@usage:
 			vlib::Group group("mygroup");
 			group.del();
-	} */
+	*/
 	constexpr
     void 	del();
 
 	// Add one or multiple users to the group.
-	/*  @docs {
+	/*  @docs
 		@title: Add
 		@description:
 			Add one or multiple users to the group.
@@ -446,14 +446,14 @@ public:
 		@usage:
 			vlib::Group group("mygroup");
 			int status = group.add("someuser");
-	} */
+	*/
 	template <typename... Args> constexpr
     void 	add(const char* username, Args&&... args);
 
 	// Remove one or multiple users from the group.
 	// - Must be executed as user root.
 	// - Args type must be "const char*".
-	/*  @docs {
+	/*  @docs
 		@title: Add
 		@description:
 			Add one or multiple users to the group.
@@ -463,12 +463,12 @@ public:
 		@usage:
 			vlib::Group group("mygroup");
 			int status = group.remove("someuser");
-	} */
+	*/
 	template <typename... Args> constexpr
     void 	remove(const char* username, Args&&... args);
 
     // Get name by gid.
-    /* @docs {
+    /* @docs
        @title: Get GID
        @description:
             Get the GID of an existing group.
@@ -477,7 +477,7 @@ public:
         @usage:
             Int gid = vlib::Group::get_gid("mygroup");
         @funcs: 2
-    } */
+    */
 	static inline
     Int get_gid(const String& name) {
         return get_gid(name.c_str());
@@ -496,7 +496,7 @@ public:
     }
     
     // Get name of gid.
-    /* @docs {
+    /* @docs
        @title: Get name
        @description:
             Get the name of a group by uid.
@@ -504,7 +504,7 @@ public:
             Throws an exception when the group does not exist.
         @usage:
             String name = vlib::Group::get_name(...);
-    } */
+    */
 	static inline
     String  get_name(const Int& gid) {
         char* buff = nullptr;

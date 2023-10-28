@@ -12,14 +12,14 @@
 namespace vlib {
 
 // Variant type.
-/* @docs {
+/* DEPRECATED docs 
   @title: variant_t
   @description:
 		Variant type.
 		- Can be inherited to create custom a `variant_t` that supports new types, though it is hard.
   @usage:
 		variant_t x;
-} */
+*/
 // @TODO should still add a lot of other types that are defined before variant_t.
 // @TODO should not use Int but Long.
 // @TODO the construct functions of a Int/Long and Len should also include all smaller types, just like http::json::value_t.
@@ -520,10 +520,10 @@ public:
 			m_dict.reset();
 			return *this;
 		}
-	}*/
+	*/
 	
 	// As type.
-	/* @docs {
+	/* DEPRECATED docs
 	  @title: as
 	  @description:
 			As type.
@@ -532,7 +532,7 @@ public:
 	  @usage:
 			variant_t x = 100.0;
 			Double y = x.as<Double>();
-	} */
+	*/
 	template <typename Type> requires (is_Bool<Type>::value) constexpr
 	auto& 		as() {
 		return *m_bool;

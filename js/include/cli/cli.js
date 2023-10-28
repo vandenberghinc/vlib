@@ -11,19 +11,17 @@ vlib.CLI = class CLI {
     // ---------------------------------------------------------
     // Constructor.
 
-    /*  @docs: {
+    /*  @docs:
      *  @title: Build
      *  @description: Build a cli.
      *  @description: {
      *      @parameter: name
      *      @type: string
      *      @description: The cli's name.
-     *  }
      *  @description: {
      *      @parameter: version
      *      @type: string
      *      @description: The cli's version.
-     *  }
      *  @description: {
      *      @parameter: commands
      *      @type: array[object]
@@ -57,8 +55,7 @@ vlib.CLI = class CLI {
      *            An id like `--my-arg` will be passed as `my_arg`.
      *          - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
      *            When the argument has not been passed then the default value defined in the callback parameters will be used.
-     *  }
-     } */
+     */
     constructor({
         name = null,
         version = null,
@@ -168,11 +165,12 @@ vlib.CLI = class CLI {
     }
 
     // Log the docs of an array of command or a single command.
-    docs(obj = null) {
+    // When one of the commands is passed as "command_or_commands" it will show the documentation of that command, the command is passed inside the command callback as "_command".
+    docs(command_or_commands = null) {
 
         // Assign to commands when undefined
-        if (obj == null) {
-            obj = this.commands;
+        if (command_or_commands == null) {
+            command_or_commands = this.commands;
         }
 
         // Create docs header.
@@ -204,11 +202,11 @@ vlib.CLI = class CLI {
         }
 
         // Show docs from an array of commands.
-        if (Array.isArray(obj)) {
+        if (Array.isArray(command_or_commands)) {
             docs += `Usage: $ ${this.name} [mode] [options]\n`;
             let index = 0;
             let list = [];
-            obj.iterate((command) => {
+            command_or_commands.iterate((command) => {
                 const list_item = [];
                 if (Array.isArray(command.id)) {
                     list_item[0] = `    ${command.id.join(", ")}`;
@@ -232,21 +230,21 @@ vlib.CLI = class CLI {
         else {
 
             // Usage.
-            docs += `Usage: $ ${this.name} ${obj.id} [options]\n`;
+            docs += `Usage: $ ${this.name} ${command_or_commands.id} [options]\n`;
 
             // Description.
-            if (obj.description) {
+            if (command_or_commands.description) {
                 docs += `\n`;
-                docs += obj.description;
+                docs += command_or_commands.description;
                 docs += `\n`;
             }
 
             // Arguments.
-            if (obj.args.length > 0) {
+            if (command_or_commands.args.length > 0) {
                 docs += `\nOptions:\n`;
                 let arg_index = 0;
                 const list = [];
-                obj.args.iterate((arg) => {
+                command_or_commands.args.iterate((arg) => {
                     const list_item = [];
                     if (arg.id == null) {
                         list_item[0] = `    argument ${arg_index}`;
@@ -273,17 +271,17 @@ vlib.CLI = class CLI {
             }
 
             // Examples.
-            if (obj.examples != null) {
+            if (command_or_commands.examples != null) {
                 docs += `\nExamples:\n`;
-                if (typeof obj.examples === "string") {
-                    if (obj.examples.charAt(0) === "$") {
-                        docs += `    ${vlib.colors.italic}${obj.examples}${vlib.colors.end}\n`;
+                if (typeof command_or_commands.examples === "string") {
+                    if (command_or_commands.examples.charAt(0) === "$") {
+                        docs += `    ${vlib.colors.italic}${command_or_commands.examples}${vlib.colors.end}\n`;
                     } else {
-                        docs += `    ${vlib.colors.italic}$ ${obj.examples}${vlib.colors.end}\n`;
+                        docs += `    ${vlib.colors.italic}$ ${command_or_commands.examples}${vlib.colors.end}\n`;
                     }
                 }
-                else if (Array.isArray(obj.examples)) {
-                    obj.examples.iterate((item) => {
+                else if (Array.isArray(command_or_commands.examples)) {
+                    command_or_commands.examples.iterate((item) => {
                         if (item.charAt(0) === "$") {
                             docs += `    ${vlib.colors.italic}${item}${vlib.colors.end}\n`;
                         } else {
@@ -291,12 +289,12 @@ vlib.CLI = class CLI {
                         }
                     })
                 }
-                else if (typeof obj.examples === "object") {
-                    const descs = Object.keys(obj.examples);
+                else if (typeof command_or_commands.examples === "command_or_commandsect") {
+                    const descs = Object.keys(command_or_commands.examples);
                     const list = [];
                     descs.iterate((desc) => {
                         const list_item = [`    ${desc}:`];
-                        const example = obj.examples[desc];
+                        const example = command_or_commands.examples[desc];
                         if (example.charAt(0) === "$") {
                             list_item[1] = `${vlib.colors.italic}${example}${vlib.colors.end}\n`;
                         } else {
@@ -334,7 +332,7 @@ vlib.CLI = class CLI {
                 }
 
                 // Get arguments.
-                const callback_args = {};
+                const callback_args = {_command: command};
                 let arg_index = 0;
                 const err = command.args.iterate((arg) => {
                     try {

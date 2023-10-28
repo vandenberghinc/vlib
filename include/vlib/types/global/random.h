@@ -9,15 +9,15 @@
 namespace vlib {
 
 // Random type.
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: Random
 	@description:
 		Static random structure.
     @usage:
         #include <vlib/types.h>
         vlib::random:: ... ();
-} */
+*/
 struct random {
 
 // Public:
@@ -37,13 +37,13 @@ public:
 	// Functions.
 
 	// Set a random seed.
-	/* 	@docs {
+	/* 	@docs
 		@title: Random seed
 		@description:
 			Set a random seed.
 		@usage:
 			vlib::random::random_seed();
-	} */
+	*/
 	inline static
 	void	random_seed() {
 		srand((uint) time(NULL));
@@ -51,13 +51,13 @@ public:
 	}
 
 	// Set seed.
-	/* 	@docs {
+	/* 	@docs
 		@title: Seed
 		@description:
 			Set a seed.
 		@usage:
 			vlib::random::seed(1);
-	} */
+	*/
 	inline static
 	void	seed(uint x) {
 		srand(x);
@@ -65,13 +65,13 @@ public:
 	}
 
 	// Get a random digit between 0 and 9.
-	/* 	@docs {
+	/* 	@docs
 		@title: Generate
 		@description:
 			Get a random digit between 0 and 9.
 		@usage:
 			auto x = vlib::random::generate<short>();
-	} */
+	*/
 	template <typename Type> requires (is_short<Type>::value)
 	inline static
 	short 	generate() noexcept {
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Get a random integer integral type between min and max.
-	/* 	@docs {
+	/* 	@docs
 		@title: Generate
 		@description:
 			Get a random integer integral type between min and max.
@@ -91,7 +91,7 @@ public:
 			auto x = vlib::random::generate<uint>(0, 10);
 			auto x = vlib::random::generate<ullong>();
 			auto x = vlib::random::generate<ullong>(0.0, 9999999999999999999.0);
-	} */
+	*/
 	template <typename Type> requires (!is_short<Type>::value && is_any_integer<Type>::value)
 	inline static
 	Type 	generate(const Type& min = 0, const Type& max = limits<Type>::max) noexcept {
@@ -102,7 +102,7 @@ public:
 	}
 
 	// Get a random floating integral type.
-	/* @docs {
+	/* @docs
 	  @title: Generate
 	  @description:
 			Get a random floating integral type.
@@ -110,7 +110,7 @@ public:
 			vlib::random::generate<float>() ==> 0.283957;
 			vlib::random::generate<float>(0.1) ==> 0.082981;
 			vlib::random::generate<float>(0.001) ==> 0.000284;
-	} */
+	*/
 	template <typename Type> requires (is_floating<Type>::value)
 	inline static
 	Type 	generate(const Type& base = 1.0) noexcept {
@@ -121,13 +121,13 @@ public:
 	}
     
     // Get a random character.
-    /* @docs {
+    /* @docs
       @title: Generate
       @description:
             Get a random character.
       @usage:
             vlib::random::generate<char>() ==> 'a';
-    } */
+    */
     template <typename Type> requires (is_char<Type>::value)
     inline static
     Type     generate() noexcept {

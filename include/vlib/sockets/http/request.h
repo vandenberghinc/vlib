@@ -31,7 +31,7 @@ namespace http {
 // - GET request parameters are by default passed in the payload body.
 //   You can use the "Request" functions seperately to create a request that conforms to your wishes.
 //
-/* @docs {
+/* @docs
 	@chapter: HTTP
 	@title: Request
 	@description:
@@ -43,7 +43,7 @@ namespace http {
 	@usage:
 		#include <vlib/sockets/http.h>
 		vlib::http::Request request;
-} */
+*/
 
 struct Request {
 
@@ -178,11 +178,11 @@ public:
 	m_data(String()) {}
 
 	// Constructor from a data parse.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a request from the server side in string format.
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The request in string format.
 		}
@@ -193,7 +193,7 @@ public:
 			data << "\r\n"
 	 
 			vlib::http::Request request(data);
-	} */
+	*/
 	constexpr
 	Request (String data) :
 	m_data(move(data))
@@ -204,23 +204,23 @@ public:
 	{ parse(); }
 
 	// Request constructor.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a request from the client side.
-		@parameter: {
+		@parameter:
 			@name: method
 			@description: The used HTTP method, use `vlib::http::method::get` etc.
 		}
-		@parameter: {
+		@parameter:
 			@name: endpoint
 			@description: The endpoint subpath.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The request headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: version
 			@description: The HTTP version, use `vlib::http::version::v1_1` etc.
 		}
@@ -231,34 +231,34 @@ public:
 				{{"Content-Type", "application/json"}},
 				vlib::http::version::v1_1
 			);
-	} */
+	*/
 	constexpr
 	Request (short method, const String& endpoint, const Headers& headers, short version = http::version::v1_1) :
 	m_data(String())
 	{
 		reconstruct(method, endpoint, headers, version);
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a request from the client side.
-		@parameter: {
+		@parameter:
 			@name: method
 			@description: The used HTTP method, use `vlib::http::method::get` etc.
 		}
-		@parameter: {
+		@parameter:
 			@name: endpoint
 			@description: The endpoint subpath.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The request headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: body
 			@description: The request body.
 		}
-		@parameter: {
+		@parameter:
 			@name: version
 			@description: The HTTP version, use `vlib::http::version::v1_1` etc.
 		}
@@ -270,34 +270,34 @@ public:
 				"Hello World!",
 				vlib::http::version::v1_1
 			);
-	} */
+	*/
 	constexpr
 	Request (short method, const String& endpoint, const Headers& headers, const String& body, short version = http::version::v1_1) :
 	m_data(String())
 	{
 		reconstruct(method, endpoint, headers, body, version);
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a request from the client side.
-		@parameter: {
+		@parameter:
 			@name: method
 			@description: The used HTTP method, use `vlib::http::method::get` etc.
 		}
-		@parameter: {
+		@parameter:
 			@name: endpoint
 			@description: The endpoint subpath.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The request headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: params
 			@description: The request parameters.
 		}
-		@parameter: {
+		@parameter:
 			@name: version
 			@description: The HTTP version, use `vlib::http::version::v1_1` etc.
 		}
@@ -309,7 +309,7 @@ public:
 				{{"a", "Hello World!"}},
 				vlib::http::version::v1_1
 			);
-	} */
+	*/
 	constexpr
 	Request (short method, const String& endpoint, const Headers& headers, const Json& params, short version = http::version::v1_1) :
 	m_data(String())
@@ -368,26 +368,26 @@ public:
 	// Attribute functions.
 	
 	// Version.
-	/*  @docs {
+	/*  @docs
 		@title: Has version
 		@type: bool
 		@description:
 			Check if the request has a defined version.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_version() const {
 		return m_version != vlib::http::version::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Version
 		@type: short&
 		@description:
 			Get the HTTP version.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	version() {
 		return m_version;
@@ -398,26 +398,26 @@ public:
 	}
 	
 	// Method.
-	/*  @docs {
+	/*  @docs
 		@title: Has method
 		@type: bool
 		@description:
 			Check if the request has a defined method.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_method() const {
 		return m_method != vlib::http::method::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Method
 		@type: short&
 		@description:
 			Get the HTTP method.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	method() {
 		return m_method;
@@ -428,26 +428,26 @@ public:
 	}
 
 	// Endpoint.
-	/*  @docs {
+	/*  @docs
 		@title: Has endpoint
 		@type: bool
 		@description:
 			Check if the request has a defined endpoint.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_endpoint() const {
 		return m_endpoint.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Endpoint
 		@type: String&
 		@description:
 			Get the HTTP endpoint.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	endpoint() {
 		return m_endpoint;
@@ -458,26 +458,26 @@ public:
 	}
 
 	// Status description.
-	/*  @docs {
+	/*  @docs
 		@title: Has content type
 		@type: bool
 		@description:
 			Check if the request has a defined content type.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_content_type() const {
 		return m_content_type != http::content_type::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Content type
 		@type: short&
 		@description:
 			Get the HTTP content type.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	content_type() {
 		return m_content_type;
@@ -488,26 +488,26 @@ public:
 	}
 	
 	// Headers.
-	/*  @docs {
+	/*  @docs
 		@title: Has headers
 		@type: bool
 		@description:
 			Check if the request has defined headers.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_headers() const {
 		return m_headers.len() != 0;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Headers
 		@type: Headers&
 		@description:
 			Get the HTTP headers.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	headers() {
 		return m_headers;
@@ -518,26 +518,26 @@ public:
 	}
 	
 	// Body.
-	/*  @docs {
+	/*  @docs
 		@title: Has body
 		@type: bool
 		@description:
 			Check if the request has a defined body.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_body() const {
 		return m_body.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Body
 		@type: String&
 		@description:
 			Get the HTTP body.
 		@notes:
 			- Only available when the request has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	body() {
 		return m_body;
@@ -548,22 +548,22 @@ public:
 	}
 	
 	// Data.
-	/*  @docs {
+	/*  @docs
 		@title: Has data
 		@type: bool
 		@description:
 			Check if the request has a string representation data.
-	} */
+	*/
 	constexpr
 	bool 	has_data() const {
 		return m_data.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Data
 		@type: String&
 		@description:
 			Get the string representation data.
-	} */
+	*/
 	constexpr
 	auto& 	data() {
 		return m_data;
@@ -577,10 +577,10 @@ public:
 	// Functions.
 	
 	// Reset.
-	/*  @docs {
+	/*  @docs
 		@title: Reset
 		@description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	This& 	reset() {
 		m_version = vlib::http::version::undefined;
@@ -593,12 +593,12 @@ public:
 	}
 	
 	// Add a method to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add method
 		@description: Add a method to the data string.
 		@notes:
 			- Does not assign to the attribute `m_method`.
-	} */
+	*/
 	constexpr
 	This& 	add_method(short method) {
 		m_data.concat_r(http::method::to_str(method));
@@ -607,13 +607,13 @@ public:
 	}
 	
 	// Add an endpoint to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add endpoint
 		@description: Add a endpoint to the data string.
 		@notes:
 			- Does not assign to the attribute `m_endpoint`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This& 	add_endpoint(const String& endpoint) {
 		return add_endpoint(endpoint.data(), endpoint.len());
@@ -627,12 +627,12 @@ public:
 	}
 
 	// Add a version to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add version
 		@description: Add a HTTP version to the data string.
 		@notes:
 			- Does not assign to the attribute `m_version`.
-	} */
+	*/
 	constexpr
 	This& 	add_version(short version) {
 		m_data.expand(10);
@@ -643,13 +643,13 @@ public:
 	}
 	
 	// Add a header key & value to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add header
 		@description: Add a header key & value to the data string.
 		@notes:
 			- Does not assign to the attribute `m_headers`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This&	add_header(
 		const String& 				key,
@@ -680,12 +680,12 @@ public:
 	}	
 	
 	// Add headers to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add headers
 		@description: Add headers to the data string.
 		@notes:
 			- Does not assign to the attribute `m_headers`.
-	} */
+	*/
 	constexpr
 	This&	add_headers(const Headers& headers) {
 		for (auto& i: headers.indexes()) {
@@ -695,14 +695,14 @@ public:
 	}
 	
 	// Add a body to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add body
 		@description: Add a body to the data string.
 		@notes:
 			- Automatically calls `add_end()`.
 			- Does not assign to the attribute `m_body`.
 		@funcs: 3
-	} */
+	*/
 	constexpr
 	This&	add_body(const String& body) {
 		m_data.expand(body.len() + 2);
@@ -733,12 +733,12 @@ public:
 	}
 
 	// Add the end CRLF.
-	/*  @docs {
+	/*  @docs
 		@title: Add end
 		@description: Add the end CRLF.
 		@notes:
 			- Automatically called in `add_body()`.
-	} */
+	*/
 	constexpr
 	This&	add_end() {
 		m_data.expand(2);
@@ -749,10 +749,10 @@ public:
 	}
 
 	// Null terminate the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Null terminate
 		@description: Null terminate the data string.
-	} */
+	*/
 	constexpr
 	This& 	null_terminate() {
 		m_data.null_terminate();
@@ -760,11 +760,11 @@ public:
 	}
 
 	// Get a header value by key.
-	/*  @docs {
+	/*  @docs
 		@title: Header
 		@description: Get a header value by key.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto&	header(const String& key) {
 		return m_headers.value(key);

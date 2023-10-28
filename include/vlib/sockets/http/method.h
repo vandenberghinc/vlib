@@ -15,7 +15,7 @@ namespace http {
 namespace method {
 
 // HTTP request method.
-/* 	@docs: {
+/* 	@docs:
  * 	@chapter: HTTP
  * 	@title: Methods
  * 	@description: HTTP methods.
@@ -23,7 +23,7 @@ namespace method {
  * 		#include <vlib/sockets/http.h>
  * 		short get = vlib::http::method::get;
  * 	@show_code: true
- } */
+ */
 enum methods {
 	undefined = 	0,
 	get = 			1,

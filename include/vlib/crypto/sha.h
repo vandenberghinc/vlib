@@ -22,8 +22,8 @@ namespace vlib {
     Mode == crypto::mode::sha512 \
 )
 
-/* @docs {
-    @chapter: crypto
+/* @docs
+    @chapter: Crypto
     @title: SHA
     @description:
         Static SHA256 and SHA512 types.
@@ -32,7 +32,7 @@ namespace vlib {
         vlib::sha<crypto::mode::sha256>::sign(...);
         vlib::SHA256::sign(...); // alias.
         vlib::SHA512::sign(...); // alias.
-} */
+*/
 template <int Mode = crypto::mode::sha256> VLIB_SHA_STRUCT_REQUIRES
 struct SHA {
 
@@ -68,17 +68,17 @@ public:
     }
     
 	// Generate key.
-    /*  @docs {
+    /*  @docs
         @title: Generate key
         @description:
             Generate a hex encoded key.
-        @parameter: {
+        @parameter:
             @name: len
             @description: The length of the key to generate.
         }
         @usage:
             vlib::String output = vlib::SHA256::generate_key(output, 32);
-    } */
+    */
 	static inline
 	String 	generate_key(ullong len) {
 		uchar* key = new uchar [len];
@@ -92,22 +92,22 @@ public:
 	}
 
 	// SHA HMAC.
-    /*  @docs {
+    /*  @docs
         @title: HMAC
         @description:
             Sign data with a key.
-        @parameter: {
+        @parameter:
             @name: key
             @description: The hex encoded key.
         }
-        @parameter: {
+        @parameter:
             @name: data
             @description: The data to sign.
         }
         @usage:
             vlib::String output = vlib::SHA256::hmac("Some Key", "Hello World!");
         @funcs: 2
-    } */
+    */
     SICE
     String  hmac(const String& key, const String& data) {
         return hmac(key.data(), key.len(), data.data(), data.len());
@@ -131,22 +131,20 @@ public:
 	}
     
     // Sign data.
-    /*  @docs {
+    /*  @docs
      *  @title: HMAC
      *  @description:
      *      Sign data with a key.
-     *  @parameter: {
+     *  @parameter:
      *      @name: key
      *      @description: The hex encoded key.
-     *  }
-     *  @parameter: {
+     *  @parameter:
      *      @name: data
      *      @description: The data to sign.
-     *  }
      *  @usage:
      *      vlib::String output = vlib::SHA256::hmac("Some Key", "Hello World!");
      *  @funcs: 2
-     } */
+     */
     static
     String  hash(const String& data) requires (Mode == crypto::mode::sha1) {
         // g++ calls it ambigous if you call "hash(data.data(), data.len())" here.
@@ -200,15 +198,15 @@ public:
     }
     
     // SHA Digest.
-    /*  @docs {
+    /*  @docs
         @title: SHA Digest
         @description:
             SHA Digest.
-        @parameter: {
+        @parameter:
             @name: output
             @description: A reference to the output string.
         }
-        @parameter: {
+        @parameter:
             @name: data
             @description: The data to sign.
         }
@@ -217,7 +215,7 @@ public:
         @usage:
             vlib::String output = vlib::SHA256::digest("Hello World!");
         @funcs: 2
-    } */
+    */
     SICE
     String     digest(const String& data) {
         return digest(data.data(), data.len());

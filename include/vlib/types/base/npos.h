@@ -9,8 +9,8 @@
 namespace vlib {
 
 // Null position type.
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: Null position
 	@description:
 		Null position type
@@ -21,7 +21,7 @@ namespace vlib {
 		}
 		if (... == NPos::npos) {
 		}
-} */
+*/
 
 struct NPos {
 

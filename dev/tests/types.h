@@ -1472,7 +1472,7 @@ int operator()() const {
 		std::cout << "\nAir: " << air << "(ignore this)\n";
 
 		
-	}*/
+	*/
 
 	// End.
 	return vtest::exit_status();
@@ -1494,36 +1494,36 @@ int operator()() const {
 
 // @return: Returns `0` upon success, and the error code upon failure (`< 0`).
 
-/* @docs {
-    @chapter: compression
+/* @docs
+    @chapter: Compression
     @title: Compression
     @description:
         Static compression struct, used to compress and decompress data.
     @usage:
         #include <vlib/compression.h>
         vlib::Compression compression;
-} */
+*/
 
-/*  @docs {
+/*  @docs
     @title: Constructor
     @description:
         Construct a compression object.
-    @parameter: {
+    @parameter:
         @name: level
         @description: The compression level.
     }
-    @parameter: {
+    @parameter:
         @name: maxbytes
         @description: The maximum bytes to compress, use `-1` to ignore the max bytes.
     }
     @usage:
         vlib::Compression compression(vlib::compression::level::def, -1);
-} */
+*/
 
-/*  @docs {
+/*  @docs
     @title: Max
 	@type: ullong
     @description:
         Get the max bytes attribute.
-} */
+*/
 

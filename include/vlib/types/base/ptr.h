@@ -9,23 +9,21 @@
 namespace vlib {
 
 // Pointer type.
-/* 	@docs {
- *	@chapter: types
+/* 	@docs
+ *	@chapter: Types
  *	@title: Pointer
  *	@description:
  *		Pointer type.
- *	@template: {
+ *	@template:
  *		@name: Type
  *		@description: The type of the pointee.
- *	}
- *	@template: {
+ *	@template:
  *		@name: Status
  *		@description: The shared or unique status. Use `Shared` for a shared pointer and use `Unique` for a unique pointer.
- *	}
  *	@usage:
  *	    #include <vlib/types.h>
  *		vlib::Ptr<int> x(0);
-} */
+*/
 template <
 	typename Type,					// the pointee type.
 	typename Status = Shared		// the shared status.
@@ -163,13 +161,13 @@ public:
 	// Utilities.
 
 	// Initialize.
-	/* 	@docs {
+	/* 	@docs
 		@title: Initialize
 		@description:
 			Initialize the pointer.
 		@warning:
 			Causes a memory leak when the pointer is already initialized.
-	} */
+	*/
 	constexpr
 	This&	init() {
 		m_ptr = new Type();
@@ -177,11 +175,11 @@ public:
 	}
 
 	// Reconstructor from Type.
-	/* 	@docs {
+	/* 	@docs
 		@title: Reconstruct
 		@description:
 			Reconstruct the pointer.
-	} */
+	*/
 	constexpr
 	This& 	reconstruct(Type pointee) {
 		if (m_ptr)	{ *m_ptr = move(pointee); }
@@ -190,11 +188,11 @@ public:
 	}
 
 	// Reconstruct by Type args.
-	/* 	@docs {
+	/* 	@docs
 		@title: Reconstruct
 		@description:
 			Reconstruct by type args.
-	} */
+	*/
 	template <typename... Args> constexpr
 	This& 	reconstruct_by_type_args(Args&&... args) requires (is_Unique<Status>::value) {
 		if (m_ptr)	{ *m_ptr = move(Type(args...)); }
@@ -269,11 +267,11 @@ public:
 	}
 
 	// Destruct.
-	/* 	@docs {
+	/* 	@docs
 		@title: Destruct
 		@description:
 			Destruct the pointer.
-	} */
+	*/
 	constexpr
 	This& 	destruct() requires (is_Unique<Status>::value) {
 		delete m_ptr;
@@ -299,47 +297,47 @@ public:
 	// Functions.
 
 	// Is undefined.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is undefined
 		@description:
 			Check if the pointer is undefined.
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const { return m_ptr == nullptr; }
 
 	// Is allocated.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is defined
 		@description:
 			Check if the pointer is defined.
-	} */
+	*/
 	constexpr
 	bool 	is_defined() const { return m_ptr != nullptr; }
 
 	// Is unique.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is unique
 		@description:
 			Check if the pointer is unique.
-	} */
+	*/
 	constexpr
 	bool 	is_unqiue() const { return is_Unique<Status>::value; }
 
 	// Is shared.
-	/* 	@docs {
+	/* 	@docs
 		@title: Is shared
 		@description:
 			Check if the pointer is shared.
-	} */
+	*/
 	constexpr
 	bool 	is_shared() const { return is_Shared<Status>::value; }
 
 	// Links.
-	/* 	@docs {
+	/* 	@docs
 		@title: Links
 		@description:
 			Get the amount of shared links.
-	} */
+	*/
 	constexpr
 	auto 	links() const requires (is_Unique<Status>::value) {
 		return 0;
@@ -350,11 +348,11 @@ public:
 	}
 
 	// Copy memory.
-	/* 	@docs {
+	/* 	@docs
 		@title: Copy
 		@description:
 			Make a copy of the pointer without any links between the objects.
-	} */
+	*/
 	constexpr
 	This 	copy() requires (is_Unique<Status>::value) {
 		return *this;
@@ -383,11 +381,11 @@ public:
 	}
 
 	// Reset.
-	/* 	@docs {
+	/* 	@docs
 		@title: Reset
 		@description:
 			Reset all attributes.
-	} */
+	*/
 	constexpr
 	This& 	reset() {
 		destruct();
@@ -404,11 +402,11 @@ public:
 	}
 
 	// Get pointer as reference.
-	/* 	@docs {
+	/* 	@docs
 		@title: Pointer
 		@description:
 			Get the pointer by reference.
-	} */
+	*/
 	constexpr
 	auto& 	ptr() {
 		return m_ptr;
@@ -419,11 +417,11 @@ public:
 	}
 
 	// Get pointee as reference.
-	/* 	@docs {
+	/* 	@docs
 		@title: Pointee
 		@description:
 			Get the pointee by reference.
-	} */
+	*/
 	constexpr
 	auto& 	pointee() {
         if (m_ptr == nullptr) {

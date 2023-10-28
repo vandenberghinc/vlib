@@ -33,8 +33,8 @@ namespace vlib {
 ) \
 )
 
-/* @docs {
-    @chapter: crypto
+/* @docs
+    @chapter: Crypto
     @title: AES
     @description:
         AES type used to encrypt and decrypt data.
@@ -44,7 +44,7 @@ namespace vlib {
         vlib::AES256_CBC aes_alias; // alias.
     @notes:
         Type `AES` acts as a shared pointer, use `AES::copy()` to create a copy without a link.
-} */
+*/
 template <
 	int Mode = 	crypto::mode::cbc,
 	int Key = 	crypto::key::aes256
@@ -147,30 +147,30 @@ public:
 	// Constructors.
 
 	// Default constructor.
-    /*  @docs {
+    /*  @docs
         @title: Constructor
         @description:
             Construct an AES type.
         @usage:
             vlib::AES<...> aes;
-    } */
+    */
 
 	explicit constexpr
 	AES() :
 	m_attr(attr{.ctx = EVP_CIPHER_CTX_new()}) {}
 
 	// Constructor from a key.
-    /*  @docs {
+    /*  @docs
         @title: Constructor from a key.
         @description:
             Construct an AES object from a key.
-        @parameter: {
+        @parameter:
             @name: key
             @description: The hex encoded AES key.
         }
         @usage:
             vlib::AES<...> aes("...");
-    } */
+    */
 
 	explicit constexpr
 	AES(const String& key) :
@@ -218,24 +218,24 @@ public:
 	// Properties.
 
 	// The encoded key.
-    /*  @docs {
+    /*  @docs
         @title: Key
         @description:
             Get the key attribute.
-    } */
+    */
 	constexpr
 	auto&	key() { return m_attr->key; }
     constexpr
     auto&   key() const { return m_attr->key; }
     
     // The encode bool.
-    /*  @docs {
+    /*  @docs
         @title: Key
         @description:
             Get the encode boolean attribute.
      
             When encode is enabled, everything is hex encoded.
-    } */
+    */
     constexpr
     auto&    encode() { return m_attr->encode; }
     constexpr
@@ -245,11 +245,11 @@ public:
 	// Functions.
 
 	// Reset.
-    /*  @docs {
+    /*  @docs
         @title: Reset
         @description:
             Reset all attributes of the initialized object.
-    } */
+    */
 	constexpr
 	auto&	reset() {
 		m_attr->key.reset();
@@ -263,11 +263,11 @@ public:
 	}
 
 	// Make a unique copy.
-    /*  @docs {
+    /*  @docs
         @title: Copy
         @description:
             Create a real copy of the object without any links.
-    } */
+    */
 	constexpr
 	This	copy() {
 		return m_attr.copy();
@@ -278,16 +278,16 @@ public:
 	}
 
 	// Set the key (encoded).
-    /*  @docs {
+    /*  @docs
         @title: Set key
         @description:
             Set the key of the AES type.
-        @parameter: {
+        @parameter:
             @name: key
             @description: The hex encoded AES key.
         }
         @funcs: 2
-    } */
+    */
 	constexpr
 	void    set_key(const String& encoded_key) {
 		m_attr->key.copy(encoded_key);
@@ -300,11 +300,11 @@ public:
 	}
 
 	// Generate a key.
-    /*  @docs {
+    /*  @docs
         @title: Generate key
         @description:
             Generate and assign a key.
-    } */
+    */
 	constexpr
 	void    generate_key() {
 		m_attr->rkey.resize(Key);
@@ -326,11 +326,11 @@ public:
     }
 
 	// Encrypt.
-    /*  @docs {
+    /*  @docs
         @title: Encrypt
         @description:
             Encrypt a string.
-        @parameter: {
+        @parameter:
             @name: data
             @description: The data to encrypt.
         }
@@ -339,7 +339,7 @@ public:
             aes.generate_key();
             vlib::String output = aes.encrypt(output, "Hello World!");
         @funcs: 2
-    } */
+    */
     constexpr
     String  encrypt(const String& data) {
         return encrypt(data.c_str(), data.len());
@@ -406,11 +406,11 @@ public:
 	}
 
 	// Decrypt.
-    /*  @docs {
+    /*  @docs
         @title: Decrypt
         @description:
             Decrypt a string.
-        @parameter: {
+        @parameter:
             @name: data
             @description: The data to decrypt.
         }
@@ -418,7 +418,7 @@ public:
             vlib::AES<...> aes("Some Key");
             vlib::String output = aes.decrypt("XXX") != 0);
         @funcs: 2
-    } */
+    */
     constexpr
     String  decrypt(const String& data) {
         return decrypt(data.c_str(), data.len());

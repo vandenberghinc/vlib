@@ -23,14 +23,14 @@ struct RateLimit {
 namespace rate_limit {
 
 // HTTP request method.
-/* 	@docs: {
-	@chapter: restapi
+/* 	@docs:
+	@chapter: REST API
 	@title: Rate limit format
 	@description: The RESTAPI rate limit formats.
 	@usage:
 		#include <vlib/sockets/restapi.h>
 		short format = vlib::restapi::rate_limit::sec;
-} */
+*/
 enum formats {
 	sec = 	1,
 	min = 	2,

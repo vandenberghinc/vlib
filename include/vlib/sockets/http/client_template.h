@@ -144,25 +144,22 @@ public:
 	}
 	
 	// Create and send a request.
-	/*  @docs  {
+	/*  @docs
 	 *	@parent: vlib::http::Client
 	 *	@title: Request
 	 *	@description:
 	 *		Make a HTTP request.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
 	 *	@usage:
 	 *		// Request with no parameters.
 	 *		vlib::http::Client client (...);
@@ -189,26 +186,23 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 4
-	 } */
-	/*  @docs  {
+	 */
+	/*  @docs
 	 *	@parent: vlib::https::Client
 	 *	@title: Request
 	 *	@description:
 	 *		Make a HTTPS request.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
 	 *	@usage:
 	 *		// Request with no parameters.
 	 *		vlib::https::Client client (...);
@@ -235,7 +229,7 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 4
-	 } */
+	 */
 	constexpr
 	Response	request(
 		short			method,
@@ -302,7 +296,7 @@ public:
 	}
 
 	// Create and send a compressed request.
-	/*  @docs  {
+	/*  @docs
 	 *	@parent: vlib::http::Client
 	 *	@title: Compressed request
 	 *	@description:
@@ -311,22 +305,18 @@ public:
 	 *		Only the body will compressed.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: body
 	 *		@description: The request body.
-	 *	}
 	 *	@usage:
 	 *		// Compressed request with a string body.
 	 *		vlib::http::Client client (...);
@@ -346,8 +336,8 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 2
-	 } */
-	/*  @docs  {
+	 */
+	/*  @docs
 	 *	@parent: vlib::https::Client
 	 *	@title: Compressed request
 	 *	@description:
@@ -358,22 +348,18 @@ public:
 	 *		This function should not be used when the body contains sensitive information.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: body
 	 *		@description: The request body.
-	 *	}
 	 *	@usage:
 	 *		// Compressed request with a string body.
 	 *		vlib::https::Client client (...);
@@ -393,7 +379,7 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 2
-	 } */
+	 */
 	constexpr
 	Response	compressed_request(
 		short 			method,
@@ -417,7 +403,7 @@ public:
 	}
 	
 	// Create and send a chunked request.
-	/*  @docs  {
+	/*  @docs
 	 *	@parent: vlib::http::Client
 	 *	@title: Chunked request
 	 *	@description:
@@ -428,22 +414,18 @@ public:
 	 *		Does not yet support query requests with `query = true`.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: body
 	 *		@description: The request body.
-	 *	}
 	 *	@usage:
 	 *		// Chunked request with a string body.
 	 *		vlib::http::Client client (...);
@@ -462,8 +444,8 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 2
-	 } */
-	/*  @docs  {
+	 */
+	/*  @docs
 	 *	@parent: vlib::https::Client
 	 *	@title: Chunked request
 	 *	@description:
@@ -474,22 +456,18 @@ public:
 	 *		Does not yet support query requests with `query = true`.
 	 *	@return:
 	 *		The functions return a <type>vlib::http::Response</type> object.
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: method
 	 *		@description: The HTTP method, see <link #vlib::http::method::methods>vlib::http::method</link> for more info.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: endpoint
 	 *		@description: The endpoint url, for example `/`.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: timeout
 	 *		@description: The timout in milliseconds, use `-1` for no timeout.
-	 *	}
-	 *	@parameter: {
+	 *	@parameter:
 	 *		@name: body
 	 *		@description: The request body.
-	 *	}
 	 *	@usage:
 	 *		// Chunked request with a string body.
 	 *		vlib::https::Client client (...);
@@ -508,7 +486,7 @@ public:
 	 *			{{"Hello", "World!"}}
 	 *		)
 	 *	@funcs: 2
-	 } */
+	 */
 	constexpr
 	Response	chunked_request(
 		short 			method,
@@ -570,7 +548,7 @@ public:
 	}
     
     // Restart the socket.
-	/*  @docs  {
+	/*  @docs
 	 *	@parent: vlib::http::Client
 	 *	@title: Restart
 	 *	@description:
@@ -581,8 +559,8 @@ public:
 	 *		// Compressed request with a string body.
 	 *		vlib::http::Client client (...);
 	 *		client.restart();
-	 } */
-	/*  @docs  {
+	 */
+	/*  @docs
 	 *	@parent: vlib::https::Client
 	 *	@title: Restart
 	 *	@description:
@@ -593,7 +571,7 @@ public:
 	 *		// Compressed request with a string body.
 	 *		vlib::https::Client client (...);
 	 *		client.restart();
-	 } */
+	 */
     void 	restart() {
         m_sock.restart();
         if (m_sni.is_defined()) {
@@ -603,7 +581,7 @@ public:
     }
     
     // Close the socket.
-	/*  @docs  {
+	/*  @docs
 	 *	@parent: vlib::http::Client
 	 *	@title: Close
 	 *	@description:
@@ -613,8 +591,8 @@ public:
 	 *		vlib::http::Client client (...);
 	 *		...
 	 *		client.close();
-	 } */
-	/*  @docs  {
+	 */
+	/*  @docs
 	 *	@parent: vlib::https::Client
 	 *	@title: Close
 	 *	@description:
@@ -624,7 +602,7 @@ public:
 	 *		vlib::https::Client client (...);
 	 *		...
 	 *		client.close();
-	 } */
+	 */
     void     close() {
         m_sock.close();
         m_was_connected = false;

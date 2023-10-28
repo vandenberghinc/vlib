@@ -35,7 +35,7 @@ struct Address {
     
 };
 
-/*  @docs {
+/*  @docs
  *  @chapter: SMTP
  *  @title: SMTP Mail
  *  @description:
@@ -49,10 +49,10 @@ struct Address {
  *  @usage:
  *      #include <vlib/sockets/smtp.h>
  *      vlib::smtp::Mail mail {
- *          .sender = {"Sender Name", "sender@email.com"},
+ *          .sender = {"Sender Name", "sender\@email.com"},
  *          .recipients = {
- *              {"Recipient Name", "recipient1@email.com"},
- *              {"recipient2@email.com"},
+ *              {"Recipient Name", "recipient1\@email.com"},
+ *              {"recipient2\@email.com"},
  *          },
  *          .cc_recipients = {},
  *          .bcc_recipients = {},
@@ -60,7 +60,7 @@ struct Address {
  *          .body = "Hello World!",
  *          .attachments = {"/path/to/image.png "}
  *      };
- } */
+ */
 struct Mail {
 
 	// ---------------------------------------------------------

@@ -28,7 +28,7 @@ namespace http {
 //
 // - Only supports status codes that are included in "vlib::http::status".
 //
-/* @docs {
+/* @docs
 	@chapter: HTTP
 	@title: Response
 	@description:
@@ -39,7 +39,7 @@ namespace http {
 	@usage:
 		#include <vlib/sockets/http.h>
 		vlib::http::Response response;
-} */
+*/
 
 struct Response {
 
@@ -179,11 +179,11 @@ public:
 	m_data(String()) {}
 
 	// Constructor from a data parse.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a response from the client side in string format.
-		@parameter: {
+		@parameter:
 			@name: data
 			@description: The request in string format.
 		}
@@ -196,7 +196,7 @@ public:
 			data << "{\"success\":true,\"message\":\"Hello World!\"}"
 	 
 			vlib::http::Response response(data);
-	} */
+	*/
 	constexpr
 	Response (String data) :
 	m_data(move(data))
@@ -207,19 +207,19 @@ public:
 	{ parse(); }
 
 	// Constructor from response attributes.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a response from the server side.
-		@parameter: {
+		@parameter:
 			@name: version
 			@description: The used HTTP version, use `vlib::http::version::v1_1` etc.
 		}
-		@parameter: {
+		@parameter:
 			@name: status
 			@description: The response status, optionally use `vlib::http::status::success`.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The response headers.
 		}
@@ -229,29 +229,29 @@ public:
 				vlib::http::status::success,
 				{{"Content-Type", "application/json"}}
 			);
-	} */
+	*/
 	constexpr
 	Response (short version, int status, const Headers& headers) :
 	m_data(String()) {
 		reconstruct(version, status, headers);
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a response from the server side.
-		@parameter: {
+		@parameter:
 			@name: version
 			@description: The used HTTP version, use `vlib::http::version::v1_1` etc.
 		}
-		@parameter: {
+		@parameter:
 			@name: status
 			@description: The response status, optionally use `vlib::http::status::success`.
 		}
-		@parameter: {
+		@parameter:
 			@name: headers
 			@description: The response headers.
 		}
-		@parameter: {
+		@parameter:
 			@name: body
 			@description: The response body.
 		}
@@ -262,7 +262,7 @@ public:
 				{{"Retry-After", 10}},
 				"Hello World!"
 			);
-	} */
+	*/
 	constexpr
 	Response (short version, int status, const Headers& headers, const String& body) :
 	m_data(String()) {
@@ -325,26 +325,26 @@ public:
 	// Attribute functions.
 
 	// Version.
-	/*  @docs {
+	/*  @docs
 		@title: Has version
 		@type: bool
 		@description:
 			Check if the response has a defined version.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_version() const {
 		return m_version != vlib::http::version::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Version
 		@type: short
 		@description:
 			Get the HTTP version.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	version() {
 		return m_version;
@@ -355,26 +355,26 @@ public:
 	}
 
 	// Status.
-	/*  @docs {
+	/*  @docs
 		@title: Has status
 		@type: bool
 		@description:
 			Check if the response has a defined status.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_status() const {
 		return m_status != vlib::http::status::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Status
 		@type: short&
 		@description:
 			Get the HTTP status.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	status() {
 		return m_status;
@@ -385,26 +385,26 @@ public:
 	}
 
 	// Status description.
-	/*  @docs {
+	/*  @docs
 		@title: Has status description
 		@type: bool
 		@description:
 			Check if the response has a defined status description.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_status_desc() const {
 		return m_status_desc.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Status description
 		@type: String&
 		@description:
 			Get the HTTP status description.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	status_desc() {
 		return m_status_desc;
@@ -415,26 +415,26 @@ public:
 	}
 
 	// Status description.
-	/*  @docs {
+	/*  @docs
 		@title: Has content type
 		@type: bool
 		@description:
 			Check if the response has a defined content type.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_content_type() const {
 		return m_content_type != http::content_type::undefined;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Content type
 		@type: short&
 		@description:
 			Get the HTTP content type.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	content_type() {
 		return m_content_type;
@@ -445,26 +445,26 @@ public:
 	}
 
 	// Headers.
-	/*  @docs {
+	/*  @docs
 		@title: Has headers
 		@type: bool
 		@description:
 			Check if the response has defined headers.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_headers() const {
 		return m_headers.len() != 0;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Headers
 		@type: Headers&
 		@description:
 			Get the HTTP headers.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	headers() {
 		return m_headers;
@@ -475,26 +475,26 @@ public:
 	}
 
 	// Body.
-	/*  @docs {
+	/*  @docs
 		@title: Has body
 		@type: bool
 		@description:
 			Check if the response has a defined body.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	bool 	has_body() const {
 		return m_body.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Body
 		@type: String&
 		@description:
 			Get the HTTP body.
 		@notes:
 			- Only available when the response has been constructed through a data parse.
-	} */
+	*/
 	constexpr
 	auto& 	body() {
 		return m_body;
@@ -504,44 +504,44 @@ public:
 		return m_body;
 	}
 	
-	/*  @docs {
+	/*  @docs
 		@title: JSON
 		@type: Json
 		@description:
 			Get the body as `Json`.
-	} */
+	*/
 	constexpr
 	Json 	json() const {
 		return m_body;
 	}
     
-    /*  @docs {
+    /*  @docs
         @title: JSON Array
         @description:
             Get the body as `Json`.
-    } */
+    */
     constexpr
     JArray  jarray() const {
         return Json::parse_brackets(m_body.data(), m_body.len());
     }
 
 	// Data.
-	/*  @docs {
+	/*  @docs
 		@title: Has data
 		@type: bool
 		@description:
 			Check if the response has a string representation data.
-	} */
+	*/
 	constexpr
 	bool 	has_data() const {
 		return m_data.is_defined();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Data
 		@type: String&
 		@description:
 			Get the string representation data.
-	} */
+	*/
 	constexpr
 	auto& 	data() {
         if (m_data.is_undefined()) {
@@ -561,10 +561,10 @@ public:
 	// Functions.
 
 	// Reset.
-	/*  @docs {
+	/*  @docs
 		@title: Reset
 		@description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	This& 	reset() {
 		m_version = vlib::http::version::undefined;
@@ -577,30 +577,30 @@ public:
 	}
     
     // Is defined.
-    /*  @docs {
+    /*  @docs
         @title: Is Defined
         @description: Check if the `Response` object is defined.
-     } */
+     */
     constexpr
     Bool     is_defined() {
         return m_version != vlib::http::version::undefined;
     }
     
     // Is undefined.
-    /*  @docs {
+    /*  @docs
      @title: Is Undefined
      @description: Check if the `Response` object is undefined.
-     } */
+     */
     constexpr
     Bool     is_undefined() {
         return m_version == vlib::http::version::undefined;
     }
 
 	// Add a version to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add version
 		@description: Add a HTTP version to the data string.
-	} */
+	*/
 	constexpr
 	This& 	add_version(short version) {
         m_version = version;
@@ -608,10 +608,10 @@ public:
 	}
 
 	// Add a status to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add status
 		@description: Add a status to the data string.
-	} */
+	*/
 	constexpr
 	This& 	add_status(int status) {
         m_status = status;
@@ -620,13 +620,13 @@ public:
 	}
 
 	// Add a header key & value to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add header
 		@description: Add a header key & value to the data string.
 		@notes:
 			- Does not assign to the attribute `m_headers`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This&	add_header(const String& key, const String& value) {
         m_headers.append(key, value);
@@ -639,12 +639,12 @@ public:
     }
 	
 	// Add headers to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add headers
 		@description: Add headers to the data string.
 		@notes:
 			- Does not assign to the attribute `m_headers`.
-	} */
+	*/
 	constexpr
 	This&	add_headers(const Headers& headers) {
 		for (auto& i: headers.indexes()) {
@@ -654,14 +654,14 @@ public:
 	}
 
 	// Add a body to the data string.
-	/*  @docs {
+	/*  @docs
 		@title: Add body
 		@description: Add a body to the data string.
 		@notes:
 			- Automatically calls `add_end()`.
 			- Does not assign to the attribute `m_body`.
 		@funcs: 3
-	} */
+	*/
 	constexpr
 	This&	add_body(
 		const String& 				body
@@ -683,11 +683,11 @@ public:
 	}
 
 	// Get a header value by key.
-	/*  @docs {
+	/*  @docs
 		@title: Header
 		@description: Get a header value by key.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto&	header(const String& key) {
 		return m_headers.value(key);

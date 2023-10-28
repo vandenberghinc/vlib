@@ -9,8 +9,8 @@
 namespace vlib {
 
 // Location type.
-/* 	@docs {
-	@chapter: exceptions
+/* 	@docs
+	@chapter: Exceptions
 	@title: Location
 	@description:
 		Source location type.
@@ -19,7 +19,7 @@ namespace vlib {
         #include <vlib/types.h>
 		vlib::Loc x = vlib::Loc::get();
 		vlib::print(x.path(), ':', x.line(), ':', x.column(), ": ", x.path());
-} */
+*/
 struct Loc {
 
 // Private:
@@ -108,31 +108,31 @@ public:
 	}
 
 	// Get attributes.
-	/*  @docs {
+	/*  @docs
 		@title: Line
 		@type: int&
 		@description:
 			Get the line number attribute.
-	} */
+	*/
 	inline constexpr
 	auto& 	line() const {
 		return m_line;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Column
 		@type: int&
 		@description:
 			Get the column number attribute.
-	} */
+	*/
 	inline constexpr
 	auto& 	column() const {
 		return m_column;
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Path
 		@description:
 			Get the file path attribute.
-	} */
+	*/
 	inline constexpr
 	const char* path() const {
 		if (!m_path) {
@@ -141,11 +141,11 @@ public:
 			return m_path;
 		}
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Func
 		@description:
 			Get the function name attribute.
-	} */
+	*/
 	inline constexpr
 	const char* func() const {
 		if (!m_func) {
@@ -196,16 +196,16 @@ public:
 			m_parsed = true;
 
 		}
-	}*/
+	*/
 
 	// Get current location.
 	// Every preprocessor needs a func for vdocs.
 	#if __has_builtin(__builtin_COLUMN) || (defined(_MSC_VER) && _MSC_VER > 1925)
-	/*  @docs {
+	/*  @docs
 		@title: Get
 		@description:
 			Construct a `Loc` object.
-	} */
+	*/
 	inline static constexpr Loc get(
 		int line = __builtin_LINE(),
 		int column = __builtin_COLUMN(),

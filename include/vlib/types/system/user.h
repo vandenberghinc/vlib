@@ -20,8 +20,8 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // User type
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: User
 	@description:
 		User type.
@@ -29,7 +29,7 @@ namespace vlib {
         #include <vlib/types.h>
 		vlib::User root0(0);
         vlib::User root1("root");
-} */
+*/
 // @TODO should generate scripts and save them to the /tmp/, since calling Script everytime is super super super dumb.
 // @TODO convert raw pointers to Ptr.
 struct User {
@@ -481,37 +481,37 @@ public:
 	m_gid(-1) {}
 	
 	// Constructor.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from the user's id.
-		@parameter: {
+		@parameter:
 			@name: uid
 			@description: The user's id.
 		}
 		@usage:
 			vlib::User root(0);
-	} */
+	*/
 	constexpr
 	User	(int uid) :
 	m_uid(uid),
 	m_gid(-1) {}
 	
 	// Constructor from name.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from the users's name.
 		@warning:
 			Throws an exception when the user does not exist, use `vlib::User::exists(const String&)` to check if the user exists.
-		@parameter: {
+		@parameter:
 			@name: name
 			@description: The users's name.
 		}
 		@usage:
 			vlib::User root("root");
 		@funcs: 2
-	} */
+	*/
 	User	(const String& name) {
 		struct passwd pass;
 		getpwnam_wrapper(name.c_str(), pass, m_buff, true);
@@ -600,10 +600,10 @@ public:
 	// Functions.
 	
 	// Copy the object.
-	/* @docs {
+	/* @docs
 	   @title: Copy
 	   @description: Copy the object.
-	} */
+	*/
 	constexpr
 	auto 	copy() {
 		return *this;
@@ -614,10 +614,10 @@ public:
 	}
 	
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	   @title: Reset
 	   @description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	This& 	reset() {
 		m_uid = -1;
@@ -629,46 +629,46 @@ public:
 	}
 	
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	   @title: Is undefined
 	   @description: Check if the object is undefined.
 	   @usage:
 			User x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const {
 		return m_uid == -1;
 	}
 	
 	// Is root.
-	/* @docs {
+	/* @docs
 	   @title: Is root
 	   @description: Check if the user is root (uid: 0).
 	   @usage:
 			User x(0);
 			x.is_root(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_root() const {
 		return m_uid == 0;
 	}
 	
 	// Get the uid.
-	/* @docs {
+	/* @docs
 	   @title: User id
 	   @description: Get the user's id.
-	} */
+	*/
 	constexpr
 	auto& 	uid() const {
 		return m_uid;
 	}
 	
 	// Get the gid.
-	/* @docs {
+	/* @docs
 	   @title: Group id
 	   @description: Get the group id of the user.
-	} */
+	*/
 	constexpr
 	auto& 	gid() {
 		if (m_gid == -1) { parse(); }
@@ -676,13 +676,13 @@ public:
 	}
 	
 	// Get the user's name as string.
-	/* @docs {
+	/* @docs
 	   @title: Name
 	   @description: Get the user's name as string.
 	   @usage:
 			User x(0);
 			x.name(); ==> "root";
-	} */
+	*/
 	constexpr
 	auto& 	name() {
 		if (m_name.is_undefined()) { parse(); }
@@ -696,21 +696,21 @@ public:
 	   @usage:
 			User x(0);
 			x.pass(); ==> "********";
-	} */
+	*/
 	/*constexpr
 	auto& 		pass() {
 		if (m_pass.is_undefined()) { parse(); }
 		return m_pass;
-	}*/
+	*/
 	
 	// Get the user's home directory as string.
-	/* @docs {
+	/* @docs
 	   @title: Home
 	   @description: Get the user's home directory path as string.
 	   @usage:
 			User x(?);
 			x.home(); ==> "/home/myuser/";
-	} */
+	*/
 	constexpr
 	auto& 	home() {
 		if (m_home.is_undefined()) { parse(); }
@@ -718,16 +718,16 @@ public:
 	}
 
 	// Check if the user exists.
-	/* @docs {
+	/* @docs
 	   @title: Exists
 	   @description: Check if the user exists.
-	} */
+	*/
 	bool 	exists() { return parse(); }
-	/* 	@docs {
+	/* 	@docs
 		@title: Exists
 		@description: Check if a user exists.
 		@funcs: 3
-	} */
+	*/
 	static inline
 	bool 	exists(const String& name) {
 		return exists(name.c_str());
@@ -750,11 +750,11 @@ public:
 	}
 	
 	// Prompt a password input without echo.
-	/* 	@docs {
+	/* 	@docs
 		@title: Prompt password
 		@description:
 			Prompt a password input without echo.
-	} */
+	*/
 	static inline
 	String 	prompt_pass(const char* prompt = "Password:") {
         String output;
@@ -768,20 +768,20 @@ public:
 
 	// Encrypt a password for an existing user.
 	#if OSID <= 0 || OSID >= 4
-	/*  @docs {
+	/*  @docs
 		@title: Encrypt password
 		@description:
 			Encrypt a password for an existing user.
 		@notes:
 			- Not supported on `MacOS`.
-		@parameter: {
+		@parameter:
 			@name: pass
 			@description: The unencrypted password string.
 		}
 		@usage:
 			vlib::User root(0);
 			vlib::String output = root.encrypt_pass("Hello World!");
-	} */
+	*/
 	String 	encrypt_pass(const String&	pass) {
         
 		// Parse the shadow file.
@@ -829,19 +829,19 @@ public:
         return output;
 	}
 	// Encrypt a password for a new user.
-	/*  @docs {
+	/*  @docs
 		@title: Encrypt password
 		@description:
 			Encrypt a password for a new user.
 		@notes:
 			- Not supported on `MacOS`.
-		@parameter: {
+		@parameter:
 			@name: pass
 			@description: The unencrypted password string.
 		}
 		@usage:
 			vlib::String output = vlib::User::encrypt_new_pass("Hello World!")
-	} */
+	*/
 	static inline
 	String 	encrypt_new_pass(const String& pass) {
 
@@ -868,7 +868,7 @@ public:
 	   @description: Verify the user's current password.
 		@notes:
 			- Not supported on `MacOS`.
-		@parameter: {
+		@parameter:
 			@name: pass
 			@description: The password to verify.
 		}
@@ -876,7 +876,7 @@ public:
 	   @usage:
 			vlib::User root(0);
 			root.verify_pass("XXXXXXXXXX");
-	} */
+	*/
 	bool 	verify_pass(const String& pass) {
 
 		// Parse.
@@ -909,7 +909,7 @@ public:
 	// Set the user's password.
 	// - Requires root priviliges.
 	#if OSID <= 0 || OSID >= 4
-	/* 	@docs {
+	/* 	@docs
 		@title: Set password
 		@description:
 			 Set the user's password.
@@ -919,7 +919,7 @@ public:
 		@usage:
 			vlib::User root(0);
 			root.set_pass("Hello World!");
-	} */
+	*/
 	void 	set_pass(
 		const String& 	pass					// the password.
 	);
@@ -936,41 +936,41 @@ public:
 	// Create a user.
 	// - Must be executed as user root.
 	#if OSID <= 0 || OSID >= 4
-	/* 	@docs {
+	/* 	@docs
 		@title: create
 		@description:
 			Create a user.
-		@parameter: {
+		@parameter:
 			@name: name
 			@description: The username.
 		}
-		@parameter: {
+		@parameter:
 			@name: realname
 			@description: The user's real name.
 		}
-		@parameter: {
+		@parameter:
 			@name: pass
 			@description: The user's password.
 		}
-		@parameter: {
+		@parameter:
 			@name: uid
 			@description: The user's id, leave `-1` to assign automatically.
 		}
-		@parameter: {
+		@parameter:
 			@name: gid
 			@description: The user's group id, leave `-1` to assign automatically.
 		}
-		@parameter: {
+		@parameter:
 			@name: superuser
 			@description: Whether to grant the new user root priviliges.
 		}
-		@parameter: {
+		@parameter:
 			@name: homes
 			@description:
 				The homes path, base path of the user's home path, not the user's home path itself.
 				The function's default value for linux systems is `/home/` while the default value for MacOS is `/Users/`.
 		}
-		@parameter: {
+		@parameter:
 			@name: shell
 			@description:
 				The shell path.
@@ -980,7 +980,7 @@ public:
 			- Must be executed with root priviliges.
 			- In order to create the user the password will be exposed to `execl()`.
 			- MacOS: When a new superuser has been created it requires a reboot before the superuser changes take effect.
-	} */
+	*/
 	SICE
 	void 	create(
 		const char* 	name,								// the username.
@@ -1008,7 +1008,7 @@ public:
 	
 	// Delete a user.
 	// - Must be executed as user root.
-	/* @docs {
+	/* @docs
 	   @title: Delete
 	   @description:
 			Delete a user.
@@ -1017,12 +1017,12 @@ public:
 		@usage:
 			vlib::User user("myuser");
 			user.del();
-	} */
+	*/
 	constexpr
 	void 	del();
     
     // Get uid of a user.
-    /* @docs {
+    /* @docs
        @title: Get UID
        @description:
             Get the UID of an existing user.
@@ -1031,7 +1031,7 @@ public:
         @usage:
             Int uid = vlib::User::get_uid("myuser");
         @funcs: 2
-    } */
+    */
     static inline
     Int get_uid(const String& name) {
         return get_uid(name.c_str());
@@ -1050,7 +1050,7 @@ public:
     }
     
     // Get gid of a user.
-    /* @docs {
+    /* @docs
        @title: Get GID
        @description:
             Get the GID of an existing user.
@@ -1059,7 +1059,7 @@ public:
         @usage:
             Int gid = vlib::User::get_gid("myuser");
         @funcs: 2
-    } */
+    */
 	static inline
     Int get_gid(const String& name) {
         return get_gid(name.c_str());
@@ -1078,7 +1078,7 @@ public:
     }
     
     // Get gid of a user.
-    /* @docs {
+    /* @docs
        @title: Get UID and GID
        @description:
             Get the UID and GID of an existing user.
@@ -1089,7 +1089,7 @@ public:
         @usage:
             Int gid = vlib::User::get_ugid("myuser");
         @funcs: 2
-    } */
+    */
 	static inline
     int get_ugid(Int& uid, Int& gid, const String& name) {
         return get_ugid(uid, gid, name.c_str());
@@ -1110,7 +1110,7 @@ public:
     }
     
     // Get username
-    /* @docs {
+    /* @docs
        @title: Get name
        @description:
             Get the name of an user by uid.
@@ -1118,7 +1118,7 @@ public:
             Throws an exception when the user does not exist.
         @usage:
             String name = vlib::User::get_name(...);
-    } */
+    */
     static inline
     String get_name(const Int& uid) {
         char* buff = nullptr;

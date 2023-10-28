@@ -12,8 +12,8 @@
 namespace vlib {
 
 // Response type.
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Response
 	@description:
 		Response type
@@ -39,7 +39,7 @@ namespace vlib {
 		} else {
 			...
 		}
-} */
+*/
 template <typename Type = bool>
 struct Response {
 	

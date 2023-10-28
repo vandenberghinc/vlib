@@ -46,25 +46,21 @@ auto& check_os_json(const Path& config, const Json& json, const String& key) {
 // Compile.
 
 // Build.
-/*	@docs: {
- *	@chapter: system
+/*	@docs:
+ *	@chapter: System
  *	@title: Compile
- *	@parameter: {
+ *	@parameter:
  *		@name: source_dir
  *		@description: The path of the source directory. Used to replace $SOURCE in the configuration json.
- *	}
- *	@parameter: {
+ *	@parameter:
  *		@name: config_path
  *		@description: The path to the configuration json.
- *	}
- *	@parameter: {
+ *	@parameter:
  *		@name: config
  *		@description: The compile configuration.
- *	}
- *	@parameter: {
+ *	@parameter:
  *		@name: log
  *		@description: Allow logging to the console.
- *	}
  *	@description:
  *		Compile c++ code.
  *
@@ -84,10 +80,10 @@ auto& check_os_json(const Path& config, const Json& json, const String& key) {
  *			"std": "c++2b",
  *			"include_paths": [
  *				"/opt/vinc/include/",
- *				"/opt/homebrew/opt/openssl@3.1/include/"
+ *				"/opt/homebrew/opt/openssl\@3.1/include/"
  *			],
  *			"library_paths": [
- *				"/opt/homebrew/opt/openssl@3.1/lib/"
+ *				"/opt/homebrew/opt/openssl\@3.1/lib/"
  *			],
  *			"linked_libraries": {
  *				"macos": [
@@ -112,7 +108,7 @@ auto& check_os_json(const Path& config, const Json& json, const String& key) {
  *		}```
  *	@warning:
  *		This function is mainly implemented for other vinc libraries so it may be subject to change.
- } */
+ */
 void     compile(
 	const Json& config,
 	const Path& source_dir = {},

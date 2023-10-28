@@ -12,8 +12,8 @@
 namespace vlib {
 
 // Pipe type.
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: Pipe
 	@description:
 		Pipe type.
@@ -38,7 +38,7 @@ namespace vlib {
 			}
 		};
 
-} */
+*/
 struct Pipe {
 
 // Public:
@@ -198,14 +198,14 @@ public:
 	}
 
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	  @title: Is undefined
 	  @description:
 			Check if the object is undefined.
 	  @usage:
 			Pipe x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 	is_undefined() const {
 		return m_arr == nullptr;

@@ -9,8 +9,8 @@
 namespace vlib {
 
 // New type.
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: Code
 	@description:
 		Code type.
@@ -19,7 +19,7 @@ namespace vlib {
 	@usage:
         #include <vlib/types.h>
 		vlib::Code x;
-} */
+*/
 // @TODO undefined behaviour for destructor.
 // @TODO docs fix for inherited functions.
 struct Code : public String {
@@ -86,37 +86,37 @@ public:
 	: String(arr, len, capacity) {}
 
 	// Constructor from an array with length.
-    /*  @docs {
+    /*  @docs
         @title: Constructor
         @description:
             Construct a `Code` object.
-        @parameter: {
+        @parameter:
             @name: arr
             @description: The char array.
         }
-        @parameter: {
+        @parameter:
             @name: len
             @description: The length of the char array.
         }
         @usage:
             vlib::Code code("Hello World!", 12);
-    } */
+    */
 	constexpr
 	Code (const Type* arr, const Length len)
 	: String(arr, len) {}
 
 	// Constructor from a char array.
-    /*  @docs {
+    /*  @docs
         @title: Constructor
         @description:
             Construct a `Code` object.
-        @parameter: {
+        @parameter:
             @name: arr
             @description: The null-terminated char array.
         }
         @usage:
             vlib::Code code("Hello World!");
-    } */
+    */
 	constexpr
 	Code (const Type* arr)
 	: String(arr) {}
@@ -209,7 +209,7 @@ public:
 	// Iterations.
 	
 	// Iterate over a code file.
-    /*  @docs {
+    /*  @docs
         @title: Iterate
         @description:
             Iterate over a code file with a special Iterator.
@@ -221,7 +221,7 @@ public:
             for (auto& i: code.iterate<vlib::Backwards>()) {
                 ...
             }
-    } */
+    */
 	template <typename Iter = Forwards, typename... Air> requires (is_Forwards<Iter>::value) constexpr
 	auto iterate() const {
 		return internal::code::Iterator(0, this->m_len, this->m_arr, false);
@@ -271,11 +271,11 @@ public:
 	// Functions.
 	
 	// Copy.
-    /*  @docs {
+    /*  @docs
         @title: Copy
         @description:
             Create a copy of the object.
-    } */
+    */
 	constexpr
 	This 	copy() {
 		return *this;
@@ -286,7 +286,7 @@ public:
 	}
 	
     // Code patterns.
-    /*  @docs {
+    /*  @docs
         @title: Code patterns
         @description:
             Used to include / exclude characters from `Code` operations.
@@ -301,7 +301,7 @@ public:
                 int     curly_brackets_depth = -1;  // required curly brackets depth (-1 to ignore).
                 int     template_depth = -1;        // required template depth (-1 to ignore).
             };```
-    } */
+    */
     struct code_patterns {
         bool    exclude_strings = false;        // exclude strings.
         bool    exclude_chars = false;          // exclude chars.
@@ -314,7 +314,7 @@ public:
     };
     
 	// Find char / substring in code.
-    /*  @docs {
+    /*  @docs
         @title: Find code
         @description:
             Find a substring in the code.
@@ -323,28 +323,24 @@ public:
 		@return:
 			Returns the start index of the substring when the substring is found.
 			Returns `vlib::NPos::npos` when the substring is not found.
-        @parameter {
+        @parameter:
             @name: to_find
             @description: The substring to find.
-        }
-        @parameter {
+        @parameter:
             @name: sindex
             @description: The start index.
-        }
-        @parameter {
+        @parameter:
             @name: eindex
             @description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-        }
-        @parameter {
+        @parameter:
             @name: patterns
             @description: The exclude / include code patterns.
-        }
         @usage:
              vlib::Code code ("Hi \"X\" Ho");
              code.find("X"); ==> 4
              code.find_code("X", 0, NPos::npos, { .exclude_strings = true } ); ==> npos
         @funcs: 2
-    } */
+    */
 	constexpr
 	ullong 	find_code(
 		// The string or char to find.
@@ -387,7 +383,7 @@ public:
 	}
 	
 	// Remove indent.
-	/*  @docs {
+	/*  @docs
 		@title: Remove indent
 		@description:
 			Remove the indent from the code.
@@ -395,23 +391,20 @@ public:
 			Offers special exclude / include patterns.
 		@return:
 			Function `remove_indent` returns a new object while function `remove_indent_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: sindex
 			@description: The start index.
-		}
-		@parameter {
+		@parameter:
 			@name: eindex
 			@description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-		}
-		@parameter {
+		@parameter:
 			@name: patterns
 			@description: The exclude / include code patterns.
-		}
 		@usage:
 			 vlib::Code code ("  Hi");
 			 code.remove_indent_r(); ==> "Hi"
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This 	remove_indent(
         const Len& 		sindex = 0,					// the start index.
@@ -434,7 +427,7 @@ public:
 	}
 	
 	// Add indent.
-	/*  @docs {
+	/*  @docs
 		@title: Add indent
 		@description:
 			Add the indent to the code.
@@ -442,27 +435,23 @@ public:
 			Offers special exclude / include patterns.
 		@return:
 			Function `add_indent` returns a new object while function `add_indent_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: indent
 			@description: The indent length, `4` means four space characters.
-		}
-		@parameter {
+		@parameter:
 			@name: sindex
 			@description: The start index.
-		}
-		@parameter {
+		@parameter:
 			@name: eindex
 			@description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-		}
-		@parameter {
+		@parameter:
 			@name: patterns
 			@description: The exclude / include code patterns.
-		}
 		@usage:
 			 vlib::Code code ("Hi");
 			 code.add_indent_r(2); ==> "Hi"
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This 	add_indent(
 		const Int&		indent = 4,
@@ -546,7 +535,7 @@ public:
 	}
 	
 	// Remove comments.
-	/*  @docs {
+	/*  @docs
 		@title: Remove comments
 		@description:
 			Remove the comments from the code.
@@ -554,23 +543,20 @@ public:
 			Offers special exclude / include patterns.
 		@return:
 			Function `remove_comments` returns a new object while function `remove_comments_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: sindex
 			@description: The start index.
-		}
-		@parameter {
+		@parameter:
 			@name: eindex
 			@description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-		}
-		@parameter {
+		@parameter:
 			@name: patterns
 			@description: The exclude / include code patterns.
-		}
 		@usage:
 			 vlib::Code code ("Hello // World!");
 			 code.remove_comments_r(); ==> "Hello "
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This 		remove_comments(
 		const Len& 		sindex = 0,					// the start index.
@@ -593,7 +579,7 @@ public:
 	}
 	
 	// Slice comments.
-	/*  @docs {
+	/*  @docs
 		@title: Slice comments
 		@description:
 			Slice the comments from the code.
@@ -601,23 +587,20 @@ public:
 			Offers special exclude / include patterns.
 		@return:
 			Function `slice_comments` returns a new object while function `slice_comments_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: sindex
 			@description: The start index.
-		}
-		@parameter {
+		@parameter:
 			@name: eindex
 			@description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-		}
-		@parameter {
+		@parameter:
 			@name: patterns
 			@description: The exclude / include code patterns.
-		}
 		@usage:
 			 vlib::Code code ("Hello // World!");
 			 code.slice_comments_r(); ==> " World!"
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This 		slice_comments(
 		const Len& 		sindex = 0,					// the start index.
@@ -638,7 +621,7 @@ public:
 	}
 	
 	// Replace double.
-	/*  @docs {
+	/*  @docs
 		@title: Replace double
 		@description:
 			Replace double characters with a single character.
@@ -646,27 +629,23 @@ public:
 			Offers special exclude / include patterns.
 		@return:
 			Function `slice_comments` returns a new object while function `slice_comments_r` updates the current object and returns a reference to the current object.
-		@parameter {
+		@parameter:
 			@name: replacements
 			@description: The char array with single chars that will be replaced.
-		}
-		@parameter {
+		@parameter:
 			@name: sindex
 			@description: The start index.
-		}
-		@parameter {
+		@parameter:
 			@name: eindex
 			@description: The end index (use `vlib::NPos::npos` to use the length of the `Code` as the eindex).
-		}
-		@parameter {
+		@parameter:
 			@name: patterns
 			@description: The exclude / include code patterns.
-		}
 		@usage:
 			 vlib::Code code ("Hello  World!!");
 			 code.replace_double_r(" !"); ==> "Hello World!"
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This 		replace_double(
 		const char* 	replacements,				// the replacements array with chars.
@@ -691,13 +670,13 @@ public:
 	}
 	
 	// Split code by delimiter.
-	/* @docs {
+	/* @docs
 		@title: Split code
 		@description:
 			Split code by delimiter.
 	 
 			Offers special exclude / include patterns.
-	}*/
+	*/
 	constexpr
 	Array<Code> 	split_code(
 		const Type* delimiter,
@@ -730,11 +709,11 @@ public:
 	}
 	
 	// Trim whitespace.
-	/* 	@docs {
+	/* 	@docs
 	 * 	@title: Remove whitespace
 	 * 	@description:
 	 * 		Removes leading whitespace, traling whitespace and double spaces / tabs. Only code lines are trimmed.
-	 }*/
+	 */
 	constexpr
 	Code	remove_whitespace() const {
 		Code trimmed;
@@ -757,11 +736,11 @@ public:
 	}
 	
 	// Trim newlines.
-	/* 	@docs {
+	/* 	@docs
 	 * 	@title: Remove newlines
 	 * 	@description:
 	 * 		Removes all newline characters. Only code lines are trimmed.
-	 }*/
+	 */
 	constexpr
 	Code	remove_newlines() const {
 		Code trimmed;
@@ -777,11 +756,11 @@ public:
 	}
 	
 	// Trim double newlines.
-	/* 	@docs {
+	/* 	@docs
 	 * 	@title: Remove double newlines
 	 * 	@description:
 	 * 		Replaces double newlines with a single newline. Only code lines are trimmed.
-	 }*/
+	 */
 	constexpr
 	Code	remove_double_newlines() const {
 		Code trimmed;

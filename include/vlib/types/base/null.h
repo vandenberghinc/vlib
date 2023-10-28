@@ -9,8 +9,8 @@
 namespace vlib {
 
 // Null type.
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: Null
 	@description:
 		A null type.
@@ -19,7 +19,7 @@ namespace vlib {
 	@usage:
         #include <vlib/types.h>
 		vlib::Null x;
-} */
+*/
 struct Null {
 
 // Public:
@@ -41,14 +41,14 @@ public:
 	// Functions.
 
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	  @title: Is undefined
 	  @description:
 			Check if the object is undefined.
 	  @usage:
 			Null x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool	is_undefined() const { return true; }
 

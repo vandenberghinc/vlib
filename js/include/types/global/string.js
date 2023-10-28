@@ -129,6 +129,29 @@ String.prototype.eq_last = function(substr) {
     return true;
 }
 
+// Ensure last, checks if one of the characters of the `ensure_last` parameter is the last character, if not then it adds the first character of the `ensure_last` parameter to the end of the string.
+// The newly created string will be returned.
+String.prototype.ensure_last = function(ensure_last) {
+    if (ensure_last.indexOf(this.charAt(this.length - 1)) === -1) {
+        return this + ensure_last.charAt(0);
+    }
+    return this;
+}
+
+// Check if a word is uppercase only.
+String.prototype.is_uppercase = function(allow_digits = false) {
+    let uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (allow_digits) {
+        uppercase += "0123456789";
+    }
+    for (let i = 0; i < this.length; i++) {
+        if (uppercase.indexOf(this.charAt(i)) === -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Capitalize as a word (only the first letter).
 String.prototype.capitalize_word = function() {
     if ("abcdefghijklmopqrstuvwxyz".includes(this.charAt(0))) {

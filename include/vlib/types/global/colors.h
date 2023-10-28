@@ -102,8 +102,8 @@ public:
 };
 
 // Colors.
-/* 	@docs {
-	@chapter: types
+/* 	@docs
+	@chapter: Types
 	@title: Colors
 	@description:
 		Static colors structure.
@@ -124,7 +124,7 @@ public:
     @usage:
         #include <vlib/types.h>
         vlib::print(to_str(vlib::colors::bold, "Hello World!", vlib::colors::end));
-}*/
+*/
 struct colors {
 
 	// ---------------------------------------------------------
@@ -160,13 +160,13 @@ struct colors {
 	// Functions.
 
 	// Enable colors.
-	/* 	@docs {
+	/* 	@docs
 		@title: Enable
 		@description:
 			Enable the colors.
 		@usage:
 			vlib::colors::enable();
-	}*/
+	*/
 	SICE
 	void 	enable() {
 		black = "\u001b[30m";
@@ -183,13 +183,13 @@ struct colors {
 	};
 
 	// Disable colors.
-	/* 	@docs {
+	/* 	@docs
 		@title: Disable
 		@description:
 			Disable the colors.
 		@usage:
 			vlib::colors::disable();
-	}*/
+	*/
 	SICE
 	void 	disable() {
 		black = "";

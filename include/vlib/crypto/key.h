@@ -15,8 +15,8 @@ namespace crypto {
 namespace key {
 
 // Key lengths.
-/*  @docs {
-    @chapter: crypto
+/*  @docs
+    @chapter: Crypto
     @title: Keys
     @description:
         Key lengths enum.
@@ -25,7 +25,7 @@ namespace key {
         int len0 = vlib::crypto::key::length::aes128;
         int len1 = vlib::crypto::key::length::aes256;
 	@show_code: true
-} */
+*/
 enum length {
 	aes128 = 16,
 	aes256 = 32,

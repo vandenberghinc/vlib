@@ -22,8 +22,8 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Process type
-/*     @docs {
-    @chapter: system
+/*     @docs
+    @chapter: System
     @title: Process
     @description:
         Process type.
@@ -49,7 +49,7 @@ namespace vlib {
             .timeout = 15000,
             .async = false,
         }
-} */
+*/
 // @TODO change Response to error codes.
 // @TODO update docs.
 struct Proc {
@@ -170,61 +170,61 @@ public:
     // Attribute functions.
     
     // Get the process' id.
-    /* @docs {
+    /* @docs
        @title: Process id
        @description:
             Get the process' id.
             - Only defined when `execute()` is called.
-    } */
+    */
     constexpr
     auto&     pid() { return m_pid; }
     
     // Get the process' exit status.
-    /* @docs {
+    /* @docs
        @title: Exit status
        @description:
             Get the process' exit status.
             - Only defined when one of the following conditions is met:
               * `async == false` and `execute()` is called.
               * `async == true` and `join()` is called.
-    } */
+    */
     constexpr
     auto&     exit_status() { return m_estatus; }
     
     // Get the errno encoutered by the parent process.
-    /* @docs {
+    /* @docs
        @title: Error number
        @description: Get the errno encoutered by the parent process.
-    } */
+    */
     constexpr
     auto&     err_number() { return m_errno; }
     
     // Check if the process' has stdin output.
-    /* @docs {
+    /* @docs
        @title: Has input
        @description: Check if the process' has stdin output.
-    } */
+    */
     constexpr
     bool     has_in() { return m_routput; }
     
     // Check if the process' has stdout output.
-    /* @docs {
+    /* @docs
        @title: Has output
        @description: Check if the process' has stdout output.
-    } */
+    */
     constexpr
     bool     has_out() { return m_woutput; }
     
     // Check if the process' has stderr output.
-    /* @docs {
+    /* @docs
        @title: Has error
        @description: Check if the process' has stderr output.
-    } */
+    */
     constexpr
     bool     has_err() { return m_eoutput; }
     
     // Get the process' stdin output.
-    /* @docs {
+    /* @docs
        @title: Input
        @description:
             Get the process' stdin output.
@@ -233,12 +233,12 @@ public:
               * `async == true` and `join()` is called.
         @warning:
             Causes undefined behaviour when the process has no stdin output, see `has_in()`.
-    } */
+    */
     constexpr
     auto&     in() { return *m_routput; }
     
     // Get the stdout output.
-    /* @docs {
+    /* @docs
        @title: Output
        @description:
             Get the process' stdout output.
@@ -247,12 +247,12 @@ public:
               * `async == true` and `join()` is called.
         @warning:
             Causes undefined behaviour when the process has no stdout output, see `has_out()`.
-    } */
+    */
     constexpr
     auto&     out() { return *m_woutput; }
     
     // Get the stderr output.
-    /* @docs {
+    /* @docs
        @title: Error
        @description:
             Get the process' stderr output.
@@ -261,52 +261,52 @@ public:
               * `async == true` and `join()` is called.
         @warning:
             Causes undefined behaviour when the process has no stderr output, see `has_err()`.
-    } */
+    */
     constexpr
     auto&     err() { return *m_eoutput; }
     
     // Get the stdin output pointer.
-    /* @docs {
+    /* @docs
        @title: Input pointer
        @description:
             Get the pointer to the process' stdin output.
             - Only defined when one of the following conditions is met:
               * `async == false` and `execute()` is called.
               * `async == true` and `join()` is called.
-    } */
+    */
     constexpr
     auto&     in_ptr() { return m_routput; }
     
     // Get the stdout output pointer.
-    /* @docs {
+    /* @docs
        @title: Output pointer
        @description:
             Get the pointer to the process' stdout output.
             - Only defined when one of the following conditions is met:
               * `async == false` and `execute()` is called.
               * `async == true` and `join()` is called.
-    } */
+    */
     constexpr
     auto&     out_ptr() { return m_woutput; }
     
     // Get the stderr output pointer.
-    /* @docs {
+    /* @docs
        @title: Error pointer
        @description:
             Get the pointer to the process' stderr output.
             - Only defined when one of the following conditions is met:
               * `async == false` and `execute()` is called.
               * `async == true` and `join()` is called.
-    } */
+    */
     constexpr
     auto&     err_ptr() { return m_eoutput; }
     
     // Get the stderr or stdin output.
-    /*  @docs {
+    /*  @docs
      *  @title: Get Error / Output
      *  @description:
      *      Get the stderr output when defined or de the stdout output when defined. An empty string is returned when both stderr and stdin are undefined.
-     } */
+     */
     constexpr
     String  err_or_out() {
         if (has_err()) {
@@ -321,31 +321,31 @@ public:
     // Functions.
     
     // Has started.
-    /* @docs {
+    /* @docs
        @title: Started
        @description: Check if the process has started.
-    } */
+    */
     constexpr
     bool     started() {
         return m_pid != -2;
     }
     
     // Is running.
-    /* @docs {
+    /* @docs
        @title: Running
        @description: Check if the process is still running.
-    } */
+    */
     bool     running() {
         return ::waitpid(m_pid, &m_estatus, WNOHANG) == 0;
     }
     
     // Build the pipes.
-    /* @docs {
+    /* @docs
        @title: Build the pipes
        @description:
             Build the pipes.
             - Will be called automatically inside `execute()`.
-    } */
+    */
     int     build() {
 
         // Pipes.
@@ -387,13 +387,13 @@ public:
     }
 
     // Close all pipes.
-    /* @docs {
+    /* @docs
        @title: Close
        @description:
             Close all pipes.
             - Will be called automatically inside `execute()` when `async` is `false` or when an error has occured.
             - Returns `0` upon success.
-    } */
+    */
     int     close() {
         ::close(rpipe[rpend]);
         ::close(rpipe[wpend]);
@@ -406,12 +406,12 @@ public:
     }
     
     // Fork the process.
-    /* @docs {
+    /* @docs
        @title: Fork
        @description:
             Fork the process
             - Will be called automatically inside `execute()`.
-    } */
+    */
     template <typename... Args> constexpr
     int     fork(Args&&... args) {
         
@@ -523,13 +523,13 @@ public:
     }
 
     // Parse the process' exit status.
-    /* @docs {
+    /* @docs
        @title: Parse exit status
        @description:
             Parse the process' exit status.
             - This function does not return the exit status, use `exit_status()` to retrieve the exit status.
             - Will be called automatically inside `execute()` when `async` is `false`.
-    } */
+    */
     constexpr
     int     parse_exit_status() {
         if (m_estatus >= 0) { return 0; }
@@ -553,14 +553,14 @@ public:
     }
     
     // Join the process.
-    /* @docs {
+    /* @docs
        @title: Join
        @description:
             Await the process.
             - Will be called automatically inside `execute()` when `async` is `false`.
             - Always calls `close()`, including when an error or timeout has occured.
             - Automatically calls `parse_exit_status()` on a successfull `join()`.
-    } */
+    */
     int     join() {
         
         // Initialize buffer.
@@ -737,7 +737,7 @@ public:
     }
     
     // Execute the process.
-    /* @docs {
+    /* @docs
        @title: Execute
        @description:
             Execute the process.
@@ -754,7 +754,7 @@ public:
      
             // Execute a zsh process.
             status = proc.execute("/bin/zsh", "-exec", "-c", "echo Hello World!");
-    } */
+    */
     int     execute(const char* arg) {
         reset_h();
         int status;
@@ -812,10 +812,10 @@ public:
     // }
 
     // Signal.
-    /* @docs {
+    /* @docs
        @title: Signal
        @description: Signal the process.
-    } */
+    */
     int     signal(int signal = 0) {
         if (::kill(m_pid, signal) < 0) {
             m_errno = errno;
@@ -825,13 +825,13 @@ public:
     }
 
     // Kill.
-    /* @docs {
+    /* @docs
        @title: Kill
        @description:
             Kills the process with a sending SIGKILL signal.
             - Always calls `close()` after a kill signal is send.
             - Automatically calls `::waitpid` after a successfull kill.
-    } */
+    */
     int     kill(int signal = SIGTERM) {
         if (!running()) { return 0; }
         if (::kill(m_pid, signal) < 0) {
@@ -849,28 +849,28 @@ public:
     }
 
     // Killed.
-    /* @docs {
+    /* @docs
        @title: Killed
        @description: Check if the process was killed by a SIGKILL signal.
-    } */
+    */
     bool     killed() {
         return kill_signal() == SIGKILL;
     }
     
     // Get the kill signal.
-    /* @docs {
+    /* @docs
        @title: Kill signal
        @description: Get the kill signal.
-    } */
+    */
     int     kill_signal() {
         return WTERMSIG(m_estatus);
     }
 
     // Timed out.
-    /* @docs {
+    /* @docs
        @title: Timedout
        @description: Check if the join function has timed out.
-    } */
+    */
     bool     timedout() {
         return m_estatus == -2;
     }

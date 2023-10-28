@@ -13,14 +13,14 @@ namespace vlib {
 
 // Scientific notation type.
 // Everything equal or greater than "999999.999999" will automatically be rounded to 1000000 by the compiler.
-/*  @docs {
-	@chapter: types
+/*  @docs
+	@chapter: Types
 	@title: Scientific Notation
 	@description:
 		Scientific notation type.
 	@usage:
 		SN x (0);
-} */
+*/
 struct SN {
 
 // Private:

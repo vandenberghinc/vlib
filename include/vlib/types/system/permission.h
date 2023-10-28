@@ -14,15 +14,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Permission type
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Permission
 	@description:
 		Permission type.
 	@usage:
         #include <vlib/types.h>
 		vlib::Permission permission(0777);
-} */
+*/
 struct Permission {
 
 // ---------------------------------------------------------
@@ -78,19 +78,19 @@ public:
 	Permission () : m_user(-1), m_group(-1), m_shared(-1), m_octal(-1) {}
 
 	// Constructor from octal.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct from an octal short.
 		@warning:
 			Causes undefined behaviour when the octal is not preceded by a `0`. For example numeric `777` is incorrect, the correct numeric would be `0777`.
-		@parameter: {
+		@parameter:
 			@name: octal
 			@description: The octal numeric indicating the permission.
 		}
 		@usage:
 			vlib::Permission perm(0740);
-	} */
+	*/
 	constexpr
 	Permission (const Type& octal) : m_user(-1), m_group(-1), m_shared(-1), m_octal(octal) {}
 	
@@ -127,28 +127,28 @@ public:
 	// Functions.
 	
 	// Is undefined.
-	/* @docs {
+	/* @docs
 	  @title: Is undefined
 	  @description:
 			Check if the object is undefined.
 	  @usage:
 			vlib::Permission x;
 			x.is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	bool 		is_undefined() const {
 		return m_octal == -1;
 	}
 	
 	// Reset all attributes.
-	/* @docs {
+	/* @docs
 	  @title: Reset
 	  @description:
 			Reset all attributes.
 	  @usage:
 			vlib::Permission x = "/tmp/myfile.txt";
 			x.reset().is_undefined(); ==> true;
-	} */
+	*/
 	constexpr
 	auto& 		reset() {
 		m_user = -1;
@@ -159,14 +159,14 @@ public:
 	}
 	
 	// Get the user permission.
-	/* @docs {
+	/* @docs
 	  @title: User
 	  @description:
 			Get the user permission.
 	  @usage:
 			vlib::Permission x(0740);
 			x.user(); ==> 7;
-	} */
+	*/
 	constexpr
 	auto& 		user() {
 		if (m_user == -1) {
@@ -201,14 +201,14 @@ public:
 	}
 	
 	// Get the group permission.
-	/* @docs {
+	/* @docs
 	  @title: Group
 	  @description:
 			Get the group permission.
 	  @usage:
 			vlib::Permission x(0740);
 			x.group(); ==> 4;
-	} */
+	*/
 	constexpr
 	auto& 		group() {
 		if (m_group == -1) {
@@ -243,14 +243,14 @@ public:
 	}
 	
 	// Get the shared permission.
-	/* @docs {
+	/* @docs
 	  @title: Shared
 	  @description:
 			Get the shared permission.
 	  @usage:
 			vlib::Permission x(0740);
 			x.shared(); ==> 0;
-	} */
+	*/
 	constexpr
 	auto& 		shared() {
 		if (m_shared == -1) {
@@ -285,14 +285,14 @@ public:
 	}
 	
 	// Get the octal permission.
-	/* @docs {
+	/* @docs
 	  @title: Octal
 	  @description:
 			Get the octal permission.
 	  @usage:
 			vlib::Permission x(0740);
 			x.octal(); ==> 0740;
-	} */
+	*/
 	constexpr
 	auto& 		octal() const {
 		return m_octal;

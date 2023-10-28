@@ -16,7 +16,7 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Hex static struct.
-/* @docs {
+/* @docs
     @chapter: Encoding
     @title: Hex
     @description:
@@ -24,7 +24,7 @@ namespace vlib {
     @usage:
         #include <vlib/crypto.h>
         vlib::Hex:: ... ;
-} */
+*/
 struct Hex {
 
 	// ---------------------------------------------------------
@@ -36,15 +36,15 @@ struct Hex {
 	// Functions.
 
 	// Encode to hex.
-    /*  @docs {
+    /*  @docs
         @title: Encode
         @description:
             Encode a string.
-        @parameter: {
+        @parameter:
             @name: output
             @description: A reference to the output string.
         }
-        @parameter: {
+        @parameter:
             @name: input
             @description: The input data to encode.
         }
@@ -53,7 +53,7 @@ struct Hex {
         @usage:
             vlib::String encoded = vlib::Hex::encode("Hello World!", 12);
         @funcs: 2
-    } */
+    */
     SICE
     String  encode(const String& input) {
         return encode(input.data(), input.len());
@@ -74,15 +74,15 @@ struct Hex {
 	}
 
 	// Decode from hex.
-    /*  @docs {
+    /*  @docs
         @title: Decode
         @description:
             Decode a string.
-        @parameter: {
+        @parameter:
             @name: output
             @description: A reference to the output string.
         }
-        @parameter: {
+        @parameter:
             @name: input
             @description: The input data to decode.
         }
@@ -91,7 +91,7 @@ struct Hex {
         @usage:
             vlib::String decoded = vlib::Hex::decode("XXX");
         @funcs: 2
-    } */
+    */
     SICE
     String  decode(const String& input) {
         return decode(input.data(), input.len());

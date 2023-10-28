@@ -28,13 +28,13 @@ vlib.colors = {
 	// Functions.
 
 	// Enable colors.
-	/* 	@docs {
+	/* 	@docs
 		@title: Enable
 		@description:
 			Enable the colors.
 		@usage:
 			vlib.colors.enable();
-	}*/
+	*/
 	enable: function() {
 		this.black = "\u001b[30m";
 		this.red = "\u001b[31m";
@@ -50,13 +50,13 @@ vlib.colors = {
 	},
 
 	// Disable colors.
-	/* 	@docs {
+	/* 	@docs
 		@title: Disable
 		@description:
 			Disable the colors.
 		@usage:
 			vlib.colors.disable();
-	}*/
+	*/
 	disable: function() {
 		this.black = "";
 		this.red = "";

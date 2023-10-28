@@ -14,14 +14,14 @@ namespace vlib {
 // ---------------------------------------------------------
 // Script type
 // Beware that inherited functions from String that reset, copy or swap the Script should be made private since this will not account for the new attributes.
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Script
 	@description:
 		Script type.
 		- Automatically adds a newline after each constructor `Arg`.
 		- Beware of the fact that a `Script` executed by `Proc` will be saved to `/tmp/script_$uid_XXXXXXXX` with permission `0770`, the path will be deleted upon any exit.
-} */
+*/
 // @TODO undefined behaviour for destructor.
 struct Script : public String {
 
@@ -122,24 +122,24 @@ public:
 	m_permission(0770) {}
 
 	// Constructor.
-	/*  @docs {
+	/*  @docs
 		@title: Constructor
 		@description:
 			Construct a script object.
 		@notes:
 			- Automatically adds a newline after each `Arg`.
-		@parameter: {
+		@parameter:
 			@name: arg
 			@description: The first argument.
 		}
-		@parameter: {
+		@parameter:
 			@name: args
 			@description: The other arguments.
 		}
 		@usage:
 			vlib::Script script("setopt -e", "echo Hello World!);
 		@funcs: 2
-	} */
+	*/
 	template <typename... Args> constexpr
 	Script (const char* arg, Args&&... args) :
 	String(),
@@ -188,22 +188,22 @@ public:
 	// Properties.
 	
 	// Path.
-	/* @docs {
+	/* @docs
 	  @title: Path
 	  @description:
 			Get the path of the script by reference.
-	} */
+	*/
 	constexpr
 	auto&	path() { return *m_path;	}
 	constexpr
 	auto&	path() const { return *m_path;	}
 
 	// Permission.
-	/* @docs {
+	/* @docs
 	  @title: Permission
 	  @description:
 			Get the permission of the script by reference.
-	} */
+	*/
 	constexpr
 	auto&	permission() { return m_permission;	}
 	constexpr
@@ -213,10 +213,10 @@ public:
 	// Functions.
 
 	// Copy the object.
-	/* @docs {
+	/* @docs
 	  @title: Copy
 	  @description: Copy the data of the array to a new array.
-	} */
+	*/
 	constexpr
 	This 	copy() {
 		return *this;
@@ -227,10 +227,10 @@ public:
 	}
 
 	// Reset.
-	/* 	@docs {
+	/* 	@docs
 		@title: Reset
 		@description: Reset all attributes.
-	} */
+	*/
 	constexpr
 	This&	reset() {
 		m_len = 0;
@@ -240,10 +240,10 @@ public:
 	}
 
 	// Save.
-	/* 	@docs {
+	/* 	@docs
 		@title: Save
 		@description: Save the script to the assigned path.
-	} */
+	*/
 	auto& 	save() const {
 		if (m_path.is_undefined()) { throw InvalidUsageError("You must define the path of the script with \"path() = ...\"."); }
 		save(m_path->c_str());
@@ -262,10 +262,10 @@ public:
 	}
 
 	// Remove.
-	/* 	@docs {
+	/* 	@docs
 		@title: Remove
 		@description: Remove the script's path.
-	} */
+	*/
 	void 	remove() const {
 		if (m_path.is_undefined()) { throw InvalidUsageError("You must define the path of the script with \"path() = ...\"."); }
 		File::remove(m_path->c_str());
@@ -275,14 +275,14 @@ public:
 	// Casts.
 
 	// Get as String.
-	/* @docs {
+	/* @docs
 	  @title: str
 	  @description:
 			Get as `String`.
 	  @usage:
 			vlib::Script x(...);
 			vlib::String y = x.str();
-	} */
+	*/
 	constexpr
 	String	str() const {
 		return *this;

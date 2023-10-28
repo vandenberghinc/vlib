@@ -14,15 +14,15 @@ namespace vlib {
 // ---------------------------------------------------------
 // Static environment type.
 
-/* 	@docs {
-	@chapter: system
+/* 	@docs
+	@chapter: System
 	@title: Environment
 	@description:
 		Get and set environment variables.
     @usage:
         #include <vlib/types.h>
         String home = vlib::env::get("HOME");
-} */
+*/
 struct env {
 
 // Public.
@@ -73,7 +73,7 @@ public:
 	// Public functions.
 	
 	// Get.
-	/* @docs {
+	/* @docs
 		@title: Get
 		@description:
 			Get an environment variable.
@@ -101,7 +101,7 @@ public:
     }
     
     // Get.
-    /* @docs {
+    /* @docs
         @title: Get With Default
         @description:
             Get an environment variable with a default return when the variable is not set.
@@ -143,7 +143,7 @@ public:
     }
     
     // Set.
-    /* @docs {
+    /* @docs
         @title: Set
         @description:
             Set an environment variable.
@@ -169,7 +169,7 @@ public:
     }
     
     // Get.
-    /* @docs {
+    /* @docs
         @title: Delete
         @description:
             Delete an environment variable.

@@ -61,8 +61,8 @@ ullong zero_len = 0;
 
 // ---------------------------------------------------------
 // Values type.
-/* @docs {
-    @chapter: types
+/* @docs
+    @chapter: Types
     @title: Dataframe
     @description:
         Type for 1D and 2D dataframes.
@@ -80,7 +80,7 @@ ullong zero_len = 0;
             {1, 4363.3, "B"},
             {2, 7895.1, "C"},
         });
-} */
+*/
 // @TODO add docs for subscript.
 // @TODO add funcs like, round, fill, generate, and more, perhaps look at Numeric.
 struct DataFrame {
@@ -708,11 +708,11 @@ public:
 	DataFrame (const Values& x) :
 	m_type(df::types::df)
 	{ assign(x); }
-    /*  @docs {
+    /*  @docs
         @title: Constructor
         @description:
             Construct a `DataFrame` object.
-        @parameter: {
+        @parameter:
             @name: x
             @description: The initializer list with values.
         }
@@ -722,7 +722,7 @@ public:
                 {1, 4363.3, "B"},
                 {2, 7895.1, "C"},
             });
-    } */
+    */
 	constexpr
 	DataFrame (const std::initializer_list<DataFrame>& x) :
 	m_type(df::types::df)
@@ -735,11 +735,11 @@ public:
 	// Constructor functions.
 	
 	// Copy.
-    /*  @docs {
+    /*  @docs
         @title: Copy
         @description:
             Copy from another `DataFrame` object.
-        @parameter: {
+        @parameter:
             @name: obj
             @description: The `DataFrame` to copy from.
         }
@@ -747,7 +747,7 @@ public:
             DataFrame df1 (...);
             DataFrame df2 (...);
             df2.copy(df1);
-    } */
+    */
 	constexpr
 	auto&	copy(const This& obj) {
 		reset();
@@ -787,11 +787,11 @@ public:
 	}
 	
 	// Swap.
-    /*  @docs {
+    /*  @docs
         @title: Swap
         @description:
             Swap from another `DataFrame` object.
-        @parameter: {
+        @parameter:
             @name: obj
             @description: The `DataFrame` to swap from.
         }
@@ -799,7 +799,7 @@ public:
             DataFrame df1 (...);
             DataFrame df2 (...);
             df2.swap(df1);
-    } */
+    */
 	constexpr
 	auto&	swap(This& obj) {
 		m_type = obj.m_type;
@@ -1266,11 +1266,11 @@ public:
 	// Properties.
 	
 	// Type.
-    /*  @docs {
+    /*  @docs
         @title: Type
         @description:
             Get the type attribute.
-    } */
+    */
 	constexpr
 	auto&	type() const {
 		return m_type;
@@ -1278,13 +1278,13 @@ public:
 	
 	// Length.
 	// - Returns "npos" when the data type is not "df".
-    /*  @docs {
+    /*  @docs
         @title: Length
         @description:
             Get the length of the dataframe.
             
             Returns "npos" when the data type is not "df".
-    } */
+    */
 	constexpr
 	ullong&	len() {
 		expect_df(__FUNCTION__);
@@ -1329,24 +1329,24 @@ public:
 	}
 	
 	// Columns.
-    /*  @docs {
+    /*  @docs
         @title: Columns
         @description:
             Get the assigned columns of the dataframe.
             
             Columns are only used in a 2D dataframe.
-    } */
+    */
 	constexpr
 	auto&	columns() const { return *m_cols; }
 	constexpr
 	bool	has_columns() const { return m_cols.is_defined() && m_cols->is_defined(); }
 	
 	// Shape.
-    /*  @docs {
+    /*  @docs
         @title: Shape
         @description:
             Get the dataframe's shape.
-    } */
+    */
 	constexpr
 	Shape	shape() const {
 		return shape(*this);
@@ -1411,22 +1411,22 @@ public:
 	// General functions.
 	
 	// Copy.
-    /*  @docs {
+    /*  @docs
         @title: Copy
         @description:
             Create a copy of the object.
-    } */
+    */
 	constexpr
 	This	copy() { return *this; }
 	constexpr
 	This	copy() const { return *this; }
 	
 	// Reset.
-    /*  @docs {
+    /*  @docs
         @title: Reset
         @description:
             Reset all object attributes.
-    } */
+    */
 	constexpr
 	This&	reset() {
 		switch (m_type) {
@@ -1467,23 +1467,23 @@ public:
 	}
 	
 	// Init type.
-	/*  @docs {
+	/*  @docs
 		@title: Init type
 		@description:
 			Initialize as a type.
 	 
 			Parameter dim will only be used when parameter type is `vlib::df::types::df`.
-		@parameter: {
+		@parameter:
 			@name: type
 			@description: The type to assign, from enum `vlib::df::types`.
 		}
-		@parameter: {
+		@parameter:
 			@name: dim
 			@description: The dimension to assign then `type` is `vlib::df::types::df`.
 		}
 		@warning:
 			Function `init` will cause a memory leak when the already assigned type is not `vlib::df::types::null`.
-	} */
+	*/
 	constexpr
 	This& 	init(short type, int dim = 1) {
 		switch (type) {
@@ -1522,7 +1522,7 @@ public:
 	}
 	
 	// Init children type.
-	/*  @docs {
+	/*  @docs
 		@title: Init children type
 		@description:
 			Initialize the children as a type.
@@ -1530,17 +1530,17 @@ public:
 			Parameter dim will only be used when parameter type is `vlib::df::types::df`.
 			
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-		@parameter: {
+		@parameter:
 			@name: type
 			@description: The type to assign, from enum `vlib::df::types`.
 		}
-		@parameter: {
+		@parameter:
 			@name: dim
 			@description: The dimension to assign then `type` is `vlib::df::types::df`.
 		}
 		@warning:
 			Function `init_children` will cause a memory leak when the already assigned type is not `vlib::df::types::null`.
-	} */
+	*/
 	constexpr
 	This& 	init_children(short type, int dim = 1) {
 		expect_df(__FUNCTION__);
@@ -1551,21 +1551,21 @@ public:
 	}
 	
 	// Set type.
-    /*  @docs {
+    /*  @docs
         @title: Set type
         @description:
             Set the type of a dataframe.
      
             Parameter dim will only be used when parameter type is `vlib::df::types::df`.
-        @parameter: {
+        @parameter:
             @name: type
             @description: The type to assign, from enum `vlib::df::types`.
         }
-        @parameter: {
+        @parameter:
             @name: dim
             @description: The dimension to assign then `type` is `vlib::df::types::df`.
         }
-    } */
+    */
 	// constexpr
 	// This& 	set_type(short type, int dim = 1) {
 	// 	reset();
@@ -1574,17 +1574,17 @@ public:
 	
 	// Convert type.
 	// @TODO make seperate func for convert_children, and remove "_type" from name.
-    /*  @docs {
+    /*  @docs
         @title: Convert type
         @description:
             Convert the type of a dataframe.
      
             When the type is `vlib::df::types::df` the types of the children will be converted.
-        @parameter: {
+        @parameter:
             @name: type
             @description: The type to assign, from enum `vlib::df::types`.
         }
-    } */
+    */
 	constexpr
 	This&	convert_type(short type) {
 		switch (m_type) {
@@ -1768,17 +1768,17 @@ public:
 	// Array functions.
 	
 	// Resize.
-    /*  @docs {
+    /*  @docs
         @title: Resize
         @description:
             Resize the dataframe.
      
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-        @parameter: {
+        @parameter:
             @name: req_len
             @description: The length to resize to.
         }
-    } */
+    */
 	constexpr
 	This&	resize(ullong req_len) {
 		expect_df(__FUNCTION__);
@@ -1787,17 +1787,17 @@ public:
 	}
 	
 	// Expand.
-    /*  @docs {
+    /*  @docs
         @title: Expand
         @description:
             Expand the dataframe.
      
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-        @parameter: {
+        @parameter:
             @name: with_len
             @description: The length to expand with.
         }
-    } */
+    */
 	constexpr
 	This&	expand(ullong with_len) {
 		expect_df(__FUNCTION__);
@@ -1806,19 +1806,19 @@ public:
 	}
 	
 	// Append.
-    /*  @docs {
+    /*  @docs
         @title: Append
         @description:
             Append an item to the dataframe.
      
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 1D.
-        @parameter: {
+        @parameter:
             @name: item
             @description: The item to append.
         }
         @funcs: 4
-    } */
+    */
 	constexpr
 	This&	append(const This& item) {
 		expect_df(__FUNCTION__);
@@ -1845,14 +1845,14 @@ public:
 	}
 	
 	// First element.
-    /*  @docs {
+    /*  @docs
         @title: First
         @description:
             Get the first item of the dataframe.
             
             Will cause a segfault if the dataframe is empty.
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-    } */
+    */
 	constexpr
 	auto& 	first() {
 		expect_df(__FUNCTION__);
@@ -1865,14 +1865,14 @@ public:
 	}
 
 	// Last element.
-    /*  @docs {
+    /*  @docs
         @title: Last
         @description:
             Get the last item of the dataframe.
             
             Will cause a segfault if the dataframe is empty.
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-    } */
+    */
 	constexpr
 	auto& 	last() {
 		expect_df(__FUNCTION__);
@@ -1885,14 +1885,14 @@ public:
 	}
 	
 	// Get a value.
-    /*  @docs {
+    /*  @docs
         @title: Get
         @description:
             Get an item of the dataframe.
             
             Will cause a segfault when the index is out of range.
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-    } */
+    */
 	constexpr
 	This&	get(ullong index) {
 		expect_df(__FUNCTION__);
@@ -1905,14 +1905,14 @@ public:
 	}
 	
 	// Set columns.
-    /*  @docs {
+    /*  @docs
         @title: Set columns
         @description:
             Assign the columns array.
             
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 2D.
-    } */
+    */
 	constexpr
 	This&	set_columns(const Columns& cols) {
 		expect_2d(__FUNCTION__);
@@ -1923,13 +1923,13 @@ public:
 	}
 	
 	// Fill.
-	/*  @docs {
+	/*  @docs
 		@title: Fill
 		@description:
 			Fill the dataframe.
 			
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
-	} */
+	*/
 	constexpr
 	This&	fill(ullong len, const This& obj) {
 		expect_df(__FUNCTION__);
@@ -1941,14 +1941,14 @@ public:
 	}
 	
 	// Where.
-	/*  @docs {
+	/*  @docs
 		@title: Where
 		@description:
 			Fill with a value where `true` and with another value where `false`.
 	 
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 			Will throw a `DimensionError` when the dataframe is not 1D.
-	} */
+	*/
 	SICE
 	This	where(const DataFrame& df, const DataFrame& where_true, const DataFrame& where_false) {
 		df.expect_1d(__FUNCTION__);
@@ -1995,7 +1995,7 @@ public:
 	}
 	
 	// Shift.
-	/*  @docs {
+	/*  @docs
 		@title: Shift
 		@description:
 			Shift the dataframe a number of positions to the front.
@@ -2004,7 +2004,7 @@ public:
 	 
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This	shift(const Int& steps) const {
 		expect_df(__FUNCTION__);
@@ -2051,7 +2051,7 @@ public:
 	}
 	
 	// Save.
-	/*  @docs {
+	/*  @docs
 		@title: Save
 		@type: This&
 		@description:
@@ -2060,7 +2060,7 @@ public:
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 			Will throw a `DimensionError` when the dimension is not `1` or `2`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	auto&	save(const char* path) const {
 		expect_df(__FUNCTION__);
@@ -2172,14 +2172,14 @@ public:
 	}
 	
 	// Load.
-	/*  @docs {
+	/*  @docs
 		@title: Load
 		@description:
 			Load the dataframe.
 	 
 			The dataframe will always be treated as type `vlib::df::types::df`, regardless of the real type.
 		@funcs: 2
-	} */
+	*/
 	SICE
 	This	load(const char* path) {
 		
@@ -2323,7 +2323,7 @@ public:
 	}
 	
 	// Concat.
-	/*  @docs {
+	/*  @docs
 		@title: Concatenate
 		@description:
 			Concatenate dataframes.
@@ -2332,7 +2332,7 @@ public:
 	 
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 		@funcs: 4
-	} */
+	*/
 	constexpr
 	This&	concat_r(const This& obj, int axis = 0) {
 		expect_df(__FUNCTION__);
@@ -2403,7 +2403,7 @@ public:
 	}
 	
 	// Merge.
-	/*  @docs {
+	/*  @docs
 		@title: Merge
 		@description:
 			Merge multiple 2D dataframes.
@@ -2413,7 +2413,7 @@ public:
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 			Will throw a `DimensionError` when the dataframe is not 2D.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This&	merge_r(const This& obj) {
 		expect_2d(__FUNCTION__);
@@ -2435,7 +2435,7 @@ public:
 	}
 	
 	// Sort.
-	/*  @docs {
+	/*  @docs
 		@title: Sort
 		@description:
 			Sort a 2D dataframe.
@@ -2445,7 +2445,7 @@ public:
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 			Will throw a `DimensionError` when the dataframe is not 2D.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This	sort(const String& column, bool reversed = false) const {
 		expect_2d(__FUNCTION__);
@@ -2483,7 +2483,7 @@ public:
 	}
 	
 	// Drop null.
-	/*  @docs {
+	/*  @docs
 		@title: Drop null
 		@description:
 			Drop all rows or columns where `null` is present.
@@ -2492,7 +2492,7 @@ public:
 	 
 			Will throw a `TypeError` when the type is not `vlib::df::types::df`.
 		@funcs: 2
-	} */
+	*/
 	constexpr
 	This	drop_null(int axis = 0) const {
 		expect_df(__FUNCTION__);
@@ -2636,7 +2636,7 @@ public:
     }
     
     // Fill null.
-    /*  @docs {
+    /*  @docs
         @title: Fill null
         @description:
             Fill all rows or columns where `null` is present.
@@ -2645,7 +2645,7 @@ public:
      
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
         @funcs: 2
-    } */
+    */
     constexpr
     This    fill_null(const DataFrame& value) const {
         return copy().fill_null_r(value);
@@ -2689,11 +2689,11 @@ public:
 	// Global functions.
 	
 	// Equals.
-	/*  @docs {
+	/*  @docs
 		@title: Equals
 		@description:
 			Check if the dataframe equals another dataframe or value.
-	} */
+	*/
 	constexpr
 	bool	eq(const This& obj) const {
 		switch (m_type) {
@@ -2743,11 +2743,11 @@ public:
 	}
 	
 	// As string.
-	/*  @docs {
+	/*  @docs
 		@title: As string
 		@description:
 			Dump to a string.
-	} */
+	*/
 	constexpr
 	String	str() const {
 		Pipe pipe;
@@ -2985,7 +2985,7 @@ public:
 	// Math functions.
 	
 	// Min between values.
-    /*  @docs {
+    /*  @docs
         @title: Min
         @description:
             Get the minimum of two values.
@@ -2999,7 +2999,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.min(5); y ==> 5
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	min(const Type& obj) const {
 		return copy().min_r(obj);
@@ -3126,7 +3126,7 @@ public:
 	}
 	
 	// Min of dataframe.
-    /*  @docs {
+    /*  @docs
         @title: Min
         @description:
             Get the minimum value of a dataframe.
@@ -3137,7 +3137,7 @@ public:
         @usage:
             vlib::DataFrame x = {1, 2, 3};
             vlib::DataFrame y = x.min(); y ==> 1
-    } */
+    */
 	constexpr
 	This	min() const {
 		expect_df(__FUNCTION__);
@@ -3247,7 +3247,7 @@ public:
     }
 	
 	// Max between values.
-    /*  @docs {
+    /*  @docs
         @title: Max
         @description:
             Get the maximum of two values.
@@ -3261,7 +3261,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.max(15); y ==> 15
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	max(const Type& obj) const {
 		return copy().max_r(obj);
@@ -3387,7 +3387,7 @@ public:
 	}
 	
 	// Max of dataframe.
-    /*  @docs {
+    /*  @docs
         @title: max
         @description:
             Get the maximum value of a dataframe.
@@ -3398,7 +3398,7 @@ public:
         @usage:
             vlib::DataFrame x = {1, 2, 3};
             vlib::DataFrame y = x.max(); y ==> 3
-    } */
+    */
 	constexpr
 	This	max() const {
 		expect_df(__FUNCTION__);
@@ -3508,7 +3508,7 @@ public:
     }
 	
 	// Absolute value.
-    /*  @docs {
+    /*  @docs
         @title: Absolute
         @description:
             Get as absolute value.
@@ -3522,7 +3522,7 @@ public:
             vlib::DataFrame x = -10;
             vlib::DataFrame y = x.abs(); y ==> 10
         @funcs: 2
-    } */
+    */
 	constexpr
 	This	abs() const {
 		return copy().abs_r();
@@ -3562,7 +3562,7 @@ public:
 	}
 	
 	// Add.
-    /*  @docs {
+    /*  @docs
         @title: Add
         @description:
             Add a numeric value to the dataframe value.
@@ -3576,7 +3576,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.add(5); y ==> 15
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	add(const Type& obj) const {
 		return copy().add_r(obj);
@@ -3676,7 +3676,7 @@ public:
 	}
 	
 	// Subtract.
-    /*  @docs {
+    /*  @docs
         @title: Sub
         @description:
             Subtract a numeric value from the dataframe value.
@@ -3690,7 +3690,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.sub(5); y ==> 5
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	sub(const Type& obj) const {
 		return copy().sub_r(obj);
@@ -3856,7 +3856,7 @@ public:
 	}
 	
 	// Multiply.
-    /*  @docs {
+    /*  @docs
         @title: Multiply
         @description:
             Multiply the dataframe value with a numeric value.
@@ -3870,7 +3870,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.mult(2); y ==> 20
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	mult(const Type& obj) const {
 		return copy().mult_r(obj);
@@ -3970,7 +3970,7 @@ public:
 	}
 	
 	// Divide.
-    /*  @docs {
+    /*  @docs
         @title: Divide
         @description:
             Divide the dataframe value by a numeric value.
@@ -3984,7 +3984,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.div(2); y ==> 5
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	div(const Type& obj) const {
 		return copy().div_r(obj);
@@ -4150,7 +4150,7 @@ public:
 	}
 	
 	// Modulo.
-    /*  @docs {
+    /*  @docs
         @title: Modulo
         @description:
             Calculate the modulo of the dataframe value divded by a numeric value.
@@ -4164,7 +4164,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.mod(3); y ==> 1
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	mod(const Type& obj) const {
 		return copy().mod_r(obj);
@@ -4239,7 +4239,7 @@ public:
 	}
 	
 	// Power of.
-    /*  @docs {
+    /*  @docs
         @title: Power of
         @description:
             Calculate the value of the dataframe to the power of a numeric value.
@@ -4253,7 +4253,7 @@ public:
             vlib::DataFrame x = 10;
             vlib::DataFrame y = x.pow(3); y ==> 1000
         @funcs: 3
-    } */
+    */
 	template <typename Type> requires (is_DataFrame_h<Type>() || is_any_Numeric<Type>::value || is_any_numeric<Type>::value) constexpr
 	This	pow(const Type& obj) const {
 		return copy().pow_r(obj);
@@ -4353,7 +4353,7 @@ public:
 	}
 	
 	// Square root.
-    /*  @docs {
+    /*  @docs
         @title: Square root
         @description:
             Calculate the square root of the dataframe value.
@@ -4367,7 +4367,7 @@ public:
             vlib::DataFrame x = 16;
             vlib::DataFrame y = x.sqrt(); y ==> 4
         @funcs: 2
-    } */
+    */
 	constexpr
 	This	sqrt() const {
 		return copy().sqrt_r();
@@ -4402,7 +4402,7 @@ public:
 	}
 	
 	// Sum.
-    /*  @docs {
+    /*  @docs
         @title: Sum
         @description:
             Calculate the sum of the dataframe values.
@@ -4414,7 +4414,7 @@ public:
         @usage:
             vlib::DataFrame x = {1, 1, 1};
             vlib::DataFrame y = x.sum(); y ==> 3
-    } */
+    */
 	constexpr
 	This	sum() {
 		expect_1d(__FUNCTION__);
@@ -4440,7 +4440,7 @@ public:
 		}
 		return summed;
 	}
-    /*  @docs {
+    /*  @docs
         @title: Sum
         @description:
             Calculate the sum of the dataframe values over a defined window.
@@ -4451,14 +4451,13 @@ public:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the sum over the defined window as values.
-        @parameter {
+        @parameter
             @name: window
             @description: The window of the operation.
-        }
         @usage:
             vlib::DataFrame x = {1, 1, 1};
             vlib::DataFrame y = x.sum(2); y ==> {null, 2, 2}
-    } */
+    */
     constexpr
     This    sum(const Len& window) {
         return sum(window.value());
@@ -4498,7 +4497,7 @@ public:
     }
 	
 	// Moving average.
-    /*  @docs {
+    /*  @docs
         @title: Moving average
         @description:
             Calculate the moving average of the dataframe values.
@@ -4510,12 +4509,12 @@ public:
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.ma(); y ==> 0.736667
-    } */
+    */
 	constexpr
 	This	ma() {
 		return sum().div_r(len());
 	}
-    /*  @docs {
+    /*  @docs
         @title: Moving average
         @description:
             Calculate the moving average of the dataframe values over a defined window.
@@ -4526,14 +4525,13 @@ public:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the moving average over the defined window as values.
-        @parameter {
+        @parameter
             @name: window
             @description: The window of the operation.
-        }
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.ma(); y ==> {null, 0.615000, 0.605000}
-    } */
+    */
     constexpr
     This    ma(const Len& window) {
         return sum(window).div_r(window);
@@ -4544,7 +4542,7 @@ public:
 	}
 	
 	// Exponentional moving average.
-    /*  @docs {
+    /*  @docs
         @title: Exponentional moving average
         @description:
             Calculate the exponential moving average of the dataframe values.
@@ -4556,13 +4554,13 @@ public:
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.ema(); y ==> 0.797500
-    } */
+    */
     // @TODO not sure if this is correct.
 	constexpr
 	This	ema() {
 		return ema(len()).last();
 	}
-    /*  @docs {
+    /*  @docs
         @title: Exponential moving average
         @description:
             Calculate the exponential moving average of the dataframe values over a defined window.
@@ -4571,14 +4569,13 @@ public:
             
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 1D.
-        @parameter {
+        @parameter:
             @name: window
             @description: The window of the operation.
-        }
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.ema(2); y ==> {1.00, 0.486667, 0.815556}
-    } */
+    */
     // @TODO not sure correct and not sure what to with the values that should opt be null, when the value index is below the window-1.
     constexpr
     This    ema(const Len& window) {
@@ -4686,7 +4683,7 @@ public:
     }
 	
 	// Weighted moving average.
-    /*  @docs {
+    /*  @docs
         @title: Weighted moving average
         @description:
             Calculate the weighted moving average of the dataframe values.
@@ -4698,7 +4695,7 @@ public:
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.wma(); y ==> 0.733333
-    } */
+    */
 	constexpr
 	This	wma() {
 		expect_1d(__FUNCTION__);
@@ -4726,7 +4723,7 @@ public:
 		}
 		return wma;
 	}
-    /*  @docs {
+    /*  @docs
         @title: Weighted moving average
         @description:
             Calculate the weighted moving average of the dataframe values over a defined window.
@@ -4737,14 +4734,13 @@ public:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the weighted moving average over the defined window as values.
-        @parameter {
+        @parameter:
             @name: window
             @description: The window of the operation.
-        }
         @usage:
             vlib::DataFrame x = {1.00, 0.23, 0.98};
             vlib::DataFrame y = x.wma(); y ==> {null, 0.486667, 0.730000}
-    } */
+    */
     constexpr
     This    wma(const Len& window) {
         return wma(window.value());
@@ -4789,7 +4785,7 @@ public:
 	}
 	
 	// Difference.
-	/*  @docs {
+	/*  @docs
 		@title: Difference
 		@description:
 			Calculate the difference between the current and previous value.
@@ -4801,7 +4797,7 @@ public:
 		@usage:
 			vlib::DataFrame x = {1.00, 1.5, 3.0};
 			vlib::DataFrame y = x.diff(); y ==> {null, 0.5, 1.5}
-	} */
+	*/
 	constexpr
 	This	diff() {
 		expect_1d(__FUNCTION__);
@@ -4818,7 +4814,7 @@ public:
 	}
 	
 	// Difference.
-	/*  @docs {
+	/*  @docs
 		@title: Percent change
 		@description:
 			Calculate the difference between the current and previous value.
@@ -4830,7 +4826,7 @@ public:
 		@usage:
 			vlib::DataFrame x = {1.00, 1.5, 3.0};
 			vlib::DataFrame y = x.diff(); y ==> {null, 0.5, 1.5}
-	} */
+	*/
 	constexpr
 	This	pct_change() {
 		expect_1d(__FUNCTION__);
@@ -4839,7 +4835,7 @@ public:
 	}
 	
 	// Standard deviation.
-	/*  @docs {
+	/*  @docs
 		@title: Standard deviation
 		@description:
 			Calculate the standard deviation.
@@ -4851,7 +4847,7 @@ public:
 		@usage:
 			vlib::DataFrame x = {1.00, 0.23, 0.98};
 			vlib::DataFrame y = x.ma(); y ==> 0.736667
-	} */
+	*/
 	constexpr
 	This	std() {
 		expect_1d(__FUNCTION__);
@@ -4863,7 +4859,7 @@ public:
 		}
 		return val.div_r(m_vals->len() - 1).sqrt_r();
 	}
-	/*  @docs {
+	/*  @docs
 		@title: Standard deviation
 		@description:
 			Calculate the standard deviation.
@@ -4872,14 +4868,13 @@ public:
 			Will throw a `DimensionError` when the dataframe is not 1D.
 		@return:
 			Returns a `DataFrame` with type `vlib::df::types::df`.
-		@parameter {
+		@parameter:
 			@name: window
 			@description: The window of the operation.
-		}
 		@usage:
 			vlib::DataFrame x = {1.00, 0.23, 0.98};
 			vlib::DataFrame y = x.ma(); y ==> 0.736667
-	} */
+	*/
 	// Source: https://www.programiz.com/cpp-programming/examples/standard-deviation.
 	constexpr
 	This	std(const Len& window) {
@@ -4983,7 +4978,7 @@ public:
     }
 	
 	// Or.
-	/*  @docs {
+	/*  @docs
 		@title: Or
 		@description:
 			Or for a boolean type or dataframe type with boolean children.
@@ -4991,7 +4986,7 @@ public:
 			Will throw a `TypeError` when both types are not the same.
 			Will throw a `TypeError` if the type's are not either `vlib::df::types::boolean` or `vlib::df::types::df`.
 			Will throw a `DimensionError` when the type is `vlib::df::types::df` and the dimension is not 1D.
-	} */
+	*/
 	constexpr friend
 	This	operator |(const DataFrame& x, const DataFrame& y) {
 		switch (x.m_type) {
@@ -5055,7 +5050,7 @@ public:
 	}
 	
 	// And.
-	/*  @docs {
+	/*  @docs
 		@title: And
 		@description:
 			And for a boolean type or dataframe type with boolean children.
@@ -5063,7 +5058,7 @@ public:
 			Will throw a `TypeError` when both types are not the same.
 			Will throw a `TypeError` if the type's are not either `vlib::df::types::boolean` or `vlib::df::types::df`.
 			Will throw a `DimensionError` when the type is `vlib::df::types::df` and the dimension is not 1D.
-	} */
+	*/
 	constexpr friend
 	This	operator &(const DataFrame& x, const DataFrame& y) {
 		switch (x.m_type) {

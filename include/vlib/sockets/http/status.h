@@ -16,7 +16,7 @@ namespace status {
 
 // HTTP response status.
 // - Does not include all status codes.
-/* 	@docs: {
+/* 	@docs:
  * 	@chapter: HTTP
  * 	@title: Status
  * 	@description: HTTP status codes.
@@ -24,7 +24,7 @@ namespace status {
  * 		#include <vlib/sockets/http.h>
  * 		short success = vlib::http::status::success;
  * 	@show_code: true
- } */
+ */
 enum statuses {
 	undefined = 						0,
 	continue_ = 						100,

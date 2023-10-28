@@ -16,7 +16,7 @@ namespace smtp {
 // Sources: https://github.com/Wohlstand/libSMTPClient/
 
 
-/*  @docs {
+/*  @docs
  *  @chapter: SMTP
  *  @title: SMTP Client
  *  @description:
@@ -30,11 +30,11 @@ namespace smtp {
  *      vlib::smtp::Client client ({
  *          .host = "smtp.domain.com",
  *          .port = 465,
- *          .email = "user@domain.com",
+ *          .email = "user\@domain.com",
  *          .pass = "MyPass!",
  *          .debug = false,
  *      });
- } */
+ */
 struct Client {
 
 // Private.
@@ -179,11 +179,11 @@ public:
     Client() = default;
     
     // Constructor.
-    /*  @docs {
+    /*  @docs
      *  @title: Constructor
      *  @description:
      *      Construct the SMTP Client.
-     *  @parameter: {
+     *  @parameter:
      *      @name: args
      *      @description:
      *          The ConstructArgs object consists of the following values:
@@ -200,7 +200,6 @@ public:
      *          };`
      *
      *          Though DKIM is mostly handled by the server, it is still included.
-     *  }
      *  @usage:
      *      #include <vlib/sockets/smtp.h>
      *      vlib::smtp::Client client ({
@@ -213,7 +212,7 @@ public:
      *          Int     timeout = 30 * 1000;
      *          Bool    debug = false;
      *      });
-     } */
+     */
     struct ConstructArgs {
         String  host;
         Int     port = 465;
@@ -258,44 +257,44 @@ public:
     // Functions.
     
     // Is defined.
-    /*  @docs {
+    /*  @docs
      *  @title: Is defined
      *  @description: Check if the object is defined.
-     } */
+     */
     constexpr bool is_defined() const { return m_email.is_defined(); }
     
     // Is undefined.
-    /*  @docs {
+    /*  @docs
      *  @title: Is undefined
      *  @description: Check if the object is undefined.
-     } */
+     */
     constexpr bool is_undefined() const { return m_email.is_undefined(); }
     
     // Socket.
-    /*  @docs {
+    /*  @docs
      *  @title: Socket
      *  @description: Get the underlying socket attribute.
-     } */
+     */
     constexpr auto& sock() const { return m_sock; }
     
     // Email.
-    /*  @docs {
+    /*  @docs
      *  @title: Email
      *  @description: Get the email attribute used for authentication.
-     } */
+     */
     constexpr auto& email() const { return m_email; }
     
     // ---------------------------------------------------------
     // Functions.
 
     // Send mail.
-    /*  @docs {
+    /*  @docs
      *  @title: Send Mail
      *  @description:
      *      Send one or multiple emails.
      *
      *      Take a look at `vlib::SMTP::Mail` for more details.
-     *  @parameter: {
+     *  @parameter:
      *      @name: args
      *      @description:
      *          The ConstructArgs object consists of the following values:
@@ -306,21 +305,20 @@ public:
      *              String  pass;
      *              Bool    debug = false;
      *          };`
-     *  }
      *  @usage:
      *      vlib::SMTP::Client client { ... };
      *      client.send({
-     *          .sender = {"Sender Name", "sender@email.com"},
+     *          .sender = {"Sender Name", "sender\@email.com"},
      *          .recipients = {
-     *              {"Recipient Name", "recipient1@email.com"},
-     *              {"recipient2@email.com"},
+     *              {"Recipient Name", "recipient1\@email.com"},
+     *              {"recipient2\@email.com"},
      *          },
      *          .subject = "Example Mail",
      *          .body = "Hello World!",
      *          .attachments = {"/path/to/image.png "}
      *      });
      *  @funcs: 2
-     } */
+     */
     Client& send(const Mail& mail) {
         return send(Array<Mail>{mail});
     }

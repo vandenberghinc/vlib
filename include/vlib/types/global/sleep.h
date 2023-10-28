@@ -12,51 +12,51 @@
 namespace vlib {
 
 // Sleep.
-/* @docs {
-	@chapter: global
+/* @docs
+	@chapter: Global
 	@title: Sleep
 	@description:
 		Static sleep structure.
 	@usage:
 		#include <vlib/types.h>
 		vlib::sleep:seconds(1);
-} */
+*/
 struct sleep {
 
 	// Sleep seconds.
-	/* @docs {
+	/* @docs
 		@title: Sleep seconds
 		@description:
 			Sleep a number of seconds.
 		@usage:
 			vlib::sleep::sec(1);
-	} */
+	*/
 	static inline
 	void sec(uint seconds) {
 		::usleep(seconds * 1000000);
 	}
 
 	// Sleep Sleep milliseconds.
-	/* @docs {
+	/* @docs
 		@title: Milliseconds
 		@description:
 			Sleep a number of milliseconds.
 		@usage:
 			vlib::sleep::msec(1);
-	} */
+	*/
 	static inline
 	void msec(uint ms) {
 		::usleep(ms * 1000);
 	}
 
 	// Sleep useconds (copy).
-	/* @docs {
+	/* @docs
 		@title: Sleep microseconds
 		@description:
 			Sleep a number of microseconds.
 		@usage:
 			vlib::sleep::usec(1);
-	} */
+	*/
 	static inline
 	void usec(uint us) {
 		::usleep(us);
