@@ -1490,4 +1490,5 @@ req.write(params);
 req.end();
 });
 }
+vlib.version=require("./.version.js")
 module.exports=vlib;
