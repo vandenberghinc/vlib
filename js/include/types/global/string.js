@@ -267,7 +267,11 @@ String.prototype.is_numeric_string = function(info = false) {
 
 // Unquote a string.
 String.prototype.unquote = function() {
-    if ((this.startsWith('"') && this.endsWith('"')) || (this.startsWith("'") && this.endsWith("'"))) {
+    if (
+        (this.charAt(0) === '"' && this.charAt(this.length - 1) === '"') || 
+        (this.charAt(0) === "'" && this.charAt(this.length - 1) === "'") ||
+        (this.charAt(0) === "`" && this.charAt(this.length - 1) === "`")
+    ) {
         return this.slice(1, -1);
     }
     return this;
