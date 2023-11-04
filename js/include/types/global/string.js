@@ -154,7 +154,7 @@ String.prototype.is_uppercase = function(allow_digits = false) {
 
 // Capitalize as a word (only the first letter).
 String.prototype.capitalize_word = function() {
-    if ("abcdefghijklmopqrstuvwxyz".includes(this.charAt(0))) {
+    if ("abcdefghijklmnopqrstuvwxyz".includes(this.charAt(0))) {
         return this.charAt(0).toUpperCase() + this.substr(1);
     }
     return this;
@@ -279,7 +279,11 @@ String.prototype.unquote = function() {
 
 // Quote a string.
 String.prototype.quote = function() {
-    if ((this.startsWith('"') && this.endsWith('"')) || (this.startsWith("'") && this.endsWith("'"))) {
+    if (
+        (this.charAt(0) === '"' && this.charAt(this.length - 1) === '"') || 
+        (this.charAt(0) === "'" && this.charAt(this.length - 1) === "'") ||
+        (this.charAt(0) === "`" && this.charAt(this.length - 1) === "`")
+    ) {
         return this;
     }
     return `"${this}"`;
