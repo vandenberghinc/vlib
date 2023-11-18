@@ -38,6 +38,7 @@ compiler.bundle({
         libpath.join(source, "include/types/global/utils.js"),
 
         // System.
+        libpath.join(source, "include/types/system/date.js"),
         libpath.join(source, "include/types/system/colors.js"),
         libpath.join(source, "include/types/system/print.js"),
         libpath.join(source, "include/types/system/path.js"),

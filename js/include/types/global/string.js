@@ -207,13 +207,46 @@ String.prototype.reverse = function() {
 }
 
 // Generate a random string.
-String.prototype.random = function(length = 32) {
+String.random = function(length = 32) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+}
+
+// Includes a alphabetical char.
+String.prototype.includes_alphabetical_char = function() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    for (let i = 0; i < this.length; i++) {
+        if (chars.indexOf(this.charAt(i)) !== -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Includes a special char.
+String.prototype.includes_numeric_char = function() {
+    const chars = "0123456789";
+    for (let i = 0; i < this.length; i++) {
+        if (chars.indexOf(this.charAt(i)) !== -1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Includes a special char.
+String.prototype.includes_special_char = function() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (let i = 0; i < this.length; i++) {
+        if (chars.indexOf(this.charAt(i)) === -1) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Check if a string is a integer in string format

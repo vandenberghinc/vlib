@@ -262,16 +262,59 @@ vlib.Path = class Path {
     // Copy the path to another location.
     async cp(destination) {
         return new Promise(async (resolve, reject) => {
-            if (libfs.existsSync(destination)) {
-                return reject("Destination path already exists.");
+            if (destination == null) {
+                return reject("Define parameter \"destination\".");
             }
+            if (destination instanceof Path) {
+                destination = destination._path;
+            }
+            // if (libfs.existsSync(destination)) {
+            //     return reject("Destination path already exists.");
+            // }
+            // if (this.is_dir()) {
             try {
-                const data = await this.load();
-                const dest = new Path(destination)
-                await dest.save(data);
+                libfsextra.copy(this._path, destination, (err) => reject(err));
             } catch (err) {
                 return reject(err);
             }
+            // } else {
+            //     try {
+            //         const data = await this.load();
+            //         const dest = new Path(destination)
+            //         await dest.save(data);
+            //     } catch (err) {
+            //         return reject(err);
+            //     }
+            // }
+            resolve();
+        })
+    }
+    cp_sync(destination) {
+        return new Promise(async (resolve, reject) => {
+            if (destination == null) {
+                return reject("Define parameter \"destination\".");
+            }
+            if (destination instanceof Path) {
+                destination = destination._path;
+            }
+            // if (libfs.existsSync(destination)) {
+            //     return reject("Destination path already exists.");
+            // }
+            // if (this.is_dir()) {
+            try {
+                libfsextra.copySync(this._path, destination);
+            } catch (err) {
+                return reject(err);
+            }
+            // } else {
+            //     try {
+            //         const data = await this.load();
+            //         const dest = new Path(destination)
+            //         await dest.save(data);
+            //     } catch (err) {
+            //         return reject(err);
+            //     }
+            // }
             resolve();
         })
     }
@@ -520,7 +563,7 @@ vlib.Path = class Path {
         } else {
             const files = [];
             const traverse = (path) => {
-                libfs.readdirSync(path).iterate((name) => {
+                libfs.readdirSync(path.toString()).iterate((name) => {
                     const child = path.join(name);
                     files.push(child);
                     if (child.is_dir()) {
