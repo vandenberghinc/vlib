@@ -23,7 +23,7 @@ vlib.utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) =>
 // Verify that a variable is an object, if not error will be thrown.
 vlib.utils.verify_array = function(name, array) {
     if (Array.isArray(array) === false) {
-        throw Error(`Parameter "${name}" should be a defined value of type "object".`);
+        throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
     }
 }
 
@@ -35,7 +35,7 @@ vlib.utils.verify_object = function(
     attrs = {}
 ) {
     if (this == null || typeof obj !== "object" || Array.isArray(obj)) {
-        throw Error(`Parameter "${name}" should be a defined value of type "object".`);
+        throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
     }
     attrs.iterate((item) => {
         const value = obj[item[key]];
@@ -44,14 +44,14 @@ vlib.utils.verify_object = function(
                 obj[item[key]] = item.def;
                 return null;
             }
-            throw Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
+            throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
         }
         else if (
             item.type === "array" && Array.isArray(value) === false ||
             item.type !== typeof obj[item[key]] ||
             value == null && item.type === "object"
         ) {
-            throw Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
+            throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
         }
     })
 }

@@ -94,7 +94,7 @@ vlib.Date = class D extends Date {
                     // %j : day of year (001..366) .
                     case 'j':
                         formatted += String(
-                            Math.floor((this - new Date(this.getFullYear(), 0, 0)) / 86400000)
+                            Math.floor((this - new Date(this.getFullYear(), 0, 0)) / (86400 * 1000))
                         ).padStart(3, '0');
                         ++i;
                         break;
@@ -192,7 +192,7 @@ vlib.Date = class D extends Date {
                     // %U : week number of year, with Sunday as first day of week (00..53).
                     case 'U':
                         formatted += String(
-                            Math.ceil((this - new Date(this.getFullYear(), 0, 1)) / 86400000 + 1) / 7
+                            Math.ceil((this - new Date(this.getFullYear(), 0, 1)) / (86400 * 1000) + 1) / 7
                         ).padStart(2, '0');
                         ++i;
                         break;
@@ -201,7 +201,7 @@ vlib.Date = class D extends Date {
                     case 'V':
                         const jan4 = new Date(this.getFullYear(), 0, 4);
                         const startOfWeek = new Date(this.getFullYear(), 0, 1);
-                        const daysSinceJan4 = Math.floor((this - jan4) / 86400000);
+                        const daysSinceJan4 = Math.floor((this - jan4) / (86400 * 1000));
                         const weekNumber = Math.ceil((daysSinceJan4 + jan4.getDay() + 1) / 7);
                         formatted += String(weekNumber).padStart(2, '0');
                         ++i;
@@ -216,7 +216,7 @@ vlib.Date = class D extends Date {
                     // %W : week number of year, with Monday as first day of week (00..53).
                     case 'W':
                         formatted += String(
-                            Math.floor((this - new Date(this.getFullYear(), 0, 1)) / 86400000 + 1) / 7
+                            Math.floor((this - new Date(this.getFullYear(), 0, 1)) / (86400 * 1000) + 1) / 7
                         ).padStart(2, '0');
                         ++i;
                         break;
