@@ -45,6 +45,7 @@ compiler.bundle({
         libpath.join(source, "include/types/system/process.js"),
 
         // CLI.
+        libpath.join(source, "include/cli/progress_loader.js"),
         libpath.join(source, "include/cli/cli.js"),
 
         // Sockets.

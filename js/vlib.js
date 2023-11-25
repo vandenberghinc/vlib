@@ -533,7 +533,7 @@ return obj;
 }
 vlib.utils.verify_array=function(name,array){
 if (Array.isArray(array)===false){
-throw Error(`Parameter "${name}" should be a defined value of type "object".`);
+throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
 }
 }
 vlib.utils.verify_object=function(
@@ -542,7 +542,7 @@ name="obj",
 attrs={}
 ){
 if (this==null||typeof obj!=="object"||Array.isArray(obj)){
-throw Error(`Parameter "${name}" should be a defined value of type "object".`);
+throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
 }
 attrs.iterate((item)=>{
 const value=obj[item[key]];
@@ -551,14 +551,14 @@ if (item.def){
 obj[item[key]]=item.def;
 return null;
 }
-throw Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
+throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
 }
 else if (
 item.type==="array"&&Array.isArray(value)===false||
 item.type!==typeof obj[item[key]]||
 value==null&&item.type==="object"
 ){
-throw Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
+throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
 }
 })
 }
@@ -722,7 +722,7 @@ formatted+=String((this.getHours()%12)||12).padStart(2,'0');
 break;
 case 'j':
 formatted+=String(
-Math.floor((this-new Date(this.getFullYear(),0,0))/86400000)
+Math.floor((this-new Date(this.getFullYear(),0,0))/(86400*1000))
 ).padStart(3,'0');
 ++i;
 break;
@@ -788,14 +788,14 @@ formatted+=this.getDay()||7;
 break;
 case 'U':
 formatted+=String(
-Math.ceil((this-new Date(this.getFullYear(),0,1))/86400000+1)/7
+Math.ceil((this-new Date(this.getFullYear(),0,1))/(86400*1000)+1)/7
 ).padStart(2,'0');
 ++i;
 break;
 case 'V':
 const jan4=new Date(this.getFullYear(),0,4);
 const startOfWeek=new Date(this.getFullYear(),0,1);
-const daysSinceJan4=Math.floor((this-jan4)/86400000);
+const daysSinceJan4=Math.floor((this-jan4)/(86400*1000));
 const weekNumber=Math.ceil((daysSinceJan4+jan4.getDay()+1)/7);
 formatted+=String(weekNumber).padStart(2,'0');
 ++i;
@@ -806,7 +806,7 @@ formatted+=this.getDay();
 break;
 case 'W':
 formatted+=String(
-Math.floor((this-new Date(this.getFullYear(),0,1))/86400000+1)/7
+Math.floor((this-new Date(this.getFullYear(),0,1))/(86400*1000)+1)/7
 ).padStart(2,'0');
 ++i;
 break;
@@ -1500,6 +1500,30 @@ this.proc.kill(signal);
 return this;
 }
 }
+vlib.ProgressLoader=class ProgessLoader{
+constructor({message="Loading",steps=100,step=0,width=10}){
+this.message=message.trim();
+this.steps=steps;
+this.step=step;
+this.width=width;
+this.progess=0;
+this.last_progress=null;
+this.next(false);
+}
+next(increment=true){
+if (increment){
+++this.step;
+}
+this.progress=this.step/this.steps;
+const fixed=(this.progress*100).toFixed(2);
+if (fixed!=this.last_progress){
+this.last_progress=fixed;
+const completed=Math.floor(this.progress*this.width);
+const remaining=this.width-completed;
+process.stdout.write(`\r${this.message} ${fixed}% [${"=".repeat(completed)}${".".repeat(remaining)}]${this.progress>=1?'\n':''}`);
+}
+}
+}
 vlib.CLI=class CLI{
 constructor({
 name=null,
@@ -1800,7 +1824,7 @@ const libhttps=require("https")
 const zlib=require('zlib');
 vlib.request=async function({
 host,
-port=432,
+port=null,
 endpoint,
 method,
 headers={},
@@ -1810,6 +1834,7 @@ decompress=true,
 query=true,
 json=false,
 reject_unauthorized=true,
+delay=null,
 }){
 return new Promise((resolve)=>{
 method=method.toUpperCase();
@@ -1822,7 +1847,7 @@ throw Error("Invalid value type for parameter \"params\", the valid type is \"ob
 endpoint+=`?${params}`;
 params=null;
 }
-if (typeof params==="object"){
+if (params!=null&&typeof params==="object"){
 params=JSON.stringify(params);
 }
 if (compress){
@@ -1840,20 +1865,31 @@ method:method,
 headers:headers,
 rejectUnauthorized:reject_unauthorized,
 };
-let error=null,body="",status=null;
+let error=null,body="",status=null,res_headers={};
 const on_end=()=>{
 if (body.length>0&&json){
 try {body=JSON.parse(body);}
 catch (e){}
 }
+if (delay==null){
 resolve({
 body,
 error,
 status,
+headers:res_headers,
 });
+} else {
+setTimeout(()=>resolve({
+body,
+error,
+status,
+headers:res_headers,
+}),delay)
+}
 }
 const req=libhttps.request(options,(res)=>{
 status=res.statusCode;
+res_headers=res.headers;
 const content_encoding=res.headers['content-encoding'];
 if (content_encoding==="gzip"||content_encoding==="deflate"){
 let stream;

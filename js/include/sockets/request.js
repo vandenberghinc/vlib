@@ -61,13 +61,17 @@ const zlib = require('zlib');
  *      @name: reject_unauthorized
  *		@desc: Reject unauthorized tls certificates.
  *		@type: boolean
+ *  @param:
+ *      @name: delay
+ *		@desc: Wait a number of milliseconds after the request, an be useful for rate-limiting.
+ *		@type: null, number
  *  @usage:
  *      ...
  *      const {error, body, status} = await vlib.request({host: "https://google.com"});
  */
 vlib.request = async function({
 	host,
-	port = 432,
+	port = null,
 	endpoint,
 	method,
 	headers = {},
@@ -77,9 +81,10 @@ vlib.request = async function({
 	query = true,
 	json = false,
 	reject_unauthorized = true,
+	delay = null,
 }) {
 	return new Promise((resolve) => {
-		
+
 		// Uppercase method.
 		method = method.toUpperCase();
 		
@@ -95,7 +100,7 @@ vlib.request = async function({
 		}
 		
 		// Convert params to string.
-		if (typeof params === "object") {
+		if (params != null && typeof params === "object") {
 			params = JSON.stringify(params);
 		}
 		
@@ -119,9 +124,10 @@ vlib.request = async function({
 			headers: headers,
 			rejectUnauthorized: reject_unauthorized,
 		};
-
+		// console.log(options)
+		
 		// Vars.
-		let error = null, body = "", status = null;
+		let error = null, body = "", status = null, res_headers = {};
 
 		// On end.
 		const on_end = () => {
@@ -133,11 +139,21 @@ vlib.request = async function({
 			}
 
 			// Resolve.
-			resolve({
-				body,
-				error,
-				status,
-			});
+			if (delay == null) {
+				resolve({
+					body,
+					error,
+					status,
+					headers: res_headers,
+				});
+			} else {
+				setTimeout(() => resolve({
+					body,
+					error,
+					status,
+					headers: res_headers,
+				}), delay)
+			}
 		}
 		
 		// Make request.
@@ -145,6 +161,7 @@ vlib.request = async function({
 			
 			// Set status code.
 			status = res.statusCode;
+			res_headers = res.headers;
 
 			// Decompress data.
 	        const content_encoding = res.headers['content-encoding'];
