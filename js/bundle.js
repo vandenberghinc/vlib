@@ -10,9 +10,9 @@ const libpath = require("path");
 const libfs = require("fs");
 let vhighlight;
 if (libfs.existsSync("/Volumes/persistance")) {
-    vhighlight = require("/Volumes/persistance/private/vinc/vhighlight/vhighlight.js");
+    vhighlight = require("/Volumes/persistance/private/dev/vinc/vhighlight/vhighlight.js");
 } else {
-    vhighlight = require("/Users/administrator/persistance/private/vinc/vhighlight/vhighlight.js");
+    vhighlight = require("/Users/administrator/persistance/private/dev/vinc/vhighlight/vhighlight.js");
 }
 const {JSCompiler} = vhighlight;
 
@@ -35,6 +35,7 @@ compiler.bundle({
         // Global.
         libpath.join(source, "include/types/global/string.js"),
         libpath.join(source, "include/types/global/array.js"),
+        libpath.join(source, "include/types/global/object.js"),
         libpath.join(source, "include/types/global/utils.js"),
 
         // System.

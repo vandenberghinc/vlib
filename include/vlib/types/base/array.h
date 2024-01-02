@@ -1943,10 +1943,8 @@ struct Array {
 	 *		Slice the array by indexes.
 	 *
 	 *		Function `slice_r` updates the current array, while `slice` creates a copy.
-	 *	@notes:
-	 *		Leave parameter `eindex` `0` to use the value of the length attribute.
-	 *
-	 *		Slices nothing when eiter `sindex` / `eindex` is out of range.
+	 *	@note: Leave parameter `eindex` `0` to use the value of the length attribute.
+	 *	@note: Slices nothing when eiter `sindex` / `eindex` is out of range.
 	 *	@usage:
 	 *		Array<int> x = {1, 2, 3};
 	 *		x.slice_r(1); x ==> {2, 3};
@@ -2689,8 +2687,7 @@ struct Array {
 	 *		Ensure start padding to a required full length.
 	 *
 	 *		Function `ensure_start_padding_r` updates the current array, while `ensure_start_padding` creates a copy.
-	 *	@notes:
-	 *		The minus (`-`) from a `to_str(-1)` is also included in the required length.
+	 *	@note: The minus (`-`) from a `to_str(-1)` is also included in the required length.
 	 *	@usage:
 	 *		String x = "1";
 	 *		x.ensure_start_padding_r('0', 2); x ==> "01";
@@ -2726,8 +2723,7 @@ struct Array {
 	 *		Ensure end padding to a required full length.
 	 *
 	 *		Function `ensure_end_padding_r` updates the current array, while `ensure_end_padding` creates a copy.
-	 *	@notes:
-	 *		The minus (`-`) from a `to_str(-1)` is also included in the required length.
+	 *	@note: The minus (`-`) from a `to_str(-1)` is also included in the required length.
 	 *	@usage:
 	 *		String x = "1";
 	 *		x.ensure_end_padding_r(' ', 2); x ==> "1 ";

@@ -440,9 +440,8 @@ public:
 		@title: Add
 		@description:
 			Add one or multiple users to the group.
-		@notes:
-			- Must be executed as user `root`.
-			- The argument types must be `const char*`.
+		@note: Must be executed as user `root`.
+		@note: The argument types must be `const char*`.
 		@usage:
 			vlib::Group group("mygroup");
 			int status = group.add("someuser");
@@ -457,9 +456,8 @@ public:
 		@title: Add
 		@description:
 			Add one or multiple users to the group.
-		@notes:
-			- Must be executed as user `root`.
-			- The argument types must be `const char*`.
+		@note: Must be executed as user `root`.
+		@note: The argument types must be `const char*`.
 		@usage:
 			vlib::Group group("mygroup");
 			int status = group.remove("someuser");
@@ -472,8 +470,7 @@ public:
        @title: Get GID
        @description:
             Get the GID of an existing group.
-        @notes:
-            Throws an exception when the group does not exist.
+        @note: Throws an exception when the group does not exist.
         @usage:
             Int gid = vlib::Group::get_gid("mygroup");
         @funcs: 2
@@ -500,8 +497,7 @@ public:
        @title: Get name
        @description:
             Get the name of a group by uid.
-        @notes:
-            Throws an exception when the group does not exist.
+        @note: Throws an exception when the group does not exist.
         @usage:
             String name = vlib::Group::get_name(...);
     */

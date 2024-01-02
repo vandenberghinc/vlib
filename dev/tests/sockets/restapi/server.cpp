@@ -11,8 +11,8 @@
 // Initialize the server.
 vlib::restapi::Server<> server({
 	.port = 9000,
-	.cert = "/Volumes/persistance/private/vinc/vlib/tests/sockets/tls/certs/cert.pem",
-	.key = "/Volumes/persistance/private/vinc/vlib/tests/sockets/tls/certs/key.pem",
+	.cert = "/Volumes/persistance/private/dev/vinc/vlib/tests/sockets/tls/certs/cert.pem",
+	.key = "/Volumes/persistance/private/dev/vinc/vlib/tests/sockets/tls/certs/key.pem",
 	.pass = "HelloWorld!",
 	.database = "/tmp/restapi/",
 });

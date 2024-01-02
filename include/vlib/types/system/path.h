@@ -909,7 +909,7 @@ public:
 		@usage:
 			vlib::Path x("/tmp/myfile.txt");
 			x.touch();
-        @notes:
+        @note:
             Only creates the file when the file does not exist.
 	*/
 	void    touch(ushort permission = 0740) const {
@@ -1373,7 +1373,7 @@ public:
 	/* @docs
 		@title: Sync
 		@description: Synchronize local paths.
-		@notes: Function `sync` can be used for files & directories.
+		@note: Function `sync` can be used for files & directories.
 		@usage:
 			vlib::Path x("/tmp/src");
 			x.sync("/tmp/dest");

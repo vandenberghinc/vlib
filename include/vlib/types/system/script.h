@@ -126,16 +126,14 @@ public:
 		@title: Constructor
 		@description:
 			Construct a script object.
-		@notes:
-			- Automatically adds a newline after each `Arg`.
+		@note:
+			Automatically adds a newline after each `Arg`.
 		@parameter:
 			@name: arg
 			@description: The first argument.
-		}
 		@parameter:
 			@name: args
 			@description: The other arguments.
-		}
 		@usage:
 			vlib::Script script("setopt -e", "echo Hello World!);
 		@funcs: 2

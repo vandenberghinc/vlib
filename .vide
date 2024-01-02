@@ -18,7 +18,7 @@
     "ssh_remotes": [
         {
             "alias": "dev.vinc",
-            "destination": "/Volumes/persistance/private/vinc/vlib/",
+            "destination": "/Volumes/persistance/private/dev/vinc/vlib/",
             "enabled": true
         },
         {
@@ -27,7 +27,14 @@
             "enabled": true
         }
     ],
-    "git_username": null,
-    "git_email": null,
-    "git_remotes": []
+    "git_username": "vandenberghinc",
+    "git_email": "dev@vandenberghinc.com",
+    "git_remotes": [
+        {
+            "remote": "origin",
+            "branch": "main",
+            "destination": "git@github.com:vandenberghinc/vlib.git",
+            "enabled": true
+        }
+    ]
 }

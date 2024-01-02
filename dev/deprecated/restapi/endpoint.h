@@ -27,7 +27,7 @@ typedef http::Response (*EndpointFunc)(const String&, const Json&, const http::H
 	@title: Endpoint
 	@description:
 		RESTAPI Endpoint type.
-	@notes:
+	@note:
 		The endpoint function must be like `vlib::http::Response somefunc(const vlib::String& username, const vlib::Json& params, const vlib::http:Headers& headers)`
 	@usage:
 		#include <vlib/sockets/restapi.h>
@@ -53,7 +53,7 @@ public:
 			Attributes for a `Endpoint` object.
 			
 			Attributes `mutex` and `rate_limits` are reserved, to not use these.
-		@notes:
+		@note:
 			Authentication methods can be joined like ` { .auth = vlib::restapi::auth::token | vlib::restapi::auth::api_key | vlib::restapi::auth::sign }`
 		
 	*/
@@ -104,12 +104,11 @@ public:
 		@title: Constructor
 		@description:
 			Construct from attributes.
-		@notes:
+		@note:
 			Authentication methods can be joined like ` { .auth = vlib::restapi::auth::token | vlib::restapi::auth::api_key | vlib::restapi::auth::sign }`
 		@parameter:
 			@name: a
 			@description: The endpoint attributes.
-		}
 		@usage:
 			vlib::http::Response hello_world(const vlib::String& username, const vlib::Json& params, const vlib::Headers& headers) {
 				return http::Response(...);

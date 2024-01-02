@@ -14,8 +14,8 @@ int main() {
 	unsigned client;
 	vlib::tls::Server socket(
 		9000,
-		"/Volumes/persistance/private/vinc/vlib/tests/sockets/tls/certs/cert.pem",
-		"/Volumes/persistance/private/vinc/vlib/tests/sockets/tls/certs/key.pem",
+		"/Volumes/persistance/private/dev/vinc/vlib/tests/sockets/tls/certs/cert.pem",
+		"/Volumes/persistance/private/dev/vinc/vlib/tests/sockets/tls/certs/key.pem",
 		"HelloWorld!"
 	);
 

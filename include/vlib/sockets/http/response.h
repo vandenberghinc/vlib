@@ -33,9 +33,8 @@ namespace http {
 	@title: Response
 	@description:
 		HTTP response type.
-	@notes:
-		- Only supports HTTP versions [0.9, 1.0, 1.1]. HTTP/2 is currently not supported.
-		- Only supports status codes that are included in "vlib::http::status".
+	@note: Only supports HTTP versions [0.9, 1.0, 1.1]. HTTP/2 is currently not supported.
+	@note: Only supports status codes that are included in "vlib::http::status".
 	@usage:
 		#include <vlib/sockets/http.h>
 		vlib::http::Response response;
@@ -330,8 +329,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has a defined version.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_version() const {
@@ -342,8 +340,7 @@ public:
 		@type: short
 		@description:
 			Get the HTTP version.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	version() {
@@ -360,8 +357,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has a defined status.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_status() const {
@@ -372,8 +368,7 @@ public:
 		@type: short&
 		@description:
 			Get the HTTP status.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	status() {
@@ -390,8 +385,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has a defined status description.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_status_desc() const {
@@ -402,8 +396,7 @@ public:
 		@type: String&
 		@description:
 			Get the HTTP status description.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	status_desc() {
@@ -420,8 +413,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has a defined content type.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_content_type() const {
@@ -432,8 +424,7 @@ public:
 		@type: short&
 		@description:
 			Get the HTTP content type.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	content_type() {
@@ -450,8 +441,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has defined headers.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_headers() const {
@@ -462,8 +452,7 @@ public:
 		@type: Headers&
 		@description:
 			Get the HTTP headers.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	headers() {
@@ -480,8 +469,7 @@ public:
 		@type: bool
 		@description:
 			Check if the response has a defined body.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_body() const {
@@ -492,8 +480,7 @@ public:
 		@type: String&
 		@description:
 			Get the HTTP body.
-		@notes:
-			- Only available when the response has been constructed through a data parse.
+		@note: Only available when the response has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	body() {
@@ -623,8 +610,7 @@ public:
 	/*  @docs
 		@title: Add header
 		@description: Add a header key & value to the data string.
-		@notes:
-			- Does not assign to the attribute `m_headers`.
+		@note: Does not assign to the attribute `m_headers`.
 		@funcs: 2
 	*/
 	constexpr
@@ -642,8 +628,7 @@ public:
 	/*  @docs
 		@title: Add headers
 		@description: Add headers to the data string.
-		@notes:
-			- Does not assign to the attribute `m_headers`.
+		@note: Does not assign to the attribute `m_headers`.
 	*/
 	constexpr
 	This&	add_headers(const Headers& headers) {
@@ -657,9 +642,8 @@ public:
 	/*  @docs
 		@title: Add body
 		@description: Add a body to the data string.
-		@notes:
-			- Automatically calls `add_end()`.
-			- Does not assign to the attribute `m_body`.
+		@note: Automatically calls `add_end()`.
+		@note: Does not assign to the attribute `m_body`.
 		@funcs: 3
 	*/
 	constexpr

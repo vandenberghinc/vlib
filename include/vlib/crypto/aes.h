@@ -42,7 +42,7 @@ namespace vlib {
         #include <vlib/crypto.h>
         vlib::AES<vlib::crypto::mode::cbc, vlib::crypto::key::aes256> aes;
         vlib::AES256_CBC aes_alias; // alias.
-    @notes:
+    @note:
         Type `AES` acts as a shared pointer, use `AES::copy()` to create a copy without a link.
 */
 template <

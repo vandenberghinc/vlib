@@ -699,10 +699,8 @@ struct Dict {
 			Slice the dictionary by indexes.
 	 
 			Function `slice_r` updates the current dictionary, while `slice` creates a copy.
-		@notes:
-			Leave parameter `eindex` `0` to use the value of the length attribute.
-	 
-			Slices nothing when eiter `sindex` / `eindex` is out of range.
+		@note: Leave parameter `eindex` `0` to use the value of the length attribute.
+		@note: Slices nothing when eiter `sindex` / `eindex` is out of range.
 		@funcs: 2
 	*/
 	constexpr

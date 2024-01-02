@@ -16,7 +16,7 @@ namespace vlib {
 	@title: Logger
 	@description:
 		Used for logging to the console and saving the logs to a file.
-    @notes:
+    @note:
         The loggers acts as a shared pointer.
 	@usage:
         #include <vlib/types.h>

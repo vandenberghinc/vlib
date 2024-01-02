@@ -66,7 +66,7 @@ ullong zero_len = 0;
     @title: Dataframe
     @description:
         Type for 1D and 2D dataframes.
-    @notes:
+    @note:
         A dataframe can be the following types:
         - `vlib::df::types::null`
         - `vlib::df::types::integer`
@@ -4447,7 +4447,7 @@ public:
             
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 1D.
-        @notes:
+        @note:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the sum over the defined window as values.
@@ -4521,7 +4521,7 @@ public:
             
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 1D.
-        @notes:
+        @note:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the moving average over the defined window as values.
@@ -4730,7 +4730,7 @@ public:
             
             Will throw a `TypeError` when the type is not `vlib::df::types::df`.
             Will throw a `DimensionError` when the dataframe is not 1D.
-        @notes:
+        @note:
             Values that can't apply a full window will have type `vlib::df::types::null`.
         @return:
             Returns a `DataFrame` with type `vlib::df::types::df` with the weighted moving average over the defined window as values.

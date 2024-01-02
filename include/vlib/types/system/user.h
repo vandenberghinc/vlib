@@ -772,8 +772,7 @@ public:
 		@title: Encrypt password
 		@description:
 			Encrypt a password for an existing user.
-		@notes:
-			- Not supported on `MacOS`.
+		@note: Not supported on `MacOS`.
 		@parameter:
 			@name: pass
 			@description: The unencrypted password string.
@@ -833,8 +832,7 @@ public:
 		@title: Encrypt password
 		@description:
 			Encrypt a password for a new user.
-		@notes:
-			- Not supported on `MacOS`.
+		@note: Not supported on `MacOS`.
 		@parameter:
 			@name: pass
 			@description: The unencrypted password string.
@@ -866,14 +864,12 @@ public:
 	/* docs {
 	   @title: Verify password
 	   @description: Verify the user's current password.
-		@notes:
-			- Not supported on `MacOS`.
+		@note: Not supported on `MacOS`.
 		@parameter:
 			@name: pass
 			@description: The password to verify.
-		}
         @return: Returns `true` if the password is correct, and `false` if the password is incorrect.
-	   @usage:
+	   	@usage:
 			vlib::User root(0);
 			root.verify_pass("XXXXXXXXXX");
 	*/
@@ -913,9 +909,8 @@ public:
 		@title: Set password
 		@description:
 			 Set the user's password.
-		@notes:
-			- Not supported on `MacOS`.
-			- Requires root priviliges.
+		@note: Not supported on `MacOS`.
+		@note: Requires root priviliges.
 		@usage:
 			vlib::User root(0);
 			root.set_pass("Hello World!");
@@ -976,10 +971,9 @@ public:
 				The shell path.
 				The function's default value for linux systems is `/bin/bash` while the default value for MacOS is `/bin/zsh`.
 		}
-		@notes:
-			- Must be executed with root priviliges.
-			- In order to create the user the password will be exposed to `execl()`.
-			- MacOS: When a new superuser has been created it requires a reboot before the superuser changes take effect.
+		@note: Must be executed with root priviliges.
+		@note: In order to create the user the password will be exposed to `execl()`.
+		@note: MacOS: When a new superuser has been created it requires a reboot before the superuser changes take effect.
 	*/
 	SICE
 	void 	create(
@@ -1026,8 +1020,7 @@ public:
        @title: Get UID
        @description:
             Get the UID of an existing user.
-        @notes:
-            Throws an exception when the user does not exist.
+        @note: Throws an exception when the user does not exist.
         @usage:
             Int uid = vlib::User::get_uid("myuser");
         @funcs: 2
@@ -1054,8 +1047,7 @@ public:
        @title: Get GID
        @description:
             Get the GID of an existing user.
-        @notes:
-            Throws an exception when the user does not exist.
+        @note: Throws an exception when the user does not exist.
         @usage:
             Int gid = vlib::User::get_gid("myuser");
         @funcs: 2
@@ -1082,8 +1074,7 @@ public:
        @title: Get UID and GID
        @description:
             Get the UID and GID of an existing user.
-        @notes:
-            Throws an exception when the user does not exist.
+        @note: Throws an exception when the user does not exist.
         @return:
             Returns 0 on success and < 0 on failure.
         @usage:
@@ -1114,8 +1105,7 @@ public:
        @title: Get name
        @description:
             Get the name of an user by uid.
-        @notes:
-            Throws an exception when the user does not exist.
+        @note: Throws an exception when the user does not exist.
         @usage:
             String name = vlib::User::get_name(...);
     */

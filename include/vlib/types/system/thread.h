@@ -24,8 +24,7 @@ namespace vlib {
 		Can be used to use as a base class for another type.
  
 		Can be used to start a thread function.
-	@notes:
-		- The thread acts as a shared pointer.
+	@note: The thread acts as a shared pointer.
 	@usage:
 				
 		 // --------------------------------------------------------
@@ -213,8 +212,7 @@ public:
 		@title: Start
 		@description:
 			Start a derived thread class.
-		@notes:
-			- The derived class must have the function `void* run(void)`.
+		@note: The derived class must have the function `void* run(void)`.
 	*/
 	constexpr
 	auto&    start() requires (!is_Null<Derived>::value) {
@@ -231,8 +229,7 @@ public:
 			@name: func
 			@description: A reference to the function.
 		}
-		@notes:
-			- The function should be like `void* somefunc(void*)`.
+		@note: The function should be like `void* somefunc(void*)`.
 	*/
 	template <typename Func> requires (is_Null<Derived>::value) constexpr
 	auto&    start(Func&& func)  {
@@ -253,8 +250,7 @@ public:
 			@name: args
 			@description: The function arguments.
 		}
-		@notes:
-			- The function should be like `void* somefunc(...)`.
+		@note: The function should be like `void* somefunc(...)`.
 	*/
 	template <typename Func, typename... Args> requires (is_Null<Derived>::value) constexpr
 	auto&    start(Func&& func, Args&&... args) {

@@ -301,7 +301,7 @@ public:
      *  @title: Find
      *  @description:
      *      Find the index of an argument.
-     *   @notes:
+     *   @note:
      *       Returns `NPos::npos` when the argument is not found.
      *  @parameter:
      *      @name: id
@@ -333,10 +333,9 @@ public:
 	 *		 Will cause a segfault when the index is out of range.
 	 *	@warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	@notes:
-	 *		 <bullet> Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 <bullet> Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 <bullet> Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: index
 	 *		@description: The index of the requested argument.
@@ -371,10 +370,9 @@ public:
 	 *		Returns the argument one index after the requested id's index.
 	 *	 @warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: id
 	 *		@description: The id of the requested argument.
@@ -398,10 +396,9 @@ public:
 	 *		Returns the argument one index after the requested id's index.
 	 *	 @warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
@@ -442,10 +439,9 @@ public:
 	 *		 Will cause a segfault when the index is out of range.
 	 *	@warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: index
 	 *		@description: The index of the requested argument.
@@ -496,10 +492,9 @@ public:
 	 *	 	Returns the argument one index after the requested id's index.
 	 *	@warning:
 	 *	 	Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	@notes:
-	 *	 	- Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *	 	- Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *	 	- Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *	 	@name: id
 	 *	 	@description: The id of the requested argument.
@@ -520,10 +515,9 @@ public:
 	 *		Returns the argument one index after the requested id's index.
 	 *	 @warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: id
 	 *		@description: The id of the requested argument.
@@ -547,10 +541,9 @@ public:
 	 *		Returns the argument one index after the requested id's index.
 	 *	 @warning:
 	 *		 Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	 @notes:
-	 *		 - Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		 - Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		 - Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.
@@ -582,10 +575,9 @@ public:
 	 *		Returns the argument one index after the requested id's index.
 	 *	@warning:
 	 *		Causes undefined behaviour when casting to a recursive `Array` or `Dict`.
-	 *	@notes:
-	 *		- Arrays should be formatted like: `--some-array "0,1,2"`.
-	 *		- Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
-	 *		- Casting to a `Json` or `JArray` is not supported.
+	 *	@note: Arrays should be formatted like: `--some-array "0,1,2"`.
+	 *	@note: Dictionaries should be formatted like: `--some-dict "a:0,b:1,c:2"`.
+	 *	@note: Casting to a `Json` or `JArray` is not supported.
 	 *	@parameter:
 	 *		@name: ids
 	 *		@description: The array of possible ids of the requested argument.

@@ -36,10 +36,9 @@ namespace http {
 	@title: Request
 	@description:
 		HTTP request type.
-	@notes:
-		- Only supports HTTP versions [0.9, 1.0, 1.1]. HTTP/2 is currently not supported.
-		- Only supports status codes that are included in "vlib::http::status".
-		- GET request parameters are by default passed in the payload body. You can use the "Request" functions seperately to create a request that conforms to your wishes.
+	@note: Only supports HTTP versions [0.9, 1.0, 1.1]. HTTP/2 is currently not supported.
+	@note: Only supports status codes that are included in "vlib::http::status".
+	@note: GET request parameters are by default passed in the payload body. You can use the "Request" functions seperately to create a request that conforms to your wishes.
 	@usage:
 		#include <vlib/sockets/http.h>
 		vlib::http::Request request;
@@ -373,8 +372,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has a defined version.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_version() const {
@@ -385,8 +383,7 @@ public:
 		@type: short&
 		@description:
 			Get the HTTP version.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	version() {
@@ -403,8 +400,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has a defined method.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_method() const {
@@ -415,8 +411,7 @@ public:
 		@type: short&
 		@description:
 			Get the HTTP method.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	method() {
@@ -433,8 +428,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has a defined endpoint.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_endpoint() const {
@@ -445,8 +439,7 @@ public:
 		@type: String&
 		@description:
 			Get the HTTP endpoint.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	endpoint() {
@@ -463,8 +456,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has a defined content type.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_content_type() const {
@@ -475,8 +467,7 @@ public:
 		@type: short&
 		@description:
 			Get the HTTP content type.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	content_type() {
@@ -493,8 +484,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has defined headers.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_headers() const {
@@ -505,8 +495,7 @@ public:
 		@type: Headers&
 		@description:
 			Get the HTTP headers.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	headers() {
@@ -523,8 +512,7 @@ public:
 		@type: bool
 		@description:
 			Check if the request has a defined body.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	bool 	has_body() const {
@@ -535,8 +523,7 @@ public:
 		@type: String&
 		@description:
 			Get the HTTP body.
-		@notes:
-			- Only available when the request has been constructed through a data parse.
+		@note: Only available when the request has been constructed through a data parse.
 	*/
 	constexpr
 	auto& 	body() {
@@ -596,8 +583,7 @@ public:
 	/*  @docs
 		@title: Add method
 		@description: Add a method to the data string.
-		@notes:
-			- Does not assign to the attribute `m_method`.
+		@note: Does not assign to the attribute `m_method`.
 	*/
 	constexpr
 	This& 	add_method(short method) {
@@ -610,8 +596,7 @@ public:
 	/*  @docs
 		@title: Add endpoint
 		@description: Add a endpoint to the data string.
-		@notes:
-			- Does not assign to the attribute `m_endpoint`.
+		@note: Does not assign to the attribute `m_endpoint`.
 		@funcs: 2
 	*/
 	constexpr
@@ -630,8 +615,7 @@ public:
 	/*  @docs
 		@title: Add version
 		@description: Add a HTTP version to the data string.
-		@notes:
-			- Does not assign to the attribute `m_version`.
+		@note: Does not assign to the attribute `m_version`.
 	*/
 	constexpr
 	This& 	add_version(short version) {
@@ -646,8 +630,7 @@ public:
 	/*  @docs
 		@title: Add header
 		@description: Add a header key & value to the data string.
-		@notes:
-			- Does not assign to the attribute `m_headers`.
+		@note: Does not assign to the attribute `m_headers`.
 		@funcs: 2
 	*/
 	constexpr
@@ -683,8 +666,7 @@ public:
 	/*  @docs
 		@title: Add headers
 		@description: Add headers to the data string.
-		@notes:
-			- Does not assign to the attribute `m_headers`.
+		@note: Does not assign to the attribute `m_headers`.
 	*/
 	constexpr
 	This&	add_headers(const Headers& headers) {
@@ -698,9 +680,8 @@ public:
 	/*  @docs
 		@title: Add body
 		@description: Add a body to the data string.
-		@notes:
-			- Automatically calls `add_end()`.
-			- Does not assign to the attribute `m_body`.
+		@note: Automatically calls `add_end()`.
+		@note: Does not assign to the attribute `m_body`.
 		@funcs: 3
 	*/
 	constexpr
@@ -736,8 +717,7 @@ public:
 	/*  @docs
 		@title: Add end
 		@description: Add the end CRLF.
-		@notes:
-			- Automatically called in `add_body()`.
+		@note: Automatically called in `add_body()`.
 	*/
 	constexpr
 	This&	add_end() {

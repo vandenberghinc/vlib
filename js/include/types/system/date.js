@@ -239,6 +239,12 @@ vlib.Date = class D extends Date {
                         ++i;
                         break;
 
+                    // %Y : Full year.
+                    case 'Y':
+                        formatted += String(this.getFullYear());
+                        ++i;
+                        break;
+
                     // %z : +hhmm numeric timezone (e.g., -0400).
                     // %:z : +hh:mm numeric timezone (e.g., -04:00)
                     // %::z : +hh:mm:ss numeric time zone (e.g., -04:00:00).
@@ -284,5 +290,90 @@ vlib.Date = class D extends Date {
             }
         }
         return formatted;
+    }
+
+    // Milliseconds
+    msec() { return this.getTime(); }
+
+    // Seconds
+    sec() { return parseInt(this.getTime() / 1000); }
+
+    // Hour start.
+    hour_start() {
+        const date = new D(this.getTime())
+        date.setMinutes(0, 0, 0);
+        return date;
+    }
+
+    // Day start.
+    day_start() {
+        const date = new D(this.getTime())
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+
+    // Day start.
+    day_start() {
+        const date = new D(this.getTime())
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+
+    // Month start.
+    week_start(sunday_start = true) {
+        const diff = (this.getDay() + 7 - (sunday_start ? 0 : 1)) % 7;
+        const date = new D(this.getTime())
+        date.setDate(this.getDate() - diff)
+        date.setHours(0, 0, 0, 0);;
+        return date;
+    }
+
+    // Month start.
+    month_start() {
+        const date = new D(this.getTime())
+        date.setDate(1)
+        date.setHours(0, 0, 0, 0, 0);
+        return date;
+    }
+
+    // Quarter year start.
+    quarter_year_start() {
+        const date = new D(this.getTime())
+        const month = date.getMonth()+1;
+        if (month > 9) {
+            date.setMonth(9 - 1, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        } else if (month > 6) {
+            date.setMonth(6 - 1, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        } else if (month > 3) {
+            date.setMonth(3 - 1, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        } else {
+            date.setMonth(0, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        }
+        return date;
+    }
+
+    // Half year start.
+    half_year_start() {
+        const date = new D(this.getTime())
+        if (date.getMonth() + 1 > 6) {
+            date.setMonth(5, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        } else {
+            date.setMonth(0, 1)
+            date.setHours(0, 0, 0, 0, 0);
+        }
+        return date;
+    }
+
+    // Year start.
+    year_start() {
+        const date = new D(this.getTime())
+        date.setMonth(0, 1)
+        date.setHours(0, 0, 0, 0, 0);
+        return date;
     }
 }

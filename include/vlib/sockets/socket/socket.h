@@ -24,9 +24,8 @@ namespace sockets {
  *  @title: Socket
  *  @description:
  *      Socket base type.
- *  @notes:
- *      <bullet> Does not automatically close on destruction.
- *      <bullet> Host address construction only supports the following protocols: [http, https].
+ *  @note: Does not automatically close on destruction.
+ *  @note: Host address construction only supports the following protocols: [http, https].
  *  @usage:
  *      #include <vlib/sockets/socket.h>
  *      vlib::https::Socket<...> socket;
