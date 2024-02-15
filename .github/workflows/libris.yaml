@@ -15,4 +15,3 @@ jobs:
         with:
           config: './docs/libris.json'
           output: './docs/index.html'
-          
