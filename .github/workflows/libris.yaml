@@ -19,7 +19,7 @@ jobs:
         run: npm install @librisio/libris
       
       - name: Libris - Generate Documentation
-        uses: librisio/libris-auto-gen@main
+        uses: librisio/libris-action@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LIBRIS_API_KEY: ${{ secrets.LIBRIS_API_KEY }}
