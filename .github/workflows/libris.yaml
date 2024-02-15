@@ -13,5 +13,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LIBRIS_API_KEY: ${{ secrets.LIBRIS_API_KEY }}
         with:
-          config: './docs/libris.json'
+          config: './docs/config.js'
           output: './docs/index.html'
