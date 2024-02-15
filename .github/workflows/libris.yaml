@@ -1,5 +1,7 @@
-on: push
 name: Libris - Generate Documentation
+on: push
+permissions:
+  contents: write
 jobs:
   update-file:
     runs-on: ubuntu-latest
