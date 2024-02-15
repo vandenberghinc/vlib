@@ -25,7 +25,7 @@ module.exports = {
 		image: "https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.small.png",
 		favicon: "https://doxia.io/favicon.ico",
 	}),
-	dark_theme: BLUE_THEME,//GREEN_THEME,
+	dark_theme: GREEN_THEME,
 	light_theme: LIGHT_THEME,
 	default_theme: "dark_theme",
 	navigation_order: ["C++", "JS"],
