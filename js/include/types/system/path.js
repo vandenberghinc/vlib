@@ -7,6 +7,10 @@
 // Path object.
 // When the operating system's path changes function `reset()` should be called again.
 
+/*  @docs:
+    @title: Path
+    @desc: The path class.
+*/
 vlib.Path = class Path {
     constructor(path, clean = true) {
 
@@ -118,6 +122,11 @@ vlib.Path = class Path {
     }
 
     // Get stat attributes.
+    /*  @docs:
+        @title: Stat attributes
+        @desc: Get the stat attributes.
+        @funcs: 14
+    */
     get dev() {
         return this.stat.dev;
     }
@@ -167,6 +176,11 @@ vlib.Path = class Path {
     // Reset.
     // Should be called when the operating system's path has changed.
     // This does not reset the assigned path.
+    /*  @docs:
+        @title: Reset
+        @desc: Reset the path attribute's except the path name.
+        @note: Should be called when the operating system's path has changed.
+    */
     reset() {
         this._stat = undefined;
         this._name = undefined;
@@ -177,16 +191,28 @@ vlib.Path = class Path {
     }
 
     // Is directory.
+    /*  @docs:
+        @title: Is directory
+        @desc: Check if the path is a directory.
+    */
     is_dir() {
         return this.stat.isDirectory();
     }
 
     // Exists.
+    /*  @docs:
+        @title: Exists
+        @desc: Check if the path exists.
+    */
     exists() {
         return libfs.existsSync(this._path);
     }
 
     // Get path name.
+    /*  @docs:
+        @title: Get name
+        @desc: Get the (full) name of the path.
+    */
     name(with_extension = true) {
         if (with_extension === false) {
             const name = this.name();
@@ -207,6 +233,10 @@ vlib.Path = class Path {
     }
 
     // Get extension name.
+    /*  @docs:
+        @title: Get extension
+        @desc: Get the extension of the path.
+    */
     extension() {
         if (this._extension !== undefined) { return this._extension; }
         if (this._name === undefined) { this.name(); }
@@ -223,7 +253,11 @@ vlib.Path = class Path {
     }
 
     // Get the base path.
-    // Returns null when the path does not have a base path.
+    /*  @docs:
+        @title: Get base
+        @desc: Get the base path of the path.
+        @note: Returns `null` when the path does not have a base path.
+    */
     base(back = 1) {
         if (back === 1 && this._base !== undefined) { return this._base; }
         let count = 0, end = 0;
@@ -248,6 +282,10 @@ vlib.Path = class Path {
     }
 
     // Get the absolute path.
+    /*  @docs:
+        @title: Get absolute
+        @desc: Get the absolute path of the path.
+    */
     abs() {
         if (this._abs !== undefined) { return this._abs; }
         this._abs = new Path(libpath.resolve(this._path));
@@ -255,11 +293,20 @@ vlib.Path = class Path {
     }
 
     // Join the path with another name / subpath.
+    /*  @docs:
+        @title: Join
+        @desc: Join the path with another name or subpath.
+    */
     join(subpath, clean = true) {
         return new Path(`${this._path}/${subpath}`, clean);
     }
 
     // Copy the path to another location.
+    /*  @docs:
+        @title: Copy
+        @desc: Copy the path to another location.
+        @funcs: 2
+    */
     async cp(destination) {
         return new Promise(async (resolve, reject) => {
             if (destination == null) {
@@ -320,6 +367,10 @@ vlib.Path = class Path {
     }
 
     // Move the path to another location.
+    /*  @docs:
+        @title: Move
+        @desc: Move the path to another location.
+    */
     async mv(destination) {
         return new Promise((resolve, reject) => {
             if (libfs.existsSync(destination)) {
@@ -337,6 +388,11 @@ vlib.Path = class Path {
     }
 
     // Delete the path.
+    /*  @docs:
+        @title: Delete
+        @desc: Delete the path.
+        @funcs: 2
+    */
     async del() {
         return new Promise((resolve, reject) => {
             if (this.exists()) {
@@ -374,6 +430,10 @@ vlib.Path = class Path {
     }
 
     // Move the path to the trash directory.
+    /*  @docs:
+        @title: Trash
+        @desc: Move the path to the trash directory.
+    */
     async trash() {
         return new Promise(async (resolve, reject) => {
             const name = this.name();
@@ -410,6 +470,10 @@ vlib.Path = class Path {
     }
 
     // Create a directory.
+    /*  @docs:
+        @title: Mkdir
+        @desc: Create a directory.
+    */
     async mkdir() {
         return new Promise((resolve, reject) => {
             if (this.exists()) {
@@ -434,11 +498,20 @@ vlib.Path = class Path {
     }
 
     // Create a file.
+    /*  @docs:
+        @title: Touch
+        @desc: Create a file.
+    */
     async touch() {
         return this.save("");
     }
 
     // Load the data from the path.
+    /*  @docs:
+        @title: Load
+        @desc: Load the data from the path. 
+        @funcs: 2
+    */
     async load({type = "string", encoding = null} = {}) {
         return new Promise((resolve, reject) => {
             libfs.readFile(this._path, encoding, (err, data) => {
@@ -482,6 +555,11 @@ vlib.Path = class Path {
     }
 
     // Save data to the path.
+    /*  @docs:
+        @title: Save
+        @desc: Save data to the path.
+        @funcs: 2
+    */
     async save(data) {
         return new Promise((resolve, reject) => {
             libfs.writeFile(this._path, data, (err) => {
@@ -501,6 +579,12 @@ vlib.Path = class Path {
 
     // Get the child paths of a directory.
     // @note: throws an error when the path is not a directory.
+    /*  @docs:
+        @title: Paths
+        @desc: Get the child paths of a directory.
+        @note: throws an error when the path is not a directory.
+        @funcs: 2
+    */
     async paths(recursive = false) {
         return new Promise(async (resolve, reject) => {
             if (!this.is_dir()) {

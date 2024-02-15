@@ -6,9 +6,16 @@
 // ---------------------------------------------------------
 // Utils.
 
+/*  @docs:
+    @title: Utils
+    @name: vlib.utils
+    @desc: The utilities module.
+    @parse: false
+*/
 vlib.utils = {};
 
 // Edit object keys.
+// DEPRECATED BUT STILL USED.
 vlib.utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     remove.iterate((key) => {
         delete obj[key];
@@ -21,14 +28,17 @@ vlib.utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) =>
 }
 
 // Verify that a variable is an object, if not error will be thrown.
+/*
 vlib.utils.verify_array = function(name, array) {
     if (Array.isArray(array) === false) {
         throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
     }
 }
+*/
 
 // Verify that a variable is an object and verify its attrs attributes, if not an error will be thrown.
 // Attributes are defined like `{ "myattr": {type: "string", default: null}}`.
+/*
 vlib.utils.verify_object = function(
     obj,
     name = "obj", 
@@ -55,6 +65,7 @@ vlib.utils.verify_object = function(
         }
     })
 }
+*/
 
 // Verify keyword assignment arguments.
 // The info may be the following.
@@ -62,32 +73,91 @@ vlib.utils.verify_object = function(
 // Example info with non required arg: `{"myarg": {type: "string", required: false}}`.
 // Example info with non required arg and a default value: `{"myarg": {type: "string", default: "Hello World!"}}`.
 // Example info with attribute check for arg object: `{"myarg": {type: "string", attribute: {}}}`, the attrs/attributes key is again a nested info object.
+/*  @docs:
+    @title: Verify params
+    @desc: Verify object parameters.
+    @param: 
+        @name: params
+        @desc: The object parameters.
+        @type: object
+    @param: 
+        @name: info
+        @desc: 
+            The parameters info.
+        @type: object
+        @attribute:
+            @name: [key]
+            @desc: The matching parameter key from parameter `params`.
+        @attribute:
+            @name: property
+            @desc: 
+                The parameter information. It can either be a string or an object.
+
+                When the property is a string, then it will be assigned as to the parameter's type value.
+            @type: string, object
+            @attribute:
+                @name: type
+                @desc: The type(s) of the parameter.
+                @type: string, array[string]
+            @attribute:
+                @name: def
+                @desc: The default value of the parameter.
+            @attribute:
+                @name: attributes
+                @desc: The recursive `info` for when the parameter is an object, the `attributes` attribute follows the same rules as the `info` parameter.
+                @type: object
+    @param: 
+        @name: check_unknown
+        @desc: Throw an error when unknown params were passed.
+        @type: boolean
+    @param: 
+        @name: parent
+        @desc: The error parent prefix.
+        @type: string
+    @param: 
+        @name: error_prefix
+        @desc: The error prefix.
+        @type: string
+    @param: 
+        @name: throw_err
+        @desc: Throw an error or return a response object.
+        @type: boolean
+ */
 vlib.utils.verify_params = function({params = {}, info = {}, check_unknown = false, parent = "", error_prefix = "", throw_err = true}) {
     const params_keys = Object.keys(params);
     const info_keys = Object.keys(info);
 
     // Throw an error and pop the verify_params from the stacktrace.
     const throw_err_h = (e, field) => {
+        const invalid_fields = {};
+        invalid_fields[field] = e;
         if (throw_err === false) {
-            const invalid_fields = {};
-            invalid_fields[field] = e;
             return {error: e, invalid_fields};
         }
         const error = new Error(e);
         let stack = error.stack.split("\n");
         stack = [stack[0], ...stack.slice(3)];
         error.stack = stack.join("\n");
+        error.json = {error: e, invalid_fields};
         throw error;
     }
 
     // Iterate all info params to check if any params are missing.
     for (let x = 0; x < info_keys.length; x++) {
         let info_item;
+
+        // Convert info item into object.
         if (typeof info[info_keys[x]] === "string") {
             info[info_keys[x]] = {type: info[info_keys[x]]}; // for subsequent requests, useful for vweb restapi callback.
             info_item = info[info_keys[x]];
         } else {
             info_item = info[info_keys[x]];
+        }
+
+        // Rename "def" to "default".
+        if (info_item.def) {
+            info_item.default = info_item.def;
+            delete info_item.def;
         }
 
         // Get type error string.
@@ -117,9 +187,6 @@ vlib.utils.verify_params = function({params = {}, info = {}, check_unknown = fal
             if (info_item.default !== undefined) {
                 params[info_keys[x]] = info_item.default;
             }
-            else if (info_item.def !== undefined) {
-                params[info_keys[x]] = info_item.def;
-            }
 
             // Required unless specified otherwise.
             else if (info_item.required !== false) {
@@ -144,11 +211,27 @@ vlib.utils.verify_params = function({params = {}, info = {}, check_unknown = fal
                         }
                         if (info_item.attrs !== undefined) {
                             let child_parent = `${parent}${info_keys[x]}.`;
-                            params[info_keys[x]] = vlib.utils.verify_params({params:params[info_keys[x]], info:info_item.attrs, check_unknown, parent: child_parent, error_prefix, throw_err});
+                            try {
+                                params[info_keys[x]] = vlib.utils.verify_params({params:params[info_keys[x]], info:info_item.attrs, check_unknown, parent: child_parent, error_prefix, throw_err: true});
+                            } catch (e) {
+                                if (!throw_err && e.json) {
+                                    return e.json;
+                                } else {
+                                    throw e;
+                                }
+                            }
                         }
                         if (info_item.attributes !== undefined) {
                             let child_parent = `${parent}${info_keys[x]}.`;
-                            params[info_keys[x]] = vlib.utils.verify_params({params:params[info_keys[x]], info:info_item.attributes, check_unknown, parent: child_parent, error_prefix, throw_err});
+                            try {
+                                params[info_keys[x]] = vlib.utils.verify_params({params:params[info_keys[x]], info:info_item.attributes, check_unknown, parent: child_parent, error_prefix, throw_err: true});
+                            } catch (e) {
+                                if (!throw_err && e.json) {
+                                    return e.json;
+                                } else {
+                                    throw e;
+                                }
+                            }
                         }
                         return true;
                     default:
@@ -158,20 +241,39 @@ vlib.utils.verify_params = function({params = {}, info = {}, check_unknown = fal
                         return true;
                 }
             }
-            if (Array.isArray(info_item.type)) {
-                let correct_type = false;
-                for (let i = 0; i < info_item.type.length; i++) {
-                    if (check_type(info_item.type[i])) {
-                        correct_type = true;
-                        break;
+
+            // Skip when value is `null` and default is `null`.
+            if (!(info_item.default == null && params[info_keys[x]] == null)) {
+
+                // Multiple types supported.
+                if (Array.isArray(info_item.type)) {
+                    let correct_type = false;
+                    for (let i = 0; i < info_item.type.length; i++) {
+                        const res = check_type(info_item.type[i]);
+                        if (typeof res === "object") { // json error.
+                            return res;
+                        }
+                        else if (res === true) {
+                            correct_type = true;
+                            break;
+                        }
+                    }
+                    if (correct_type === false) {
+                        const current_type = params[info_keys[x]] == null ? "null" : typeof params[info_keys[x]];
+                        return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`, info_keys[x]);
                     }
                 }
-                if (correct_type === false) {
-                    return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${typeof params[info_keys[x]]}", the valid type is ${type_error_str("")}.`, info_keys[x]);
-                }
-            } else {
-                if (check_type(info_item.type) === false) {
-                    return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${typeof params[info_keys[x]]}", the valid type is ${type_error_str("")}.`, info_keys[x]);
+
+                // Single type supported.
+                else {
+                    const res = check_type(info_item.type);
+                    if (typeof res === "object") { // json error.
+                        return res;
+                    }
+                    else if (res === false) {
+                        const current_type = params[info_keys[x]] == null ? "null" : typeof params[info_keys[x]];
+                        return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`, info_keys[x]);
+                    }
                 }
             }
         }
@@ -194,6 +296,10 @@ vlib.utils.verify_params = function({params = {}, info = {}, check_unknown = fal
 }
 
 // Perform a deep copy on any type, except it does not support classes, only primitive objects.
+/*  @docs:
+    @title: Deep copy
+    @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
+ */
 vlib.utils.deep_copy = (obj) => {
     if (Array.isArray(obj)) {
         const copy = [];
@@ -201,6 +307,9 @@ vlib.utils.deep_copy = (obj) => {
             copy.append(vlib.utils.deep_copy(item));
         })
         return copy;
+    }
+    else if (obj !== null && obj instanceof String) {
+        return new String(obj.toString());
     }
     else if (obj !== null && typeof obj === "object") {
         const copy = {};

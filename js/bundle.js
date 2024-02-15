@@ -44,6 +44,7 @@ compiler.bundle({
         libpath.join(source, "include/types/system/print.js"),
         libpath.join(source, "include/types/system/path.js"),
         libpath.join(source, "include/types/system/process.js"),
+        libpath.join(source, "include/types/system/network.js"),
 
         // CLI.
         libpath.join(source, "include/cli/progress_loader.js"),

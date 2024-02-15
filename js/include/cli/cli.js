@@ -6,56 +6,55 @@
 // ---------------------------------------------------------
 // CLI object.
 
+/*  @docs:
+ *  @title: CLI
+ *  @description: Build a cli.
+ *  @parameter:
+ *      @name: name
+ *      @type: string
+ *      @description: The cli's name.
+ *  @parameter:
+ *      @name: version
+ *      @type: string
+ *      @description: The cli's version.
+ *  @parameter:
+ *      @name: commands
+ *      @type: array[object]
+ *      @description:
+ *          A command object looks as follows:
+ *          {
+ *              id: "--hello-world",
+ *              description: "Hello world." // (optional)
+ *              examples: { // (optional)
+ *                  "Some description": "mycli --hello-world --name me --age 10",
+ *              }
+ *              args: [
+ *                  {
+ *                      id: "--name", // (optional)
+ *                      type: "string", // (default)
+ *                      required: true, // (optional).
+ *                      default: "Hello World!", // (optional).
+ *                      description: "Your name." // (optional)
+ *                  },
+ *                  {
+ *                      id: ["--age", "-a"],  // (optional)
+ *                      type: "number",
+ *                      description: "Your age." // (optional)
+ *                  },
+ *              },
+ *              callback: ({name = null, age = 0}) => {}
+ *          }
+ *          - Valid values for `type` are [`string`, `boolean` and `number`].
+ *          - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
+ *            When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
+ *            An id like `--my-arg` will be passed as `my_arg`.
+ *          - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
+ *            When the argument has not been passed then the default value defined in the callback parameters will be used.
+ */
 vlib.CLI = class CLI {
 
     // ---------------------------------------------------------
     // Constructor.
-
-    /*  @docs:
-     *  @title: Build
-     *  @description: Build a cli.
-     *  @description: {
-     *      @parameter: name
-     *      @type: string
-     *      @description: The cli's name.
-     *  @description: {
-     *      @parameter: version
-     *      @type: string
-     *      @description: The cli's version.
-     *  @description: {
-     *      @parameter: commands
-     *      @type: array[object]
-     *      @description:
-     *          A command object looks as follows:
-     *          {
-     *              id: "--hello-world",
-     *              description: "Hello world." // (optional)
-     *              examples: { // (optional)
-     *                  "Some description": "mycli --hello-world --name me --age 10",
-     *              }
-     *              args: [
-     *                  {
-     *                      id: "--name", // (optional)
-     *                      type: "string", // (default)
-     *                      required: true, // (optional).
-     *                      default: "Hello World!", // (optional).
-     *                      description: "Your name." // (optional)
-     *                  },
-     *                  {
-     *                      id: ["--age", "-a"],  // (optional)
-     *                      type: "number",
-     *                      description: "Your age." // (optional)
-     *                  },
-     *              },
-     *              callback: ({name = null, age = 0}) => {}
-     *          }
-     *          - Valid values for `type` are [`string`, `boolean` and `number`].
-     *          - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
-     *            When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
-     *            An id like `--my-arg` will be passed as `my_arg`.
-     *          - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
-     *            When the argument has not been passed then the default value defined in the callback parameters will be used.
-     */
     constructor({
         name = null,
         version = null,
@@ -117,6 +116,10 @@ vlib.CLI = class CLI {
     // Functions.
 
     // Get an argument.
+    /*  @docs:
+        @title: Get
+        @description: Get an argument.
+     */
     get({id, index = null, type = null, def = null, exclude_args = true}) {
         if (index != null) {
             const value = process.argv[this.start_index + index];
@@ -139,6 +142,10 @@ vlib.CLI = class CLI {
     }
 
     // Present.
+    /*  @docs:
+        @title: Present
+        @description: Check if an argument is present.
+     */
     present(id) {
         const is_array = Array.isArray(id);
         for (let i = this.start_index; i < process.argv.length; i++) {
@@ -150,6 +157,10 @@ vlib.CLI = class CLI {
     }
 
     // Log an error.
+    /*  @docs:
+        @title: Error
+        @description: Log an error.
+     */
     error(...err) {
         err = err.join("").toString();
         if (err.eq_first("Error: ") || err.eq_first("error: ")) {
@@ -159,6 +170,10 @@ vlib.CLI = class CLI {
     }
 
     // Throw an error and stop with exit code 1.
+    /*  @docs:
+        @title: Throw error
+        @description: Throw an error and stop with exit code 1.
+     */
     throw_error(...err) {
         this.error(...err);
         process.exit(1);
@@ -166,6 +181,10 @@ vlib.CLI = class CLI {
 
     // Log the docs of an array of command or a single command.
     // When one of the commands is passed as "command_or_commands" it will show the documentation of that command, the command is passed inside the command callback as "_command".
+    /*  @docs:
+        @title: Docs
+        @description: Log the docs, optionally of an array of command or a single command.
+     */
     docs(command_or_commands = null) {
 
         // Assign to commands when undefined
@@ -317,6 +336,10 @@ vlib.CLI = class CLI {
     }
 
     // Build.
+    /*  @docs:
+        @title: Start
+        @description: Start the cli.
+     */
     async start() {
 
         const help = this.present(["-h", "--help"])

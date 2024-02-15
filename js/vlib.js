@@ -143,7 +143,7 @@ if (c===" "||c==="\t"||c==="\n"){
 capitalized+=batch.capitalize_word();
 batch="";
 capitalized+=c;
-} else {
+}else {
 batch+=c;
 }
 }
@@ -159,7 +159,7 @@ if (is_array){
 if (char.includes(c)===false){
 dropped+=c;
 }
-} else {
+}else {
 if (char!==c){
 dropped+=c;
 }
@@ -224,9 +224,9 @@ let decimal=false;
 for (let i=0;i<this.length;i++){
 const char=this.charAt(i);
 if (char==='.'){
-if (decimal){ return false;}
+if (decimal){return false;}
 decimal=true;
-} else if (chars.indexOf(char)===-1){
+}else if (chars.indexOf(char)===-1){
 return false;
 }
 }
@@ -238,9 +238,9 @@ let decimal=false;
 for (let i=0;i<this.length;i++){
 const char=this.charAt(i);
 if (char==='.'){
-if (decimal){ return false;}
+if (decimal){return false;}
 decimal=true;
-} else if (chars.indexOf(char)===-1){
+}else if (chars.indexOf(char)===-1){
 if (info){
 return {integer:false,floating:false};
 }
@@ -450,7 +450,7 @@ if (this.length>limit){
 for (let i=this.length-limit;i<this.length;i++){
 limited.push(this[i]);
 }
-} else {
+}else {
 for (let i=0;i<this.length;i++){
 limited.push(this[i]);
 }
@@ -481,7 +481,7 @@ const result=eq(x[i],y[i]);
 if (result===false){
 return false;
 }
-} else if (x[i]!==y[i]){
+}else if (x[i]!==y[i]){
 return false;
 }
 }
@@ -505,13 +505,13 @@ const result=eq(x[x_keys[i]],y[y_keys[i]]);
 if (result===false){
 return false;
 }
-} else if (x[x_keys[i]]!==y[y_keys[i]]){
+}else if (x[x_keys[i]]!==y[y_keys[i]]){
 return false;
 }
 }
 return true;
 }
-else if (typeof x!==typeof y){ return false;}
+else if (typeof x!==typeof y){return false;}
 return x===y;
 }
 if (y==null){
@@ -525,6 +525,76 @@ const keys=Object.keys(y);
 for (let i=0;i<keys.length;i++){
 x[keys[i]]=y[keys[i]];
 }
+return x;
+}
+Object.eq=function(x,y){
+const eq=(x,y)=>{
+if (typeof x!==typeof y){return false;}
+else if (x instanceof String){
+return x.toString()===y.toString();
+}
+else if (Array.isArray(x)){
+if (!Array.isArray(y)||x.length!==y.length){return false;}
+for (let i=0;i<x.length;i++){
+if (!eq(x[i],y[i])){
+return false;
+}
+}
+return true;
+}
+else if (x!=null&&typeof x==="object"){
+const x_keys=Object.keys(x);
+const y_keys=Object.keys(y);
+if (x_keys.length!==y_keys.length){
+return false;
+}
+for (const key of x_keys){
+if (!y.hasOwnProperty(key)||!eq(x[key],y[key])){
+return false;
+}
+}
+return true;
+}
+else {
+return x===y;
+}
+}
+return eq(x,y);
+}
+Object.rename_keys=(obj={},rename=[["old","new"]],remove=[])=>{
+remove.iterate((key)=>{
+delete obj[key];
+})
+rename.iterate((key)=>{
+obj[key[1]]=obj[key[0]];
+delete obj[key[0]];
+})
+return obj;
+}
+Object.deep_copy=(obj)=>{
+return vlib.utils.deep_copy(obj);
+}
+Object.delete_recursively=(obj,remove_keys=[])=>{
+const clean=(obj)=>{
+if (Array.isArray(obj)){
+obj.iterate((item)=>{
+if (Array.isArray(item)||(typeof item==="object"&&item!=null)){
+clean(item);
+}
+})
+}else {
+Object.keys(obj).iterate((key)=>{
+if (remove_keys.includes(key)){
+delete obj[key];
+}
+else if (Array.isArray(obj[key])||(typeof obj[key]==="object"&&obj[key]!=null)){
+clean(obj[key]);
+}
+})
+}
+}
+clean(obj);
+return obj;
 }
 vlib.utils={};
 vlib.utils.edit_obj_keys=(obj={},rename=[["old","new"]],remove=[])=>{
@@ -537,50 +607,20 @@ delete obj[key[0]];
 })
 return obj;
 }
-vlib.utils.verify_array=function(name,array){
-if (Array.isArray(array)===false){
-throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
-}
-}
-vlib.utils.verify_object=function(
-obj,
-name="obj",
-attrs={}
-){
-if (this==null||typeof obj!=="object"||Array.isArray(obj)){
-throw new Error(`Parameter "${name}" should be a defined value of type "object".`);
-}
-attrs.iterate((item)=>{
-const value=obj[item[key]];
-if (value===undefined){
-if (item.def){
-obj[item[key]]=item.def;
-return null;
-}
-throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
-}
-else if (
-item.type==="array"&&Array.isArray(value)===false||
-item.type!==typeof obj[item[key]]||
-value==null&&item.type==="object"
-){
-throw new Error(`Parameter "${name}.${item[key]}" should be a defined value of type "${item.type}".`);
-}
-})
-}
 vlib.utils.verify_params=function({params={},info={},check_unknown=false,parent="",error_prefix="",throw_err=true}){
 const params_keys=Object.keys(params);
 const info_keys=Object.keys(info);
 const throw_err_h=(e,field)=>{
-if (throw_err===false){
 const invalid_fields={};
 invalid_fields[field]=e;
+if (throw_err===false){
 return {error:e,invalid_fields};
 }
 const error=new Error(e);
 let stack=error.stack.split("\n");
 stack=[stack[0],...stack.slice(3)];
 error.stack=stack.join("\n");
+error.json={error:e,invalid_fields};
 throw error;
 }
 for (let x=0;x<info_keys.length;x++){
@@ -588,8 +628,12 @@ let info_item;
 if (typeof info[info_keys[x]]==="string"){
 info[info_keys[x]]={type:info[info_keys[x]]};
 info_item=info[info_keys[x]];
-} else {
+}else {
 info_item=info[info_keys[x]];
+}
+if (info_item.def){
+info_item.default=info_item.def;
+delete info_item.def;
 }
 const type_error_str=(prefix=" of type ")=>{
 let type_error_str="";
@@ -599,12 +643,12 @@ for (let i=0;i<info_item.type.length;i++){
 type_error_str+=`"${info_item.type[i]}"`
 if (i===info_item.type.length-2){
 type_error_str+=" or "
-} else if (i<info_item.type.length-2){
+}else if (i<info_item.type.length-2){
 type_error_str+=", "
 }
 }
 type_error_str;
-} else {
+}else {
 type_error_str=`${prefix}"${info_item.type}"`
 }
 return type_error_str;
@@ -612,9 +656,6 @@ return type_error_str;
 if (info_keys[x] in params===false){
 if (info_item.default!==undefined){
 params[info_keys[x]]=info_item.default;
-}
-else if (info_item.def!==undefined){
-params[info_keys[x]]=info_item.def;
 }
 else if (info_item.required!==false){
 return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" should be a defined value${type_error_str()}.`,info_keys[x]);
@@ -636,11 +677,27 @@ return false;
 }
 if (info_item.attrs!==undefined){
 let child_parent=`${parent}${info_keys[x]}.`;
-params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attrs,check_unknown,parent:child_parent,error_prefix,throw_err});
+try {
+params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attrs,check_unknown,parent:child_parent,error_prefix,throw_err:true});
+}catch (e){
+if (!throw_err&&e.json){
+return e.json;
+}else {
+throw e;
+}
+}
 }
 if (info_item.attributes!==undefined){
 let child_parent=`${parent}${info_keys[x]}.`;
-params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attributes,check_unknown,parent:child_parent,error_prefix,throw_err});
+try {
+params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attributes,check_unknown,parent:child_parent,error_prefix,throw_err:true});
+}catch (e){
+if (!throw_err&&e.json){
+return e.json;
+}else {
+throw e;
+}
+}
 }
 return true;
 default:
@@ -650,20 +707,33 @@ return false;
 return true;
 }
 }
+if (!(info_item.default==null&&params[info_keys[x]]==null)){
 if (Array.isArray(info_item.type)){
 let correct_type=false;
 for (let i=0;i<info_item.type.length;i++){
-if (check_type(info_item.type[i])){
+const res=check_type(info_item.type[i]);
+if (typeof res==="object"){
+return res;
+}
+else if (res===true){
 correct_type=true;
 break;
 }
 }
 if (correct_type===false){
-return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${typeof params[info_keys[x]]}", the valid type is ${type_error_str("")}.`,info_keys[x]);
+const current_type=params[info_keys[x]]==null?"null":typeof params[info_keys[x]];
+return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`,info_keys[x]);
 }
-} else {
-if (check_type(info_item.type)===false){
-return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${typeof params[info_keys[x]]}", the valid type is ${type_error_str("")}.`,info_keys[x]);
+}
+else {
+const res=check_type(info_item.type);
+if (typeof res==="object"){
+return res;
+}
+else if (res===false){
+const current_type=params[info_keys[x]]==null?"null":typeof params[info_keys[x]];
+return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`,info_keys[x]);
+}
 }
 }
 }
@@ -687,6 +757,9 @@ obj.iterate((item)=>{
 copy.append(vlib.utils.deep_copy(item));
 })
 return copy;
+}
+else if (obj!==null&&obj instanceof String){
+return new String(obj.toString());
 }
 else if (obj!==null&&typeof obj==="object"){
 const copy={};
@@ -896,22 +969,17 @@ default:
 formatted+=format[i];
 break;
 }
-} else {
+}else {
 formatted+=format[i];
 }
 }
 return formatted;
 }
-msec(){ return this.getTime();}
-sec(){ return parseInt(this.getTime()/1000);}
+msec(){return this.getTime();}
+sec(){return parseInt(this.getTime()/1000);}
 hour_start(){
 const date=new D(this.getTime())
 date.setMinutes(0,0,0);
-return date;
-}
-day_start(){
-const date=new D(this.getTime())
-date.setHours(0,0,0,0);
 return date;
 }
 day_start(){
@@ -938,13 +1006,13 @@ const month=date.getMonth()+1;
 if (month>9){
 date.setMonth(9-1,1)
 date.setHours(0,0,0,0,0);
-} else if (month>6){
+}else if (month>6){
 date.setMonth(6-1,1)
 date.setHours(0,0,0,0,0);
-} else if (month>3){
+}else if (month>3){
 date.setMonth(3-1,1)
 date.setHours(0,0,0,0,0);
-} else {
+}else {
 date.setMonth(0,1)
 date.setHours(0,0,0,0,0);
 }
@@ -955,7 +1023,7 @@ const date=new D(this.getTime())
 if (date.getMonth()+1>6){
 date.setMonth(5,1)
 date.setHours(0,0,0,0,0);
-} else {
+}else {
 date.setMonth(0,1)
 date.setHours(0,0,0,0,0);
 }
@@ -968,44 +1036,44 @@ date.setHours(0,0,0,0,0);
 return date;
 }
 }
-vlib.colors={
-black:"\u001b[30m",
-red:"\u001b[31m",
-green:"\u001b[32m",
-yellow:"\u001b[33m",
-blue:"\u001b[34m",
-magenta:"\u001b[35m",
-cyan:"\u001b[36m",
-gray:"\u001b[37m",
-bold:"\u001b[1m",
-italic:"\u001b[3m",
-end:"\u001b[0m",
-enable:function(){
-this.black="\u001b[30m";
-this.red="\u001b[31m";
-this.green="\u001b[32m";
-this.yellow="\u001b[33m";
-this.blue="\u001b[34m";
-this.magenta="\u001b[35m";
-this.cyan="\u001b[36m";
-this.gray="\u001b[37m";
-this.bold="\u001b[1m";
-this.italic="\u001b[3m";
-this.end="\u001b[0m";
-},
-disable:function(){
-this.black="";
-this.red="";
-this.green="";
-this.yellow="";
-this.blue="";
-this.magenta="";
-this.cyan="";
-this.gray="";
-this.bold="";
-this.italic="";
-this.end="";
-},
+vlib.colors=class Colors{
+static black="\u001b[30m";
+static red="\u001b[31m";
+static green="\u001b[32m";
+static yellow="\u001b[33m";
+static blue="\u001b[34m";
+static magenta="\u001b[35m";
+static cyan="\u001b[36m";
+static gray="\u001b[37m";
+static bold="\u001b[1m";
+static italic="\u001b[3m";
+static end="\u001b[0m";
+static enable(){
+Colors.black="\u001b[30m";
+Colors.red="\u001b[31m";
+Colors.green="\u001b[32m";
+Colors.yellow="\u001b[33m";
+Colors.blue="\u001b[34m";
+Colors.magenta="\u001b[35m";
+Colors.cyan="\u001b[36m";
+Colors.gray="\u001b[37m";
+Colors.bold="\u001b[1m";
+Colors.italic="\u001b[3m";
+Colors.end="\u001b[0m";
+}
+static disable(){
+Colors.black="";
+Colors.red="";
+Colors.green="";
+Colors.yellow="";
+Colors.blue="";
+Colors.magenta="";
+Colors.cyan="";
+Colors.gray="";
+Colors.bold="";
+Colors.italic="";
+Colors.end="";
+}
 }
 vlib.print=function(...args){
 console.log(args.join(""));
@@ -1029,7 +1097,7 @@ throw Error(`Invalid path "${path}".`);
 }
 else if (path instanceof vlib.Path){
 this._path=path._path;
-} else {
+}else {
 if (clean){
 this._path="";
 const max_i=path.length-1;
@@ -1040,11 +1108,11 @@ continue;
 }
 else if (c==="."&&path.charAt(i-1)==="/"&&path.charAt(i+1)==="/"){
 continue;
-} else {
+}else {
 this._path+=c;
 }
 }
-} else {
+}else {
 this._path=path;
 }
 }
@@ -1055,7 +1123,7 @@ for (let i=0;i<this._path.length;i++){
 const c=this._path.charAt(i);
 if (c==" "||c=="\t"){
 ++start;
-} else {
+}else {
 break;
 }
 }
@@ -1063,7 +1131,7 @@ for (let i=end-1;i>=0;i--){
 const c=this._path.charAt(i);
 if (c==" "||c=="\t"){
 --end;
-} else {
+}else {
 break;
 }
 }
@@ -1172,7 +1240,7 @@ const name=this.name();
 const ext=this.extension();
 return name.substr(0,name.length-ext.length);
 }
-if (this._name!==undefined){ return this._name;}
+if (this._name!==undefined){return this._name;}
 this._name="";
 for (let i=this._path.length-1;i>=0;i--){
 const c=this._path.charAt(i);
@@ -1185,8 +1253,8 @@ this._name=this._name.reverse();
 return this._name;
 }
 extension(){
-if (this._extension!==undefined){ return this._extension;}
-if (this._name===undefined){ this.name();}
+if (this._extension!==undefined){return this._extension;}
+if (this._name===undefined){this.name();}
 this._extension="";
 for (let i=this._name.length-1;i>=0;i--){
 const c=this._name.charAt(i);
@@ -1199,7 +1267,7 @@ return this._extension;
 this._extension="";
 }
 base(back=1){
-if (back===1&&this._base!==undefined){ return this._base;}
+if (back===1&&this._base!==undefined){return this._base;}
 let count=0,end=0;
 for (end=this._path.length-1;end>=0;end--){
 const c=this._path.charAt(end);
@@ -1216,12 +1284,12 @@ return null;
 if (back===1){
 this._base=new Path(this._path.substr(0,end));
 return this._base;
-} else {
+}else {
 return new Path(this._path.substr(0,end));
 }
 }
 abs(){
-if (this._abs!==undefined){ return this._abs;}
+if (this._abs!==undefined){return this._abs;}
 this._abs=new Path(libpath.resolve(this._path));
 return this._abs;
 }
@@ -1238,7 +1306,7 @@ destination=destination._path;
 }
 try {
 libfsextra.copy(this._path,destination,(err)=>reject(err));
-} catch (err){
+}catch (err){
 return reject(err);
 }
 resolve();
@@ -1254,7 +1322,7 @@ destination=destination._path;
 }
 try {
 libfsextra.copySync(this._path,destination);
-} catch (err){
+}catch (err){
 return reject(err);
 }
 resolve();
@@ -1268,7 +1336,7 @@ return reject("Destination path already exists.");
 libfsextra.move(this._path,destination,(err)=>{
 if (err){
 reject(err);
-} else {
+}else {
 this._stat=undefined;
 resolve();
 }
@@ -1282,16 +1350,16 @@ if (this.is_dir()){
 libfs.rmdir(this._path,(err)=>{
 if (err){
 reject(err);
-} else {
+}else {
 this._stat=undefined;
 resolve();
 }
 });
-} else {
+}else {
 libfs.unlink(this._path,(err)=>{
 if (err){
 reject(err);
-} else {
+}else {
 this._stat=undefined;
 resolve();
 }
@@ -1304,7 +1372,7 @@ del_sync(){
 if (this.exists()){
 if (this.is_dir()){
 libfs.rmdirSync(this._path);
-} else {
+}else {
 libfs.unlinkSync(this._path);
 }
 }
@@ -1337,7 +1405,7 @@ while (libfs.existsSync(destination)){
 destination=`${trash}/${name}-${counts}`
 }
 await this.mv(destination);
-} catch (err){
+}catch (err){
 return reject(err);
 }
 resolve();
@@ -1351,7 +1419,7 @@ return resolve();
 libfs.mkdir(this._path,{recursive:true },(err)=>{
 if (err){
 reject(err);
-} else {
+}else {
 this._stat=undefined;
 resolve();
 }
@@ -1373,19 +1441,19 @@ return new Promise((resolve,reject)=>{
 libfs.readFile(this._path,encoding,(err,data)=>{
 if (err){
 reject(err);
-} else {
+}else {
 if (type==null){
 resolve(data);
-} else if (type==="string"){
+}else if (type==="string"){
 resolve(data.toString());
-} else if (type==="array"||type==="object"){
+}else if (type==="array"||type==="object"){
 resolve(JSON.parse(data));
-} else if (type==="number"){
+}else if (type==="number"){
 resolve(parseFloat(data.toString()));
-} else if (type==="boolean"){
+}else if (type==="boolean"){
 data=data.toString();
 resolve(data="1"||data==="true"||data==="TRUE"||data==="True");
-} else {
+}else {
 reject(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
 }
 }
@@ -1396,16 +1464,16 @@ load_sync({type="string",encoding=null}={}){
 const data=libfs.readFileSync(this._path,encoding);
 if (type==null){
 return data;
-} else if (type==="string"){
+}else if (type==="string"){
 return data.toString();
-} else if (type==="array"||type==="object"){
+}else if (type==="array"||type==="object"){
 return JSON.parse(data);
-} else if (type==="number"){
+}else if (type==="number"){
 return parseFloat(data.toString());
-} else if (type==="boolean"){
+}else if (type==="boolean"){
 data=data.toString();
 return data="1"||data==="true"||data==="TRUE"||data==="True";
-} else {
+}else {
 throw Error(`Invalid value for parameter "type", the valid values are [undefined, boolean, number, string, array, object].`);
 }
 }
@@ -1414,7 +1482,7 @@ return new Promise((resolve,reject)=>{
 libfs.writeFile(this._path,data,(err)=>{
 if (err){
 reject(err);
-} else {
+}else {
 this._stat=undefined;
 resolve();
 }
@@ -1434,18 +1502,18 @@ if (recursive===false){
 libfs.readdir(this._path,(err,files)=>{
 if (err){
 reject(err);
-} else {
+}else {
 resolve(files.map((name)=>(this.join(name))));
 }
 });
-} else {
+}else {
 const files=[];
 const traverse=(path)=>{
 return new Promise((resolve,reject)=>{
 libfs.readdir(path, async (err,files)=>{
 if (err){
 reject(err);
-} else {
+}else {
 let err=null;
 for (let i=0;i<files.length;i++){
 const child=path.join(files[i]);
@@ -1453,7 +1521,7 @@ files.push(child);
 if (child.is_dir()){
 try {
 await traverse(child);
-} catch (e){
+}catch (e){
 err=e;
 return false;
 }
@@ -1461,7 +1529,7 @@ return false;
 }
 if (err===null){
 resolve();
-} else {
+}else {
 reject(err);
 }
 }
@@ -1470,7 +1538,7 @@ reject(err);
 }
 try {
 await traverse(this);
-} catch (err){
+}catch (err){
 return reject(err);
 }
 resolve(files);
@@ -1483,7 +1551,7 @@ throw Error(`Path "${this._path}" is not a directory.`);
 }
 if (recursive===false){
 return libfs.readdirSync(this._path).map((name)=>(this.join(name)));
-} else {
+}else {
 const files=[];
 const traverse=(path)=>{
 libfs.readdirSync(path.toString()).iterate((name)=>{
@@ -1505,11 +1573,16 @@ this.debug=debug;
 this.proc=null;
 this.promise=null;
 this.err=null;
-this.out="";
+this.out=null;
 this.exit_status=null;
 }
 on_output(data){
-this.out+=data;
+}
+on_error(data){
+return null;
+}
+on_exit(code){
+return null;
 }
 start({
 command="",
@@ -1519,50 +1592,67 @@ interactive=true,
 detached=false,
 env=null,
 colors=false,
+opts={},
 }){
+this.out=null;
+this.err=null;
+this.exit_status=null;
 this.promise=new Promise((resolve)=>{
 if (this.debug){
 console.log(`Start: ${command} ${args.join(" ")}`);
 }
-const opts={
+const options={
 cwd:working_directory,
 stdio:[interactive?"pipe":"ignore","pipe","pipe"],
 shell:interactive,
 detached:detached,
+...opts,
 }
 if (env!=null){
-opts.env=env;
+options.env=env;
 if (colors){
-opts.env.FORCE_COLOR=true;
+options.env.FORCE_COLOR=true;
 }
-} else if (colors){
-opts.env={...process.env,FORCE_COLOR:true };
+}else if (colors){
+options.env={...process.env,FORCE_COLOR:true };
 }
 this.proc=libproc.spawn(
 command,
 args,
-opts,
+options,
 );
 let closed=0;
+if (this.proc.stdout){
 this.proc.stdout.on('data',(data)=>{
+data=data.toString();
 if (this.debug){
-console.log("OUT:",data.toString());
+console.log("OUT:",data);
 }
+if (this.out===null){
+this.out="";
+}
+this.out+=data;
 if (this.on_output!==undefined){
-this.on_output(data.toString())
+this.on_output(data)
 }
 })
+}
+if (this.proc.stderr){
 this.proc.stderr.on('data',(data)=>{
 data=data.toString();
 if (this.debug){
 console.log("ERR:",data);
+}
+if (this.err===null){
+this.err="";
 }
 this.err+=data;
 if (this.on_error!==undefined){
 this.on_error(data);
 }
 });
-this.proc.on('exit',(code,status)=>{
+}
+this.proc.on('exit',(code)=>{
 if (this.debug&&closed===1){
 console.log(`Child process exited with code ${code}.`);
 }
@@ -1571,14 +1661,14 @@ if (code!==0&&(this.err==null||this.err.length===0)){
 this.err=`Child process exited with code ${code}.`;
 }
 if (this.on_exit!==undefined){
-this.on_exit(code,status);
+this.on_exit(code);
 }
 ++closed;
 if (closed==2){
 resolve();
 }
 });
-this.proc.on('close',(code,status)=>{
+this.proc.on('close',(code)=>{
 if (this.debug&&closed===1){
 console.log(`Child process exited with code ${code}.`);
 }
@@ -1603,9 +1693,22 @@ resolve();
 })
 }
 kill(signal="SIGINT"){
-if (this.proc==null){ return this;}
+if (this.proc==null){return this;}
 this.proc.kill(signal);
 return this;
+}
+}
+vlib.network=class network{
+static private_ip(family="ipv4"){
+const interfaces=libos.networkInterfaces();
+for (const i in interfaces){
+for (const ifc of interfaces[i]){
+if (ifc.family.toLowerCase()===family&&!ifc.internal){
+return ifc.address;
+}
+}
+}
+throw Error("Unable to retrieve the private ip.");
 }
 }
 vlib.ProgressLoader=class ProgessLoader{
@@ -1750,7 +1853,7 @@ command_or_commands.iterate((command)=>{
 const list_item=[];
 if (Array.isArray(command.id)){
 list_item[0]=`    ${command.id.join(", ")}`;
-} else {
+}else {
 list_item[0]=`    ${command.id}`;
 }
 if (command.description!=null){
@@ -1783,7 +1886,7 @@ list_item[0]=`    argument ${arg_index}`;
 }
 else if (Array.isArray(arg.id)){
 list_item[0]=`    ${arg.id.join(", ")}`;
-} else {
+}else {
 list_item[0]=`    ${arg.id}`;
 }
 if (arg.type!=null&&arg.type!=="bool"&&arg.type!=="boolean"){
@@ -1806,7 +1909,7 @@ docs+=`\nExamples:\n`;
 if (typeof command_or_commands.examples==="string"){
 if (command_or_commands.examples.charAt(0)==="$"){
 docs+=`    ${vlib.colors.italic}${command_or_commands.examples}${vlib.colors.end}\n`;
-} else {
+}else {
 docs+=`    ${vlib.colors.italic}$ ${command_or_commands.examples}${vlib.colors.end}\n`;
 }
 }
@@ -1814,7 +1917,7 @@ else if (Array.isArray(command_or_commands.examples)){
 command_or_commands.examples.iterate((item)=>{
 if (item.charAt(0)==="$"){
 docs+=`    ${vlib.colors.italic}${item}${vlib.colors.end}\n`;
-} else {
+}else {
 docs+=`    ${vlib.colors.italic}$ ${item}${vlib.colors.end}\n`;
 }
 })
@@ -1827,7 +1930,7 @@ const list_item=[`    ${desc}:`];
 const example=command_or_commands.examples[desc];
 if (example.charAt(0)==="$"){
 list_item[1]=`${vlib.colors.italic}${example}${vlib.colors.end}\n`;
-} else {
+}else {
 list_item[1]=`${vlib.colors.italic}$ ${example}${vlib.colors.end}\n`;
 }
 list.push(list_item);
@@ -1858,7 +1961,7 @@ try {
 let id_name;
 if (arg.id==null){
 id_name=`arg${arg_index}`;
-} else {
+}else {
 id_name=arg.id;
 if (Array.isArray(id_name)){
 id_name=id_name[0];
@@ -1907,7 +2010,7 @@ const res=command.callback(callback_args);
 if (res instanceof Promise){
 await res;
 }
-} catch (err){
+}catch (err){
 this.docs(command);
 this.error(err);
 process.exit(1);
@@ -1934,7 +2037,7 @@ vlib.request=async function({
 host,
 port=null,
 endpoint,
-method,
+method="GET",
 headers={},
 params=null,
 compress=false,
@@ -1949,7 +2052,7 @@ method=method.toUpperCase();
 if (query&&method==="GET"&&params!=null){
 if (typeof params==="object"){
 params=Object.entries(params).map(([key,value])=>`${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-} else {
+}else {
 throw Error("Invalid value type for parameter \"params\", the valid type is \"object\".");
 }
 endpoint+=`?${params}`;
@@ -1986,7 +2089,7 @@ error,
 status,
 headers:res_headers,
 });
-} else {
+}else {
 setTimeout(()=>resolve({
 body,
 error,
@@ -2003,7 +2106,7 @@ if (content_encoding==="gzip"||content_encoding==="deflate"){
 let stream;
 if (content_encoding==="gzip"){
 stream=zlib.createGunzip();
-} else if (content_encoding==="deflate"){
+}else if (content_encoding==="deflate"){
 stream=zlib.createInflate();
 }
 res.pipe(stream)

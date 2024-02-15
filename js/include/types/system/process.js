@@ -5,7 +5,10 @@
 
 // ---------------------------------------------------------
 // The process class.
-
+/*  @docs:
+    @title: Process
+    @desc: The process class, used to start a child process.
+*/
 vlib.Proc = class Proc {
 
     // Constructor.
@@ -14,30 +17,64 @@ vlib.Proc = class Proc {
         this.proc = null;
         this.promise = null;
         this.err = null;
-        this.out = "";
+        this.out = null;
         this.exit_status = null;
     }
 
     // On output.
-    // Can be overridden when required.
-    // Beware that attribute "this.out" will not be assigned when this callback is overridden.
+    /*  @docs:
+        @title: On output
+        @desc: The on output event, can be overridden when required.
+    */
     on_output(data) {
-        this.out += data;
     }
 
     // On error.
-    // Can be assigned when required.
-    // on_error(data) {
-    //     return null;
-    // }
+    /*  @docs:
+        @title: On error
+        @desc: The on error event, can be overridden when required.
+    */
+    on_error(data) {
+        return null;
+    }
 
     // On exit.
-    // Can be assigned when required.
-    // on_exit(code, status) {
-    //     return null;
-    // }
+    /*  @docs:
+        @title: On exit
+        @desc: The on exit event, can be overridden when required.
+    */
+    on_exit(code) {
+        return null;
+    }
 
     // Start.
+    /*  @docs:
+        @title: Start
+        @desc: Start a command.
+        @param:
+            @name: command
+            @desc: The command program.
+        @param:
+            @name: args
+            @desc: The command arguments.
+        @param:
+            @name: working_directory
+            @desc: The working directory path.
+        @param:
+            @name: interactive
+            @desc: Enable interactive mode.
+            @experimental: true
+        @param:
+            @name: detached
+            @desc: Enable detached mode.
+        @param:
+            @name: env
+            @desc: The environment variables.
+            @type: object
+        @param:
+            @name: colors
+            @desc: Enable colors.
+    */
     start({
         command = "",
         args = [],
@@ -46,7 +83,13 @@ vlib.Proc = class Proc {
         detached = false,
         env = null,
         colors = false,
+        opts = {},
     }) {
+
+        // Reset.
+        this.out = null;
+        this.err = null;
+        this.exit_status = null;
 
         // Set promise.
         this.promise = new Promise((resolve) => {
@@ -55,24 +98,25 @@ vlib.Proc = class Proc {
             if (this.debug) {
                 console.log(`Start: ${command} ${args.join(" ")}`);
             }
-            const opts = {
+            const options = {
                 cwd: working_directory,
                 stdio: [interactive ? "pipe" : "ignore", "pipe", "pipe"],
                 shell: interactive,
                 detached: detached,
+                ...opts,
             }
             if (env != null) {
-                opts.env = env;
+                options.env = env;
                 if (colors) {
-                    opts.env.FORCE_COLOR = true;
+                    options.env.FORCE_COLOR = true;
                 }
             } else if (colors) {
-                opts.env = { ...process.env, FORCE_COLOR: true };
+                options.env = { ...process.env, FORCE_COLOR: true };
             }
             this.proc = libproc.spawn(
                 command,
                 args,
-                opts,
+                options,
             );
             // if (!interactive) {
             //     console.log(this.proc.stdin);
@@ -81,25 +125,37 @@ vlib.Proc = class Proc {
 
             // Set handlers.
             let closed = 0;
-            this.proc.stdout.on('data', (data) => {
-                if (this.debug) {
-                    console.log("OUT:",data.toString());
-                }
-                if (this.on_output !== undefined) {
-                    this.on_output(data.toString())
-                }
-            })
-            this.proc.stderr.on('data', (data) => {
-                data = data.toString();
-                if (this.debug) {
-                    console.log("ERR:",data);
-                }
-                this.err += data;
-                if (this.on_error !== undefined) {
-                    this.on_error(data);
-                }
-            });
-            this.proc.on('exit', (code, status) => {
+            if (this.proc.stdout) {
+                this.proc.stdout.on('data', (data) => {
+                    data = data.toString();
+                    if (this.debug) {
+                        console.log("OUT:",data);
+                    }
+                    if (this.out === null) {
+                        this.out = "";
+                    }
+                    this.out += data;
+                    if (this.on_output !== undefined) {
+                        this.on_output(data)
+                    }
+                })
+            }
+            if (this.proc.stderr) {
+                this.proc.stderr.on('data', (data) => {
+                    data = data.toString();
+                    if (this.debug) {
+                        console.log("ERR:",data);
+                    }
+                    if (this.err === null) {
+                        this.err = "";
+                    }
+                    this.err += data;
+                    if (this.on_error !== undefined) {
+                        this.on_error(data);
+                    }
+                });
+            }
+            this.proc.on('exit', (code) => {
                 if (this.debug && closed === 1) {
                     console.log(`Child process exited with code ${code}.`);
                 }
@@ -108,14 +164,14 @@ vlib.Proc = class Proc {
                     this.err = `Child process exited with code ${code}.`;
                 }
                 if (this.on_exit !== undefined) {
-                    this.on_exit(code, status);
+                    this.on_exit(code);
                 }
                 ++closed;
                 if (closed == 2) {
                     resolve();
                 }
             });
-            this.proc.on('close', (code, status) => {
+            this.proc.on('close', (code) => {
                 if (this.debug && closed === 1) {
                     console.log(`Child process exited with code ${code}.`);
                 }
@@ -130,6 +186,10 @@ vlib.Proc = class Proc {
     }
 
     // Write data to the stdin.
+    /*  @docs:
+        @title: Write
+        @desc: Write data to the stdin.
+    */
     write(data) {
         if (this.proc !== null) {
             this.proc.stdin.write(data);
@@ -139,7 +199,11 @@ vlib.Proc = class Proc {
     }
 
     // Wait till the process if finished.
-    // @warning: This function must be awaited.
+    /*  @docs:
+        @title: Join
+        @desc: Wait till the process if finished.
+        @note: This function must be awaited.
+    */
     async join() {
         // return this.promise.
         return new Promise(async (resolve) => {
@@ -149,6 +213,10 @@ vlib.Proc = class Proc {
     }
 
     // Kill the process.
+    /*  @docs:
+        @title: Kill
+        @desc: Signal the process with a SIGINT signal.
+    */
     kill(signal = "SIGINT") {
         if (this.proc == null) { return this; }
         this.proc.kill(signal);

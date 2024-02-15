@@ -7,22 +7,26 @@
 // ---------------------------------------------------------
 // Imports.
 
-vlib.colors = {
+/*  @docs:
+    @title: Colors
+    @desc: The colors class.
+*/
+vlib.colors = class Colors {
 
 	// ---------------------------------------------------------
 	// Attributes.
 
-	black: "\u001b[30m",
-	red: "\u001b[31m",
-	green: "\u001b[32m",
-	yellow: "\u001b[33m",
-	blue: "\u001b[34m",
-	magenta: "\u001b[35m",
-	cyan: "\u001b[36m",
-	gray: "\u001b[37m",
-	bold: "\u001b[1m",
-	italic: "\u001b[3m",
-	end: "\u001b[0m",
+	static black = "\u001b[30m";
+	static red = "\u001b[31m";
+	static green = "\u001b[32m";
+	static yellow = "\u001b[33m";
+	static blue = "\u001b[34m";
+	static magenta = "\u001b[35m";
+	static cyan = "\u001b[36m";
+	static gray = "\u001b[37m";
+	static bold = "\u001b[1m";
+	static italic = "\u001b[3m";
+	static end = "\u001b[0m";
 
 	// ---------------------------------------------------------
 	// Functions.
@@ -35,19 +39,19 @@ vlib.colors = {
 		@usage:
 			vlib.colors.enable();
 	*/
-	enable: function() {
-		this.black = "\u001b[30m";
-		this.red = "\u001b[31m";
-		this.green = "\u001b[32m";
-		this.yellow = "\u001b[33m";
-		this.blue = "\u001b[34m";
-		this.magenta = "\u001b[35m";
-		this.cyan = "\u001b[36m";
-		this.gray = "\u001b[37m";
-		this.bold = "\u001b[1m";
-		this.italic = "\u001b[3m";
-		this.end = "\u001b[0m";
-	},
+	static enable() {
+		Colors.black = "\u001b[30m";
+		Colors.red = "\u001b[31m";
+		Colors.green = "\u001b[32m";
+		Colors.yellow = "\u001b[33m";
+		Colors.blue = "\u001b[34m";
+		Colors.magenta = "\u001b[35m";
+		Colors.cyan = "\u001b[36m";
+		Colors.gray = "\u001b[37m";
+		Colors.bold = "\u001b[1m";
+		Colors.italic = "\u001b[3m";
+		Colors.end = "\u001b[0m";
+	}
 
 	// Disable colors.
 	/* 	@docs
@@ -57,18 +61,18 @@ vlib.colors = {
 		@usage:
 			vlib.colors.disable();
 	*/
-	disable: function() {
-		this.black = "";
-		this.red = "";
-		this.green = "";
-		this.yellow = "";
-		this.blue = "";
-		this.magenta = "";
-		this.cyan = "";
-		this.gray = "";
-		this.bold = "";
-		this.italic = "";
-		this.end = "";
-	},
+	static disable() {
+		Colors.black = "";
+		Colors.red = "";
+		Colors.green = "";
+		Colors.yellow = "";
+		Colors.blue = "";
+		Colors.magenta = "";
+		Colors.cyan = "";
+		Colors.gray = "";
+		Colors.bold = "";
+		Colors.italic = "";
+		Colors.end = "";
+	}
 
 }

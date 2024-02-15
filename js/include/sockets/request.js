@@ -73,7 +73,7 @@ vlib.request = async function({
 	host,
 	port = null,
 	endpoint,
-	method,
+	method = "GET",
 	headers = {},
 	params = null,
 	compress = false,

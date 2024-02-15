@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@librisio/libris": "^1.1.6"
+  }
+}

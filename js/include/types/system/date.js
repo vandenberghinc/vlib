@@ -4,6 +4,10 @@
  */
 
 // The date class.
+/*  @docs:
+    @title: Date
+    @desc: The date class.
+*/
 vlib.Date = class D extends Date {
     
     // Constructor.
@@ -12,6 +16,13 @@ vlib.Date = class D extends Date {
     }
 
     // Format.
+    /*  @docs:
+        @title: Format
+        @desc: Format a date object to a string.
+        @param:
+            @name: format
+            @desc: The date format as string.
+    */
     format(format) {
         let formatted = "";
         for (let i = 0; i < format.length; i++) {
@@ -293,12 +304,24 @@ vlib.Date = class D extends Date {
     }
 
     // Milliseconds
+    /*  @docs:
+        @title: Milliseconds
+        @desc: Get the timestamp in milliseconds.
+    */
     msec() { return this.getTime(); }
 
     // Seconds
+    /*  @docs:
+        @title: Seconds
+        @desc: Get the timestamp in seconds.
+    */
     sec() { return parseInt(this.getTime() / 1000); }
 
     // Hour start.
+    /*  @docs:
+        @title: Hour start
+        @desc: Get the timestamp of the start of the hour.
+    */
     hour_start() {
         const date = new D(this.getTime())
         date.setMinutes(0, 0, 0);
@@ -306,20 +329,21 @@ vlib.Date = class D extends Date {
     }
 
     // Day start.
+    /*  @docs:
+        @title: Day start
+        @desc: Get the timestamp of the start of the day.
+    */
     day_start() {
         const date = new D(this.getTime())
         date.setHours(0, 0, 0, 0);
         return date;
     }
 
-    // Day start.
-    day_start() {
-        const date = new D(this.getTime())
-        date.setHours(0, 0, 0, 0);
-        return date;
-    }
-
-    // Month start.
+    // Week start.
+    /*  @docs:
+        @title: Week start
+        @desc: Get the timestamp of the start of the week.
+    */
     week_start(sunday_start = true) {
         const diff = (this.getDay() + 7 - (sunday_start ? 0 : 1)) % 7;
         const date = new D(this.getTime())
@@ -329,6 +353,10 @@ vlib.Date = class D extends Date {
     }
 
     // Month start.
+    /*  @docs:
+        @title: Month start
+        @desc: Get the timestamp of the start of the month.
+    */
     month_start() {
         const date = new D(this.getTime())
         date.setDate(1)
@@ -337,6 +365,10 @@ vlib.Date = class D extends Date {
     }
 
     // Quarter year start.
+    /*  @docs:
+        @title: Quarter year start
+        @desc: Get the timestamp of the start of the quarter year.
+    */
     quarter_year_start() {
         const date = new D(this.getTime())
         const month = date.getMonth()+1;
@@ -357,6 +389,10 @@ vlib.Date = class D extends Date {
     }
 
     // Half year start.
+    /*  @docs:
+        @title: Half year start
+        @desc: Get the timestamp of the start of the half year.
+    */
     half_year_start() {
         const date = new D(this.getTime())
         if (date.getMonth() + 1 > 6) {
@@ -370,6 +406,10 @@ vlib.Date = class D extends Date {
     }
 
     // Year start.
+    /*  @docs:
+        @title: Year start
+        @desc: Get the timestamp of the start of the year.
+    */
     year_start() {
         const date = new D(this.getTime())
         date.setMonth(0, 1)

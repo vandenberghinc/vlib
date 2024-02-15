@@ -1,0 +1,16 @@
+name: Libris Auto-Generate Action
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Libris Auto-Generate Action
+        uses: lirbisio/lirbis-auto-gen@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIBRIS_API_KEY: ${{ secrets.LIBRIS_API_KEY }}
+        with:
+          config: './docs/libris.json'
+          output: './docs/index.html'
