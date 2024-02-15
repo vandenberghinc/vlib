@@ -9,13 +9,14 @@ jobs:
 
       # Set up Node.js environment
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@4
         with:
           node-version: '20' # Specify the Node.js version to use
 
-      # Install dependencies based on package-lock.json
+      # Install dependencies.
       - name: Install Dependencies
         run: npm install @librisio/libris
+        # run: npm ci
       
       - name: Libris - Generate Documentation
         uses: librisio/libris-auto-gen@main
