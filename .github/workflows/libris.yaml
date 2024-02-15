@@ -15,8 +15,8 @@ jobs:
 
       # Install dependencies.
       - name: Install Dependencies
-        run: npm install @librisio/libris
         # run: npm ci
+        run: npm install @librisio/libris
       
       - name: Libris - Generate Documentation
         uses: librisio/libris-auto-gen@main
