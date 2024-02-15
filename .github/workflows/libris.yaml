@@ -6,6 +6,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' # Specify the Node.js version to use
+
+      # Install dependencies based on package-lock.json
+      - name: Install Dependencies
+        run: npm install @librisio/libris
       
       - name: Libris - Generate Documentation
         uses: librisio/libris-auto-gen@main
