@@ -1,3 +1,4 @@
+on: push
 name: Libris Auto-Generate Action
 jobs:
   update-file:
