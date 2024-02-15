@@ -9,7 +9,7 @@ jobs:
 
       # Set up Node.js environment
       - name: Setup Node.js
-        uses: actions/setup-node@4
+        uses: actions/setup-node@3
         with:
           node-version: '20' # Specify the Node.js version to use
 
