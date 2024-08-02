@@ -1,9 +1,25 @@
+/*
+ * Author: Daan van den Bergh
+ * Copyright: © 2023 - 2024 Daan van den Bergh
+ * Version: v1.3.1
+ */
 const libfs=require('fs');
 const libfsextra=require('fs-extra');
 const libos=require('os');
 const libpath=require('path');
 const libproc=require("child_process");
+const libhttp=require('http');
+const libhttps=require('https');
+const libhttp2=require('http2');
+const libbson=require('bson');
+const zlib=require('zlib');
+const sysinfo=require('systeminformation');
+const readlinelib=require('readline');
+const diskusagelib=require('diskusage');
+const libcluster=require('cluster');
+const libcrypto=require("crypto");
 const vlib={};
+vlib.internal={};
 String.prototype.first=function(){
 return this[0];
 };
@@ -83,20 +99,7 @@ edited+=substr;
 edited+=this.substr(end);
 return edited;
 };
-String.prototype.eq_first=function(substr,start_index=0){
-if (start_index+substr.length>this.length){
-return false;
-}
-const end=start_index+substr.length;
-let y=0;
-for (let x=start_index;x<end;x++){
-if (this.charAt(x)!=substr.charAt(y)){
-return false;
-}
-++y;
-}
-return true;
-}
+String.prototype.eq_first=String.prototype.startsWith;
 String.prototype.eq_last=function(substr){
 if (substr.length>this.length){
 return false;
@@ -421,7 +424,7 @@ return null;
 Array.prototype.drop=function(item){
 const dropped=new this.constructor();
 for (let i=0;i<this.length;i++){
-if (this[i]!=item){
+if (this[i]!==item){
 dropped.push(this[i])
 }
 }
@@ -520,6 +523,17 @@ x=this;
 }
 return eq(x,y);
 }
+Array.prototype.divide=function(into=2){
+let divided=[];
+for (let i=0;i<this.length;i++){
+const chunk=Math.floor(i/into);
+if (divided[chunk]===undefined){
+divided[chunk]=[];
+}
+divided[chunk].push(this[i]);
+}
+return divided;
+};
 Object.expand=function(x,y){
 const keys=Object.keys(y);
 for (let i=0;i<keys.length;i++){
@@ -527,8 +541,7 @@ x[keys[i]]=y[keys[i]];
 }
 return x;
 }
-Object.eq=function(x,y){
-const eq=(x,y)=>{
+vlib.internal.obj_eq=function(x,y,detect_keys=false,detect_keys_nested=false){
 if (typeof x!==typeof y){return false;}
 else if (x instanceof String){
 return x.toString()===y.toString();
@@ -536,22 +549,39 @@ return x.toString()===y.toString();
 else if (Array.isArray(x)){
 if (!Array.isArray(y)||x.length!==y.length){return false;}
 for (let i=0;i<x.length;i++){
-if (!eq(x[i],y[i])){
+if (!vlib.internal.obj_eq(x[i],y[i])){
 return false;
 }
 }
 return true;
 }
 else if (x!=null&&typeof x==="object"){
+const changes=[];
 const x_keys=Object.keys(x);
 const y_keys=Object.keys(y);
 if (x_keys.length!==y_keys.length){
 return false;
 }
 for (const key of x_keys){
-if (!y.hasOwnProperty(key)||!eq(x[key],y[key])){
-return false;
+if (!y.hasOwnProperty(key)){
+const result=vlib.internal.obj_eq(x[key],y[key],detect_keys,detect_keys_nested)
+if (detect_keys){
+if (result===true){
+changes.append(key)
 }
+else if (result!==false&&result.length>0){
+changes.append(key)
+if (detect_keys_nested){
+changes.append(...result)
+}
+}
+}else if (!result){
+return false
+}
+}
+}
+if (detect_keys){
+return changes.length===0?null :changes;
 }
 return true;
 }
@@ -559,7 +589,11 @@ else {
 return x===y;
 }
 }
-return eq(x,y);
+Object.eq=function(x,y){
+return vlib.internal.obj_eq(x,y);
+}
+Object.detect_changes=function(x,y,include_nested=false){
+return vlib.internal.obj_eq(x,y, true,include_nested);
 }
 Object.rename_keys=(obj={},rename=[["old","new"]],remove=[])=>{
 remove.iterate((key)=>{
@@ -596,7 +630,27 @@ clean(obj[key]);
 clean(obj);
 return obj;
 }
+Object.detect_circular=(obj,attr='',seen=new Map())=>{
+for (const key in obj){
+if (Object.prototype.hasOwnProperty.call(obj,key)){
+const new_attr=attr?`${attr}.${key}`:key;
+const value=obj[key];
+if (typeof value==='object'&&value!==null){
+if (seen.has(value)){
+let preview_value="";
+console.log(`Circular reference detected at "${new_attr}", previously detected at "${seen.get(value)}"${preview_value}.`);
+continue;
+}
+seen.set(value,new_attr);
+Object.detect_circular(value,new_attr,seen);
+}
+}
+}
+}
 vlib.utils={};
+vlib.utils.sleep=async function(msec){
+return new Promise((resolve)=>setTimeout(resolve,msec))
+}
 vlib.utils.edit_obj_keys=(obj={},rename=[["old","new"]],remove=[])=>{
 remove.iterate((key)=>{
 delete obj[key];
@@ -607,90 +661,68 @@ delete obj[key[0]];
 })
 return obj;
 }
-vlib.utils.verify_params=function({params={},info={},check_unknown=false,parent="",error_prefix="",throw_err=true}){
+vlib.utils.verify_params=function({
+params={},
+info={},
+check_unknown=false,
+parent="",
+error_prefix="",
+throw_err=true
+}){
 const params_keys=Object.keys(params);
-const info_keys=Object.keys(info);
+const scheme_keys=Object.keys(info);
 const throw_err_h=(e,field)=>{
 const invalid_fields={};
 invalid_fields[field]=e;
 if (throw_err===false){
-return {error:e,invalid_fields};
+return {error:e,invalid_fields,params:null};
 }
 const error=new Error(e);
-let stack=error.stack.split("\n");
-stack=[stack[0],...stack.slice(3)];
-error.stack=stack.join("\n");
-error.json={error:e,invalid_fields};
+error.json={error:e,invalid_fields,params:null};
 throw error;
 }
-for (let x=0;x<info_keys.length;x++){
-let info_item;
-if (typeof info[info_keys[x]]==="string"){
-info[info_keys[x]]={type:info[info_keys[x]]};
-info_item=info[info_keys[x]];
-}else {
-info_item=info[info_keys[x]];
-}
-if (info_item.def){
-info_item.default=info_item.def;
-delete info_item.def;
-}
-const type_error_str=(prefix=" of type ")=>{
+const type_error_str=(scheme_item,prefix=" of type ")=>{
 let type_error_str="";
-if (Array.isArray(info_item.type)){
+if (Array.isArray(scheme_item.type)){
 type_error_str=prefix;
-for (let i=0;i<info_item.type.length;i++){
-type_error_str+=`"${info_item.type[i]}"`
-if (i===info_item.type.length-2){
+for (let i=0;i<scheme_item.type.length;i++){
+type_error_str+=`"${scheme_item.type[i]}"`
+if (i===scheme_item.type.length-2){
 type_error_str+=" or "
-}else if (i<info_item.type.length-2){
+}else if (i<scheme_item.type.length-2){
 type_error_str+=", "
 }
 }
 type_error_str;
 }else {
-type_error_str=`${prefix}"${info_item.type}"`
+type_error_str=`${prefix}"${scheme_item.type}"`
 }
 return type_error_str;
 }
-if (info_keys[x] in params===false){
-if (info_item.default!==undefined){
-params[info_keys[x]]=info_item.default;
-}
-else if (info_item.required!==false){
-return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" should be a defined value${type_error_str()}.`,info_keys[x]);
-}
-}
-else if (info_item.type){
-const check_type=(type)=>{
+const check_type=(scheme_item,scheme_key,type)=>{
 switch (type){
 case "null":
-return params[info_keys[x]]==null;
+return params[scheme_key]==null;
 case "array":
-if (Array.isArray(params[info_keys[x]])===false){
+if (Array.isArray(params[scheme_key])===false){
 return false;
 }
 return true;
 case "object":
-if (typeof params[info_keys[x]]!=="object"||params[info_keys[x]]==null){
+if (typeof params[scheme_key]!=="object"||params[scheme_key]==null){
 return false;
 }
-if (info_item.attrs!==undefined){
-let child_parent=`${parent}${info_keys[x]}.`;
+if (scheme_item.attributes!==undefined){
+let child_parent=`${parent}${scheme_key}.`;
 try {
-params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attrs,check_unknown,parent:child_parent,error_prefix,throw_err:true});
-}catch (e){
-if (!throw_err&&e.json){
-return e.json;
-}else {
-throw e;
-}
-}
-}
-if (info_item.attributes!==undefined){
-let child_parent=`${parent}${info_keys[x]}.`;
-try {
-params[info_keys[x]]=vlib.utils.verify_params({params:params[info_keys[x]],info:info_item.attributes,check_unknown,parent:child_parent,error_prefix,throw_err:true});
+params[scheme_key]=vlib.utils.verify_params({
+params:params[scheme_key],
+info:scheme_item.attributes,
+check_unknown,
+parent:child_parent,
+error_prefix,
+throw_err:true,
+});
 }catch (e){
 if (!throw_err&&e.json){
 return e.json;
@@ -701,17 +733,21 @@ throw e;
 }
 return true;
 default:
-if (type!==typeof params[info_keys[x]]){
+if (type!==typeof params[scheme_key]){
 return false;
 }
 return true;
 }
 }
-if (!(info_item.default==null&&params[info_keys[x]]==null)){
-if (Array.isArray(info_item.type)){
+if (Array.isArray(params)){
+const scheme_item=scheme;
+for (let index=0;index<params.length;i++){
+if (scheme_item.type&&scheme_item.type!=="any"){
+if (!(scheme_item.default==null&&params[index]==null)){
+if (Array.isArray(scheme_item.type)){
 let correct_type=false;
-for (let i=0;i<info_item.type.length;i++){
-const res=check_type(info_item.type[i]);
+for (let i=0;i<scheme_item.type.length;i++){
+const res=check_type(scheme_item,index,scheme_item.type[i]);
 if (typeof res==="object"){
 return res;
 }
@@ -721,27 +757,117 @@ break;
 }
 }
 if (correct_type===false){
-const current_type=params[info_keys[x]]==null?"null":typeof params[info_keys[x]];
-return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`,info_keys[x]);
+const field=`${parent}${index}`;
+const current_type=vlib.utils.value_type(params[index]);
+return throw_err_h(`${error_prefix}Parameter "${field}" has an invalid type "${current_type}", the valid type is ${type_error_str(scheme_item,"")}.`,field);
 }
 }
 else {
-const res=check_type(info_item.type);
+const res=check_type(scheme_item,index,scheme_item.type);
 if (typeof res==="object"){
 return res;
 }
 else if (res===false){
-const current_type=params[info_keys[x]]==null?"null":typeof params[info_keys[x]];
-return throw_err_h(`${error_prefix}Parameter "${parent}${info_keys[x]}" has an invalid type "${current_type}", the valid type is ${type_error_str("")}.`,info_keys[x]);
+const field=`${parent}${index}`;
+const current_type=vlib.utils.value_type(params[index]);
+return throw_err_h(`${error_prefix}Parameter "${field}" has an invalid type "${current_type}", the valid type is ${type_error_str(scheme_item,"")}.`,field);
 }
 }
+}
+}
+if (scheme_item.callback){
+const err=scheme_item.callback(params[index],params);
+if (err){
+return throw_err_h(`${error_prefix}${err}`,`${parent}${index}`);
+}
+}
+}
+}
+else {
+for (let scheme_index=0;scheme_index<scheme_keys.length;scheme_index++){
+const scheme_key=scheme_keys[scheme_index];
+let scheme_item;
+if (typeof info[scheme_key]==="string"){
+info[scheme_key]={type:info[scheme_key]};
+scheme_item=info[scheme_key];
+}else {
+scheme_item=info[scheme_key];
+}
+if (scheme_item.def){
+scheme_item.default=scheme_item.def;
+delete scheme_item.def;
+}
+if (scheme_item.attrs){
+scheme_item.attributes=scheme_item.attrs;
+delete scheme_item.attrs;
+}
+if (scheme_key in params===false){
+if (scheme_item.default!==undefined){
+params[scheme_key]=scheme_item.default;
+}
+else {
+if (scheme_item.required===false){
+continue;
+}
+else if (typeof item.required==="function"){
+const required=item.required(params);
+if (required){
+const field=`${parent}${scheme_key}`;
+return throw_err_h(`${error_prefix}Parameter "${field}" should be a defined value${type_error_str(scheme_item)}.`,field);
+}
+}else {
+const field=`${parent}${scheme_key}`;
+return throw_err_h(`${error_prefix}Parameter "${field}" should be a defined value${type_error_str(scheme_item)}.`,field);
+}
+}
+continue;
+}
+else if (scheme_item.type&&scheme_item.type!=="any"){
+if (!(scheme_item.default==null&&params[scheme_key]==null)){
+if (Array.isArray(scheme_item.type)){
+let correct_type=false;
+for (let i=0;i<scheme_item.type.length;i++){
+const res=check_type(scheme_item,scheme_key,scheme_item.type[i]);
+if (typeof res==="object"){
+return res;
+}
+else if (res===true){
+correct_type=true;
+break;
+}
+}
+if (correct_type===false){
+const field=`${parent}${scheme_key}`;
+const current_type=vlib.utils.value_type(params[scheme_key]);
+return throw_err_h(`${error_prefix}Parameter "${field}" has an invalid type "${current_type}", the valid type is ${type_error_str(scheme_item,"")}.`,field);
+}
+}
+else {
+const res=check_type(scheme_item,scheme_key,scheme_item.type);
+if (typeof res==="object"){
+return res;
+}
+else if (res===false){
+const field=`${parent}${scheme_key}`;
+const current_type=vlib.utils.value_type(params[scheme_key]);
+return throw_err_h(`${error_prefix}Parameter "${field}" has an invalid type "${current_type}", the valid type is ${type_error_str(scheme_item,"")}.`,field);
+}
+}
+}
+}
+if (scheme_item.callback){
+const err=scheme_item.callback(params[scheme_key],params);
+if (err){
+return throw_err_h(`${error_prefix}${err}`,`${parent}${scheme_key}`);
 }
 }
 }
 if (check_unknown){
 for (let x=0;x<params_keys.length;x++){
 if (params_keys[x] in info===false){
-return throw_err_h(`${error_prefix}Parameter "${parent}${params_keys[x]}" is not a valid parameter.`,info_keys[x]);
+const field=`${parent}${params_keys[x]}`;
+return throw_err_h(`${error_prefix}Parameter "${field}" is not a valid parameter.`,field);
+}
 }
 }
 }
@@ -766,13 +892,958 @@ const copy={};
 const keys=Object.keys(obj);
 const values=Object.values(obj);
 for (let i=0;i<keys.length;i++){
+try {
 copy[keys[i]]=vlib.utils.deep_copy(values[i]);
+}catch (err){
+if (err.message.startsWith("Unable to copy attribute")){
+throw err;
+}
+err.message=`Unable to copy attribute "${keys[i]}": ${err.message}.`;
+throw err;
+}
 }
 return copy;
 }
 else {
 return obj;
 }
+}
+vlib.prompt=async function(question){
+return new Promise((resolve,reject)=>{
+const interface=readlinelib.createInterface({
+input:process.stdin,
+output:process.stdout
+});
+interface.on('SIGINT',()=>{
+interface.close();
+reject(new Error("Interrupted by user [SIGINT]."));
+});
+try {
+interface.question(question,(name)=>{
+interface.close();
+resolve(name);
+});
+}catch (e){
+reject(e);
+}
+})
+}
+vlib.utils.value_type=function (value){
+if (value==null){return "null";}
+else if (typeof value==="object"&&Array.isArray(value)){return "array";}
+else {return typeof value;}
+}
+vlib.utils.format_bytes=function (value){
+if (value>1024*1024*1024*1024){
+return `${(value/(1024*1024*1024*1024)).toFixed(2)}TB`;
+}
+else if (value>1024*1024*1024){
+return `${(value/(1024*1024*1024)).toFixed(2)}GB`;
+}
+else if (value>1024*1024){
+return `${(value/(1024*1024)).toFixed(2)}MB`;
+}
+else if (value>1024){
+return `${(value/1024).toFixed(2)}KB`;
+}
+return `${parseInt(value)}B`;
+}
+vlib.utils.hash=(data,algo="sha256",format="hex")=>{
+const hash=libcrypto.createHash(algo);
+hash.update(data)
+if (format){
+return hash.digest(format);
+}
+return hash;
+}
+vlib.utils.fuzzy_search=({
+query,
+targets=[],
+limit=25,
+case_match=false,
+allow_exceeding_chars=true,
+get_matches=false,
+key=null,
+nested_key=null,
+})=>{
+if (query==null){
+throw Error("Define parameter \"query\".");
+}
+const is_obj=targets.length>0&&typeof targets[0]==="object";
+const is_array=targets.length>0&&Array.isArray(targets[0]);
+if (is_obj&&key==null){key="query";}
+const is_key_array=Array.isArray(key);
+const results=[];
+if (case_match===false){query=query.toLowerCase();}
+const calc_sims=(targets=[])=>{
+for (let i=0;i<targets.length;i++){
+let match;
+if (is_array){
+match=vlib.utils.fuzzy_match(
+query,
+case_match?targets[i]:targets[i].toLowerCase(),
+allow_exceeding_chars
+);
+}else if (is_obj){
+const target=targets[i];
+if (is_key_array){
+let min_match=null;
+for (let k=0;k<key.length;k++){
+if (target[key[k]]==null){continue;}
+match=vlib.utils.fuzzy_match(
+query,
+case_match?target[key[k]]:target[key[k]].toLowerCase(),
+allow_exceeding_chars
+);
+if (match!=null&&(min_match===null||match<min_match)){
+min_match=match;
+}
+}
+match=min_match;
+}else {
+if (target[key]==null){continue;}
+match=vlib.utils.fuzzy_match(
+query,
+case_match?target[key]:target[key].toLowerCase(),
+allow_exceeding_chars
+);
+}
+if (nested_key!==null&&target[nested_key]!=null){
+calc_sims(target[nested_key]);
+}
+}else {
+if (targets[i]==null){continue;}
+match=vlib.utils.fuzzy_match(
+query,
+case_match?targets[i]:targets[i].toLowerCase(),
+allow_exceeding_chars
+);
+}
+if (match!==null){
+results.push([match,targets[i]]);
+}
+}
+}
+calc_sims(targets);
+results.sort((a,b)=>b[0]-a[0]);
+if (limit!==null&&limit>=0&&results.length>limit){
+results.length=limit;
+}
+if (get_matches===false){
+let converted=[];
+results.iterate((item)=>{
+converted.push(item[1]);
+})
+return converted;
+}
+return results;
+}
+vlib.utils.fuzzy_match=(search,target,allow_exceeding_chars=true)=>{
+if (allow_exceeding_chars===false){
+if (search.length>target.length){
+return null;
+}
+let text_count={};
+for (let i=0;i<target.length;i++){
+const c=target.charAt(i);
+if (text_count[c]==null){
+text_count[c]=1;
+}else {
+++text_count[c];
+}
+}
+let query_count={};
+for (let i=0;i<search.length;i++){
+const c=search.charAt(i);
+if (query_count[c]==null){
+query_count[c]=1;
+}else {
+++query_count[c];
+}
+if (text_count[c]==null||query_count[c]>text_count[c]){
+return null;
+}
+}
+}
+const get_search_code=(index)=>{
+if (index>=0&&index<search.length){
+return search.charCodeAt(index);
+}
+return-1;
+};
+const get_target_code=(index)=>{
+if (index>=0&&index<target.length){
+return target.charCodeAt(index);
+}
+return-1;
+};
+var prepareBeginningIndexes=(target)=>{
+var targetLen=target.length
+var beginningIndexes=[]; var beginningIndexesLen=0
+var wasUpper=false
+var wasAlphanum=false
+for(var i=0;i<targetLen;++i){
+var targetCode=target.charCodeAt(i)
+var isUpper=targetCode>=65&&targetCode<=90
+var isAlphanum=isUpper||targetCode>=97&&targetCode<=122||targetCode>=48&&targetCode<=57
+var isBeginning=isUpper&&!wasUpper||!wasAlphanum||!isAlphanum
+wasUpper=isUpper
+wasAlphanum=isAlphanum
+if(isBeginning)beginningIndexes[beginningIndexesLen++]=i
+}
+return beginningIndexes
+}
+var prepareNextBeginningIndexes=(target)=>{
+var targetLen=target.length
+var beginningIndexes=prepareBeginningIndexes(target)
+var nextBeginningIndexes=[];
+var lastIsBeginning=beginningIndexes[0]
+var lastIsBeginningI=0
+for(var i=0;i<targetLen;++i){
+if(lastIsBeginning>i){
+nextBeginningIndexes[i]=lastIsBeginning
+}else {
+lastIsBeginning=beginningIndexes[++lastIsBeginningI]
+nextBeginningIndexes[i]=lastIsBeginning===undefined?targetLen:lastIsBeginning
+}
+}
+return nextBeginningIndexes
+}
+let searchI=0;
+let searchLen=search.length;
+let searchCode=get_search_code(searchI);
+let searchLower=search.toLowerCase();
+let targetI=0;
+let targetLen=target.length;
+let targetCode=get_target_code(targetI);
+let targetLower=target.toLowerCase();
+let matchesSimple=[];
+let matchesSimpleLen=0;
+let successStrict=false
+let matchesStrict=[];
+let matchesStrictLen=0
+for(;;){
+var isMatch=searchCode===get_target_code(targetI)
+if(isMatch){
+matchesSimple[matchesSimpleLen++]=targetI
+++searchI;
+if(searchI===searchLen) break
+searchCode=get_search_code(searchI)
+}
+++targetI;
+if(targetI>=targetLen){
+return null
+}
+}
+searchI=0
+targetI=0
+nextBeginningIndexes=prepareNextBeginningIndexes(target);
+var firstPossibleI=targetI=matchesSimple[0]===0?0:nextBeginningIndexes[matchesSimple[0]-1];
+var backtrackCount=0
+if(targetI!==targetLen){
+for(;;){
+if(targetI>=targetLen){
+if(searchI<=0) break 
+ ++backtrackCount; if(backtrackCount>200) break 
+ --searchI
+var lastMatch=matchesStrict[--matchesStrictLen]
+targetI=nextBeginningIndexes[lastMatch]
+}else {
+var isMatch=get_search_code(searchI)===get_target_code(targetI)
+if(isMatch){
+matchesStrict[matchesStrictLen++]=targetI
+++searchI; if(searchI===searchLen){successStrict=true; break }
+++targetI
+}else {
+targetI=nextBeginningIndexes[targetI]
+}
+}
+}
+}
+var substringIndex=targetLower.indexOf(searchLower,matchesSimple[0]);
+var isSubstring=~substringIndex;
+if(isSubstring&&!successStrict){
+for(var i=0;i<matchesSimpleLen;++i){
+matchesSimple[i]=substringIndex+i
+}
+}
+var isSubstringBeginning=false;
+if(isSubstring){
+isSubstringBeginning=nextBeginningIndexes[substringIndex-1]===substringIndex
+}
+{
+if(successStrict){var matchesBest=matchesStrict; var matchesBestLen=matchesStrictLen}
+else {var matchesBest=matchesSimple; var matchesBestLen=matchesSimpleLen}
+var score=0
+var extraMatchGroupCount=0
+for(var i=1;i<searchLen;++i){
+if(matchesBest[i]-matchesBest[i-1]!==1){
+score-=matchesBest[i];
+++extraMatchGroupCount
+}
+}
+var unmatchedDistance=matchesBest[searchLen-1]-matchesBest[0]-(searchLen-1)
+score-=(12+unmatchedDistance)*extraMatchGroupCount
+if(matchesBest[0]!==0)score-=matchesBest[0]*matchesBest[0]*.2
+if(!successStrict){
+score*=1000
+}else {
+var uniqueBeginningIndexes=1
+for(var i=nextBeginningIndexes[0];i<targetLen;i=nextBeginningIndexes[i]){
+++uniqueBeginningIndexes
+}
+if(uniqueBeginningIndexes>24)score*=(uniqueBeginningIndexes-24)*10
+}
+if(isSubstring)score/=1+searchLen*searchLen*1;
+if(isSubstringBeginning)score/=1+searchLen*searchLen*1;
+score-=targetLen-searchLen;
+return score
+}
+}
+vlib.json={};
+vlib.json.parse=function(data){
+function parse_js_object(_start_index=0,_return_end_index=false){
+const object={};
+let object_depth=0;
+let is_before_initial_object=true;
+let c;
+let key=[];
+let value=[];
+let value_end_char=null;
+let is_key=true;
+let is_string=false;
+let is_primitive=false;
+const append_pair=()=>{
+if (key.length>0){
+let c;
+while ((c=key.last())===" "||c==="\t"||c==="\n"){
+--key.length;
+}
+if ((c=key[0])==="'"||c==="\""||c==="`"){
+--key.length;
+key=key.slice(1);
+}
+key=key.join("");
+if (key.length>0){
+if (is_string){
+--value.length;
+value=value.slice(1).join("");
+}
+else if (is_primitive){
+value=value.join("")
+switch (value){
+case "true":value=true; break;
+case "false":value=false; break;
+case "null":value=null; break;
+default:
+let primitive;
+if (value.includes('.')){
+primitive=parseFloat(value);
+}else {
+primitive=parseInt(value);
+}
+if (!isNaN(primitive)){
+value=primitive;
+}
+break;
+}
+}
+object[key]=value;
+}
+}
+key=[];
+value=[];
+value_end_char=null;
+is_key=true;
+is_string=false;
+is_primitive=false;
+}
+for (let i=_start_index;i<data.length;i++){
+c=data.charAt(i);
+if (!is_string){
+switch (c){
+case "{":
+++object_depth;
+if (is_before_initial_object){
+is_before_initial_object=false;
+continue;
+}
+break;
+case "}":
+--object_depth;
+if (object_depth===0){
+append_pair();
+if (_return_end_index){
+return {index:i,object};
+}
+return object;
+}
+break;
+default:
+break;
+}
+}
+if (is_before_initial_object){
+continue;
+}
+else if (is_key){
+switch (c){
+case "'":
+case "\"":
+case "`":
+if (is_string){
+if (value_end_char===c){
+is_string=false;
+value_end_char=null;
+}
+}else {
+value_end_char=c;
+is_string=true;
+}
+key.append(c)
+break;
+case ":":
+is_key=false;
+value_end_char=null;
+is_string=false;
+continue;
+case ",":
+key=[];
+continue;
+case " ":
+case "\t":
+case "\n":
+if (!is_string){
+continue;
+}
+default:
+key.append(c)
+break;
+}
+}
+else {
+if (value_end_char===null&&(c!==" "&&c!=="\t"&&c!=="\n")){
+switch (c){
+case "'":
+case "\"":
+case "`":
+value_end_char=c;
+is_string=true;
+break;
+case "{":{
+const response=parse_js_object(i, true);
+i=response.index;
+value=response.object;
+append_pair();
+--object_depth;
+continue;
+}
+case "[":{
+const response=parse_js_array(i, true);
+i=response.index;
+value=response.object;
+append_pair();
+continue;
+}
+default:
+value_end_char=false;
+is_primitive=true;
+break;
+}
+}
+else if (is_string&&value_end_char===c&&data.charAt(i-1)!=="\\"){
+value.append(c);
+append_pair();
+continue;
+}
+else if (is_primitive&&(c===","||c===" "||c==="\t"||c==="\n")){
+append_pair();
+continue;
+}
+if (value.length===0&&(c===" "||c==="\t"||c==="\n")){
+continue;
+}
+value.append(c);
+}
+}
+append_pair();
+if (_return_end_index){
+return {index:data.length-1,object};
+}
+return object;
+}
+function parse_js_array(_start_index=0,_return_end_index=false){
+const object=[];
+let object_depth=0;
+let is_before_initial_object=true;
+let c;
+let value=[];
+let value_end_char=null;
+let is_string=false;
+let is_primitive=false;
+let is_object=false;
+const append_value=()=>{
+if (is_object||value.length>0){
+if (is_string){
+--value.length;
+value=value.slice(1).join("");
+}
+else if (is_primitive){
+value=value.join("")
+switch (value){
+case "true":value=true; break;
+case "false":value=false; break;
+case "null":value=null; break;
+default:
+let primitive;
+if (value.includes('.')){
+primitive=parseFloat(value);
+}else {
+primitive=parseInt(value);
+}
+if (!isNaN(primitive)){
+value=primitive;
+}
+break;
+}
+}
+object.append(value);
+}
+value=[];
+value_end_char=null;
+is_string=false;
+is_primitive=false;
+is_object=false;
+}
+for (let i=_start_index;i<data.length;i++){
+c=data.charAt(i);
+if (!is_string){
+switch (c){
+case "[":
+++object_depth;
+if (is_before_initial_object){
+is_before_initial_object=false;
+continue;
+}
+break;
+case "]":
+--object_depth;
+if (object_depth===0){
+append_value();
+if (_return_end_index){
+return {index:i,object};
+}
+return object;
+}
+break;
+default:
+break;
+}
+}
+if (is_before_initial_object){
+continue;
+}
+else if (value_end_char===null&&(c!==" "&&c!=="\t"&&c!=="\n")){
+switch (c){
+case ",":
+value=[];
+continue;
+case "'":
+case "\"":
+case "`":
+value_end_char=c;
+is_string=true;
+break;
+case "{":{
+const response=parse_js_object(i, true);
+i=response.index;
+value=response.object;
+is_object=true;
+append_value();
+continue;
+}
+case "[":{
+const response=parse_js_array(i, true);
+i=response.index;
+value=response.object;
+is_object=true;
+append_value();
+--object_depth;
+continue;
+}
+default:
+value_end_char=false;
+is_primitive=true;
+break;
+}
+}
+else if (is_string&&value_end_char===c&&data.charAt(i-1)!=="\\"){
+value.append(c);
+append_value();
+continue;
+}
+else if (is_primitive&&(c===","||c===" "||c==="\t"||c==="\n")){
+append_value();
+continue;
+}
+if (value.length===0&&(c===" "||c==="\t"||c==="\n")){
+continue;
+}
+value.append(c);
+}
+append_value();
+if (_return_end_index){
+return {index:data.length-1,object};
+}
+return object;
+}
+for (let i=0;i<data.length;i++){
+const c=data.charAt(i);
+switch (c){
+case "{":
+return parse_js_object(i);
+case "[":
+return parse_js_array(i);
+default:
+break;
+}
+}
+throw new Error("Unable to detect an object or array in the string data.");
+}
+vlib.scheme={};
+vlib.scheme.value_type=function (value){
+if (value==null){return "null";}
+else if (typeof value==="object"&&Array.isArray(value)){return "array";}
+else {return typeof value;}
+}
+vlib.scheme.init_scheme_item=(scheme_item,scheme=undefined,scheme_key=undefined)=>{
+if (typeof scheme_item==="string"){
+scheme_item={type:scheme_item};
+if (scheme!==undefined&&scheme_key!==undefined){
+scheme[scheme_key]=scheme_item;
+}
+}
+else {
+if (scheme_item.def!==undefined){
+scheme_item.default=scheme_item.def;
+delete scheme_item.def;
+}
+if (scheme_item.attrs!==undefined){
+scheme_item.scheme=scheme_item.attrs;
+delete scheme_item.attrs;
+}
+else if (scheme_item.attributes!==undefined){
+scheme_item.scheme=scheme_item.attributes;
+delete scheme_item.attributes;
+}
+if (scheme_item.enumerate!==undefined){
+scheme_item.enum=scheme_item.enumerate;
+delete scheme_item.enumerate;
+}
+}
+return scheme_item;
+}
+vlib.scheme.type_error_str=(scheme_item,prefix=" of type ")=>{
+let type_error_str="";
+if (Array.isArray(scheme_item.type)){
+type_error_str=prefix;
+for (let i=0;i<scheme_item.type.length;i++){
+if (typeof scheme_item.type[i]==="function"){
+try {
+type_error_str+=`"${scheme_item.type[i].name}"`
+}catch (e){
+type_error_str+=`"${scheme_item.type[i]}"`
+}
+}else {
+type_error_str+=`"${scheme_item.type[i]}"`
+}
+if (i===scheme_item.type.length-2){
+type_error_str+=" or "
+}else if (i<scheme_item.type.length-2){
+type_error_str+=", "
+}
+}
+}else {
+type_error_str=`${prefix}"${scheme_item.type}"`
+}
+return type_error_str;
+}
+vlib.scheme.verify=function({
+object={},
+scheme={},
+value_scheme=null,
+check_unknown=false,
+parent="",
+error_prefix="",
+throw_err=true,
+}){
+const throw_err_h=(e,field)=>{
+const invalid_fields={};
+invalid_fields[field]=e;
+if (throw_err===false){
+return {error:e,invalid_fields,object:null};
+}
+const error=new Error(e);
+error.json={error:e,invalid_fields,object:null};
+throw error;
+}
+const check_type=(object,obj_key,scheme_item,type)=>{
+if (typeof type==="function"){
+return object[obj_key] instanceof type;
+}
+switch (type){
+case "null":
+return object[obj_key]==null;
+case "array":{
+if (Array.isArray(object[obj_key])===false){
+return false;
+}
+if (scheme_item.scheme||scheme_item.value_scheme){
+try {
+object[obj_key]=vlib.scheme.verify({
+object:object[obj_key],
+scheme:scheme_item.scheme||scheme_item.value_scheme,
+check_unknown,
+parent:`${parent}${obj_key}.`,
+error_prefix,
+throw_err:true,
+});
+}catch (e){
+if (!throw_err&&e.json){return e.json;}
+else {throw e;}
+}
+}
+return true;
+}
+case "object":{
+if (typeof object[obj_key]!=="object"||object[obj_key]==null){
+return false;
+}
+if (scheme_item.scheme||scheme_item.value_scheme){
+try {
+object[obj_key]=vlib.scheme.verify({
+object:object[obj_key],
+scheme:scheme_item.scheme,
+value_scheme:scheme_item.value_scheme,
+check_unknown,
+parent:`${parent}${obj_key}.`,
+error_prefix,
+throw_err:true,
+});
+}catch (e){
+if (!throw_err&&e.json){return e.json;}
+else {throw e;}
+}
+}
+return true;
+}
+default:
+if (type!==typeof object[obj_key]){
+return false;
+}
+if (type==="string"&&scheme_item.allow_empty!==true&&object[obj_key].length===0){
+return 1;
+}
+return true;
+}
+}
+const verify_value_scheme=(scheme_item,key,object,value_scheme_key=undefined)=>{
+if (scheme_item.type&&scheme_item.type!=="any"){
+const is_required=scheme_item.required??true;
+if (scheme_item.default===null&&object[key]==null){
+}
+else if (Array.isArray(scheme_item.type)){
+let correct_type=false;
+let is_empty=false;
+for (let i=0;i<scheme_item.type.length;i++){
+const res=check_type(object,key,scheme_item,scheme_item.type[i]);
+if (typeof res==="object"){
+return res;
+}
+else if (res===true){
+correct_type=true;
+break;
+}
+else if (res===1){
+correct_type=true;
+is_empty=true;
+break;
+}
+}
+if (correct_type===false){
+const field=`${parent}${value_scheme_key||key}`;
+const current_type=vlib.scheme.value_type(object[key]);
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid type "${current_type}", the valid type is ${vlib.scheme.type_error_str(scheme_item,"")}.`,field);
+}
+else if (is_empty&&is_required&&scheme_item.default!==""){
+const field=`${parent}${value_scheme_key||key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" is an empty string.`,field);
+}
+}
+else {
+const res=check_type(object,key,scheme_item,scheme_item.type);
+if (typeof res==="object"){
+return res;
+}
+else if (res===false){
+const field=`${parent}${value_scheme_key||key}`;
+const current_type=vlib.scheme.value_type(object[key]);
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid type "${current_type}", the valid type is ${vlib.scheme.type_error_str(scheme_item,"")}.`,field);
+}
+else if (res===1&&is_required&&scheme_item.default!==""){
+const field=`${parent}${value_scheme_key||key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" is an empty string.`,field);
+}
+}
+}
+if (scheme_item.callback){
+const err=scheme_item.callback(object[key],object,key);
+if (err){
+return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
+}
+}
+if (scheme_item.enum){
+if (!scheme_item.enum.includes(object[key])){
+const field=`${parent}${value_scheme_key||key}`;
+const joined=scheme_item.enum.map(item=>{
+if (item==null){
+return 'null';
+}else if (typeof item!=="string"&&!(item instanceof String)){
+return item.toString();
+}
+return `"${item.toString()}"`;
+}).join(", ");
+return throw_err_h(`${error_prefix}Attribute "${field}" must be one of the following enumerated values [${joined}].`,field);
+}
+}
+}
+if (Array.isArray(object)){
+if (value_scheme!=null){
+scheme=value_scheme;
+}
+const scheme_item=vlib.scheme.init_scheme_item(scheme);
+for (let index=0;index<object.length;index++){
+const err=verify_value_scheme(scheme_item,index,object);
+if (err){return err;}
+}
+}
+else {
+if (value_scheme!=null){
+const scheme_item=vlib.scheme.init_scheme_item(value_scheme);
+const keys=Object.keys(object);
+for (let i=0;i<keys.length;i++){
+const err=verify_value_scheme(scheme_item,keys[i],object);
+if (err){return err;}
+}
+}
+else {
+if (check_unknown){
+const object_keys=Object.keys(object);
+for (let x=0;x<object_keys.length;x++){
+if (object_keys[x] in scheme===false){
+const field=`${parent}${object_keys[x]}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" is not a valid attribute name.`,field);
+}
+}
+}
+const scheme_keys=Object.keys(scheme);
+for (let scheme_index=0;scheme_index<scheme_keys.length;scheme_index++){
+const scheme_key=scheme_keys[scheme_index];
+const scheme_item=vlib.scheme.init_scheme_item(scheme[scheme_key],scheme,scheme_key);
+if (scheme_key in object===false){
+if (scheme_item.default!==undefined){
+if (typeof scheme_item.default==="function"){
+object[scheme_key]=scheme_item.default(object);
+}else {
+object[scheme_key]=scheme_item.default;
+}
+}
+else {
+if (scheme_item.required===false){
+continue;
+}
+else if (typeof scheme_item.required==="function"){
+const required=scheme_item.required(object);
+if (required){
+const field=`${parent}${scheme_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" should be a defined value${vlib.scheme.type_error_str(scheme_item)}.`,field);
+}
+}else {
+const field=`${parent}${scheme_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" should be a defined value${vlib.scheme.type_error_str(scheme_item)}.`,field);
+}
+}
+continue;
+}
+const err=verify_value_scheme(scheme_item,scheme_key,object);
+if (err){return err;}
+}
+}
+}
+if (throw_err===false){
+return {error:null,invalid_fields:{},object};
+}
+return object;
+}
+vlib.scheme._type_string=function(type=[],prefix=""){
+if (typeof type==="string"){
+return `${prefix}"${type}"`;
+}
+if (Array.isArray(type)&&type.length>0){
+let str=prefix;
+for (let i=0;i<type.length;i++){
+if (typeof type[i]==="function"){
+try {
+str+=`"${type[i].name}"`
+}catch (e){
+str+=`"${type[i]}"`
+}
+}else {
+str+=`"${type[i]}"`
+}
+if (i===type.length-2){
+str+=" or "
+}else if (i<type.length-2){
+str+=", "
+}
+}
+return str;
+}
+return "";
+}
+vlib.scheme.throw_undefined=function(name,type,throw_err=true){
+if (typeof name==="object"&&name!=null){
+({
+name,
+type=[],
+throw_err=true,
+}=name);
+}
+const err=`Argument "${name}" should be a defined value${vlib.scheme._type_string(type," of type ")}.`
+if (throw_err){
+throw new Error(err);
+}
+return err;
+}
+vlib.scheme.throw_invalid_type=function(
+name,
+value,
+type=[],
+throw_err=true,
+){
+if (typeof name==="object"&&name!=null){
+({
+name,
+value,
+type=[],
+throw_err=true,
+}=name);
+}
+const err=`Invalid type "${vlib.scheme.value_type(value)}" for argument "${name}${vlib.scheme._type_string(type,", the valid type is ")}.`
+if (throw_err){
+throw new Error(err);
+}
+return err;
 }
 vlib.Date=class D extends Date{
 constructor(...args){
@@ -977,6 +2048,12 @@ return formatted;
 }
 msec(){return this.getTime();}
 sec(){return parseInt(this.getTime()/1000);}
+minute_start(){
+const date=new D(this.getTime())
+date.setSeconds(0);
+date.setMilliseconds(0);
+return date;
+}
 hour_start(){
 const date=new D(this.getTime())
 date.setMinutes(0,0,0);
@@ -1036,60 +2113,6 @@ date.setHours(0,0,0,0,0);
 return date;
 }
 }
-vlib.colors=class Colors{
-static black="\u001b[30m";
-static red="\u001b[31m";
-static green="\u001b[32m";
-static yellow="\u001b[33m";
-static blue="\u001b[34m";
-static magenta="\u001b[35m";
-static cyan="\u001b[36m";
-static gray="\u001b[37m";
-static bold="\u001b[1m";
-static italic="\u001b[3m";
-static end="\u001b[0m";
-static enable(){
-Colors.black="\u001b[30m";
-Colors.red="\u001b[31m";
-Colors.green="\u001b[32m";
-Colors.yellow="\u001b[33m";
-Colors.blue="\u001b[34m";
-Colors.magenta="\u001b[35m";
-Colors.cyan="\u001b[36m";
-Colors.gray="\u001b[37m";
-Colors.bold="\u001b[1m";
-Colors.italic="\u001b[3m";
-Colors.end="\u001b[0m";
-}
-static disable(){
-Colors.black="";
-Colors.red="";
-Colors.green="";
-Colors.yellow="";
-Colors.blue="";
-Colors.magenta="";
-Colors.cyan="";
-Colors.gray="";
-Colors.bold="";
-Colors.italic="";
-Colors.end="";
-}
-}
-vlib.print=function(...args){
-console.log(args.join(""));
-}
-vlib.printe=function(...args){
-console.error(args.join(""));
-}
-vlib.print_marker=function(...args){
-vlib.print(vlib.colors.blue,">>> ",vlib.colors.end,...args);
-}
-vlib.print_warning=function(...args){
-vlib.print(vlib.colors.yellow,">>> ",vlib.colors.end,...args);
-}
-vlib.print_error=function(...args){
-vlib.printe(vlib.colors.red,">>> ",vlib.colors.end,...args);
-}
 vlib.Path=class Path{
 constructor(path,clean=true){
 if (path==null){
@@ -1098,6 +2121,7 @@ throw Error(`Invalid path "${path}".`);
 else if (path instanceof vlib.Path){
 this._path=path._path;
 }else {
+path=path.toString();
 if (clean){
 this._path="";
 const max_i=path.length-1;
@@ -1200,7 +2224,22 @@ get rdev(){
 return this.stat.rdev;
 }
 get size(){
+if (this.stat.isDirectory()){
+let size=0;
+function calc(path){
+const stat=libfs.statSync(path);
+if (stat.isFile()){
+size+=stat.size;
+}else if (stat.isDirectory()){
+libfs.readdirSync(path).iterate(file=>calc(`${path}/${file}`));
+}else {
+}
+}
+calc(this._path);
+return size;
+}else {
 return this.stat.size;
+}
 }
 get blksize(){
 return this.stat.blksize;
@@ -1220,6 +2259,34 @@ return this.stat.ctime;
 get birthtime(){
 return this.stat.birthtime;
 }
+async disk_usage(){
+if (!this.is_dir()){
+throw new Error(`File path "${this._path}" is not a directory.`);
+}
+return new Promise((resolve,reject)=>{
+diskusagelib.check(this._path,(err,info)=>{
+if (err){
+reject(err);
+return;
+}
+resolve(info);
+});
+});
+}
+async available_space(){
+if (!this.is_dir()){
+throw new Error(`File path "${this._path}" is not a directory.`);
+}
+return new Promise((resolve,reject)=>{
+diskusagelib.check(this._path,(err,info)=>{
+if (err){
+reject(err);
+return;
+}
+resolve(info.available);
+});
+});
+}
 reset(){
 this._stat=undefined;
 this._name=undefined;
@@ -1238,6 +2305,9 @@ name(with_extension=true){
 if (with_extension===false){
 const name=this.name();
 const ext=this.extension();
+if (!ext){
+return name;
+}
 return name.substr(0,name.length-ext.length);
 }
 if (this._name!==undefined){return this._name;}
@@ -1330,6 +2400,9 @@ resolve();
 }
 async mv(destination){
 return new Promise((resolve,reject)=>{
+if (destination instanceof Path){
+destination=destination._path;
+}
 if (libfs.existsSync(destination)){
 return reject("Destination path already exists.");
 }
@@ -1343,11 +2416,11 @@ resolve();
 });
 })
 }
-async del(){
+async del({recursive=false}={}){
 return new Promise((resolve,reject)=>{
 if (this.exists()){
 if (this.is_dir()){
-libfs.rmdir(this._path,(err)=>{
+libfs.rm(this._path,{recursive},(err)=>{
 if (err){
 reject(err);
 }else {
@@ -1368,10 +2441,10 @@ resolve();
 }
 })
 }
-del_sync(){
+del_sync({recursive=false}={}){
 if (this.exists()){
 if (this.is_dir()){
-libfs.rmdirSync(this._path);
+libfs.rmSync(this._path,{recursive});
 }else {
 libfs.unlinkSync(this._path);
 }
@@ -1446,7 +2519,7 @@ if (type==null){
 resolve(data);
 }else if (type==="string"){
 resolve(data.toString());
-}else if (type==="array"||type==="object"){
+}else if (type==="array"||type==="object"||type==="json"){
 resolve(JSON.parse(data));
 }else if (type==="number"){
 resolve(parseFloat(data.toString()));
@@ -1466,7 +2539,7 @@ if (type==null){
 return data;
 }else if (type==="string"){
 return data.toString();
-}else if (type==="array"||type==="object"){
+}else if (type==="array"||type==="object"||type==="json"){
 return JSON.parse(data);
 }else if (type==="number"){
 return parseFloat(data.toString());
@@ -1510,13 +2583,13 @@ resolve(files.map((name)=>(this.join(name))));
 const files=[];
 const traverse=(path)=>{
 return new Promise((resolve,reject)=>{
-libfs.readdir(path, async (err,files)=>{
+libfs.readdir(path._path, async (err,children)=>{
 if (err){
 reject(err);
 }else {
 let err=null;
-for (let i=0;i<files.length;i++){
-const child=path.join(files[i]);
+for (let i=0;i<children.length;i++){
+const child=path.join(children[i]);
 files.push(child);
 if (child.is_dir()){
 try {
@@ -1566,6 +2639,145 @@ traverse(this);
 return files;
 }
 }
+async truncate(offset){
+return new Promise(async (resolve,reject)=>{
+libfs.truncate(this._path,offset,(err)=>{
+if (err){
+return reject(err);
+}
+resolve();
+});
+})
+}
+}
+vlib.Cache=class Cache{
+constructor({
+limit=null,
+ttl=null,
+ttl_interval=10000,
+}){
+this.limit=limit;
+this.ttl=ttl;
+this.map=new Map();
+this.last_access_times=new Map();
+this.cleanup_interval_id=null;
+if (this.ttl!==null){
+this._start_cleanup_interval(ttl_interval);
+}
+}
+_start_cleanup_interval(ttl_interval){
+this.cleanup_interval_id=setInterval(()=>{
+const now=Date.now();
+for (let [key,last_access_time] of this.last_access_times){
+if (now-last_access_time>this.ttl){
+this.delete(key);
+}
+}
+},ttl_interval);
+}
+_stop_cleanup_interval(){
+if (this.cleanup_interval_id!==null){
+clearInterval(this.cleanup_interval_id);
+this.cleanup_interval_id=null;
+}
+}
+_check_and_remove_oldest(){
+if (this.limit!==null&&this.map.size>this.limit){
+const oldest_key=this.map.keys().next().value;
+this.delete(oldest_key);
+}
+}
+_update_last_access_time(key){
+this.last_access_times.set(key,Date.now());
+}
+has(key){
+return this.map.has(key);
+}
+set(key,value){
+this.map.set(key,value);
+this._update_last_access_time(key);
+this._check_and_remove_oldest();
+}
+get(key){
+if (this.map.has(key)){
+this._update_last_access_time(key);
+return this.map.get(key);
+}
+return undefined;
+}
+delete(key){
+const deletion_result=this.map.delete(key);
+this.last_access_times.delete(key);
+return deletion_result;
+}
+clear(){
+this._stop_cleanup_interval();
+this.map.clear();
+this.last_access_times.clear();
+}
+keys(){
+return this.map.keys();
+}
+values(){
+return this.map.values();
+}
+};
+vlib.colors=class Colors{
+static black="\u001b[30m";
+static red="\u001b[31m";
+static red_bold="\u001b[31m\u001b[1m";
+static green="\u001b[32m";
+static yellow="\u001b[33m";
+static blue="\u001b[34m";
+static magenta="\u001b[35m";
+static cyan="\u001b[36m";
+static gray="\u001b[37m";
+static bold="\u001b[1m";
+static italic="\u001b[3m";
+static end="\u001b[0m";
+static enable(){
+Colors.black="\u001b[30m";
+Colors.red="\u001b[31m";
+Colors.red_bold="\u001b[31m\u001b[1m";
+Colors.green="\u001b[32m";
+Colors.yellow="\u001b[33m";
+Colors.blue="\u001b[34m";
+Colors.magenta="\u001b[35m";
+Colors.cyan="\u001b[36m";
+Colors.gray="\u001b[37m";
+Colors.bold="\u001b[1m";
+Colors.italic="\u001b[3m";
+Colors.end="\u001b[0m";
+}
+static disable(){
+Colors.black="";
+Colors.red="";
+Colors.red_bold="";
+Colors.green="";
+Colors.yellow="";
+Colors.blue="";
+Colors.magenta="";
+Colors.cyan="";
+Colors.gray="";
+Colors.bold="";
+Colors.italic="";
+Colors.end="";
+}
+}
+vlib.print=function(...args){
+console.log(args.join(""));
+}
+vlib.printe=function(...args){
+console.error(args.join(""));
+}
+vlib.print_marker=function(...args){
+vlib.print(vlib.colors.blue,">>> ",vlib.colors.end, ...args);
+}
+vlib.print_warning=function(...args){
+vlib.print(vlib.colors.yellow,">>> ",vlib.colors.end, ...args);
+}
+vlib.print_error=function(...args){
+vlib.printe(vlib.colors.red,">>> ",vlib.colors.end, ...args);
 }
 vlib.Proc=class Proc{
 constructor({debug=false}={}){
@@ -1665,7 +2877,7 @@ this.on_exit(code);
 }
 ++closed;
 if (closed==2){
-resolve();
+resolve(this.exit_status);
 }
 });
 this.proc.on('close',(code)=>{
@@ -1674,7 +2886,7 @@ console.log(`Child process exited with code ${code}.`);
 }
 ++closed;
 if (closed==2){
-resolve();
+resolve(this.exit_status);
 }
 });
 });
@@ -1711,6 +2923,580 @@ return ifc.address;
 throw Error("Unable to retrieve the private ip.");
 }
 }
+vlib.TimeLimiter=class TimeLimiter{
+constructor({
+duration=60*1000,
+limit=10,
+}){
+this._duration=duration;
+this._limit=limit;
+this._counts=0;
+this._expiration=Date.now()+this._duration;
+}
+limit(){
+const now=Date.now();
+if (now>this._expiration){
+this._expiration=now+this._duration;
+this._counts=0;
+}
+++this._counts;
+return this._counts<this._limit;
+}
+}
+const is_root=libos.userInfo().uid===0;
+vlib.Daemon=class Daemon{
+constructor({
+name=null,
+user=null,
+group=null,
+command=null,
+args=[],
+cwd=null,
+env={},
+description=null,
+auto_restart=false,
+auto_restart_limit=-1,
+auto_restart_delay=-1,
+logs=null,
+errors=null,
+}){
+if (typeof name!=="string"){throw new Error(`Parameter "name" must be a defined value of type "string", not "${typeof name}".`);}
+if (typeof user!=="string"){throw new Error(`Parameter "user" must be a defined value of type "string", not "${typeof user}".`);}
+if (typeof command!=="string"){throw new Error(`Parameter "command" must be a defined value of type "string", not "${typeof command}".`);}
+if (typeof description!=="string"){throw new Error(`Parameter "description" must be a defined value of type "string", not "${typeof description}".`);}
+this.name=name;
+this.user=user;
+this.group=group;
+this.command=command;
+this.args=args;
+this.cwd=cwd;
+this.env=env;
+this.desc=description;
+this.auto_restart=auto_restart;
+this.auto_restart_limit=auto_restart_limit;
+this.auto_restart_delay=auto_restart_delay;
+this.logs=logs;
+this.errors=errors;
+this.path="";
+this.proc=new vlib.Proc();
+this.assign_path_h();
+}
+assign_path_h(){
+if (process.platform==='darwin'){
+this.path=new vlib.Path(`/Library/LaunchDaemons/${this.name}.plist`);
+}else if (process.platform==='linux'){
+this.path=new vlib.Path(`/etc/systemd/system/${this.name}.service`);
+}else {
+throw new Error(`Operating system "${process.platform}" is not yet supported.`);
+}
+}
+create_h(){
+if (process.platform==='darwin'){
+let data="";
+data+=
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+"\n"+
+"<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"+"\n"+
+"<plist version=\"1.0\">"+"\n"+
+"<dict>"+"\n"+
+"    <key>Label</key>"+"\n"+
+"    <string>"+this.name+"</string>"+"\n"+
+"    <key>UserName</key>"+"\n"+
+"    <string>"+this.user+"</string>"+"\n"+
+"";
+data+=
+"	<key>ProgramArguments</key>"+"\n"+
+"	<array>"+"\n"+
+"		<string>"+this.command+"</string>"+"\n";
+this.args.iterate((i)=>{
+data+="		<string>"+i+"</string>"+"\n";
+})
+data+=
+"	</array>"+"\n";
+if (this.group){
+data+=
+"    <key>GroupName</key>"+"\n"+
+"    <string>"+this.group+"</string>"+"\n"+
+"";
+}
+if (this.auto_restart){
+data+=
+"    <key>StartInterval</key>"+"\n"+
+"    <integer>"+(this.auto_restart_delay==-1?3:this.auto_restart_delay)+"</integer>"+"\n"+
+"";
+}
+if (this.logs){
+data+=
+"    <key>StandardOutPath</key>"+"\n"+
+"    <string>"+this.logs+"</string>"+"\n"+
+"";
+}
+if (this.errors){
+data+=
+"    <key>StandardErrorPath</key>"+"\n"+
+"    <string>"+this.errors+"</string>"+"\n"+
+"";
+}
+if (this.cwd){
+data+=`<key>WorkingDirectory</key>`
+data+=`<string>${this.cwd}</string>`
+}
+data+=
+"</dict>"+"\n"+
+"</plist>"+"\n";
+return data;
+}
+else if (process.platform==='linux'){
+let data="";
+data+=
+"[Unit]"+"\n"+
+"Description="+this.desc+"\n"+
+"After=network.target"+"\n"+
+"StartLimitIntervalSec=0"+"\n"+
+""+"\n"+
+"[Service]"+"\n"+
+"User="+this.user+"\n"+
+"Type=simple"+"\n"+
+"ExecStart="+this.command+" ";
+this.args.iterate((i)=>{
+data+="\""+i+"\" ";
+});
+data+="\n";
+Object.keys(this.env).iterate((key)=>{
+data+="Environment=\""+key+"="+this.env[key]+"\"\n";
+})
+if (this.cwd){
+data+=`WorkingDirectory=${this.cwd}`
+}
+if (this.group){
+data+=
+"Group="+this.group+"\n";
+}
+if (this.auto_restart){
+data+=
+"Restart=always"+"\n"+
+"RestartSec=1"+"\n"+
+"";
+if (this.auto_restart_limit!=-1){
+data+=
+"StartLimitBurst="+this.auto_restart_limit+"\n";
+}
+if (this.auto_restart_delay!=-1){
+data+=
+"StartLimitIntervalSec="+this.auto_restart_delay+"\n";
+}
+}
+data+=
+""+"\n"+
+"[Install]"+"\n"+
+"WantedBy=multi-user.target"+"\n";
+return data;
+}else {
+throw new Error(`Operating system "${process.platform}" is not yet supported.`);
+}
+}
+async load_h(){
+if (process.platform==='darwin'){
+const status=await this.proc.start({command:`launchctl load ${this.path.str()}`})
+if (status!=0){
+throw new Error("Failed to reload the daemon.");
+}
+}else {
+throw new Error(`Operating system "${process.platform}" is not yet supported.`);
+}
+}
+async reload_h(){
+if (process.platform==='darwin'){
+const status=await this.proc.start({
+command:`launchctl unload ${this.path.str()} && launchctl load ${this.path.str()}`
+})
+if (status!=0){
+throw new Error("Failed to reload the daemon.");
+}
+}else if (process.platform==='linux'){
+const status=await this.proc.start({
+command:`systemctl daemon-reload`
+})
+if (status!=0){
+throw new Error("Failed to reload the daemon.");
+}
+}else {
+throw new Error(`Operating system "${process.platform}" is not yet supported.`);
+}
+}
+exists(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+return this.path.exists();
+}
+async create(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" already exists.`);
+}
+this.path.save_sync(this.create_h());
+if (process.platform==='darwin'){
+await this.load_h();
+}
+}
+async update(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (!this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" does not exist.`);
+}
+this.path.save_sync(this.create_h());
+await this.reload_h();
+}
+async remove(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+this.path.del_sync();
+}
+async start(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (!this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" does not exist.`);
+}
+let command="";
+if (process.platform==='linux'){
+command=`systemctl start ${this.name}`;
+}else if (process.platform==='darwin'){
+command=`launchctl start ${this.name}`;
+}
+const status=await this.proc.start({command})
+if (status!=0){
+throw new Error("Failed to start the daemon.");
+}
+}
+async stop(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (!this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" does not exist.`);
+}
+let command="";
+if (process.platform==='linux'){
+command=`systemctl stop ${this.name}`;
+}else if (process.platform==='darwin'){
+command=`launchctl stop ${this.name}`;
+}
+const status=await this.proc.start({command})
+if (status!=0){
+throw new Error("Failed to stop the daemon.");
+}
+}
+async restart(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (!this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" does not exist.`);
+}
+let command="";
+if (process.platform==='linux'){
+command=`systemctl restart ${this.name}`;
+}else if (process.platform==='darwin'){
+command=`launchctl stop ${this.name} && launchctl start ${this.name}`;
+}
+const status=await this.proc.start({command})
+if (status!=0){
+throw new Error("Failed to restart the daemon.");
+}
+}
+async is_running(){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+let command;
+if (process.platform==='darwin'){
+command=`launchctl list | grep ${this.name}`;
+}else if (process.platform==='linux'){
+command=`systemctl is-active ${this.name}`;
+}else {
+throw new Error("Failed to restart the daemon.");
+}
+const status=await this.proc.start({command})
+if (status!=0){
+return false;
+}else if (process.platform==='linux'){
+return true;
+}
+return this.proc.out.split("\t")[1]=="0";
+}
+async tail(lines=100){
+if (!is_root){
+throw new Error("Root privileges required.");
+}
+if (!this.path.exists()){
+throw new Error(`Daemon "${this.path.str()}" does not exist.`);
+}
+let command="";
+if (process.platform==='linux'){
+throw new Error(`Operating system "${process.platform}" is not yet supported.`);
+}else if (process.platform==='darwin'){
+command=`sudo journalctl -u ${this.name}.service --no-pager  -n ${lines}`;
+}
+const status=await this.proc.start({command})
+if (status!=0){
+throw DaemonError("Failed to tail the daemon.");
+}
+return this.proc.out;
+}
+};
+vlib.system={};
+vlib.system.format_bytes=(bytes)=>{
+if (bytes>1024*1024*1024){
+return `${(bytes/(1024*1024*1024)).toFixed(2)}GB`;
+}
+else if (bytes>1024*1024){
+return `${(bytes/(1024*1024)).toFixed(2)}MB`;
+}
+else if (bytes>1024){
+return `${(bytes/1024).toFixed(2)}KB`;
+}
+return `${(bytes).toFixed(2)}B`;
+}
+vlib.system.cpu_usage=()=>{
+const cpus=libos.cpus();
+let total_time=0;
+let total_used=0;
+cpus.forEach(cpu=>{
+const cpu_total=Object.values(cpu.times).reduce((acc,tv)=>acc+tv,0);
+const cpu_used=cpu_total-cpu.times.idle;
+total_time+=cpu_total;
+total_used+=cpu_used;
+});
+return (total_used/total_time)*100;
+}
+vlib.system.memory_usage=(format=true)=>{
+const total=libos.totalmem();
+const free=libos.freemem();
+const used=total-free;
+return {
+total:format?vlib.system.format_bytes(total):total,
+used:format?vlib.system.format_bytes(used):used,
+free:format?vlib.system.format_bytes(free):free,
+used_percentage:(used/total)*100,
+}
+}
+vlib.system.network_usage=async (format=true)=>{
+const stats=await sysinfo.networkStats();
+let sent=0;
+let received=0;
+stats.forEach(iface=>{
+sent+=iface.tx_bytes;
+received+=iface.rx_bytes;
+});
+return {
+sent:format?vlib.system.format_bytes(sent):sent,
+received:format?vlib.system.format_bytes(received):received,
+};
+}
+vlib.Logger=class Logger{
+constructor({
+log_level=0,
+log_path=null,
+error_path=null,
+threading=false,
+max_mb=null,
+}){
+this.log_level=log_level;
+this.log_path=log_path;
+this.error_path=error_path;
+this.log_stream=undefined;
+this.error_stream=undefined;
+this.threading=threading;
+this.max_mb=max_mb;
+this.thread=":";
+if (this.threading){
+this.thread=libcluster.worker?` [thread-${libcluster.worker.id}]${parseInt(libcluster.worker.id)<10?":":":"}`:" [thread-0]:";
+}
+if (this.log_path&&this.error_path){
+this.assign_paths(this.log_path, this.error_path);
+}
+}
+assign_paths(log_path,error_path){
+this.log_path=new vlib.Path(log_path);
+this.error_path=new vlib.Path(error_path);
+this.log_stream=libfs.createWriteStream(this.log_path.str(),{flags:'a'});
+this.error_stream=libfs.createWriteStream(this.error_path.str(),{flags:'a'});
+}
+log(level, ...args){
+if (level>this.log_level){return ;}
+let msg=new vlib.Date().format("%d-%m-%y %H:%M:%S");
+msg+=`${this.thread} `;
+for (let i=0;i<args.length;i++){
+msg+=args[i]+" ";
+}
+console.log(msg);
+if (this.log_stream){
+msg+='\n';
+this.log_stream.write(msg);
+if (this.max_mb!=null&&this._random(1,100)<=1){
+this._truncate(this.log_path).catch(console.error)
+}
+}
+}
+error(prefix,err){
+let msg;
+if (err==null){
+err=prefix;
+prefix="";
+}
+if (typeof err==="string"){
+msg=`${new vlib.Date().format("%d-%m-%y %H:%M:%S")}${this.thread} ${prefix}${err}`;
+}else if (err!=null){
+msg=`${new vlib.Date().format("%d-%m-%y %H:%M:%S")}${this.thread} ${prefix}${err.stack||err.message}`;
+}
+if (msg){
+console.error(msg);
+if (this.error_stream){
+msg+='\n';
+this.error_stream.write(msg);
+if (this.max_mb!=null&&this._random(1,100)<=1){
+this._truncate(this.error_path).catch(console.error)
+}
+}
+}
+}
+async _truncate(path){
+return new Promise(async (resolve,reject)=>{
+try {
+path.reset();
+if (path.stat.size/1024/1024<this.max_mb){
+return resolve();
+}
+const max_kb=this.max_mb*1024;
+const keep_mb=100>max_kb?parseInt(max_kb*0.05):100;
+await path.truncate(Math.max(0,path.stat.size-keep_mb));
+resolve();
+}catch (e){
+reject(e);
+}
+});
+}
+_random(min=1,max=100){
+return Math.floor(Math.random()*(max-min+1))+min;
+}
+};
+vlib.Performance=class Performance{
+constructor(name="Performance"){
+this.name=name;
+this.times={};
+this.now=Date.now();
+}
+start(){
+this.now=Date.now();
+return this.now;
+}
+end(id,start){
+if (start==null){
+start=this.now;
+}
+if (this.times[id]===undefined){
+this.times[id]=0;
+}
+this.times[id]+=Date.now()-start;
+this.now=Date.now();
+return this.now;
+}
+dump(){
+let results=Object.entries(this.times);
+results.sort((a,b)=>b[1]-a[1]);
+results=Object.fromEntries(results);
+console.log(`${this.name}:`);
+Object.keys(results).iterate((id)=>{
+console.log(` * ${id}: ${results[id]}`);
+});
+}
+}
+vlib.unit_tests={};
+vlib.unit_tests._create_unit_test=(func,id,debug=0)=>{
+return function (args){
+if (debug>0||debug===args.id){console.log(vlib.colors.blue+args.id+vlib.colors.end+":");}
+args.debug=function (level, ...args){
+if (debug>=level||debug===id){console.log(" *",...args);}
+}
+return func(args)
+}
+}
+vlib.unit_tests.perform=async function({
+name="LMX",
+unit_tests={},
+target=null,
+source=undefined,
+exclude=[".DS_Store"],
+args={},
+debug=0,
+}){
+args.vlib=vlib;
+args.hash=vlib.utils.hash;
+console.log(`Commencing ${name} unit tests.`)
+let res,failed=0,succeeded=0;
+if (unit_tests){
+if (target!=null){
+if (unit_tests[target]===undefined){
+throw new Error(`Unit test "${target}" was not found`);
+}
+const unit_test=unit_tests[target]
+unit_tests={}
+unit_tests[target]=unit_test;
+}
+const names=Object.keys(unit_tests);
+for (let i=0;i<names.length;i++){
+const id=names[i];
+const func=vlib.unit_tests._create_unit_test(unit_tests[names[i]],id,debug);
+let res=func({...args,id});
+if (res instanceof Promise){await res;}
+if (await res===false){
+console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
+++failed;
+}else {
+console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
+++succeeded;
+}
+}
+}else {
+let paths=[];
+let base;
+source=new vlib.Path(source).abs();
+if (source.is_dir()){
+paths=await source.paths(true);
+base=source;
+}else {
+paths=[source];
+base=source.base();
+}
+for (let i=0;i<paths.length;i++){
+const path=paths[i].abs();
+if (!path.is_dir()&&!exclude.includes(path.name())){
+const id=path.str().substr(base.str().length+1);
+let res=require(path.str())({...args,id});
+if (res instanceof Promise){await res;}
+if (await res===false){
+console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
+++failed;
+}else {
+console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
+++succeeded;
+}
+}
+}
+}
+if (failed===0){
+console.log(` * All unit tests ${vlib.colors.green+vlib.colors.bold}passed${vlib.colors.end} successfully.`);
+}else {
+console.log(` * Encountered ${failed===0?vlib.colors.green:vlib.colors.red}${vlib.colors.bold}${failed}${vlib.colors.end} failed unit tests.`);
+}
+}
 vlib.ProgressLoader=class ProgessLoader{
 constructor({message="Loading",steps=100,step=0,width=10}){
 this.message=message.trim();
@@ -1737,14 +3523,18 @@ process.stdout.write(`\r${this.message} ${fixed}% [${"=".repeat(completed)}${"."
 }
 vlib.CLI=class CLI{
 constructor({
-name=null,
+name="CLI",
+description=null,
 version=null,
+notes=null,
 commands=[],
 start_index=2,
-}){
+}={}){
 this.name=name;
+this.description=description;
 this.version=version;
 this.commands=commands;
+this.notes=notes;
 this.start_index=start_index;
 }
 _cast(value,type){
@@ -1807,7 +3597,15 @@ return true;
 return false;
 }
 error(...err){
-err=err.join("").toString();
+let str="";
+for (let i=0;i<err.length;i++){
+if (err[i].stack){
+str+="\n"+err[i].stack;
+}else {
+str+=err[i].toString();
+}
+}
+err=str.trim();
 if (err.eq_first("Error: ")||err.eq_first("error: ")){
 err=err.substr(7).trim();
 }
@@ -1829,7 +3627,7 @@ if (this.version!=null){
 docs+=` v${this.version}`;
 }
 if (docs.length>0){
-docs+=".\n";
+docs+="\n";
 }
 const add_keys_and_values=(list)=>{
 let max_length=0;
@@ -1846,6 +3644,9 @@ docs+=item[0]+item[1];
 })
 }
 if (Array.isArray(command_or_commands)){
+if (this.description){
+docs+=`\nDescription:\n    ${this.description.split("\n").join("\n    ")}\n`;
+}
 docs+=`Usage: $ ${this.name} [mode] [options]\n`;
 let index=0;
 let list=[];
@@ -1867,8 +3668,23 @@ list.push([
 "Show the overall documentation or when used in combination with a command, show the documentation for a certain command.",
 ])
 add_keys_and_values(list);
+if (docs.charAt(docs.length-1)==="\n"){
+docs=docs.substr(0,docs.length-1);
+}
+if (this.notes&&this.notes.length>0){
+docs+=`\nNotes:\n`;
+this.notes.iterate((note)=>{
+docs+=` * ${note}\n`;
+})
+}
+if (docs.charAt(docs.length-1)==="\n"){
+docs=docs.substr(0,docs.length-1);
+}
 }
 else {
+if (this.description){
+docs+=this.description+"\n";
+}
 docs+=`Usage: $ ${this.name} ${command_or_commands.id} [options]\n`;
 if (command_or_commands.description){
 docs+=`\n`;
@@ -2031,8 +3847,19 @@ return false;
 return true;
 }
 }
-const libhttps=require("https")
-const zlib=require('zlib');
+vlib.cli={};
+vlib.cli.get=function({id,index=null,type=null,def=null,exclude_args=true}){
+if (this._cli===undefined){
+this._cli=new vlib.CLI();
+}
+return this._cli.get({id,index,type,def,exclude_args}).value;
+}
+vlib.cli.present=function(id){
+if (this._cli===undefined){
+this._cli=new vlib.CLI();
+}
+return this._cli.present(id);
+}
 vlib.request=async function({
 host,
 port=null,
@@ -2046,6 +3873,7 @@ query=true,
 json=false,
 reject_unauthorized=true,
 delay=null,
+http2=false,
 }){
 return new Promise((resolve)=>{
 method=method.toUpperCase();
@@ -2068,14 +3896,6 @@ headers["Content-Encoding"]="gzip";
 if (params!=null){
 headers["Content-Length"]=params.length;
 }
-options={
-hostname:host,
-port:port,
-path:endpoint,
-method:method,
-headers:headers,
-rejectUnauthorized:reject_unauthorized,
-};
 let error=null,body="",status=null,res_headers={};
 const on_end=()=>{
 if (body.length>0&&json){
@@ -2088,6 +3908,7 @@ body,
 error,
 status,
 headers:res_headers,
+json:()=>JSON.parse(body),
 });
 }else {
 setTimeout(()=>resolve({
@@ -2095,13 +3916,23 @@ body,
 error,
 status,
 headers:res_headers,
+json:()=>JSON.parse(body),
 }),delay)
 }
 }
+if (!http2){
+options={
+hostname:host,
+port:port,
+path:endpoint,
+method:method,
+headers:headers,
+rejectUnauthorized:reject_unauthorized,
+};
 const req=libhttps.request(options,(res)=>{
 status=res.statusCode;
 res_headers=res.headers;
-const content_encoding=res.headers['content-encoding'];
+const content_encoding=res_headers['content-encoding'];
 if (content_encoding==="gzip"||content_encoding==="deflate"){
 let stream;
 if (content_encoding==="gzip"){
@@ -2119,7 +3950,9 @@ else {
 res.on("data",(chunk)=>{
 body+=chunk.toString();
 })
-res.on("end",on_end)
+res.on("end",()=>{
+on_end()
+})
 }
 });
 req.on("error",(e)=>{
@@ -2133,7 +3966,461 @@ if (params!=null){
 req.write(params);
 }
 req.end();
+}
+else {
+const session=libhttp2.connect(`https://${host}`,{
+rejectUnauthorized:reject_unauthorized,
+settings:{
+timeout:60000,
+},
+});
+session.on('error',(e)=>{
+error=e;
+if (error.response){
+status=error.response.statusCode;
+}
+on_end()
+session.close();
+});
+const req=session.request({
+':method':method,
+':path':endpoint,
+...headers
+});
+let decompress_stream;
+req.on('response',(headers,flags)=>{
+status=headers[':status'];
+res_headers=headers;
+const content_encoding=headers['content-encoding'];
+if (content_encoding==='gzip'||content_encoding==='deflate'){
+if (content_encoding==='gzip'){
+decompress_stream=zlib.createGunzip();
+}else if (content_encoding==='deflate'){
+decompress_stream=zlib.createInflate();
+}
+}
+let stream=req;
+if (decompress_stream){
+stream=stream.pipe(decompress_stream);
+}
+let body='';
+stream.on('data',(chunk)=>{
+body+=chunk.toString();
+});
+stream.on('end',()=>{
+on_end();
+session.close();
+});
+});
+req.on('error',(err)=>{
+error=err;
+on_end();
+session.close();
+});
+console.log("WRITE DATA")
+if (params!=null&&method!=='GET'){
+req.write(typeof params==='object'?JSON.stringify(params):params);
+}
+console.log("call req.end()")
+}
 });
 }
-vlib.version=require("./.version.js")
+const WebSocket=require('ws');
+const liburl=require('url');
+vlib.websocket={};
+vlib.websocket.Server=class Server{
+constructor({
+ip=null,
+port=8000,
+https=null,
+rate_limit={
+limit:5,
+interval:60,
+},
+api_keys=[],
+server=null,
+}){
+this.port=port;
+this.https_config=https;
+this.server=server;
+this.api_keys=api_keys;
+this.rate_limit=rate_limit;
+this.streams=new Map();
+this.commands=new Map();
+this.events=new Map();
+this.rate_limit_cache=new Map();
+}
+start(){
+if (this.server===null){
+if (this.https_config!=null){
+this.server=libhttps.createServer(this.https_config,(req,res)=>{
+res.writeHead(426,{'Content-Type':'text/plain'});
+res.end('This service requires WebSocket protocol.');
+});
+this.server.__is_https=true;
+}else {
+this.server=libhttp.createServer((req,res)=>{
+res.writeHead(426,{'Content-Type':'text/plain'});
+res.end('This service requires WebSocket protocol.');
+});
+}
+}
+this.wss=new WebSocket.Server({noServer:true });
+this.server.on('upgrade',(request,socket,head)=>{
+if (this.rate_limit!==false){
+const ip=request.socket.remoteAddress;
+const now=Date.now();
+if (this.rate_limit_cache.has(ip)){
+let data=this.rate_limit_cache.get(ip);
+if (now>=data.expiration){
+data={
+count:0,
+expiration:now+this.rate_limit.interval*1000,
+};
+}
+++data.count;
+if (data.count>this.rate_limit.limit){
+socket.write(`HTTP/1.1 429 Too Many Requests\r\n\r\nRate limit exceeded, please try again in ${parseInt((data.expiration-now)/1000)} seconds.`);
+socket.destroy();
+return;
+}
+this.rate_limit_cache.set(ip,data);
+}else {
+this.rate_limit_cache.set(ip,{
+count:1,
+expiration:now+this.rate_limit.interval*1000,
+});
+}
+}
+const {query}=liburl.parse(request.url, true);
+if (this.api_keys.length>0&&!this.api_keys.includes(query.api_key)){
+socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+socket.destroy();
+return;
+}
+this.wss.handleUpgrade(request,socket,head,(stream)=>{
+this.wss.emit('connection',stream,request);
+});
+});
+this.wss.on('connection',(stream)=>{
+stream.id=Math.random().toString(36).substr(2,16);
+this.streams.set(stream.id,stream);
+stream.messages=new Map();
+stream.on('message',(message)=>{
+try {
+message=libbson.deserialize(message);
+}
+catch (error){
+if (message.toString()==="ping"){
+stream.send("pong");
+return ;
+}
+if (this.on_no_json_message!==undefined){
+this.on_no_json_message(message);
+}
+return ;
+}
+if (message.timestamp==null){
+message.timestamp=Date.now();
+}
+if (message.command!=null&&this.commands.has(message.command)){
+this.commands.get(message.command)(stream,message.id,message.data);
+}else if (message.id!=null){
+stream.messages.set(message.id,message);
+}
+});
+if (this.events.has("open")){
+this.events.get("open")(stream);
+}
+stream.on('close',(code,reason)=>{
+stream.connected=false;
+if (this.events.has("close")){
+this.events.get("close")(stream,code,reason);
+}
+});
+const err_callback=this.events.get("open");
+if (err_callback){
+stream.on("error",(e)=>err_callback(stream,e));
+}
+});
+if (this.ip){
+this.server.listen(this.port, this.ip,()=>{
+if (this.events.has("listen")){
+this.events.get("listen")(`${this.server.__is_https?"https":"http"}://${this.ip}:${this.port}`);
+}
+});
+}else {
+this.server.listen(this.port,()=>{
+if (this.events.has("listen")){
+this.events.get("listen")(`${this.server.__is_https?"https":"http"}://localhost:${this.port}`);
+}
+});
+}
+this._clear_caches();
+}
+async stop(){
+return new Promise((resolve)=>{
+clearTimeout(this._clear_caches_timeout);
+this.wss.clients.forEach(client=>{
+client.close();
+});
+let closed=0;
+this.wss.close(()=>{
+++closed;
+if (closed===2){resolve();}
+});
+this.server.close(()=>{
+++closed;
+if (closed===2){resolve();}
+});
+})
+}
+on_event(event,callback){
+this.events.set(event,callback);
+}
+on(command,callback){
+this.commands.set(command,callback);
+}
+async send({stream,command,id,data}){
+if (id==null){
+id=String.random(32);
+}
+stream.send(libbson.serialize({
+command,
+id:id,
+data:data,
+}))
+return id;
+}
+async await_response({stream,id,timeout=60000,step=10}){
+let elpased=0;
+return new Promise((resolve,reject)=>{
+const wait=()=>{
+if (stream.messages.has(id)){
+const data=stream.messages.get(id)
+stream.messages.delete(id)
+return resolve(data);
+}else {
+elpased+=step;
+if (elpased>timeout){
+return reject(new Error("Operation timed out."));
+}
+setTimeout(wait,step);
+}
+}
+wait();
+})
+}
+async request({stream,command,data,timeout=60000}){
+const id=await this.send({stream,command,data});
+return this.await_response({stream,id,timeout});
+}
+_clear_caches(client){
+const now=Date.now();
+for (const [id,client] of this.streams){
+if (client.connected){
+for (const [msg_id,msg] of client.messages){
+if (msg.timestamp&&now>=msg.timestamp+(3600*1000)){
+client.messages.delete(msg_id);
+}
+}
+}else {
+this.streams.delete(id);
+}
+}
+this._clear_caches_timeout=setTimeout(()=>this._clear_caches(),3600*1000)
+}
+}
+vlib.websocket.Client=class Client{
+constructor({
+url="wss://localhost:8080",
+api_key=null,
+reconnect={
+interval:10,
+max_interval:30000,
+},
+ping=true,
+}){
+this.url=url;
+this.api_key=api_key;
+if (reconnect===false){
+this.reconnect=false;
+}else {
+if (reconnect===true){
+reconnect={};
+}
+this.reconnect=reconnect;
+this.reconnect.enabled=true;
+this.reconnect.attempts=0;
+if (this.reconnect.interval==null){
+this.reconnect.interval=10;
+}
+if (this.reconnect.max_interval==null){
+this.reconnect.max_interval=30000;
+}
+}
+if (ping===true){
+this.auto_ping=30000;
+}
+else if (typeof ping==="number"){
+this.auto_ping=ping;
+}else {
+this.auto_ping=false;
+}
+this.commands=new Map();
+this.events=new Map();
+this.messages=new Map();
+}
+async connect(){
+return new Promise((resolve)=>{
+this.try_reconnect=this.rate_limit!==false;
+this.stream=new WebSocket(this.api_key?`${this.url}?api_key=${this.api_key}`:this.url);
+this.stream.on('open',()=>{
+this.connected=true;
+if (this.try_reconnect){
+this.reconnect.attempts=0;
+}
+if (this.events.has("open")){
+this.events.get("open")();
+}
+resolve();
+});
+this.stream.on('message',(message)=>{
+try {
+message=libbson.deserialize(message);
+}
+catch (error){
+if (message.toString()==="pong"){
+return ;
+}
+if (this.on_no_json_message!==undefined){
+this.on_no_json_message(message);
+}
+return ;
+}
+if (message.command!=null&&this.commands.has(message.command)){
+this.commands.get(message.command)(message.id,message.data);
+}else if (message.id){
+if (message.timestamp==null){
+message.timestamp=Date.now();
+}
+this.messages.set(message.id,message);
+}
+});
+this.stream.on('close',(code,reaseon)=>{
+this.connected=false;
+if (this.try_reconnect){
+if (this.events.has("reconnect")){
+this.events.get("reconnect")(code,reaseon);
+}
+let timeout=Math.min(this.reconnect.interval*Math.pow(2, this.reconnect.attempts), this.reconnect.max_interval);
+this.reconnect.attempts++;
+setTimeout(()=>this.connect(),timeout);
+}else if (this.events.has("close")){
+this.events.get("close")(code,reaseon);
+}
+});
+this.stream.on('error',(error)=>{
+this.stream.close();
+if (this.events.has("error")){
+this.events.get("error")(error);
+}
+});
+let ping_every=typeof this.auto_ping==="number"?this.auto_ping:30000
+clearTimeout(this.auto_ping_timeout)
+const auto_ping=()=>{
+if (this.connected){
+this.stream.send("ping");
+this.auto_ping_timeout=setTimeout(auto_ping,ping_every);
+}
+}
+this.auto_ping_timeout=setTimeout(auto_ping,ping_every)
+})
+}
+disconnect(){
+this.try_reconnect=false;
+this.stream.close();
+clearTimeout(this.auto_ping_timeout)
+}
+async await_till_connected(timeout=60000){
+if (this.connected){return ;}
+let step=10;
+let elpased=0;
+return new Promise((resolve,reject)=>{
+const is_connected=()=>{
+if (this.connected){
+return resolve();
+}else {
+elpased+=step;
+if (elpased>timeout){
+return reject(new Error("Timeout."));
+}
+setTimeout(is_connected,step);
+}
+}
+is_connected();
+})
+}
+on_event(event,callback){
+this.events.set(event,callback);
+}
+on(command,callback){
+this.commands.set(command,callback);
+}
+async send_raw(data){
+await this.await_till_connected();
+this.stream.send(data)
+}
+async send({command,id,data}){
+await this.await_till_connected();
+if (id==null){
+id=String.random(32);
+}
+this.stream.send(libbson.serialize({
+command,
+id:id,
+data:data,
+}))
+return id;
+}
+async await_response({id,timeout=60000,step=10}){
+let elapsed=0;
+return new Promise((resolve,reject)=>{
+const wait=()=>{
+if (this.messages.has(id)){
+const data=this.messages.get(id)
+this.messages.delete(id)
+return resolve(data);
+}else {
+elapsed+=step;
+if (elapsed>timeout){
+return reject(new Error("Operation timed out."));
+}
+setTimeout(wait,step);
+}
+}
+wait();
+})
+}
+async request({command,data,timeout=60000}){
+const id=await this.send({command,data});
+return await this.await_response({id,timeout});
+}
+_clear_caches(client){
+const now=Date.now();
+for (const [id,client] of this.streams){
+if (client.connected){
+for (const [msg_id,msg] of client.messages){
+if (msg.timestamp&&now>=msg.timestamp+(60*5*1000)){
+client.messages.delete(msg_id);
+}
+}
+}else {
+this.streams.delete(id);
+}
+}
+this._clear_caches_timeout=setTimeout(()=>this._clear_caches(),60*5*1000)
+}
+}
+vlib.version="1.3.1";
 module.exports=vlib;

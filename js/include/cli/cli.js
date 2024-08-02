@@ -7,63 +7,78 @@
 // CLI object.
 
 /*  @docs:
- *  @title: CLI
- *  @description: Build a cli.
- *  @parameter:
- *      @name: name
- *      @type: string
- *      @description: The cli's name.
- *  @parameter:
- *      @name: version
- *      @type: string
- *      @description: The cli's version.
- *  @parameter:
- *      @name: commands
- *      @type: array[object]
- *      @description:
- *          A command object looks as follows:
- *          {
- *              id: "--hello-world",
- *              description: "Hello world." // (optional)
- *              examples: { // (optional)
- *                  "Some description": "mycli --hello-world --name me --age 10",
- *              }
- *              args: [
- *                  {
- *                      id: "--name", // (optional)
- *                      type: "string", // (default)
- *                      required: true, // (optional).
- *                      default: "Hello World!", // (optional).
- *                      description: "Your name." // (optional)
- *                  },
- *                  {
- *                      id: ["--age", "-a"],  // (optional)
- *                      type: "number",
- *                      description: "Your age." // (optional)
- *                  },
- *              },
- *              callback: ({name = null, age = 0}) => {}
- *          }
- *          - Valid values for `type` are [`string`, `boolean` and `number`].
- *          - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
- *            When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
- *            An id like `--my-arg` will be passed as `my_arg`.
- *          - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
- *            When the argument has not been passed then the default value defined in the callback parameters will be used.
+    @chapter: CLI
+    @title: CLI
+    @description: Build a cli.
+    @parameter:
+        @name: name
+        @type: string
+        @description: The cli's name.
+    @parameter:
+        @name: description
+        @type: string
+        @description: The cli's description.
+    @parameter:
+        @name: version
+        @type: string
+        @description: The cli's version.
+    @parameter:
+        @name: notes
+        @type: array[string]
+        @description: The cli's notes.
+    @parameter:
+        @name: commands
+        @type: array[object]
+        @description:
+            A command object looks as follows:
+            ```
+            {
+                id: "--hello-world",
+                description: "Hello world." // (optional)
+                examples: { // (optional)
+                    "Some description": "mycli --hello-world --name me --age 10",
+                }
+                args: [
+                    {
+                        id: "--name", // (optional)
+                        type: "string", // (default)
+                        required: true, // (optional).
+                        default: "Hello World!", // (optional).
+                        description: "Your name." // (optional)
+                    },
+                    {
+                        id: ["--age", "-a"],  // (optional)
+                        type: "number",
+                        description: "Your age." // (optional)
+                    },
+                },
+                callback: ({name = null, age = 0}) => {}
+            }
+            ```
+            - Valid values for `type` are [`string`, `boolean` and `number`].
+            - The callback arguments is the arg.id when the id is a string, or the first item of the ids when the id is an array.
+              When the id is not defined then the argument will be called `arg1` or `arg2` starting from 1.
+              An id like `--my-arg` will be passed as `my_arg`.
+            - Field `default` is only passed when the argument has been passed to the cli but no value was defined.
+              When the argument has not been passed then the default value defined in the callback parameters will be used.
  */
 vlib.CLI = class CLI {
 
     // ---------------------------------------------------------
     // Constructor.
     constructor({
-        name = null,
+        name = "CLI",
+        description = null,
         version = null,
+        notes = null,
         commands = [],
         start_index = 2,
-    }) {
+    } = {}) {
         this.name = name;
+        this.description = description;
         this.version = version;
         this.commands = commands;
+        this.notes = notes;
         this.start_index = start_index;
     }
 
@@ -162,7 +177,15 @@ vlib.CLI = class CLI {
         @description: Log an error.
      */
     error(...err) {
-        err = err.join("").toString();
+        let str = "";
+        for (let i = 0; i < err.length; i++) {
+            if (err[i].stack) {
+                str += "\n" + err[i].stack;
+            } else {
+                str += err[i].toString();
+            }
+        }
+        err = str.trim();
         if (err.eq_first("Error: ") || err.eq_first("error: ")) {
             err = err.substr(7).trim();
         }
@@ -186,7 +209,7 @@ vlib.CLI = class CLI {
         @description: Log the docs, optionally of an array of command or a single command.
      */
     docs(command_or_commands = null) {
-
+        
         // Assign to commands when undefined
         if (command_or_commands == null) {
             command_or_commands = this.commands;
@@ -201,7 +224,7 @@ vlib.CLI = class CLI {
             docs += ` v${this.version}`;
         }
         if (docs.length > 0) {
-            docs += ".\n";
+            docs += "\n";
         }
 
         // Add an array of keys and values to the docs with the correct whitespace indent.
@@ -222,7 +245,16 @@ vlib.CLI = class CLI {
 
         // Show docs from an array of commands.
         if (Array.isArray(command_or_commands)) {
+            
+            // Description.
+            if (this.description) {
+                docs += `\nDescription:\n    ${this.description.split("\n").join("\n    ")}\n`;
+            }
+
+            // Usage.
             docs += `Usage: $ ${this.name} [mode] [options]\n`;
+
+            // Commands.
             let index = 0;
             let list = [];
             command_or_commands.iterate((command) => {
@@ -243,10 +275,33 @@ vlib.CLI = class CLI {
                 "Show the overall documentation or when used in combination with a command, show the documentation for a certain command.",
             ])
             add_keys_and_values(list);
+
+            // Remove last newline.
+            if (docs.charAt(docs.length - 1) === "\n") {
+                docs = docs.substr(0, docs.length - 1);
+            }
+
+            // Notes.
+            if (this.notes && this.notes.length > 0) {
+                docs += `\nNotes:\n`;
+                this.notes.iterate((note) => {
+                    docs += ` * ${note}\n`;
+                })
+            }
+
+            // Remove last newline.
+            if (docs.charAt(docs.length - 1) === "\n") {
+                docs = docs.substr(0, docs.length - 1);
+            }
         }
 
         // Show detailed docs from a specific command.
         else {
+
+            // Description.
+            if (this.description) {
+                docs += this.description + "\n";
+            }
 
             // Usage.
             docs += `Usage: $ ${this.name} ${command_or_commands.id} [options]\n`;
@@ -450,4 +505,31 @@ vlib.CLI = class CLI {
         return true;
     }
 
+}
+
+// Static cli module.
+vlib.cli = {};
+
+// Get an argument.
+/*  @docs:
+    @title: Get
+    @description: Get an argument.
+ */
+vlib.cli.get = function({id, index = null, type = null, def = null, exclude_args = true}) {
+    if (this._cli === undefined) {
+        this._cli = new vlib.CLI();
+    }
+    return this._cli.get({id, index, type, def, exclude_args}).value;
+}
+
+// Present.
+/*  @docs:
+    @title: Present
+    @description: Check if an argument is present.
+ */
+vlib.cli.present = function(id) {
+    if (this._cli === undefined) {
+        this._cli = new vlib.CLI();
+    }
+    return this._cli.present(id);
 }

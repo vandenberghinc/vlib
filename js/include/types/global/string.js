@@ -99,20 +99,21 @@ String.prototype.replace_indices = function(substr, start, end) {
 };
 
 // Check if the first chars of the main string equals a substring, optionally with start index.
-String.prototype.eq_first = function(substr, start_index = 0) {
-    if (start_index + substr.length > this.length) {
-        return false;
-    }
-    const end = start_index + substr.length;
-    let y = 0;
-    for (let x = start_index; x < end; x++) {
-        if (this.charAt(x) != substr.charAt(y)) {
-            return false;
-        }
-        ++y;
-    }
-    return true;
-}
+String.prototype.eq_first = String.prototype.startsWith;
+// String.prototype.eq_first = function(substr, start_index = 0) {
+//     if (start_index + substr.length > this.length) {
+//         return false;
+//     }
+//     const end = start_index + substr.length;
+//     let y = 0;
+//     for (let x = start_index; x < end; x++) {
+//         if (this.charAt(x) != substr.charAt(y)) {
+//             return false;
+//         }
+//         ++y;
+//     }
+//     return true;
+// }
 
 // Check if the last chars of the main string equals a substring.
 String.prototype.eq_last = function(substr) {

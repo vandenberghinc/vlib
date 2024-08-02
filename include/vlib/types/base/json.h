@@ -1026,7 +1026,7 @@ public:
 	@description:
 		Dynamic json dictionary.
     @warning:
-        When multiple json's ({...}{...}) are parsed in one string. All values from the previous json's will be overwritten by the last json.
+        When multiple json's in one string (`{...}{...}`) are parsed. All values from the previous json's will be overwritten by the last json.
 	@usage:
         #include <vlib/types.h>
 		vlib::Json x ({

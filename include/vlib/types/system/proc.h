@@ -22,7 +22,7 @@ namespace vlib {
 
 // ---------------------------------------------------------
 // Process type
-/*     @docs
+/*  @docs
     @chapter: System
     @title: Process
     @description:
@@ -1013,8 +1013,8 @@ auto&     Path::link(
 // Instances.
 
 // Is type.
-template<typename Type> struct is_Proc                     { SICEBOOL value = false; };
-template<>                 struct is_Proc<Proc>             { SICEBOOL value = true;  };
+template<typename Type>     struct is_Proc                     { SICEBOOL value = false; };
+template<>                  struct is_Proc<Proc>             { SICEBOOL value = true;  };
 
 // ---------------------------------------------------------
 // Shortcuts.

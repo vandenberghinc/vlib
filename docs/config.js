@@ -1,33 +1,32 @@
-
-// Imports.
-const {Meta, LIGHT_THEME, GREEN_THEME, BLUE_THEME} = require(`@librisio/libris`);
-
-// Edit light theme.
-LIGHT_THEME.tint_fg = "#58B684";
-LIGHT_THEME.anchor_fg = "#53AC7D";
-LIGHT_THEME.token_type = "#58B684";
-LIGHT_THEME.method_get = "#58B684";
-LIGHT_THEME.note_bg = "#58B684";
-
-// Initialize config.
 module.exports = {
 	version: "1.1",
 	name: "VLib",
 	icon: {
-		dark: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/icon.light.0.25.webp",
-		light: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/icon.dark.0.25.webp",
+		// dark: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v2/icon.light.0.25.webp",
+		// light: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v2/icon.dark.0.25.webp",
+		dark: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v3/stoke.light.0.25.webp",
+		light: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v3/stoke.dark.0.25.webp",
 		height: 17.5,
 	},
-	meta: new Meta({
+	meta: {
 		author: "VLib",
 		title: "VLib - Documenation",
 		description: "The VLib documentation page - Generic C++ and JS library.",
-		image: "https://raw.githubusercontent.com/vandenberghinc/public-storage/master/vandenberghinc/icon/triangle.small.png",
-		favicon: "https://doxia.io/favicon.ico",
-	}),
-	dark_theme: GREEN_THEME,
-	light_theme: LIGHT_THEME,
-	default_theme: "dark_theme",
+		image: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/icon.dark.0.25.webp",
+	},
+	dark_theme: {extends: "green"},
+	light_theme: {
+		extends: "light",
+		// tint_fg: "#58B684",
+		// anchor_fg: "#53AC7D",
+		tint_fg: "linear-gradient(-45deg, #CB50A9, #E95071, #E97D76, #FAC91B)",
+		tint_base: "#CB50A9",
+		anchor_fg: "linear-gradient(-45deg, #CB50A9, #E95071, #E97D76, #FAC91B)",
+		token_type: "#58B684",
+		method_get: "#58B684",
+		note_bg: "#58B684",
+	},
+	default_theme: "dark",
 	navigation_order: ["C++", "JS"],
 	chapter_order: [
 		"Global",	
@@ -48,6 +47,8 @@ module.exports = {
 		"JavaScript",
 	],
 	include: [
+		// `${__dirname}/../include/vlib/types/base/array.h`,
+
 		`${__dirname}/../include/`,
 		`${__dirname}/../js/include/`,
 	],

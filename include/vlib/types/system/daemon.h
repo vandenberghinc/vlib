@@ -301,7 +301,7 @@ private:
             x << m_settings.name;
             x << ".service";
             m_path = x;
-        #elif OSID == 0
+        #elif OSID == 1
             String x ("/Library/LaunchDaemons/");
             x << m_settings.name;
             x << ".plist";

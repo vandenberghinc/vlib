@@ -291,7 +291,8 @@ public:
         @description:
             Used to include / exclude characters from `Code` operations.
      
-            ```struct code_patterns {
+            ```
+            struct code_patterns {
                 bool    exclude_strings = false;    // exclude strings.
                 bool    exclude_chars = false;      // exclude chars.
                 bool    exclude_comments = false;   // exclude comments.

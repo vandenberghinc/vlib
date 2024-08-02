@@ -4,7 +4,7 @@
  */
 
 // Include version.
-vlib.version = require("./.version.js")
+vlib.version = __VERSION__;
 
 // Export library.
 module.exports = vlib;

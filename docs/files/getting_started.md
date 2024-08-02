@@ -3,7 +3,7 @@ Getting started with the library `vlib`.
 
 ## Including the library.
 Vlib has multiple include files, one for each sub library. Including any other header files directly may lead to undefined behaviour. The following include files are available.
-```cpp
+```cpp Including vlib
 
 // Header "vlib.h" includes sub libraries "types.h", "cli.h" and "encoding.h".
 #include <vlib/vlib.h>
@@ -21,7 +21,7 @@ Vlib has multiple include files, one for each sub library. Including any other h
 
 ## Using shortcuts.
 The following shortcuts are defined specifically for `using namespace`. 
-```cpp
+```cpp vlib shortcuts
 using namespace vlib::types::shortcuts;
 using namespace vlib::exceptions::shortcuts;
 using namespace vlib::http::shortcuts;

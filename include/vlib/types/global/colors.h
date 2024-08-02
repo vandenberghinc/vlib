@@ -109,17 +109,17 @@ public:
 		Static colors structure.
  
         The available colors are:
-        <bullet> `vlib::colors::black`
-        <bullet> `vlib::colors::red`
-        <bullet> `vlib::colors::green`
-        <bullet> `vlib::colors::yellow`
-        <bullet> `vlib::colors::blue`
-        <bullet> `vlib::colors::magenta`
-        <bullet> `vlib::colors::cyan`
-        <bullet> `vlib::colors::gray`
-        <bullet> `vlib::colors::bold`
-        <bullet> `vlib::colors::italic`
-        <bullet> `vlib::colors::end`
+        <bullet> `vlib::colors::black` </bullet>
+        <bullet> `vlib::colors::red` </bullet>
+        <bullet> `vlib::colors::green` </bullet>
+        <bullet> `vlib::colors::yellow` </bullet>
+        <bullet> `vlib::colors::blue` </bullet>
+        <bullet> `vlib::colors::magenta` </bullet>
+        <bullet> `vlib::colors::cyan` </bullet>
+        <bullet> `vlib::colors::gray` </bullet>
+        <bullet> `vlib::colors::bold` </bullet>
+        <bullet> `vlib::colors::italic` </bullet>
+        <bullet> `vlib::colors::end` </bullet>
  
     @usage:
         #include <vlib/types.h>

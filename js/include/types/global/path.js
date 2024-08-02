@@ -8,6 +8,7 @@
 // When the operating system's path changes function `reset()` should be called again.
 
 /*  @docs:
+    @chapter: Types
     @title: Path
     @desc: The path class.
 */
@@ -21,6 +22,7 @@ vlib.Path = class Path {
         else if (path instanceof vlib.Path) {
             this._path = path._path;
         } else {
+            path = path.toString();
             if (clean) {
                 this._path = "";
                 const max_i = path.length - 1;
@@ -149,7 +151,24 @@ vlib.Path = class Path {
         return this.stat.rdev;
     }
     get size() {
-        return this.stat.size;
+        if (this.stat.isDirectory()) {
+            let size = 0;
+            function calc(path) {
+                const stat = libfs.statSync(path);
+                // size += stat.size;
+                if (stat.isFile()) {
+                    size += stat.size;
+                } else if (stat.isDirectory()) {
+                    libfs.readdirSync(path).iterate(file => calc(`${path}/${file}`));
+                } else {
+
+                }
+            }
+            calc(this._path);
+            return size;
+        } else {
+            return this.stat.size;
+        }
     }
     get blksize() {
         return this.stat.blksize;
@@ -168,6 +187,38 @@ vlib.Path = class Path {
     }
     get birthtime() {
         return this.stat.birthtime;
+    }
+
+    // Disk usage.
+    async disk_usage() {
+        if (!this.is_dir()) {
+            throw new Error(`File path "${this._path}" is not a directory.`);
+        }
+        return new Promise((resolve, reject) => {
+            diskusagelib.check(this._path, (err, info) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(info);
+            });
+        });
+    }
+
+    // Available space.
+    async available_space() {
+        if (!this.is_dir()) {
+            throw new Error(`File path "${this._path}" is not a directory.`);
+        }
+        return new Promise((resolve, reject) => {
+            diskusagelib.check(this._path, (err, info) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(info.available);
+            });
+        });
     }
 
     // ---------------------------------------------------------
@@ -217,6 +268,9 @@ vlib.Path = class Path {
         if (with_extension === false) {
             const name = this.name();
             const ext = this.extension();
+            if (!ext) {
+                return name;
+            }
             return name.substr(0, name.length - ext.length);
         }
         if (this._name !== undefined) { return this._name; }
@@ -373,6 +427,9 @@ vlib.Path = class Path {
     */
     async mv(destination) {
         return new Promise((resolve, reject) => {
+            if (destination instanceof Path) {
+                destination = destination._path;
+            }
             if (libfs.existsSync(destination)) {
                 return reject("Destination path already exists.");
             }
@@ -392,12 +449,16 @@ vlib.Path = class Path {
         @title: Delete
         @desc: Delete the path.
         @funcs: 2
+        @param:
+            @name: recursive
+            @descr: Delete non empty directories recursively.
     */
-    async del() {
+    async del({recursive = false} = {}) {
         return new Promise((resolve, reject) => {
             if (this.exists()) {
                 if (this.is_dir()) {
-                    libfs.rmdir(this._path, (err) => {
+                    // libfs.rmdir
+                    libfs.rm(this._path, {recursive}, (err) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -418,10 +479,11 @@ vlib.Path = class Path {
             }
         })
     }
-    del_sync() {
+    del_sync({recursive = false} = {}) {
         if (this.exists()) {
             if (this.is_dir()) {
-                libfs.rmdirSync(this._path);
+                // libfs.rmdirSync(this._path, {recursive});
+                libfs.rmSync(this._path, {recursive});
             } else {
                 libfs.unlinkSync(this._path);
             }
@@ -522,7 +584,7 @@ vlib.Path = class Path {
                         resolve(data);
                     } else if (type === "string") {
                         resolve(data.toString());
-                    } else if (type === "array" || type === "object") {
+                    } else if (type === "array" || type === "object" || type === "json") {
                         resolve(JSON.parse(data));
                     } else if (type === "number") {
                         resolve(parseFloat(data.toString()));
@@ -542,7 +604,7 @@ vlib.Path = class Path {
             return data;
         } else if (type === "string") {
             return data.toString();
-        } else if (type === "array" || type === "object") {
+        } else if (type === "array" || type === "object" || type === "json") {
             return JSON.parse(data);
         } else if (type === "number") {
             return parseFloat(data.toString());
@@ -602,13 +664,13 @@ vlib.Path = class Path {
                 const files = [];
                 const traverse = (path) => {
                     return new Promise((resolve, reject) => {
-                        libfs.readdir(path, async (err, files) => {
+                        libfs.readdir(path._path, async (err, children) => {
                             if (err) {
                                 reject(err);
                             } else {
                                 let err = null;
-                                for (let i = 0; i < files.length; i++) {
-                                    const child = path.join(files[i]);
+                                for (let i = 0; i < children.length; i++) {
+                                    const child = path.join(children[i]);
                                     files.push(child);
                                     if (child.is_dir()) {
                                         try {
@@ -660,4 +722,19 @@ vlib.Path = class Path {
         }
     }
 
+    // Truncate.
+    /*  @docs:
+        @title: Truncate
+        @desc: Truncate the file.
+    */
+    async truncate(offset) {
+        return new Promise(async (resolve, reject) => {
+            libfs.truncate(this._path, offset, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve();
+            });
+        })
+    }
 }

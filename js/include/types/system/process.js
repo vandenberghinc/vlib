@@ -6,6 +6,7 @@
 // ---------------------------------------------------------
 // The process class.
 /*  @docs:
+    @chapter: System
     @title: Process
     @desc: The process class, used to start a child process.
 */
@@ -168,7 +169,7 @@ vlib.Proc = class Proc {
                 }
                 ++closed;
                 if (closed == 2) {
-                    resolve();
+                    resolve(this.exit_status);
                 }
             });
             this.proc.on('close', (code) => {
@@ -177,7 +178,7 @@ vlib.Proc = class Proc {
                 }
                 ++closed;
                 if (closed == 2) {
-                    resolve();
+                    resolve(this.exit_status);
                 }
             });
 

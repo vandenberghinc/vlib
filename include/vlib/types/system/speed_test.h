@@ -43,11 +43,11 @@ public:
 	// ---------------------------------------------------------
 	// Public functions.
 	
-	// Get the timestamp.
+	// Start the speed test.
 	/* @docs
-		@title: Time
+		@title: Start
 		@description:
-			Get the current timestamp.
+			Start the speed test.
 	*/
 	void 	start(const String& label) {
         m_labels.append(label);

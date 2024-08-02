@@ -8,6 +8,7 @@
 // Imports.
 
 /*  @docs:
+	@chapter: System
     @title: Colors
     @desc: The colors class.
 */
@@ -18,6 +19,7 @@ vlib.colors = class Colors {
 
 	static black = "\u001b[30m";
 	static red = "\u001b[31m";
+	static red_bold = "\u001b[31m\u001b[1m";
 	static green = "\u001b[32m";
 	static yellow = "\u001b[33m";
 	static blue = "\u001b[34m";
@@ -42,6 +44,7 @@ vlib.colors = class Colors {
 	static enable() {
 		Colors.black = "\u001b[30m";
 		Colors.red = "\u001b[31m";
+		Colors.red_bold = "\u001b[31m\u001b[1m";
 		Colors.green = "\u001b[32m";
 		Colors.yellow = "\u001b[33m";
 		Colors.blue = "\u001b[34m";
@@ -64,6 +67,7 @@ vlib.colors = class Colors {
 	static disable() {
 		Colors.black = "";
 		Colors.red = "";
+		Colors.red_bold = "";
 		Colors.green = "";
 		Colors.yellow = "";
 		Colors.blue = "";

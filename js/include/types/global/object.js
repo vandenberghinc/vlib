@@ -12,41 +12,67 @@ Object.expand = function(x, y) {
     return x;
 }
 
+// Internal function to check equals.
+vlib.internal.obj_eq = function(x, y, detect_keys = false, detect_keys_nested = false) {
+    if (typeof x !== typeof y) { return false; }
+    else if (x instanceof String) {
+        return x.toString() === y.toString();
+    }
+    else if (Array.isArray(x)) {
+        if (!Array.isArray(y) || x.length !== y.length) { return false; }
+        for (let i = 0; i < x.length; i++) {
+            if (!vlib.internal.obj_eq(x[i], y[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    else if (x != null && typeof x === "object") {
+        const changes = [];
+        const x_keys = Object.keys(x);
+        const y_keys = Object.keys(y);
+        if (x_keys.length !== y_keys.length) {
+            return false;
+        }
+        for (const key of x_keys) {
+            if (!y.hasOwnProperty(key)) {
+                const result = vlib.internal.obj_eq(x[key], y[key], detect_keys, detect_keys_nested)
+                if (detect_keys) {
+                    if (result === true) {
+                        changes.append(key)
+                    }
+                    else if (result !== false && result.length > 0) {
+                        changes.append(key)
+                        if (detect_keys_nested) {
+                            changes.append(...result)
+                        }   
+                    }
+                } else if (!result) {
+                    return false
+                }
+            }
+        }
+        if (detect_keys) {
+            return changes.length === 0 ? null : changes;
+        }
+        return true;
+    }
+    else {
+        return x === y;
+    }
+}
+
 // Check if an object equals another object.
 // Causes UB wit actual classes.
 Object.eq = function(x, y) {
-    const eq = (x, y) => {
-        if (typeof x !== typeof y) { return false; }
-        else if (x instanceof String) {
-            return x.toString() === y.toString();
-        }
-        else if (Array.isArray(x)) {
-            if (!Array.isArray(y) || x.length !== y.length) { return false; }
-            for (let i = 0; i < x.length; i++) {
-                if (!eq(x[i], y[i])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        else if (x != null && typeof x === "object") {
-            const x_keys = Object.keys(x);
-            const y_keys = Object.keys(y);
-            if (x_keys.length !== y_keys.length) {
-                return false;
-            }
-            for (const key of x_keys) {
-                if (!y.hasOwnProperty(key) || !eq(x[key], y[key])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        else {
-            return x === y;
-        }
-    }
-    return eq(x, y);
+    return vlib.internal.obj_eq(x, y);
+}
+
+// Detect changed keys between two objects, optionally include the changed nested object keys.
+// Returns `null` when no keys have changed.
+// Causes undefined behaviour when one of the x, y parameters is not an object.
+Object.detect_changes = function(x, y, include_nested = false) {
+    return vlib.internal.obj_eq(x, y, true, include_nested);
 }
 
 // Rename object keys.
@@ -90,3 +116,77 @@ Object.delete_recursively = (obj, remove_keys = []) => {
     return obj;
 }
 
+// Detect circular.
+Object.detect_circular = (obj, attr = '', seen = new Map()) => {
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const new_attr = attr ? `${attr}.${key}` : key;
+            const value = obj[key];
+
+            // Check if the current value is an object
+            if (typeof value === 'object' && value !== null) {
+                // Check if the value has been seen before
+                if (seen.has(value)) {
+                    let preview_value = "";
+                    // try {
+                    //     preview_value = ": " + JSON.stringify(value, null, 4) + ".";
+                    // } catch (e) {}
+                    console.log(`Circular reference detected at "${new_attr}", previously detected at "${seen.get(value)}"${preview_value}.`);
+                    continue; // Skip further processing to avoid infinite recursion
+                }
+
+                // Add the value to the set of seen objects
+                seen.set(value, new_attr);
+
+                // Recursively detect circular references in the value
+                Object.detect_circular(value, new_attr, seen);
+            }
+        }
+    }
+}
+
+// Stringify with support for circular objects.
+// Object.stringify = (obj, indent = null, include_circular = true) => {
+//     const seen = new WeakMap();
+//     function replacer(key, value) {
+//         if (typeof value === 'object' && value !== null) {
+//             if (seen.has(value)) {
+//                 if (include_circular) {
+//                     return seen.get(value);
+//                 } else {
+//                     return "[Circular]";
+//                 }
+//             }
+//             seen.set(value, key);
+//         }
+//         return value;
+//     }
+//     return JSON.stringify(obj, replacer, indent);
+// }
+
+// The vlib dict class.
+/*
+vlib.Dict = class Dict {
+    constructor(data = {}) {
+        this.data = data;
+
+        // Use proxy to support get and set.
+        return new Proxy(this, {
+            get(target, prop) {
+                if (prop in target.data) {
+                    return target.data[prop];
+                } else if (typeof target[prop] === 'function') {
+                    return target[prop].bind(target);
+                } else {
+                    return undefined;
+                }
+            },
+            set(target, prop, value) {
+                target.data[prop] = value;
+                return true;
+            }
+        });
+    }
+
+}
+*/

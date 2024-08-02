@@ -7,7 +7,7 @@ Execute the following commands to install `vlib` using `vinc`.
 This will install the `vlib` library into `/opt/vinc/vlib/` with a symbolic link for the include directory to `/opt/vinc/include/vlib`.
 Make sure the `vinc` binary is available in your `PATH`.
 
-```
+```bash Installation
 $ vinc --api-key XXX # set the api key when you are using vinc for the first time.
 $ vinc --install vlib
 ```

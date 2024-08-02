@@ -5,6 +5,7 @@
 
 // The date class.
 /*  @docs:
+    @chapter: Types
     @title: Date
     @desc: The date class.
 */
@@ -13,6 +14,12 @@ vlib.Date = class D extends Date {
     // Constructor.
     constructor(...args) {
         super(...args);
+        // if (args.length === 2 && typeof args[0] === "string" && typeof args[1] === "string") {
+        //     console.log(args, libdatefns.parse(args[0], args[1], new Date()))
+        //     // super(libmoment(args[0], args[1]).toDate());
+        //     super(libdatefns.parse(args[0], args[1], new Date()).getTime())
+        // } else {
+        // }
     }
 
     // Format.
@@ -316,6 +323,18 @@ vlib.Date = class D extends Date {
         @desc: Get the timestamp in seconds.
     */
     sec() { return parseInt(this.getTime() / 1000); }
+
+    // Hour start.
+    /*  @docs:
+        @title: Hour start
+        @desc: Get the timestamp of the start of the hour.
+    */
+    minute_start() {
+        const date = new D(this.getTime())
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        return date;
+    }
 
     // Hour start.
     /*  @docs:
