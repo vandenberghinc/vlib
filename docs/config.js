@@ -3,18 +3,19 @@ const tint_gradient = "linear-gradient(140deg, #CB50A9 10%, #E95071 40%, #E97D76
 module.exports = {
 	version: "1.1",
 	name: "VLib",
+	home_url: "https://google.com",
 	icon: {
 		// dark: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v2/icon.light.0.25.webp",
 		// light: "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v2/icon.dark.0.25.webp",
 		dark: "https://raw.githubusercontent.com/vandenberghinc/vlib/main/dev/media/icon-v3/stroke.light.0.25.webp",
 		light: "https://raw.githubusercontent.com/vandenberghinc/vlib/main/dev/media/icon-v3/stroke.dark.0.25.webp",
-		height: 17.5,
+		height: 20,
 	},
 	meta: {
 		author: "VLib",
 		title: "VLib - Documenation",
 		description: "The VLib documentation page - Generic C++ and JS library.",
-		image: "https://raw.githubusercontent.com/vandenberghinc/vlib/main/dev/media/icon-v3/stroke.dark.0.25.webp",
+		image: "https://raw.githubusercontent.com/vandenberghinc/vlib/main/dev/media/icon-v3/stroke.dark.png",
 		favicon: "https://raw.githubusercontent.com/vandenberghinc/vlib/main/dev/media/icon-v3/favicon.ico",
 	},
 	dark_theme: {

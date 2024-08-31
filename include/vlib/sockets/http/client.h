@@ -133,7 +133,8 @@ struct Client : public vlib::http::ClientTemplate<sockets::Socket<family, type, 
 	 *			The template arguments.
 	 *
 	 *			The arguments can contain the following fields:
-	 *			```struct ClientTemplateArgs {
+	 *			```
+	 *			struct ClientTemplateArgs {
 	 *				String				host;
 	 *				String				ip;
 	 *				uint				port = 0;
@@ -142,8 +143,8 @@ struct Client : public vlib::http::ClientTemplate<sockets::Socket<family, type, 
 	 *				String 				api_secret;
 	 *				http::Headers		headers;
 	 *				Compression			compression;
-	 *			};```
-	 *  }
+	 *			};
+	 *			```
 	 *  @usage:
 	 *      vlib::http::Client client({
 	 *			.host = ...,

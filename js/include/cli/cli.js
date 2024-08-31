@@ -45,6 +45,7 @@
                         required: true, // (optional).
                         default: "Hello World!", // (optional).
                         description: "Your name." // (optional)
+                        ignore: false, // ignore in docs (optional)
                     },
                     {
                         id: ["--age", "-a"],  // (optional)
@@ -319,6 +320,9 @@ vlib.CLI = class CLI {
                 let arg_index = 0;
                 const list = [];
                 command_or_commands.args.iterate((arg) => {
+                    if (arg.ignore === true) {
+                        return ;
+                    }
                     const list_item = [];
                     if (arg.id == null) {
                         list_item[0] = `    argument ${arg_index}`;
@@ -512,6 +516,7 @@ vlib.cli = {};
 
 // Get an argument.
 /*  @docs:
+    @chapter: CLI
     @title: Get
     @description: Get an argument.
  */
@@ -524,6 +529,7 @@ vlib.cli.get = function({id, index = null, type = null, def = null, exclude_args
 
 // Present.
 /*  @docs:
+    @chapter: CLI
     @title: Present
     @description: Check if an argument is present.
  */

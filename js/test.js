@@ -100,7 +100,7 @@ unit_tests["scheme/test:5"] = function({hash, debug}) {
 		vlib.scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
 			array: {
 				type: "array",
-				scheme: {
+				value_scheme: {
 					type: "object",
 					scheme: {
 			            name: "string",
@@ -197,7 +197,7 @@ unit_tests["scheme/test:8"] = function({hash, debug}) {
 		vlib.scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
 			documents: {
 				type: "array",
-				scheme: {
+				value_scheme: {
 					type: "object",
 					scheme: {
 						name: {type: "string", required: (obj) => obj.data != null},

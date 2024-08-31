@@ -1,11 +1,11 @@
 /*
  * Author: Daan van den Bergh
  * Copyright: © 2022 - 2023 Daan van den Bergh.
- */
-/* WARNING:
-    This script is also embedded into vweb.
-    Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
-    And beware that `vlib` will be replaced with `vweb`.
+ *
+ * WARNING:
+ *  This script is also embedded into vweb.
+ *  Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
+ *  And beware that `vlib` will be replaced with `vweb`.
  */
 
 /*  @docs:
@@ -139,21 +139,53 @@ vlib.scheme.type_error_str = (scheme_item, prefix = " of type ") => {
                 @type: boolean
                 @def: false
             @attribute:
-                @name: callback
+                @name: min_length
+                @desc: The minimum value length of arrays or strings.
+                @type: number
+                @required: false
+            @attribute:
+                @name: max_length
+                @desc: The maximum value length of arrays or strings.
+                @type: number
+                @required: false
+            @attribute:
+                @name: alias
+                @desc: When two attributes share the same value scheme you can refer to the value scheme of another attribute by assigning the alias attribute with the according attribute name.
+                @type: string
+                @required: false
+            @attribute:
+                @name: verify
                 @desc:
                     A callback to check the parameter.
                     The callback takes arguments `(attr, attrs)` with the assigned attribute value and the parent attribute object.
                     However, when the `object` is an array the callback takes arguments `(attr, attrs, index)`.
+                    The callback will only be executed when the parameter is defined, so not when it is undefined but set by attribute `def`.
+                    An error can be caused by returning a string as an error description. This ensures errors are thrown in the same way.
+                @type: function
+            @attribute:
+                @deprecated: true
+                @name: callback
+                @desc:
+                    A callback to check the parameter.
+                    The callback takes arguments `(attr, parent_obj, key)` with the assigned attribute value and the parent attribute object.
+                    However, when the `object` is an array the callback takes arguments `(attr, parent_arr, index)`.
                     The callback will only be executed when the parameter is defined, so not when it is undefined but set by attribtue `def`.
                     An error can be caused by returning a string as an error description. This ensures errors are thrown in the same way.
                 @type: function
             @attribute:
+                @name: postprocess
+                @desc:
+                    A callback to post process the attribute's value. The returned value of the callback will be assigned to the attribute, unless the callback returns `undefined`.
+                    The callback takes arguments `(attr, parent_obj, key)` with the assigned attribute value and the parent attribute object.
+                    However, when the `object` is an array the callback takes arguments `(attr, parent_arr, index)`.
+                @type: function
+            @attribute:
                 @name: scheme
-                @desc: The recursive `scheme` for when the parameter is an object or array, the `scheme` attribute follows the same rules as the main function's `scheme` parameter. However, when the object is an array, the scheme should be for an array item.
+                @desc: The recursive `scheme` for when the parameter is an object, the `scheme` attribute follows the same rules as the main function's `scheme` parameter. However, when the object is an array, the scheme should be for an array item.
                 @type: object
             @attribute:
                 @name: value_scheme
-                @desc: The universal `scheme` for object values, only used in raw objects, not in arrays.
+                @desc: The universal `scheme` for object values, only used in arrays and raw objects.
                 @type: object
             @attribute:
                 @name: enum
@@ -222,7 +254,8 @@ vlib.scheme.verify = function({
                     try {
                         object[obj_key] = vlib.scheme.verify({
                             object: object[obj_key],
-                            scheme: scheme_item.scheme || scheme_item.value_scheme,
+                            scheme: scheme_item.scheme,
+                            value_scheme: scheme_item.value_scheme,
                             check_unknown,
                             parent: `${parent}${obj_key}.`,
                             error_prefix,
@@ -232,6 +265,16 @@ vlib.scheme.verify = function({
                         if (!throw_err && e.json) { return e.json; }
                         else { throw e; }
                     }
+                }
+
+                // Check min max items.
+                if (typeof scheme_item.min_length === "number" && object[obj_key].length < scheme_item.min_length) {
+                    const field = `${parent}${obj_key}`;
+                    return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid array length [${object[obj_key].length}], the minimum length is [${scheme_item.min_length}].`, field);
+                }
+                if (typeof scheme_item.max_length === "number" && object[obj_key].length > scheme_item.max_length) {
+                    const field = `${parent}${obj_key}`;
+                    return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid array length [${object[obj_key].length}], the maximum length is [${scheme_item.max_length}].`, field);
                 }
                 return true;
             }
@@ -256,6 +299,22 @@ vlib.scheme.verify = function({
                     }
                 }
                 return true;
+            }
+            case "string": {
+                if (typeof object[obj_key] !== "string" && !(object[obj_key] instanceof String)) {
+                    return false;
+                }
+                if (scheme_item.allow_empty !== true && object[obj_key].length === 0) {
+                    return 1;
+                }
+                if (typeof scheme_item.min_length === "number" && object[obj_key].length < scheme_item.min_length) {
+                    const field = `${parent}${obj_key}`;
+                    return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid string length [${object[obj_key].length}], the minimum length is [${scheme_item.min_length}].`, field);
+                }
+                if (typeof scheme_item.max_length === "number" && object[obj_key].length > scheme_item.max_length) {
+                    const field = `${parent}${obj_key}`;
+                    return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid string length [${object[obj_key].length}], the maximum length is [${scheme_item.max_length}].`, field);
+                }
             }
             default:
                 if (type !== typeof object[obj_key]) {
@@ -327,14 +386,6 @@ vlib.scheme.verify = function({
             }
         }
 
-        // Do the callback check.
-        if (scheme_item.callback) {
-            const err = scheme_item.callback(object[key], object, key);
-            if (err) {
-                return throw_err_h(`${error_prefix}${err}`, `${parent}${value_scheme_key || key}`);
-            }
-        }
-
         // Check enum.
         if (scheme_item.enum) {
             if (!scheme_item.enum.includes(object[key])) {
@@ -350,24 +401,63 @@ vlib.scheme.verify = function({
                 return throw_err_h(`${error_prefix}Attribute "${field}" must be one of the following enumerated values [${joined}].`, field);
             }
         }
+
+        // Execute the verify callback.
+        if (scheme_item.verify) {
+            const err = scheme_item.verify(object[key], object, key);
+            if (err) {
+                return throw_err_h(`${error_prefix}${err}`, `${parent}${value_scheme_key || key}`);
+            }
+        }
+        if (scheme_item.callback) {
+
+            // Show deprecated warning with shortened stack trace.
+            let stack = new Error().stack.split('\n');
+            let last = -1;
+            for (let i = 0; i < stack.length; i++) {
+                if (stack[i].includes('at verify_value_scheme ') && stack[i].includes('/vlib.js')) {
+                    last = i;
+                }
+            }
+            if (last !== -1) {
+                stack = stack.slice(last + 1);
+            }
+            console.warn(`${vlib.colors.red}Warning${vlib.colors.end}: [vlib.scheme.verify]: Attribute "callback" is deprecated and replaced by attribute "verify" and will be removed in future versions.\n${stack.join('\n')}`);
+
+            // Still proceed as normal.
+            const err = scheme_item.callback(object[key], object, key);
+            if (err) {
+                return throw_err_h(`${error_prefix}${err}`, `${parent}${value_scheme_key || key}`);
+            }
+        }
+
+        // Execute the post process callback.
+        if (scheme_item.postprocess) {
+            const res = scheme_item.postprocess(object[key], object, key);
+            if (res !== undefined) {
+                object[key] = res;
+            }
+        }
     }
 
 
     // When object is an array.
     if (Array.isArray(object)) {
 
-        // Use scheme when value is scheme is defined.
-        if (value_scheme != null) {
-            scheme = value_scheme;
-        }
+        // @deprecated: No longer use scheme for arrays since if a param may be both an array and obj, there must be a distinction possible to verify the scheme of the possible object vs the value scheme of a possible array.
+        //
+        // Always use value scheme.
+        scheme = value_scheme;
+        if (scheme != null) {
 
-        // Use the scheme as a scheme item for the entire array.
-        const scheme_item = vlib.scheme.init_scheme_item(scheme); 
+            // Use the scheme as a scheme item for the entire array.
+            const scheme_item = vlib.scheme.init_scheme_item(scheme); 
 
-        // Iterate array.
-        for (let index = 0; index < object.length; index++) {
-            const err = verify_value_scheme(scheme_item, index, object);
-            if (err) { return err; }
+            // Iterate array.
+            for (let index = 0; index < object.length; index++) {
+                const err = verify_value_scheme(scheme_item, index, object);
+                if (err) { return err; }
+            }
         }
     }
 
@@ -410,7 +500,10 @@ vlib.scheme.verify = function({
             const scheme_keys = Object.keys(scheme);
             for (let scheme_index = 0; scheme_index < scheme_keys.length; scheme_index++) {
                 const scheme_key = scheme_keys[scheme_index];
-                const scheme_item = vlib.scheme.init_scheme_item(scheme[scheme_key], scheme, scheme_key);
+                let scheme_item = vlib.scheme.init_scheme_item(scheme[scheme_key], scheme, scheme_key);
+                if (typeof scheme_item.alias === "string") {
+                    scheme_item = vlib.scheme.init_scheme_item(scheme[scheme_item.alias], scheme, scheme_item.alias);
+                }
 
                 // Parameter is not found in passed object.
                 if (scheme_key in object === false) {

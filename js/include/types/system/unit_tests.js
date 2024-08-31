@@ -21,6 +21,8 @@ vlib.unit_tests._create_unit_test = (func, id, debug = 0) => {
 }
 
 /*	@docs:
+	@nav: JS
+	@chapter: Unit Testing
 	@title: Unit tests
 	@descr:
 		Perform unit tests.

@@ -2,6 +2,11 @@
 /*
  * @author: Daan van den Bergh
  * @copyright: © 2022 - 2023 Daan van den Bergh.
+ *
+ * WARNING:
+ *  This script is also embedded into vweb.
+ *  Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
+ *  And beware that `vlib` will be replaced with `vweb`.
  */
 
 // ---------------------------------------------------------

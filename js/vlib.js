@@ -661,6 +661,13 @@ delete obj[key[0]];
 })
 return obj;
 }
+vlib.utils.debounce=(delay,func)=>{
+let timeout;
+return function(...args){
+clearTimeout(timeout);
+timeout=setTimeout(()=>func.apply(this,args),delay);
+};
+}
 vlib.utils.verify_params=function({
 params={},
 info={},
@@ -1602,7 +1609,8 @@ if (scheme_item.scheme||scheme_item.value_scheme){
 try {
 object[obj_key]=vlib.scheme.verify({
 object:object[obj_key],
-scheme:scheme_item.scheme||scheme_item.value_scheme,
+scheme:scheme_item.scheme,
+value_scheme:scheme_item.value_scheme,
 check_unknown,
 parent:`${parent}${obj_key}.`,
 error_prefix,
@@ -1612,6 +1620,14 @@ throw_err:true,
 if (!throw_err&&e.json){return e.json;}
 else {throw e;}
 }
+}
+if (typeof scheme_item.min_length==="number"&&object[obj_key].length<scheme_item.min_length){
+const field=`${parent}${obj_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid array length [${object[obj_key].length}], the minimum length is [${scheme_item.min_length}].`,field);
+}
+if (typeof scheme_item.max_length==="number"&&object[obj_key].length>scheme_item.max_length){
+const field=`${parent}${obj_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid array length [${object[obj_key].length}], the maximum length is [${scheme_item.max_length}].`,field);
 }
 return true;
 }
@@ -1636,6 +1652,22 @@ else {throw e;}
 }
 }
 return true;
+}
+case "string":{
+if (typeof object[obj_key]!=="string"&&!(object[obj_key] instanceof String)){
+return false;
+}
+if (scheme_item.allow_empty!==true&&object[obj_key].length===0){
+return 1;
+}
+if (typeof scheme_item.min_length==="number"&&object[obj_key].length<scheme_item.min_length){
+const field=`${parent}${obj_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid string length [${object[obj_key].length}], the minimum length is [${scheme_item.min_length}].`,field);
+}
+if (typeof scheme_item.max_length==="number"&&object[obj_key].length>scheme_item.max_length){
+const field=`${parent}${obj_key}`;
+return throw_err_h(`${error_prefix}Attribute "${field}" has an invalid string length [${object[obj_key].length}], the maximum length is [${scheme_item.max_length}].`,field);
+}
 }
 default:
 if (type!==typeof object[obj_key]){
@@ -1696,12 +1728,6 @@ return throw_err_h(`${error_prefix}Attribute "${field}" is an empty string.`,fie
 }
 }
 }
-if (scheme_item.callback){
-const err=scheme_item.callback(object[key],object,key);
-if (err){
-return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
-}
-}
 if (scheme_item.enum){
 if (!scheme_item.enum.includes(object[key])){
 const field=`${parent}${value_scheme_key||key}`;
@@ -1716,15 +1742,44 @@ return `"${item.toString()}"`;
 return throw_err_h(`${error_prefix}Attribute "${field}" must be one of the following enumerated values [${joined}].`,field);
 }
 }
+if (scheme_item.verify){
+const err=scheme_item.verify(object[key],object,key);
+if (err){
+return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
+}
+}
+if (scheme_item.callback){
+let stack=new Error().stack.split('\n');
+let last=-1;
+for (let i=0;i<stack.length;i++){
+if (stack[i].includes('at verify_value_scheme ')&&stack[i].includes('/vlib.js')){
+last=i;
+}
+}
+if (last!==-1){
+stack=stack.slice(last+1);
+}
+console.warn(`${vlib.colors.red}Warning${vlib.colors.end}: [vlib.scheme.verify]: Attribute "callback" is deprecated and replaced by attribute "verify" and will be removed in future versions.\n${stack.join('\n')}`);
+const err=scheme_item.callback(object[key],object,key);
+if (err){
+return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
+}
+}
+if (scheme_item.postprocess){
+const res=scheme_item.postprocess(object[key],object,key);
+if (res!==undefined){
+object[key]=res;
+}
+}
 }
 if (Array.isArray(object)){
-if (value_scheme!=null){
 scheme=value_scheme;
-}
+if (scheme!=null){
 const scheme_item=vlib.scheme.init_scheme_item(scheme);
 for (let index=0;index<object.length;index++){
 const err=verify_value_scheme(scheme_item,index,object);
 if (err){return err;}
+}
 }
 }
 else {
@@ -1749,7 +1804,10 @@ return throw_err_h(`${error_prefix}Attribute "${field}" is not a valid attribute
 const scheme_keys=Object.keys(scheme);
 for (let scheme_index=0;scheme_index<scheme_keys.length;scheme_index++){
 const scheme_key=scheme_keys[scheme_index];
-const scheme_item=vlib.scheme.init_scheme_item(scheme[scheme_key],scheme,scheme_key);
+let scheme_item=vlib.scheme.init_scheme_item(scheme[scheme_key],scheme,scheme_key);
+if (typeof scheme_item.alias==="string"){
+scheme_item=vlib.scheme.init_scheme_item(scheme[scheme_item.alias],scheme,scheme_item.alias);
+}
 if (scheme_key in object===false){
 if (scheme_item.default!==undefined){
 if (typeof scheme_item.default==="function"){
@@ -3696,6 +3754,9 @@ docs+=`\nOptions:\n`;
 let arg_index=0;
 const list=[];
 command_or_commands.args.iterate((arg)=>{
+if (arg.ignore===true){
+return ;
+}
 const list_item=[];
 if (arg.id==null){
 list_item[0]=`    argument ${arg_index}`;

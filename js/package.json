@@ -17,12 +17,12 @@
     },
     "author": "Daan van den Bergh",
     "dependencies": {
-        "bson": "^6.4.0",
+        "bson": "^6.8.0",
         "diskusage": "^1.2.0",
-        "fs-extra": "^11.1.1",
+        "fs-extra": "^11.2.0",
         "https": "^1.0.0",
-        "systeminformation": "^5.22.0",
-        "ws": "^8.16.0",
+        "systeminformation": "^5.23.5",
+        "ws": "^8.18.0",
         "zlib": "^1.0.5"
     }
 }

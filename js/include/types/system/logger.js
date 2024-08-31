@@ -89,7 +89,7 @@ vlib.Logger = class Logger {
             @descr: The log level of the message.
             @type: number
         @param:
-            @name: ...args
+            @name: args
             @descr: The data to log.
             @type: array
      */

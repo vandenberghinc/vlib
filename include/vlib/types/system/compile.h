@@ -73,7 +73,8 @@ auto& check_os_json(const Path& config, const Json& json, const String& key) {
  *		The supported os types are `macos` and `linux`.
  *
  *		An example configuration json.
- *		```{
+ *		```
+ *		{
  *			"compiler": "clang++",
  *			"input": "$SOURCE/build.cpp",
  *			"output": "$SOURCE/bin/build",
@@ -105,7 +106,8 @@ auto& check_os_json(const Path& config, const Json& json, const String& key) {
  *				"-fsanitize=undefined",
  *				"-Wno-unknown-escape-sequence"
  *			]
- *		}```
+ *		}
+ *		```
  *	@warning:
  *		This function is mainly implemented for other vinc libraries so it may be subject to change.
  */

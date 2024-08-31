@@ -40,6 +40,15 @@ vlib.utils.edit_obj_keys = (obj = {}, rename = [["old", "new"]], remove = []) =>
     return obj;
 }
 
+// Debounce.
+vlib.utils.debounce = (delay, func) => {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
 // Verify that a variable is an object, if not error will be thrown.
 /*
 vlib.utils.verify_array = function(name, array) {
@@ -617,7 +626,8 @@ vlib.utils.fuzzy_search = ({
 // Fuzzy match.
 // Inspired by https://github.com/farzher/fuzzysort/blob/master/fuzzysort.js#L450.
 /*  @docs:
- *  @nav: Frontend
+ *  @nav: JS
+ *  @chapter: Utils
  *  @title: Fuzzy Match
  *  @description:
  *      Perform a fuzzy similairity match between a query and a target.
