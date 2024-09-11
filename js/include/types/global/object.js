@@ -3,14 +3,18 @@
  * Copyright: © 2022 - 2023 Daan van den Bergh.
  */
 
+// The object module.
+vlib.object = {};
+
 // Expand object x with object y, does not create a copy and returns nothing.
-Object.expand = function(x, y) {
+vlib.object.expand = function(x, y) {
     const keys = Object.keys(y);
     for (let i = 0; i < keys.length; i++) {
         x[keys[i]] = y[keys[i]];
     }
     return x;
 }
+Object.expand = vlib.object.expand;
 
 // Internal function to check equals.
 vlib.internal.obj_eq = function(x, y, detect_keys = false, detect_keys_nested = false) {
@@ -61,22 +65,25 @@ vlib.internal.obj_eq = function(x, y, detect_keys = false, detect_keys_nested = 
         return x === y;
     }
 }
+Object.obj_eq = vlib.internal.obj_eq;
 
 // Check if an object equals another object.
 // Causes UB wit actual classes.
-Object.eq = function(x, y) {
+vlib.object.eq = function(x, y) {
     return vlib.internal.obj_eq(x, y);
 }
+Object.eq = vlib.object.eq;
 
 // Detect changed keys between two objects, optionally include the changed nested object keys.
 // Returns `null` when no keys have changed.
 // Causes undefined behaviour when one of the x, y parameters is not an object.
-Object.detect_changes = function(x, y, include_nested = false) {
+vlib.object.detect_changes = function(x, y, include_nested = false) {
     return vlib.internal.obj_eq(x, y, true, include_nested);
 }
+Object.detect_changes = vlib.object.detect_changes;
 
 // Rename object keys.
-Object.rename_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
+vlib.object.rename_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     remove.iterate((key) => {
         delete obj[key];
     })
@@ -86,14 +93,16 @@ Object.rename_keys = (obj = {}, rename = [["old", "new"]], remove = []) => {
     })
     return obj;
 }
+Object.rename_keys = vlib.object.rename_keys;
 
 // Perform a deep copy.
-Object.deep_copy = (obj) => {
+vlib.object.deep_copy = (obj) => {
     return vlib.utils.deep_copy(obj);
 }
+Object.deep_copy = vlib.object.deep_copy;
 
 // Delete keys from an object recursively, so also from the nested objects and from the nested objects nested within nested arrays.
-Object.delete_recursively = (obj, remove_keys = []) => {
+vlib.object.delete_recursively = (obj, remove_keys = []) => {
     const clean = (obj) => {
         if (Array.isArray(obj)) {
             obj.iterate((item) => {
@@ -115,9 +124,10 @@ Object.delete_recursively = (obj, remove_keys = []) => {
     clean(obj);
     return obj;
 }
+Object.delete_recursively = vlib.object.delete_recursively;
 
 // Detect circular.
-Object.detect_circular = (obj, attr = '', seen = new Map()) => {
+vlib.object.detect_circular = (obj, attr = '', seen = new Map()) => {
     for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
             const new_attr = attr ? `${attr}.${key}` : key;
@@ -144,6 +154,23 @@ Object.detect_circular = (obj, attr = '', seen = new Map()) => {
         }
     }
 }
+Object.detect_circular = vlib.object.detect_circular;
+
+// Pop a key and return the new object.
+vlib.object.remove = (obj, key_or_keys = '', copy = false) => {
+    if (copy) {
+        obj = {...obj};
+    }
+    if (Array.isArray(key_or_keys)) {
+        for (const key of key_or_keys) {
+            delete obj[key];    
+        }
+    } else {
+        delete obj[key_or_keys];
+    }
+    return obj;
+}
+Object.remove = vlib.object.remove;
 
 // Stringify with support for circular objects.
 // Object.stringify = (obj, indent = null, include_circular = true) => {

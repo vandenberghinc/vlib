@@ -180,6 +180,13 @@ vlib.scheme.type_error_str = (scheme_item, prefix = " of type ") => {
                     However, when the `object` is an array the callback takes arguments `(attr, parent_arr, index)`.
                 @type: function
             @attribute:
+                @name: preprocess
+                @desc:
+                    A callback to pre process the attribute's value before anyting else. The returned value of the callback will be assigned to the attribute, unless the callback returns `undefined`.
+                    The callback takes arguments `(attr, parent_obj, key)` with the assigned attribute value and the parent attribute object.
+                    However, when the `object` is an array the callback takes arguments `(attr, parent_arr, index)`.
+                @type: function
+            @attribute:
                 @name: scheme
                 @desc: The recursive `scheme` for when the parameter is an object, the `scheme` attribute follows the same rules as the main function's `scheme` parameter. However, when the object is an array, the scheme should be for an array item.
                 @type: object
@@ -330,6 +337,14 @@ vlib.scheme.verify = function({
     // Verify a value by scheme.
     const verify_value_scheme = (scheme_item, key, object, value_scheme_key = undefined) => {
 
+        // Execute the pre process callback.
+        if (typeof scheme_item.preprocess === "function") {
+            const res = scheme_item.preprocess(object[key], object, key);
+            if (res !== undefined) {
+                object[key] = res;
+            }
+        }
+
         // Do a type check.
         if (scheme_item.type && scheme_item.type !== "any") {
             const is_required = scheme_item.required ?? true;
@@ -403,13 +418,13 @@ vlib.scheme.verify = function({
         }
 
         // Execute the verify callback.
-        if (scheme_item.verify) {
+        if (typeof scheme_item.verify === "function") {
             const err = scheme_item.verify(object[key], object, key);
             if (err) {
                 return throw_err_h(`${error_prefix}${err}`, `${parent}${value_scheme_key || key}`);
             }
         }
-        if (scheme_item.callback) {
+        if (typeof scheme_item.callback === "function") {
 
             // Show deprecated warning with shortened stack trace.
             let stack = new Error().stack.split('\n');
@@ -432,7 +447,7 @@ vlib.scheme.verify = function({
         }
 
         // Execute the post process callback.
-        if (scheme_item.postprocess) {
+        if (typeof scheme_item.postprocess === "function") {
             const res = scheme_item.postprocess(object[key], object, key);
             if (res !== undefined) {
                 object[key] = res;

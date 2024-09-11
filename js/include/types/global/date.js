@@ -435,4 +435,98 @@ vlib.Date = class D extends Date {
         date.setHours(0, 0, 0, 0, 0);
         return date;
     }
+
+    /*  @docs:
+        @title: Increment date
+        @desc: Increment the date by the given parameters.
+        @param:
+            @name: seconds
+            @descr: The number of seconds to increment the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: minutes
+            @descr: The number of minutes to increment the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: hours
+            @descr: The number of hours to increment the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: days
+            @descr: The number of days to increment the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: weeks
+            @descr: The number of weeks to increment the current date by. Each week adds 7 days. Defaults to 0.
+            @type: number
+        @param:
+            @name: months
+            @descr: The number of months to increment the current date by. Defaults to 0. Handles month overflow.
+            @type: number
+        @param:
+            @name: years
+            @descr: The number of years to increment the current date by. Defaults to 0.
+            @type: number
+        @return:
+            @type: vlib.Date
+            @descr: Returns a new date object incremented by the specified values.
+    */
+    increment({seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0}) {
+        const date = new D(this.getTime());
+        if (seconds > 0)            date.setSeconds(date.getSeconds() + seconds);
+        if (minutes > 0)            date.setMinutes(date.getMinutes() + minutes);
+        if (hours > 0)              date.setHours(date.getHours() + hours);
+        if (days > 0 || weeks > 0)  date.setDate(date.getDate() + days + weeks * 7); // Add both days and weeks
+        if (months > 0)             date.setMonth(date.getMonth() + months);
+        if (years > 0)              date.setFullYear(date.getFullYear() + years);
+        return date;
+    }
+
+    /*  @docs:
+        @title: Decrement date
+        @desc: Decrement the date by the given parameters.
+        @param:
+            @name: seconds
+            @descr: The number of seconds to decrement the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: minutes
+            @descr: The number of minutes to decrement the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: hours
+            @descr: The number of hours to decrement the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: days
+            @descr: The number of days to decrement the current date by. Defaults to 0.
+            @type: number
+        @param:
+            @name: weeks
+            @descr: The number of weeks to decrement the current date by. Each week subtracts 7 days. Defaults to 0.
+            @type: number
+        @param:
+            @name: months
+            @descr: The number of months to decrement the current date by. Defaults to 0. Handles month underflow.
+            @type: number
+        @param:
+            @name: years
+            @descr: The number of years to decrement the current date by. Defaults to 0.
+            @type: number
+        @return:
+            @type: vlib.Date
+            @descr: Returns a new date object decremented by the specified values.
+    */
+    decrement({seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0}) {
+        const date = new D(this.getTime());
+        if (seconds > 0)            date.setSeconds(date.getSeconds() - seconds);
+        if (minutes > 0)            date.setMinutes(date.getMinutes() - minutes);
+        if (hours > 0)              date.setHours(date.getHours() - hours);
+        if (days > 0 || weeks > 0)  date.setDate(date.getDate() - (days + weeks * 7)); // Subtract both days and weeks
+        if (months > 0)             date.setMonth(date.getMonth() - months);
+        if (years > 0)              date.setFullYear(date.getFullYear() - years);
+        return date;
+    }
+
+
 }

@@ -23,7 +23,7 @@ vlib.Path = class Path {
             this._path = path._path;
         } else {
             path = path.toString();
-            if (clean) {
+            if (clean && path.length > 0) {
                 this._path = "";
                 const max_i = path.length - 1;
                 for (let i = 0; i < path.length; i++) {
@@ -647,7 +647,33 @@ vlib.Path = class Path {
         @note: throws an error when the path is not a directory.
         @funcs: 2
     */
-    async paths(recursive = false) {
+    async paths({
+        recursive = false,
+        absolute = true,
+        exclude = [],
+    } = {}) {
+
+        // Since previous versions had only a single boolean arg, defer to old version when passed like this.
+        if (typeof arguments[0] === "boolean") {
+            recursive = arguments[0];
+            absolute = true;
+            exclude = [];
+        }
+
+        // Initialize exclude list.
+        for (let i = 0; i < exclude.length; i++) {
+            let path = new vlib.Path(exclude[i]);
+            if (path.exists()) {
+                path = path.abs();
+            } else {
+                if (this.join(exclude[i], false).exists()) {
+                    path = this.join(exclude[i], false).abs();
+                }
+            }
+            exclude[i] = path.str();
+        }
+
+        // Iterate.
         return new Promise(async (resolve, reject) => {
             if (!this.is_dir()) {
                 return reject(`Path "${this._path}" is not a directory.`);
@@ -657,12 +683,19 @@ vlib.Path = class Path {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(files.map((name) => (this.join(name))));
+                        const list = [];
+                        files.iterate(name => {
+                            const path = this.join(name);
+                            if (exclude.length === 0 || !exclude.includes(path.str())) {
+                                list.append(absolute ? path : name)
+                            }
+                        })
+                        resolve(list);
                     }
                 });
             } else {
                 const files = [];
-                const traverse = (path) => {
+                const traverse = (path, relative_path) => {
                     return new Promise((resolve, reject) => {
                         libfs.readdir(path._path, async (err, children) => {
                             if (err) {
@@ -671,10 +704,17 @@ vlib.Path = class Path {
                                 let err = null;
                                 for (let i = 0; i < children.length; i++) {
                                     const child = path.join(children[i]);
-                                    files.push(child);
+                                    if (exclude.length > 0 && exclude.includes(child.str())) {
+                                        continue;
+                                    }
+                                    const relative_child = absolute ? null : relative_path.join(children[i]);
+                                    files.push(absolute
+                                        ? child
+                                        : relative_child
+                                    );
                                     if (child.is_dir()) {
                                         try {
-                                            await traverse(child);
+                                            await traverse(child, relative_child);
                                         } catch (e) {
                                             err = e;
                                             return false;
@@ -691,7 +731,7 @@ vlib.Path = class Path {
                     })
                 }
                 try {
-                    await traverse(this);
+                    await traverse(this, absolute ? null : new vlib.Path(""));
                 } catch (err) {
                     return reject(err);
                 }

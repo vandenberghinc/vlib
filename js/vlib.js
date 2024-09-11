@@ -534,13 +534,15 @@ divided[chunk].push(this[i]);
 }
 return divided;
 };
-Object.expand=function(x,y){
+vlib.object={};
+vlib.object.expand=function(x,y){
 const keys=Object.keys(y);
 for (let i=0;i<keys.length;i++){
 x[keys[i]]=y[keys[i]];
 }
 return x;
 }
+Object.expand=vlib.object.expand;
 vlib.internal.obj_eq=function(x,y,detect_keys=false,detect_keys_nested=false){
 if (typeof x!==typeof y){return false;}
 else if (x instanceof String){
@@ -589,13 +591,16 @@ else {
 return x===y;
 }
 }
-Object.eq=function(x,y){
+Object.obj_eq=vlib.internal.obj_eq;
+vlib.object.eq=function(x,y){
 return vlib.internal.obj_eq(x,y);
 }
-Object.detect_changes=function(x,y,include_nested=false){
+Object.eq=vlib.object.eq;
+vlib.object.detect_changes=function(x,y,include_nested=false){
 return vlib.internal.obj_eq(x,y, true,include_nested);
 }
-Object.rename_keys=(obj={},rename=[["old","new"]],remove=[])=>{
+Object.detect_changes=vlib.object.detect_changes;
+vlib.object.rename_keys=(obj={},rename=[["old","new"]],remove=[])=>{
 remove.iterate((key)=>{
 delete obj[key];
 })
@@ -605,10 +610,12 @@ delete obj[key[0]];
 })
 return obj;
 }
-Object.deep_copy=(obj)=>{
+Object.rename_keys=vlib.object.rename_keys;
+vlib.object.deep_copy=(obj)=>{
 return vlib.utils.deep_copy(obj);
 }
-Object.delete_recursively=(obj,remove_keys=[])=>{
+Object.deep_copy=vlib.object.deep_copy;
+vlib.object.delete_recursively=(obj,remove_keys=[])=>{
 const clean=(obj)=>{
 if (Array.isArray(obj)){
 obj.iterate((item)=>{
@@ -630,7 +637,8 @@ clean(obj[key]);
 clean(obj);
 return obj;
 }
-Object.detect_circular=(obj,attr='',seen=new Map())=>{
+Object.delete_recursively=vlib.object.delete_recursively;
+vlib.object.detect_circular=(obj,attr='',seen=new Map())=>{
 for (const key in obj){
 if (Object.prototype.hasOwnProperty.call(obj,key)){
 const new_attr=attr?`${attr}.${key}`:key;
@@ -647,6 +655,21 @@ Object.detect_circular(value,new_attr,seen);
 }
 }
 }
+Object.detect_circular=vlib.object.detect_circular;
+vlib.object.remove=(obj,key_or_keys='',copy=false)=>{
+if (copy){
+obj={...obj};
+}
+if (Array.isArray(key_or_keys)){
+for (const key of key_or_keys){
+delete obj[key];
+}
+}else {
+delete obj[key_or_keys];
+}
+return obj;
+}
+Object.remove=vlib.object.remove;
 vlib.utils={};
 vlib.utils.sleep=async function(msec){
 return new Promise((resolve)=>setTimeout(resolve,msec))
@@ -1680,6 +1703,12 @@ return true;
 }
 }
 const verify_value_scheme=(scheme_item,key,object,value_scheme_key=undefined)=>{
+if (typeof scheme_item.preprocess==="function"){
+const res=scheme_item.preprocess(object[key],object,key);
+if (res!==undefined){
+object[key]=res;
+}
+}
 if (scheme_item.type&&scheme_item.type!=="any"){
 const is_required=scheme_item.required??true;
 if (scheme_item.default===null&&object[key]==null){
@@ -1742,13 +1771,13 @@ return `"${item.toString()}"`;
 return throw_err_h(`${error_prefix}Attribute "${field}" must be one of the following enumerated values [${joined}].`,field);
 }
 }
-if (scheme_item.verify){
+if (typeof scheme_item.verify==="function"){
 const err=scheme_item.verify(object[key],object,key);
 if (err){
 return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
 }
 }
-if (scheme_item.callback){
+if (typeof scheme_item.callback==="function"){
 let stack=new Error().stack.split('\n');
 let last=-1;
 for (let i=0;i<stack.length;i++){
@@ -1765,7 +1794,7 @@ if (err){
 return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
 }
 }
-if (scheme_item.postprocess){
+if (typeof scheme_item.postprocess==="function"){
 const res=scheme_item.postprocess(object[key],object,key);
 if (res!==undefined){
 object[key]=res;
@@ -2170,6 +2199,26 @@ date.setMonth(0,1)
 date.setHours(0,0,0,0,0);
 return date;
 }
+increment({seconds=0,minutes=0,hours=0,days=0,weeks=0,months=0,years=0}){
+const date=new D(this.getTime());
+if (seconds>0)date.setSeconds(date.getSeconds()+seconds);
+if (minutes>0)date.setMinutes(date.getMinutes()+minutes);
+if (hours>0)date.setHours(date.getHours()+hours);
+if (days>0||weeks>0)date.setDate(date.getDate()+days+weeks*7);
+if (months>0)date.setMonth(date.getMonth()+months);
+if (years>0)date.setFullYear(date.getFullYear()+years);
+return date;
+}
+decrement({seconds=0,minutes=0,hours=0,days=0,weeks=0,months=0,years=0}){
+const date=new D(this.getTime());
+if (seconds>0)date.setSeconds(date.getSeconds()-seconds);
+if (minutes>0)date.setMinutes(date.getMinutes()-minutes);
+if (hours>0)date.setHours(date.getHours()-hours);
+if (days>0||weeks>0)date.setDate(date.getDate()-(days+weeks*7));
+if (months>0)date.setMonth(date.getMonth()-months);
+if (years>0)date.setFullYear(date.getFullYear()-years);
+return date;
+}
 }
 vlib.Path=class Path{
 constructor(path,clean=true){
@@ -2180,7 +2229,7 @@ else if (path instanceof vlib.Path){
 this._path=path._path;
 }else {
 path=path.toString();
-if (clean){
+if (clean&&path.length>0){
 this._path="";
 const max_i=path.length-1;
 for (let i=0;i<path.length;i++){
@@ -2624,7 +2673,27 @@ save_sync(data){
 libfs.writeFileSync(this._path,data);
 return this;
 }
-async paths(recursive=false){
+async paths({
+recursive=false,
+absolute=true,
+exclude=[],
+}={}){
+if (typeof arguments[0]==="boolean"){
+recursive=arguments[0];
+absolute=true;
+exclude=[];
+}
+for (let i=0;i<exclude.length;i++){
+let path=new vlib.Path(exclude[i]);
+if (path.exists()){
+path=path.abs();
+}else {
+if (this.join(exclude[i], false).exists()){
+path=this.join(exclude[i], false).abs();
+}
+}
+exclude[i]=path.str();
+}
 return new Promise(async (resolve,reject)=>{
 if (!this.is_dir()){
 return reject(`Path "${this._path}" is not a directory.`);
@@ -2634,12 +2703,19 @@ libfs.readdir(this._path,(err,files)=>{
 if (err){
 reject(err);
 }else {
-resolve(files.map((name)=>(this.join(name))));
+const list=[];
+files.iterate(name=>{
+const path=this.join(name);
+if (exclude.length===0||!exclude.includes(path.str())){
+list.append(absolute?path:name)
+}
+})
+resolve(list);
 }
 });
 }else {
 const files=[];
-const traverse=(path)=>{
+const traverse=(path,relative_path)=>{
 return new Promise((resolve,reject)=>{
 libfs.readdir(path._path, async (err,children)=>{
 if (err){
@@ -2648,10 +2724,17 @@ reject(err);
 let err=null;
 for (let i=0;i<children.length;i++){
 const child=path.join(children[i]);
-files.push(child);
+if (exclude.length>0&&exclude.includes(child.str())){
+continue;
+}
+const relative_child=absolute?null :relative_path.join(children[i]);
+files.push(absolute
+?child
+:relative_child
+);
 if (child.is_dir()){
 try {
-await traverse(child);
+await traverse(child,relative_child);
 }catch (e){
 err=e;
 return false;
@@ -2668,7 +2751,7 @@ reject(err);
 })
 }
 try {
-await traverse(this);
+await traverse(this,absolute?null :new vlib.Path(""));
 }catch (err){
 return reject(err);
 }
@@ -2821,6 +2904,20 @@ Colors.bold="";
 Colors.italic="";
 Colors.end="";
 }
+}
+vlib.color={
+black:(data)=>`${vlib.colors.black}${data}${vlib.colors.end}`,
+red:(data)=>`${vlib.colors.red}${data}${vlib.colors.end}`,
+red_bold:(data)=>`${vlib.colors.red_bold}${data}${vlib.colors.end}`,
+green:(data)=>`${vlib.colors.green}${data}${vlib.colors.end}`,
+yellow:(data)=>`${vlib.colors.yellow}${data}${vlib.colors.end}`,
+blue:(data)=>`${vlib.colors.blue}${data}${vlib.colors.end}`,
+magenta:(data)=>`${vlib.colors.magenta}${data}${vlib.colors.end}`,
+cyan:(data)=>`${vlib.colors.cyan}${data}${vlib.colors.end}`,
+gray:(data)=>`${vlib.colors.gray}${data}${vlib.colors.end}`,
+bold:(data)=>`${vlib.colors.bold}${data}${vlib.colors.end}`,
+italic:(data)=>`${vlib.colors.italic}${data}${vlib.colors.end}`,
+end:(data)=>`${vlib.colors.end}${data}${vlib.colors.end}`,
 }
 vlib.print=function(...args){
 console.log(args.join(""));
@@ -3476,27 +3573,53 @@ console.log(` * ${id}: ${results[id]}`);
 });
 }
 }
+vlib.Mutex=class Mutex{
+constructor(){
+this.locked=false;
+this.queue=[];
+}
+async lock(){
+if (!this.locked){
+this.locked=true;
+}else {
+return new Promise((resolve)=>{
+this.queue.push(resolve);
+});
+}
+}
+unlock(){
+if (this.queue.length>0){
+const next_resolve=this.queue.shift();
+next_resolve();
+}else {
+this.locked=false;
+}
+}
+}
 vlib.unit_tests={};
 vlib.unit_tests._create_unit_test=(func,id,debug=0)=>{
 return function (args){
-if (debug>0||debug===args.id){console.log(vlib.colors.blue+args.id+vlib.colors.end+":");}
-args.debug=function (level, ...args){
+if (debug>0||debug===args.id){console.log(vlib.colors.blue+id+vlib.colors.end+":");}
+return func({
+id,
+vlib,
+hash:vlib.utils.hash,
+debug:function (level, ...args){
 if (debug>=level||debug===id){console.log(" *",...args);}
-}
-return func(args)
+},
+...args,
+})
 }
 }
 vlib.unit_tests.perform=async function({
-name="LMX",
+name="Unit Tests",
 unit_tests={},
 target=null,
-source=undefined,
-exclude=[".DS_Store"],
+stop_on_failure=false,
+debug_on_failure=false,
 args={},
 debug=0,
 }){
-args.vlib=vlib;
-args.hash=vlib.utils.hash;
 console.log(`Commencing ${name} unit tests.`)
 let res,failed=0,succeeded=0;
 if (unit_tests){
@@ -3508,44 +3631,21 @@ const unit_test=unit_tests[target]
 unit_tests={}
 unit_tests[target]=unit_test;
 }
-const names=Object.keys(unit_tests);
-for (let i=0;i<names.length;i++){
-const id=names[i];
-const func=vlib.unit_tests._create_unit_test(unit_tests[names[i]],id,debug);
-let res=func({...args,id});
+const ids=Object.keys(unit_tests);
+for (const id of ids){
+let res=vlib.unit_tests._create_unit_test(unit_tests[id],id,debug_on_failure?0:debug)(args);
+if (res instanceof Promise){res=await res;}
+if (res===false){
+if (debug_on_failure){
+const res=vlib.unit_tests._create_unit_test(unit_tests[id],id,debug)(args);
 if (res instanceof Promise){await res;}
-if (await res===false){
+}
 console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
+if (stop_on_failure){return ;}
 ++failed;
 }else {
 console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
 ++succeeded;
-}
-}
-}else {
-let paths=[];
-let base;
-source=new vlib.Path(source).abs();
-if (source.is_dir()){
-paths=await source.paths(true);
-base=source;
-}else {
-paths=[source];
-base=source.base();
-}
-for (let i=0;i<paths.length;i++){
-const path=paths[i].abs();
-if (!path.is_dir()&&!exclude.includes(path.name())){
-const id=path.str().substr(base.str().length+1);
-let res=require(path.str())({...args,id});
-if (res instanceof Promise){await res;}
-if (await res===false){
-console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
-++failed;
-}else {
-console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
-++succeeded;
-}
 }
 }
 }

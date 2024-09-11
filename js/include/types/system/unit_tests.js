@@ -10,13 +10,18 @@ vlib.unit_tests._create_unit_test = (func, id, debug = 0) => {
 	return function (args) {
 
 		// Debug.
-		if (debug > 0 || debug === args.id) { console.log(vlib.colors.blue + args.id + vlib.colors.end + ":"); }
-		args.debug = function (level, ...args) {
-			if (debug >= level || debug === id) { console.log(" *",...args); }
-		}
+		if (debug > 0 || debug === args.id) { console.log(vlib.colors.blue + id + vlib.colors.end + ":"); }
 
 		// Exec.
-		return func(args)
+		return func({
+			id,
+			vlib,
+			hash: vlib.utils.hash,
+			debug: function (level, ...args) {
+				if (debug >= level || debug === id) { console.log(" *",...args); }
+			},
+			...args,
+		})
 	}
 }
 
@@ -25,40 +30,76 @@ vlib.unit_tests._create_unit_test = (func, id, debug = 0) => {
 	@chapter: Unit Testing
 	@title: Unit tests
 	@descr:
-		Perform unit tests.
-
-		Works by creating nodejs files that export a function. The (async) function should return false when the unit test has failed.
+		Perform unit tests by creating an object with unit test functions.
+		By default all tests will be performed without stopping on failures.
 	@param:
-		@name: unit_tests
-		@descr: An object with unit test functions.
-		@type: object
-	@param:
-		@name: exclude
-		@descr: The file names to exclude.
-		@type: string[]
-	@param:
-		@name: args
-		@descr: The args that are past to the unit test functions.
+		@name: name
+		@descr: The global unit tests name.
 		@type: string
 	@param:
-		@name: source
-		@descr: The path to the unit tests directory, all functions will be required, the files must export a function.
-		@type: string, function[]
-		@deprecated: true
+		@name: unit_tests
+		@descr:
+			An object with unit test functions.
+		@type: object
+		@attr:
+			@name: [key]
+			@descr: The unit test name.
+			@type: string
+		@attr:
+			@name: [property]
+			@type: function
+			@descr:
+				The unit test function.
+
+				The function can accepts the following keyword assignment parameters:
+				* `id`: The id of the unit test.
+				* `hash`: A hash function to hash a string accepting arguments `(data)`.
+				* `debug`: A function to print debug statements accepting arguments `(debug_level, ...args)`.
+				And the defined `args` from `vlib.unit_tests.perform()` will be passed as well.
+
+				```js Example usage
+				vlib.unit_tests.perform({
+					...
+					unit_tests: {
+						"my_unit_test": async ({hash, debug}) => {
+							const result = await myfunc();
+							debug(2, result)
+							debug(1, hash(JSON.stringify(result)))
+							return hash(JSON.stringify(result)) === "expected hash";
+						},
+					}
+				})
+				```
+	@param:
+		@name: target
+		@descr: The target unit test name, when defined only this unit test will be executed.
+		@type: boolean
+	@param:
+		@name: stop_on_failure
+		@descr: Stop the unit tests on failure.
+		@type: boolean
+	@param:
+		@name: debug_on_failure
+		@descr: Only use the passed debug level on failed unit tests.
+		@type: boolean
+	@param:
+		@name: args
+		@descr: The args that are passed to the unit test functions.
+		@type: string
+	@param:
+		@name: debug
+		@descr: The debug level for the `debug()` function.
+		@type: number
  */
 vlib.unit_tests.perform = async function({
-	name = "LMX",
+	name = "Unit Tests",
 	unit_tests = {},
 	target = null,
-	source = undefined,
-	exclude = [".DS_Store"],
+	stop_on_failure = false,
+	debug_on_failure = false,
 	args = {},
 	debug = 0,
 }) {
-	
-	// Default args.
-	args.vlib = vlib;
-	args.hash = vlib.utils.hash;
 
 	console.log(`Commencing ${name} unit tests.`)
 	let res, failed = 0, succeeded = 0;
@@ -75,44 +116,21 @@ vlib.unit_tests.perform = async function({
 		}
 
 		// Start test.
-		const names = Object.keys(unit_tests);
-		for (let i = 0; i < names.length; i++) {
-			const id = names[i];
-			const func = vlib.unit_tests._create_unit_test(unit_tests[names[i]], id, debug);
-			let res = func({...args, id});
-			if (res instanceof Promise) { await res; }
-			if (await res === false) {
+		const ids = Object.keys(unit_tests);
+		for (const id of ids) {
+			let res = vlib.unit_tests._create_unit_test(unit_tests[id], id, debug_on_failure ? 0 : debug)(args);
+			if (res instanceof Promise) { res = await res; }
+			if (res === false) {
+				if (debug_on_failure) {
+					const res = vlib.unit_tests._create_unit_test(unit_tests[id], id, debug)(args);
+					if (res instanceof Promise) { await res; }
+				}
 				console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
+				if (stop_on_failure) { return false; }
 				++failed;
 			} else {
 				console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
 				++succeeded;
-			}
-		}
-	} else {
-		let paths = [];
-		let base;
-		source = new vlib.Path(source).abs();
-		if (source.is_dir()) {
-			paths = await source.paths(true);
-			base = source;
-		} else {
-			paths = [source];
-			base = source.base();
-		}
-		for (let i = 0; i < paths.length; i++) {
-			const path = paths[i].abs();
-			if (!path.is_dir() && !exclude.includes(path.name())) {
-				const id = path.str().substr(base.str().length + 1);
-				let res = require(path.str())({...args, id});
-				if (res instanceof Promise) { await res; }
-				if (await res === false) {
-					console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
-					++failed;
-				} else {
-					console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
-					++succeeded;
-				}
 			}
 		}
 	}
@@ -121,4 +139,5 @@ vlib.unit_tests.perform = async function({
 	} else {
 		console.log(` * Encountered ${failed === 0 ? vlib.colors.green : vlib.colors.red}${vlib.colors.bold}${failed}${vlib.colors.end} failed unit tests.`);
 	}
+	return true;
 }

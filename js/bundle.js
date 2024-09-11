@@ -29,6 +29,7 @@ const includes = [
     `${__dirname}/include/types/system/system.js`,
     `${__dirname}/include/types/system/logger.js`,
     `${__dirname}/include/types/system/performance.js`,
+    `${__dirname}/include/types/system/mutex.js`,
     `${__dirname}/include/types/system/unit_tests.js`,
 
     // CLI.

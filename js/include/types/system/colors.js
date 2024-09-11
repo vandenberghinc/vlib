@@ -85,3 +85,19 @@ vlib.colors = class Colors {
 	}
 
 }
+
+// Color functions instead of strings.
+vlib.color = {
+	black: (data) => `${vlib.colors.black}${data}${vlib.colors.end}`,
+	red: (data) => `${vlib.colors.red}${data}${vlib.colors.end}`,
+	red_bold: (data) => `${vlib.colors.red_bold}${data}${vlib.colors.end}`,
+	green: (data) => `${vlib.colors.green}${data}${vlib.colors.end}`,
+	yellow: (data) => `${vlib.colors.yellow}${data}${vlib.colors.end}`,
+	blue: (data) => `${vlib.colors.blue}${data}${vlib.colors.end}`,
+	magenta: (data) => `${vlib.colors.magenta}${data}${vlib.colors.end}`,
+	cyan: (data) => `${vlib.colors.cyan}${data}${vlib.colors.end}`,
+	gray: (data) => `${vlib.colors.gray}${data}${vlib.colors.end}`,
+	bold: (data) => `${vlib.colors.bold}${data}${vlib.colors.end}`,
+	italic: (data) => `${vlib.colors.italic}${data}${vlib.colors.end}`,
+	end: (data) => `${vlib.colors.end}${data}${vlib.colors.end}`,
+}
