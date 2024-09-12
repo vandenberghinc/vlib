@@ -89,9 +89,12 @@ vlib.Cache = class Cache {
 
     // Clear cache.
     clear() {
-        this._stop_cleanup_interval();
         this.map.clear();
         this.last_access_times.clear();
+    }
+    stop() {
+        this.clear();   
+        this._stop_cleanup_interval();
     }
 
     // Get keys iterator.

@@ -1605,8 +1605,12 @@ value_scheme=null,
 check_unknown=false,
 parent="",
 error_prefix="",
+err_prefix=null,
 throw_err=true,
 }){
+if (err_prefix!==null){
+error_prefix=err_prefix;
+}
 const throw_err_h=(e,field)=>{
 const invalid_fields={};
 invalid_fields[field]=e;
@@ -2852,9 +2856,12 @@ this.last_access_times.delete(key);
 return deletion_result;
 }
 clear(){
-this._stop_cleanup_interval();
 this.map.clear();
 this.last_access_times.clear();
+}
+stop(){
+this.clear();
+this._stop_cleanup_interval();
 }
 keys(){
 return this.map.keys();
@@ -3641,7 +3648,7 @@ const res=vlib.unit_tests._create_unit_test(unit_tests[id],id,debug)(args);
 if (res instanceof Promise){await res;}
 }
 console.log(` * ${id} ${vlib.colors.red}${vlib.colors.bold}failed${vlib.colors.end}`);
-if (stop_on_failure){return ;}
+if (stop_on_failure){return false;}
 ++failed;
 }else {
 console.log(` * ${id} ${vlib.colors.green}${vlib.colors.bold}succeeded${vlib.colors.end}`);
@@ -3654,6 +3661,7 @@ console.log(` * All unit tests ${vlib.colors.green+vlib.colors.bold}passed${vlib
 }else {
 console.log(` * Encountered ${failed===0?vlib.colors.green:vlib.colors.red}${vlib.colors.bold}${failed}${vlib.colors.end} failed unit tests.`);
 }
+return true;
 }
 vlib.ProgressLoader=class ProgessLoader{
 constructor({message="Loading",steps=100,step=0,width=10}){
@@ -3820,6 +3828,35 @@ list_item[1]=command.description;
 }
 list_item[1]+="\n";
 list.push(list_item);
+if (command.args.length>0){
+let arg_index=0;
+command.args.iterate((arg)=>{
+if (arg.ignore===true){
+return ;
+}
+const list_item=[];
+if (arg.id==null){
+list_item[0]=`        argument ${arg_index}`;
+}
+else if (Array.isArray(arg.id)){
+list_item[0]=`        ${arg.id.join(", ")}`;
+}else {
+list_item[0]=`        ${arg.id}`;
+}
+if (arg.type!=null&&arg.type!=="bool"&&arg.type!=="boolean"){
+list_item[0]+=` <${arg.type}>`;
+}
+if (arg.required===true){
+list_item[0]+=" (required)";
+}
+if (arg.description!=null){
+list_item[1]=arg.description;
+}
+list_item[1]+="\n";
+list.push(list_item);
+++arg_index;
+})
+}
 })
 list.push([
 "    --help, -h",

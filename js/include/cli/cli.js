@@ -260,6 +260,8 @@ vlib.CLI = class CLI {
             let list = [];
             command_or_commands.iterate((command) => {
                 const list_item = [];
+
+                // Add command.
                 if (Array.isArray(command.id)) {
                     list_item[0] = `    ${command.id.join(", ")}`;
                 } else {
@@ -270,6 +272,37 @@ vlib.CLI = class CLI {
                 }
                 list_item[1] += "\n";
                 list.push(list_item);
+
+                // Add command args.
+                if (command.args.length > 0) {
+                    let arg_index = 0;
+                    command.args.iterate((arg) => {
+                        if (arg.ignore === true) {
+                            return ;
+                        }
+                        const list_item = [];
+                        if (arg.id == null) {
+                            list_item[0] = `        argument ${arg_index}`;
+                        }
+                        else if (Array.isArray(arg.id)) {
+                            list_item[0] = `        ${arg.id.join(", ")}`;
+                        } else {
+                            list_item[0] = `        ${arg.id}`;
+                        }
+                        if (arg.type != null && arg.type !== "bool" && arg.type !== "boolean") {
+                            list_item[0] += ` <${arg.type}>`;
+                        }
+                        if (arg.required === true) {
+                            list_item[0] += " (required)";
+                        }
+                        if (arg.description != null) {
+                            list_item[1] = arg.description;
+                        }
+                        list_item[1] += "\n";
+                        list.push(list_item);
+                        ++arg_index;
+                    })
+                }
             })
             list.push([
                 "    --help, -h",

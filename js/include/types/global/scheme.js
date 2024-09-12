@@ -222,8 +222,14 @@ vlib.scheme.verify = function({
     check_unknown = false,
     parent = "",
     error_prefix = "",
+    err_prefix = null,
     throw_err = true,
 }) {
+
+    // Set error prefix.
+    if (err_prefix !== null) {
+        error_prefix = err_prefix;
+    }
 
     // Throw an error and pop the verify_object from the stacktrace.
     const throw_err_h = (e, field) => {
