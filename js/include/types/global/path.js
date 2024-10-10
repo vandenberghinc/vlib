@@ -240,6 +240,14 @@ vlib.Path = class Path {
         this._abs = undefined;
         return this;
     }
+    refresh() {
+        this._stat = undefined;
+        this._name = undefined;
+        this._extension = undefined;
+        this._base = undefined;
+        this._abs = undefined;
+        return this;
+    }
 
     // Is directory.
     /*  @docs:

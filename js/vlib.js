@@ -1782,17 +1782,17 @@ return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
 }
 }
 if (typeof scheme_item.callback==="function"){
-let stack=new Error().stack.split('\n');
+let stack=new Error("SPLIT-AFTER").stack.split("SPLIT-AFTER\n")[1].split('\n');
 let last=-1;
 for (let i=0;i<stack.length;i++){
-if (stack[i].includes('at verify_value_scheme ')&&stack[i].includes('/vlib.js')){
+if (stack[i].includes('at vlib.scheme.verify ')){
 last=i;
 }
 }
 if (last!==-1){
-stack=stack.slice(last+1);
+stack=stack.slice(last);
 }
-console.warn(`${vlib.colors.red}Warning${vlib.colors.end}: [vlib.scheme.verify]: Attribute "callback" is deprecated and replaced by attribute "verify" and will be removed in future versions.\n${stack.join('\n')}`);
+console.warn(`${vlib.colors.end}[vlib.scheme.verify] ${vlib.colors.yellow}Warning${vlib.colors.end}: Attribute "callback" is deprecated and replaced by attribute "verify" and will be removed in future versions.\n${stack.join('\n')}`);
 const err=scheme_item.callback(object[key],object,key);
 if (err){
 return throw_err_h(`${error_prefix}${err}`,`${parent}${value_scheme_key||key}`);
@@ -1930,7 +1930,7 @@ type=[],
 throw_err=true,
 }=name);
 }
-const err=`Invalid type "${vlib.scheme.value_type(value)}" for argument "${name}${vlib.scheme._type_string(type,", the valid type is ")}.`
+const err=`Invalid type "${vlib.scheme.value_type(value)}" for argument "${name}"${vlib.scheme._type_string(type,", the valid type is ")}.`
 if (throw_err){
 throw new Error(err);
 }
@@ -2399,6 +2399,14 @@ resolve(info.available);
 });
 }
 reset(){
+this._stat=undefined;
+this._name=undefined;
+this._extension=undefined;
+this._base=undefined;
+this._abs=undefined;
+return this;
+}
+refresh(){
 this._stat=undefined;
 this._name=undefined;
 this._extension=undefined;
