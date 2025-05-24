@@ -1,12 +1,56 @@
 {
     "name": "@vandenberghinc/vlib",
-    "version": "1.3.1",
+    "version": "1.5.38",
     "description": "vlib",
-    "main": "vlib.js",
+    "type": "module",
+    "module": "./dist/esm/index.js",
+    "main": "./dist/cjs/index.js",
+    "types": "./dist/esm/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/index.js",
+            "types": "./dist/esm/index.d.ts",
+            "require": "./dist/cjs/index.js"
+        },
+        "./frontend": {
+            "import": "./dist/web/index.web.js",
+            "types": "./dist/web/index.web.d.ts"
+        },
+        "./vtest": {
+            "import": "./dist/esm/libs/vtest/index.js",
+            "types": "./dist/esm/libs/vtest/index.d.ts",
+            "require": "./dist/cjs/libs/vtest/index.js"
+        },
+        "./vrepo": {
+            "import": "./dist/esm/libs/vrepo/index.js",
+            "types": "./dist/esm/libs/vrepo/index.d.ts",
+            "require": "./dist/cjs/libs/vrepo/index.js"
+        },
+        "./vts": {
+            "import": "./dist/esm/libs/vts/index.js",
+            "types": "./dist/esm/libs/vts/index.d.ts",
+            "require": "./dist/cjs/libs/vts/index.js"
+        },
+        "./vts/types/dirname": {
+            "types": "./dist/esm/libs/vts/types/dirname.d.ts"
+        },
+        "./vts/types/version": {
+            "types": "./dist/esm/libs/vts/types/version.d.ts"
+        }
+    },
+    "bin": {
+        "vtest": "./dist/esm/libs/vtest/cli.js",
+        "vrepo": "./dist/esm/libs/vrepo/cli.js",
+        "vts": "./dist/esm/libs/vts/cli.js"
+    },
     "scripts": {
-        "start": "node vlib.js",
-        "test": "node test.js",
-        "bundle": "node bundle.js"
+        "build": "npm run build:esm && npm run build:cjs && npm run build:web",
+        "build:esm": "tsc -p tsconfig.json && npm run --silent fill-version-esm && chmod +x dist/esm/libs/vrepo/cli.js && chmod +x dist/esm/libs/vts/cli.js && chmod +x dist/esm/libs/vtest/cli.js",
+        "build:cjs": "node dist/esm/libs/vts/cli.js --transform-esm --src dist/esm/ --dest dist/cjs/ --override --platform node --target es2023",
+        "build:web": "tsc -p tsconfig.web.json && npm run --silent fill-version",
+        "test": "node dist/esm/libs/vtest/cli.js --import dist/unit_tests/unit_tests/run.js --results ./unit_tests/results",
+        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = './dist/esm/index.js'; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8');\"",
+        "fill-version": "node dist/esm/libs/vts/cli.js --fill-version -s ./dist/esm/index.js,./dist/web/index.web.js -p ./package.json --allow-not-found"
     },
     "keywords": [
         "vlib",
@@ -17,12 +61,27 @@
     },
     "author": "Daan van den Bergh",
     "dependencies": {
-        "bson": "^6.8.0",
+        "bson": "^6.10.3",
+        "clean-css": "^5.3.3",
+        "comment-json": "^4.2.5",
+        "diff": "^7.0.0",
         "diskusage": "^1.2.0",
-        "fs-extra": "^11.2.0",
+        "dotenv": "^16.5.0",
+        "esbuild": "^0.25.4",
+        "fast-glob": "^3.3.3",
+        "fs-extra": "^11.3.0",
+        "glob": "^11.0.2",
         "https": "^1.0.0",
-        "systeminformation": "^5.23.5",
-        "ws": "^8.18.0",
-        "zlib": "^1.0.5"
+        "ignore": "^5.3.2",
+        "js-beautify": "^1.15.4",
+        "json5": "^2.2.3",
+        "minimatch": "^10.0.1",
+        "sysinfo": "^0.0.1",
+        "systeminformation": "^5.25.11",
+        "typescript": "^5.8.3",
+        "ws": "^8.18.1"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.14"
     }
 }

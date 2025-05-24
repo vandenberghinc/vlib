@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "lib": [
+            "ES2022",
+            "DOM"
+        ],
+        "sourceMap": true,
+        "declaration": true,
+        "declarationDir": "./dist/web",
+        "outDir": "./dist/web",
+        "rootDir": "./src/",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "allowJs": true,
+        "checkJs": false,
+        "noImplicitAny": false,
+    },
+    "include": [
+        "src/index.web.ts",
+    ],
+    "exclude": [
+        "**/unit_tests/**/*",
+    ],
+}
