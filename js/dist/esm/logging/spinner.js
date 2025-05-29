@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Color } from "../system/colors.js";
-import { VDate } from "../global/date.js";
+import { Date } from "../global/date.js";
 /**
  * A CLI spinner/loader with an optional prefix message.
  *
@@ -79,7 +79,7 @@ export class Spinner {
     success(message) {
         this.stop();
         const text = message ?? this.prefix;
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write(`${prefix}${Color.green_bold("✔")} ${text}\n`);
     }
     /**
@@ -89,7 +89,7 @@ export class Spinner {
     error(message) {
         this.stop();
         const text = message ?? this.prefix;
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write(`${prefix}${Color.red_bold("✖")} ${text}\n`);
     }
     /**
@@ -106,7 +106,7 @@ export class Spinner {
     render_frame() {
         const frame = this.frames[this.frame_index];
         const text = this.prefix ? ` ${this.prefix}` : '';
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write(`${prefix}${frame}${text}`);
     }
     /** write wrapper. */

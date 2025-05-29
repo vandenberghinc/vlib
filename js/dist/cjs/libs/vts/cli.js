@@ -22,9 +22,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var vlib = __toESM(require("../../index.js"));
-var import_cjs = require("./cjs.js");
-var import_fill_templates = require("./plugins/fill_templates.js");
-var import_plugin = require("./plugins/plugin.js");
+var import_cjs = require("./utils/cjs.js");
+var import_transformer = require("./transformer/transformer.js");
+var import_plugins = require("./plugins/plugins.js");
+var import_pkg_json = require("./utils/pkg_json.js");
 const cli = new vlib.CLI({
   name: "vts",
   version: "1.0.0",
@@ -35,37 +36,45 @@ const cli = new vlib.CLI({
     },
     args: [
       { id: ["--tsconfig", "--project", "-p"], type: "string", required: false, description: "The source path to tsconfig or a directory with a tsconfig.json file. By default the current working directory will be used when omitted." },
-      { id: ["--header", "-h"], type: "boolean", required: false, description: "Enable the header plugin." },
-      { id: ["--author", "-a"], type: "string", required: false, description: "The author name to use in the header plugin." },
-      { id: ["--copyright", "-c"], type: "number", required: false, description: "The copyright year to use in the header plugin." },
+      { id: ["--include", "-i"], type: "string[]", required: false, description: "The source files or directories to include in the transformation. Defaults to all files in the tsconfig directory." },
+      { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The source files or directories to exclude from the transformation." },
+      { id: new vlib.CLI.Query.And("--header", "--author"), type: "string", required: false, description: "The author name to use in the header plugin." },
+      { id: new vlib.CLI.Query.And("--header", "--year"), type: "number", required: false, description: "The copyright year to use in the header plugin." },
       { id: ["--dirname", "-d"], type: "boolean", required: false, description: "Enable the dirname plugin." },
       { id: ["--no-debug", "-nd"], type: "boolean", required: false, description: "Disable all vlib debug statements." },
       { id: ["--version", "-v"], type: "string", required: false, description: "Enable the version plugin by providing the path to the 'package.json' file, or any other json file containing attribute 'version: string'." },
-      { id: ["--templates", "-t"], type: "string:string", required: false, description: "The templates to fill in the dist files, e.g. 'key1=value1,key2=value2'." }
+      { id: ["--templates", "-t"], type: "string:string", required: false, description: "The templates e.g. '{{KEY}}' to fill in the dist files." },
+      { id: ["--exact-templates", "-t"], type: "string:string", required: false, description: "The exact templates '<key>' to fill in the dist files. Use with caution since all exact occurrences of the keys are replaced with their corresponding values." },
+      { id: ["--async"], type: "boolean", def: false, description: "Run the transformer in parallel, defaults to 'false'." },
+      { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },
+      { id: ["--yes", "-y"], type: "boolean", required: false, description: "Automatically answer yes to all prompts." }
     ],
-    callback: async ({ tsconfig: t = "./", header = false, author = void 0, copyright = void 0, dirname = false, version, no_debug = false, templates }) => {
-      let tsconfig = new vlib.Path(t);
-      if (!tsconfig.exists()) {
-        cli.throw(`Typescript config "${tsconfig.str()}" does not exist.`);
-      } else if (tsconfig.is_dir()) {
-        const og_path = tsconfig;
-        tsconfig = tsconfig.join("tsconfig.json");
-        if (!tsconfig.exists()) {
-          cli.throw(`Typescript source "${og_path.str()}" does not contain a "tsconfig.json" file.`);
-        }
+    callback: async ({ tsconfig = process.cwd(), header = {}, include = [], exclude = [], dirname = false, version, no_debug = false, templates, exact_templates, yes = false, async: parallel = false, debug = 0 }) => {
+      const { error } = await new import_transformer.Transformer({
+        tsconfig,
+        insert_tsconfig: true,
+        check_include: true,
+        include,
+        exclude,
+        interactive: !yes,
+        debug,
+        plugins: (0, import_plugins.create_plugins)({
+          tsconfig,
+          pkg_json: (0, import_pkg_json.resolve_pkg_json)(tsconfig, { throw: false }),
+          header,
+          dirname,
+          yes,
+          version,
+          no_debug,
+          templates,
+          exact_templates
+        })
+      }).run();
+      if (error?.type === "warning") {
+        vlib.warn(error.message);
+      } else if (error) {
+        cli.throw(error.message);
       }
-      const plugin = new import_plugin.Plugin({
-        tsconfig: tsconfig.str(),
-        header: !header ? void 0 : {
-          author,
-          start_year: copyright
-        },
-        version: !version ? void 0 : { package: version },
-        templates,
-        dirname,
-        no_debug
-      });
-      await plugin.run();
     }
   },
   commands: [
@@ -79,9 +88,24 @@ const cli = new vlib.CLI({
       args: [
         { id: ["--src", "--source", "-s"], type: "string[]", required: false, description: "The dist directory or target path (in which) to fill the templates." },
         { id: ["--templates", "-t"], type: "object", description: "The templates to fill, e.g. 'x:true,y:false'" },
-        { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." }
+        { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." },
+        { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },
+        { id: ["--yes", "-y"], type: "boolean", required: false, description: "Automatically answer yes to all prompts." }
       ],
-      callback: async ({ src, templates, allow_not_found = false }) => await (0, import_fill_templates.fill_templates)(src, templates, allow_not_found)
+      callback: async ({ src = [process.cwd()], templates, allow_not_found = false, debug = 0, yes = false }) => {
+        const { error } = await new import_transformer.Transformer({
+          include: src,
+          plugins: [new import_plugins.Plugins.fill_templates({ templates, prefix: "{{", suffix: "}}" })],
+          check_include: !allow_not_found,
+          interactive: !yes,
+          debug
+        }).run();
+        if (error?.type === "warning") {
+          cli.error(error.message);
+        } else if (error) {
+          cli.throw(error.message);
+        }
+      }
     },
     // Fill version.
     {
@@ -93,23 +117,24 @@ const cli = new vlib.CLI({
       args: [
         { id: ["--src", "--source", "-s"], type: "string[]", description: "The dist directory or target path (in which) to fill the templates." },
         { id: ["--pkg", "--package", "-p"], type: "string", required: false, description: "The path to the package.json file to read the version from." },
-        { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." }
+        { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." },
+        { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },
+        { id: ["--yes", "-y"], type: "boolean", required: false, description: "Automatically answer yes to all prompts." }
       ],
-      callback: async ({ src, pkg = "./package.json", allow_not_found = false }) => await (0, import_fill_templates.fill_version)(src, pkg, allow_not_found)
-    },
-    // Fill __dirname like attribtues.
-    {
-      id: "--dirname",
-      description: "Fill __dirname __ts_dirname like templates in one or multiple target files or directories.",
-      examples: {
-        "Fill dirname": "vts --dirname"
-      },
-      args: [
-        { id: ["--src", "--source", "-s"], type: "string[]", description: "The dist directory or target path (in which) to fill the templates." },
-        { id: ["--pkg", "--package", "-p"], type: "string", required: false, description: "The path to the package.json file to read the version from." },
-        { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." }
-      ],
-      callback: async ({ src, pkg = "./package.json", allow_not_found = false }) => await (0, import_fill_templates.fill_version)(src, pkg, allow_not_found)
+      callback: async ({ src, pkg = "./package.json", allow_not_found = false, debug = 0, yes = false }) => {
+        const { error } = await new import_transformer.Transformer({
+          include: src,
+          plugins: [new import_plugins.Plugins.version({ pkg_json: pkg })],
+          check_include: !allow_not_found,
+          interactive: !yes,
+          debug
+        }).run();
+        if (error?.type === "warning") {
+          cli.error(error.message);
+        } else if (error) {
+          cli.throw(error.message);
+        }
+      }
     },
     // Convert ESM to CJS.
     {
@@ -124,9 +149,9 @@ const cli = new vlib.CLI({
         { id: ["--target", "-t"], type: "string", required: false, description: "The ES target version, e.g. 'es2021'." },
         { id: ["--platform", "-p"], type: "string", required: false, description: "The ES platform, 'browser' or 'node'." },
         { id: ["--override", "-o"], type: "boolean", required: false, description: "Override the destination directory if it already exists." },
-        { id: ["--quiet", "-q"], type: "boolean", required: false, description: "Suppress output messages." }
+        { id: ["--debug", "--log-level", "-d"], type: "number", required: false, description: "The log level [0-1]" }
       ],
-      callback: async ({ src, dest, target, platform, override = false, quiet = false }) => await (0, import_cjs.cjs)({ src, dest, target, platform, override, quiet })
+      callback: async ({ src, dest, target, platform, override = false, debug = 0 }) => await (0, import_cjs.cjs)({ src, dest, target, platform, override, debug })
     }
   ]
 });

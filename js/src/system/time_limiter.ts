@@ -60,5 +60,3 @@ export class TimeLimiter {
         return this._counts < this._limit;
     }
 }
-
-export default TimeLimiter;

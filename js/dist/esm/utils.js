@@ -3,12 +3,11 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import * as crypto from 'crypto';
-import * as readline from 'readline';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { Color, Colors } from './system/colors.js';
 import { Path } from './system/path.js';
-import { SourceLoc } from './logging/source_loc.js';
+import { SourceLoc } from './debugging/source_loc.js';
 /*  @docs:
     @chapter: Utils
     @title: Utils
@@ -29,32 +28,6 @@ export class Utils {
         return new Promise((resolve) => setTimeout(resolve, msec));
     }
     /** @docs
-     *  @title: Edit object keys
-     *  @desc: Edit object keys - DEPRECATED BUT STILL USED
-     *  @param
-     *      @name obj
-     *      @desc The object to modify
-     *      @type Record<string, any>
-     *  @param
-     *      @name rename
-     *      @desc Array of [old_key, new_key] pairs
-     *      @type [string, string][]
-     *  @param
-     *      @name remove
-     *      @desc Array of keys to remove
-     *      @type string[]
-     */
-    static rename_attributes(obj = {}, rename = [["old", "new"]], remove = []) {
-        remove.iterate((key) => {
-            delete obj[key];
-        });
-        rename.iterate((key) => {
-            obj[key[1]] = obj[key[0]];
-            delete obj[key[0]];
-        });
-        return obj;
-    }
-    /** @docs
      *  @title: Debounce
      *  @desc: Create a debounced version of a function
      *  @param
@@ -73,75 +46,6 @@ export class Utils {
             // timeout = setTimeout(() => func.apply(this, args), delay);
             timeout = setTimeout(() => func(args), delay);
         };
-    }
-    /** @docs:
-     *  @title: Deep copy
-     *  @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
-     */
-    static deep_copy(obj) {
-        if (Array.isArray(obj)) {
-            const copy = [];
-            obj.iterate((item) => {
-                copy.append(Utils.deep_copy(item));
-            });
-            return copy;
-        }
-        else if (obj !== null && obj instanceof String) {
-            return new String(obj.toString());
-        }
-        else if (obj !== null && typeof obj === "object") {
-            const copy = {};
-            const keys = Object.keys(obj);
-            const values = Object.values(obj);
-            for (let i = 0; i < keys.length; i++) {
-                try {
-                    copy[keys[i]] = Utils.deep_copy(values[i]);
-                }
-                catch (err) {
-                    if (err.message.startsWith("Unable to copy attribute")) {
-                        throw err;
-                    }
-                    err.message = `Unable to copy attribute "${keys[i]}": ${err.message}.`;
-                    throw err;
-                }
-            }
-            return copy;
-        }
-        else {
-            return obj;
-        }
-    }
-    /** @docs
-     *  @title: Prompt
-     *  @desc: Prompt a question from the user
-     *  @param
-     *      @name question
-     *      @desc The question to display
-     *      @type string
-     *  @returns
-     *      @type Promise<string>
-     *      @desc The user's response
-     */
-    static async prompt(question) {
-        return new Promise((resolve, reject) => {
-            const int = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            });
-            int.on('SIGINT', () => {
-                int.close();
-                reject(new Error("Interrupted by user [SIGINT]."));
-            });
-            try {
-                int.question(question, (name) => {
-                    int.close();
-                    resolve(name);
-                });
-            }
-            catch (e) {
-                reject(e);
-            }
-        });
     }
     /** @docs
      *  @title: Format bytes
@@ -858,8 +762,45 @@ export class Utils {
     static print_error(...args) {
         Utils.printe(Colors.red, ">>> ", Colors.end, ...args);
     }
+    /** @docs:
+     * @deprecated use vlib.Objects.deep_copy instead.
+     *  @title: Deep copy
+     *  @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
+     */
+    static deep_copy(obj) {
+        if (Array.isArray(obj)) {
+            const copy = [];
+            obj.iterate((item) => {
+                copy.append(Utils.deep_copy(item));
+            });
+            return copy;
+        }
+        else if (obj !== null && obj instanceof String) {
+            return new String(obj.toString());
+        }
+        else if (obj !== null && typeof obj === "object") {
+            const copy = {};
+            const keys = Object.keys(obj);
+            const values = Object.values(obj);
+            for (let i = 0; i < keys.length; i++) {
+                try {
+                    copy[keys[i]] = Utils.deep_copy(values[i]);
+                }
+                catch (err) {
+                    if (err.message.startsWith("Unable to copy attribute")) {
+                        throw err;
+                    }
+                    err.message = `Unable to copy attribute "${keys[i]}": ${err.message}.`;
+                    throw err;
+                }
+            }
+            return copy;
+        }
+        else {
+            return obj;
+        }
+    }
 }
 ;
 export { Utils as utils };
-export default Utils;
 //# sourceMappingURL=utils.js.map

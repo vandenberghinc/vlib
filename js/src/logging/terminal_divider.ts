@@ -1,3 +1,7 @@
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
 
 /**
  * Returnss a line of `char` repeated to fill the terminal width.

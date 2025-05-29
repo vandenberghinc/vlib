@@ -25,4 +25,4 @@ interface RequestResponse {
     json: () => any;
 }
 export declare function request({ host, port, endpoint, method, headers, params, compress, decompress, query, json, reject_unauthorized, delay, http2: use_http2, }: RequestOptions): Promise<RequestResponse>;
-export default request;
+export {};

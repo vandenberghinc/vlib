@@ -28,7 +28,7 @@ class SSH {
   constructor({ source }) {
     import__.Scheme.verify({
       object: arguments[0],
-      check_unknown: true,
+      strict: true,
       scheme: {
         source: "string"
       }

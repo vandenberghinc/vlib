@@ -15,7 +15,7 @@ unit_tests["scheme/test:1"] = function({hash, debug}) {
 		// name: "Hello Universe!",
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+		Scheme.verify({throw: true, check_unknown: true, object, scheme: {
             name: "string",
             description: "string",
         }})
@@ -34,7 +34,8 @@ unit_tests["scheme/test:2"] = function({hash, debug}) {
 		name: "Hello Universe!",
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
             name: "string",
             description: "boolean",
         }})
@@ -53,7 +54,8 @@ unit_tests["scheme/test:3"] = function({hash, debug}) {
 		name: false,
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, value_scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, value_scheme: {
             type: "string",
         }})
 	} catch (error) {
@@ -73,7 +75,8 @@ unit_tests["scheme/test:4"] = function({hash, debug}) {
 		}
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
 			nested: {
 				type: "object",
 				value_scheme: {
@@ -99,7 +102,8 @@ unit_tests["scheme/test:5"] = function({hash, debug}) {
 		}]
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
 			array: {
 				type: "array",
 				value_scheme: {
@@ -131,7 +135,8 @@ unit_tests["scheme/test:6"] = function({hash, debug}) {
 		},
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
 			posts: {
 				type: "object",
 				value_scheme: {
@@ -163,7 +168,8 @@ unit_tests["scheme/test:7"] = function({hash, debug}) {
 		},
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
 			posts: {
 				type: "object",
 				value_scheme: {
@@ -196,7 +202,8 @@ unit_tests["scheme/test:8"] = function({hash, debug}) {
 		],
 	}
 	try {
-		Scheme.verify({throw_err: true, check_unknown: true, object, scheme: {
+        Scheme.verify({
+            throw: true, check_unknown: true, object, scheme: {
 			documents: {
 				type: "array",
 				value_scheme: {
@@ -227,7 +234,7 @@ unit_tests["scheme/test:8"] = function({hash, debug}) {
 unit_tests["scheme/test:9"] = function({hash, debug}) {
 	try {
 		Scheme.verify({
-			throw_err: true,
+            throw: true,
 			check_unknown: true,
 			object: {
     			app_id: undefined,
@@ -254,7 +261,7 @@ unit_tests["scheme/test:9"] = function({hash, debug}) {
 unit_tests["scheme/test:10"] = function ({ hash, debug }) {
 	let x = undefined;
 	const response = Scheme.verify({
-		throw_err: true,
+        throw: true,
 		check_unknown: true,
 		object: {
 			// x: undefined,

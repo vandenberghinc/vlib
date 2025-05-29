@@ -219,5 +219,3 @@ export class Proc {
         return this;
     }
 }
-
-export default Proc;

@@ -729,4 +729,3 @@ export namespace websocket {
     }
 
 }
-export default websocket;

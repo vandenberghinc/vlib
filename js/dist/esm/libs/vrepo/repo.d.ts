@@ -1,3 +1,7 @@
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
 import { Path } from "../../index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";

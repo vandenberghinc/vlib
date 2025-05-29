@@ -94,5 +94,4 @@ export const System = {
         };
     }
 };
-export default System;
 //# sourceMappingURL=system.js.map

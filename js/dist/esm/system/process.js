@@ -185,5 +185,4 @@ export class Proc {
         return this;
     }
 }
-export default Proc;
 //# sourceMappingURL=process.js.map

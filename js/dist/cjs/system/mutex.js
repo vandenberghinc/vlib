@@ -17,47 +17,72 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  Mutex: () => Mutex,
-  default: () => stdin_default
+  Mutex: () => Mutex
 });
 module.exports = __toCommonJS(stdin_exports);
 class Mutex {
-  locked;
-  queue;
-  constructor() {
-    this.locked = false;
-    this.queue = [];
-  }
-  /** @docs
-   *  @title: Lock
-   *  @desc: Acquire the mutex lock. Should be awaited
-   *  @returns
-   *      @type Promise<void>
-   *      @desc Resolves when the lock is acquired
+  /** Queue of waiting lockers' resolve callbacks */
+  _queue = [];
+  /** Whether the mutex is currently held */
+  _locked = false;
+  /**
+   * Acquire the mutex. Resolves when the lock is obtained.
+   * @example
+   * ```ts
+   * await mutex.lock();
+   * try {
+   *   // critical section
+   * } finally {
+   *   mutex.unlock();
+   * }
+   * ```
    */
   async lock() {
-    if (!this.locked) {
-      this.locked = true;
+    if (!this._locked) {
+      this._locked = true;
     } else {
-      return new Promise((resolve) => {
-        this.queue.push(resolve);
+      await new Promise((resolve) => {
+        this._queue.push(resolve);
       });
+      this._locked = true;
     }
   }
-  /** @docs
-   *  @title: Unlock
-   *  @desc: Release the mutex lock
+  /**
+   * Release the mutex, allowing the next waiter (if any) to acquire it.
    */
   unlock() {
-    if (this.queue.length > 0) {
-      const next_resolve = this.queue.shift();
-      next_resolve();
+    if (this._queue.length > 0) {
+      const next = this._queue.shift();
+      next();
     } else {
-      this.locked = false;
+      this._locked = false;
     }
   }
+  /**
+   * Execute the callback under exclusive lock, auto-releasing on completion.
+   * @param callback Function to run while holding the mutex.
+   */
+  async run_exclusive(callback) {
+    await this.lock();
+    try {
+      return await callback();
+    } finally {
+      this.unlock();
+    }
+  }
+  /**
+   * Check if the mutex is currently locked.
+   */
+  locked() {
+    return this._locked;
+  }
+  /**
+   * Number of queued waiters.
+   */
+  waiting() {
+    return this._queue.length;
+  }
 }
-var stdin_default = Mutex;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Mutex

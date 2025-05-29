@@ -576,5 +576,4 @@ export var websocket;
     }
     websocket.Client = Client;
 })(websocket || (websocket = {}));
-export default websocket;
 //# sourceMappingURL=websocket.js.map

@@ -4,6 +4,7 @@
  *
  * @note Web - This file should also be accessable from the frontend / in a web environment.
  */
+import { Merge } from "../types/transform.js";
 /**
  * {Scheme}
  * The scheme validation module.
@@ -16,7 +17,10 @@ export declare namespace Scheme {
     type Scheme = {
         [field_name: string]: Scheme.SchemeOptions;
     };
-    /** Scheme options. */
+    /**
+     * Scheme options.
+     * @libris
+     */
     interface SchemeOptions {
         /** The value type. */
         type?: SchemeType;
@@ -52,6 +56,15 @@ export declare namespace Scheme {
          */
         value_scheme?: SchemeOptions | string;
         /**
+         * Tuple scheme for when the input object is an array.
+         * This can be used to verify each item in an array specifically with a predefined length.
+         *
+         * Each index of the scheme option corresponds to the index of the input array.
+         *
+         * @note this attribute is ignored when the input object is not an array.
+         */
+        tuple_scheme?: (string | SchemeOptions)[];
+        /**
          * A list of valid values for the attribute.
          */
         enum?: any[];
@@ -79,16 +92,27 @@ export declare namespace Scheme {
         def?: any | ((obj: any) => any);
     }
     /** Argument options for verify() */
-    interface VerifyOptions<T extends object> {
-        object: T;
+    type VerifyOptions<T extends object, DataAlias extends boolean = boolean, ErrorAlias extends boolean = boolean> = {
         scheme?: Record<string, Scheme.SchemeOptions | string>;
         value_scheme?: Scheme.SchemeOptions | string | null;
-        check_unknown?: boolean;
+        tuple_scheme?: SchemeOptions["tuple_scheme"];
+        strict?: boolean;
         parent?: string;
         error_prefix?: string;
         err_prefix?: string | null;
-        throw_err?: boolean;
-    }
+        throw?: boolean;
+    } & (DataAlias extends true ? {
+        object: T;
+        data?: never;
+    } : {
+        object?: never;
+        data: T;
+    }) & (ErrorAlias extends true ? {
+        error_prefix?: string;
+    } : {
+        object?: never;
+        data: T;
+    });
     /** Verify response */
     interface VerifyResponse<T extends object> {
         error?: string;
@@ -97,38 +121,57 @@ export declare namespace Scheme {
     }
     /**
      * Verify an object or array by scheme.
+     *
+     * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
+     *
+     * @template O The output type of the returned object or array.
+     * @template T The type of the object or array to verify.
+     *
+     * @param opts The options for the verification.
+     *             See {@link Scheme.SchemeOptions} and {@link Scheme.VerifyOptions} for more details.
+     *
      * @libris
      */
-    function verify<T extends object>(opts: Omit<Scheme.VerifyOptions<T>, "throw_err"> & {
-        throw_err: false;
-    }): VerifyResponse<T>;
-    function verify<T extends object>(opts: Omit<Scheme.VerifyOptions<T>, "throw_err"> & {
-        throw_err?: true;
-    }): T;
+    function verify<T extends object, O extends object = T>(opts: Merge<Scheme.VerifyOptions<T>, {
+        throw: false;
+    }>): VerifyResponse<O>;
+    function verify<T extends object, O extends object = T>(opts: Merge<Scheme.VerifyOptions<T>, {
+        throw?: true;
+    }>): O;
     /**
      * Get a value type for error reporting
      * @libris
      */
     function value_type(value: any): string;
     /**
+     * Base type for `throw_x` functions.
+     */
+    interface ThrowType {
+        name: string;
+        value?: any;
+        type?: Scheme.SchemeType;
+        throw?: boolean;
+    }
+    /**
      * Throw an error for undefined arguments
      * @libris
      */
-    function throw_undefined(name: string | {
-        name: string;
-        type?: Scheme.SchemeType;
-        throw_err?: boolean;
-    }, type?: Scheme.SchemeType, throw_err?: boolean): string;
+    function throw_undefined(name: string, type?: Scheme.SchemeType, throw_err?: boolean): never;
+    function throw_undefined(name: ThrowType | string, type: Scheme.SchemeType, throw_err: false): string;
+    function throw_undefined(opts: ThrowType): never;
+    function throw_undefined(opts: Merge<ThrowType, {
+        throw: false;
+    }>): never;
     /**
      * Throw an error for invalid type arguments
      * @libris
      */
-    function throw_invalid_type(name: string | {
-        name: string;
-        value: any;
-        type?: Scheme.SchemeType;
-        throw_err?: boolean;
-    }, value?: any, type?: Scheme.SchemeType, throw_err?: boolean): string;
+    function throw_invalid_type(name: string, value?: any, type?: Scheme.SchemeType, throw_err?: boolean): never;
+    function throw_invalid_type(name: ThrowType | string, value: any, type: Scheme.SchemeType, throw_err: false): string;
+    function throw_invalid_type(opts: ThrowType): never;
+    function throw_invalid_type(opts: Merge<ThrowType, {
+        throw: false;
+    }>): never;
     /**
      * Cast a boolean string to a boolean value.
      * So all `true True TRUE 1` strings will be cast to true and likewise for false.
@@ -177,4 +220,3 @@ export declare namespace Scheme {
     }): number | undefined;
 }
 export { Scheme as scheme };
-export default Scheme;

@@ -39,47 +39,56 @@ var readline = __toESM(require("readline"));
 var import_minimatch = require("minimatch");
 var import_json5 = __toESM(require("json5"));
 var import_jsonc = require("../jsonc/jsonc.js");
-var import_utils = require("../utils.js");
+var import_string = require("../global/string.js");
+var import_fast_glob = __toESM(require("fast-glob"));
 class Path {
   // Attributes.
-  data;
-  // keep public.
+  path;
+  // internal file path, keep public.
   _stat;
+  _full_name;
   _name;
   _extension;
   _base;
   _abs;
-  constructor(path, clean = true) {
+  constructor(path, clean = true, stats) {
     if (path == null) {
       throw Error(`Invalid path "${path}".`);
     } else if (path instanceof Path) {
-      this.data = path.data;
+      this.path = path.path;
+    } else if (typeof path !== "string") {
+      throw Error(`Invalid path "${path}". Expected a string or Path instance.`);
     } else {
-      path = path.toString();
-      if (clean && path.length > 0) {
-        this.data = "";
+      if (path.length === 0) {
+        throw Error(`Invalid path, cannot create a path from an empty string.`);
+      }
+      if (clean) {
+        this.path = "";
         const max_i = path.length - 1;
         for (let i = 0; i < path.length; i++) {
           const c = path.charAt(i);
-          if (c === "/" && (this.data.charAt(this.data.length - 1) === "/" || i == max_i)) {
+          if (c === "/" && (this.path.charAt(this.path.length - 1) === "/" || i == max_i)) {
             continue;
           } else if (c === "." && path.charAt(i - 1) === "/" && path.charAt(i + 1) === "/") {
             continue;
           } else {
-            this.data += c;
+            this.path += c;
           }
         }
       } else {
-        this.data = path;
+        this.path = path;
       }
+    }
+    if (stats !== void 0) {
+      this._stat = stats;
     }
   }
   // ---------------------------------------------------------
   // Utils.
   trim() {
-    let start = 0, end = this.data.length;
-    for (let i = 0; i < this.data.length; i++) {
-      const c = this.data.charAt(i);
+    let start = 0, end = this.path.length;
+    for (let i = 0; i < this.path.length; i++) {
+      const c = this.path.charAt(i);
       if (c == " " || c == "	") {
         ++start;
       } else {
@@ -87,173 +96,177 @@ class Path {
       }
     }
     for (let i = end - 1; i >= 0; i--) {
-      const c = this.data.charAt(i);
+      const c = this.path.charAt(i);
       if (c == " " || c == "	") {
         --end;
       } else {
         break;
       }
     }
-    if (start != 0 || end != this.data.length) {
-      this.data = this.data.substring(start, end - start);
+    if (start != 0 || end != this.path.length) {
+      this.path = this.path.substring(start, end - start);
     }
-    if (this.data.length === 0) {
-      throw Error(`Invalid path "${this.data}".`);
+    if (this.path.length === 0) {
+      throw Error(`Invalid path "${this.path}".`);
     }
   }
   /** To string. */
   toString() {
-    return this.data;
+    return this.path;
   }
   str() {
-    return this.data;
+    return this.path;
   }
   /** Cast to primitives. */
   [Symbol.toPrimitive](hint) {
     if (hint === "number") {
-      return this.data.length;
+      return this.path.length;
     }
-    return this.data;
+    return this.path;
   }
   // ---------------------------------------------------------
-  // Static functions.
-  /** @docs
-   *  @title home
-   *  @desc Get the user's home directory path
-   *  @static true
-   *  @returns
-   *      @type Path
-   *      @desc A new Path instance pointing to the user's home directory
+  // Static method.
+  /**
+   * Get the user's home directory path.
+   * @static
+   * @returns {Path} A new Path instance pointing to the user's home directory.
    */
   static home() {
     return new Path(os.homedir());
   }
+  /**
+   * Find the common base path between an array of paths.
+   * @param {string[]} paths - Array of path strings to analyze.
+   * @returns {string|undefined} Returns a string when a common base path has been found, or undefined otherwise.
+   */
+  static find_common_base_path(paths) {
+    if (!Array.isArray(paths) || paths.length === 0) {
+      return "";
+    }
+    if (paths.length === 1) {
+      return new Path(paths[0]).base()?.toString();
+    }
+    const separator = paths[0].includes("\\\\") ? "\\\\" : "/";
+    const split_first_path = paths[0].split(separator);
+    let common_length = split_first_path.length;
+    for (let i = 1; i < paths.length; i++) {
+      const split = paths[i].split(separator);
+      const min_length = Math.min(common_length, split.length);
+      let j = 0;
+      while (j < min_length && split_first_path[j] === split[j]) {
+        j++;
+      }
+      common_length = j;
+      if (common_length === 0) {
+        return void 0;
+      }
+    }
+    return split_first_path.slice(0, common_length).join(separator);
+  }
+  /** Check if a path exists. */
+  static exists(path) {
+    return fs.existsSync(path);
+  }
+  /**
+   * Ensure a path exists; throw an error if not.
+   * @param {string|Path} path - Path to check.
+   * @param {string} [err_prefix] - Optional prefix for the error message.
+   */
+  static ensure_exists_err(path, err_prefix = "") {
+    path = new Path(path);
+    if (!path.exists()) {
+      throw new Error(`${err_prefix}Path "${path.str()}" does not exist.`);
+    }
+  }
   // ---------------------------------------------------------
   // Properties.
-  /** @docs
-   *  @title length
-   *  @desc Get the length of the current path string
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The number of characters in the path string
-   *  @funcs 2
+  /**
+   * Get the length of the current path string.
+   * @readonly
+   * @returns {number} The number of characters in the path string.
    */
   get length() {
-    return this.data.length;
+    return this.path.length;
   }
   get len() {
-    return this.data.length;
+    return this.path.length;
   }
-  /** @docs
-   *  @title stat
-   *  @desc Get the file system stats for the current path
-   *  @property true
-   *  @returns
-   *      @type fs.Stats
-   *      @desc The file system stats object with modified time properties
+  /**
+   * Get the file system stats for the current path.
+   * @readonly
+   * @returns {fs.Stats} The file system stats object with modified time properties.
+   * @throws Error if the path does not exist or cannot be accessed.
    */
   get stat() {
     if (this._stat !== void 0) {
       return this._stat;
     }
-    this._stat = import_utils.Utils.rename_attributes(fs.statSync(this.data), [
-      ["atimeMs", "atime"],
-      ["mtimeMs", "mtime"],
-      ["ctimeMs", "ctime"],
-      ["birthtimeMs", "birthtime"]
-    ], [
-      "atime",
-      "mtime",
-      "ctime",
-      "birthtime"
-    ]);
+    this._stat = fs.statSync(this.path);
+    if (this._stat == null) {
+      throw new Error(`Path "${this.path}" does not exist or cannot be accessed.`);
+    }
     return this._stat;
   }
-  /** @docs
-   *  @title Device ID
-   *  @desc Get the device identifier where the file resides
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The numeric device identifier
+  /**
+   * Get the device identifier where the file resides.
+   * @readonly
+   * @returns {number} The numeric device identifier.
    */
   get dev() {
     return this.stat.dev;
   }
-  /** @docs
-   *  @title Inode number
-   *  @desc Get the file system specific inode number
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The inode number of the file
+  /**
+   * Get the file system specific inode number.
+   * @readonly
+   * @returns {number} The inode number of the file.
    */
   get ino() {
     return this.stat.ino;
   }
-  /** @docs
-   *  @title File mode
-   *  @desc Get the file mode bits
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The file mode containing permission bits and file type
+  /**
+   * Get the file mode bits (permission and type).
+   * @readonly
+   * @returns {number} The file mode bits.
    */
   get mode() {
     return this.stat.mode;
   }
-  /** @docs
-   *  @title Hard links
-   *  @desc Get the number of hard links to the file
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Number of hard links
+  /**
+   * Get the number of hard links to the file.
+   * @readonly
+   * @returns {number} The number of hard links.
    */
   get nlink() {
     return this.stat.nlink;
   }
-  /** @docs
-   *  @title User ID
-   *  @desc Get the user identifier of the file's owner
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The numeric user ID
+  /**
+   * Get the user identifier of the file's owner.
+   * @readonly
+   * @returns {number} The numeric user ID.
    */
   get uid() {
     return this.stat.uid;
   }
-  /** @docs
-   *  @title Group ID
-   *  @desc Get the group identifier of the file's group
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The numeric group ID
+  /**
+   * Get the group identifier of the file's group.
+   * @readonly
+   * @returns {number} The numeric group ID.
    */
   get gid() {
     return this.stat.gid;
   }
-  /** @docs
-   *  @title Device ID (if special file)
-   *  @desc Get the device identifier for special files
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc The numeric device identifier for special files
+  /**
+   * Get the device identifier for special files.
+   * @readonly
+   * @returns {number} The device identifier for special files.
    */
   get rdev() {
     return this.stat.rdev;
   }
-  /** @docs
-   *  @title Size
-   *  @desc Get the total size in bytes. For directories, calculates total size recursively
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Total size in bytes
+  /**
+   * Get the total size in bytes. For directories, calculates size recursively.
+   * @readonly
+   * @returns {number} Total size in bytes.
    */
   get size() {
     if (this.stat.isDirectory()) {
@@ -266,105 +279,72 @@ class Path {
         }
       };
       let size = 0;
-      calc(this.data);
+      calc(this.path);
       return size;
     } else {
       return this.stat.size;
     }
   }
-  /** @docs
-   *  @title Block size
-   *  @desc Get the file system block size for I/O operations
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Block size in bytes
+  /**
+   * Get the file system block size for I/O operations.
+   * @readonly
+   * @returns {number} Block size in bytes.
    */
   get blksize() {
     return this.stat.blksize;
   }
-  /** @docs
-   *  @title Blocks
-   *  @desc Get the number of blocks allocated to the file
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Number of allocated blocks
+  /**
+   * Get the number of blocks allocated to the file.
+   * @readonly
+   * @returns {number} Number of allocated blocks.
    */
   get blocks() {
     return this.stat.blocks;
   }
-  /** @docs
-   *  @title Access time
-   *  @desc Get the last access time of the file
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Millisecods number representing the last access time
+  /**
+   * Get the last access time of the file (in milliseconds).
+   * @readonly
+   * @returns {number} Milliseconds representing the last access time.
    */
   get atime() {
-    return this.stat.atime;
+    return this.stat.atimeMs;
   }
-  /** @docs
-   *  @title Modification time
-   *  @desc Get the last modification time of the file
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Millisecods number representing the last modification time
+  /**
+   * Get the last modification time of the file (in milliseconds).
+   * @readonly
+   * @returns {number} Milliseconds representing the last modification time.
    */
   get mtime() {
-    return this.stat.mtime;
+    return this.stat.mtimeMs;
   }
-  /** @docs
-   *  @title Change time
-   *  @desc Get the last change time of the file (metadata changes)
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Millisecods number representing the last change time
+  /**
+   * Get the last change time of the file metadata (in milliseconds).
+   * @readonly
+   * @returns {number} Milliseconds representing the last change time.
    */
   get ctime() {
-    return this.stat.ctime;
+    return this.stat.ctimeMs;
   }
-  /** @docs
-   *  @title Creation time
-   *  @desc Get the creation time of the file
-   *  @property true
-   *  @returns
-   *      @type number
-   *      @desc Millisecods number representing the file creation time
+  /**
+   * Get the creation time of the file (in milliseconds).
+   * @readonly
+   * @returns {number} Milliseconds representing the file creation time.
    */
   get birthtime() {
-    return this.stat.birthtime;
+    return this.stat.birthtimeMs;
   }
-  // Disk usage.
-  /** @docs
-   *  @title Disk usage
-   *  @desc Get disk usage information for the directory
-   *  @throws Error if path is not a directory
-   *  @returns
-   *      @type Promise<{available: number; free: number; total: number}>
-   *      @desc Object containing disk space information in bytes.
-   *      @attr
-   *          @name available
-   *          @descr: Space available to the current user
-   *          @type: number
-   *      @attr
-   *          @name free
-   *          @descr: Total free space
-   *          @type: number
-   *      @attr
-   *          @name total
-   *          @descr: Total disk space
-   *          @type: number
+  /**
+   * Get disk usage information for the directory.
+   * @async
+   * @throws {Error} If the path is not a directory.
+   * @returns {Promise<{available: number; free: number; total: number}>} Object containing disk space information in bytes.
    */
   async disk_usage() {
     if (!this.is_dir()) {
-      throw new Error(`File path "${this.data}" is not a directory.`);
+      throw new Error(`File path "${this.path}" is not a directory.`);
     }
     return new Promise((resolve, reject) => {
-      diskusage.check(this.data, (err, info) => {
+      diskusage.check(this.path, (err, info) => {
         if (err) {
           reject(err);
           return;
@@ -373,20 +353,18 @@ class Path {
       });
     });
   }
-  /** @docs
-   *  @title Available space
-   *  @desc Get available disk space for the directory
-   *  @throws Error if path is not a directory
-   *  @returns
-   *      @type Promise<number>
-   *      @desc Number of bytes available to the current user
+  /**
+   * Get available disk space for the directory.
+   * @async
+   * @throws {Error} If the path is not a directory.
+   * @returns {Promise<number>} Number of bytes available to the current user.
    */
   async available_space() {
     if (!this.is_dir()) {
-      throw new Error(`File path "${this.data}" is not a directory.`);
+      throw new Error(`File path "${this.path}" is not a directory.`);
     }
     return new Promise((resolve, reject) => {
-      diskusage.check(this.data, (err, info) => {
+      diskusage.check(this.path, (err, info) => {
         if (err) {
           reject(err);
           return;
@@ -405,17 +383,17 @@ class Path {
    */
   eq(path) {
     if (path instanceof Path) {
-      return this.data === path.data;
+      return this.path === path.path;
     }
-    return this.data === path;
+    return this.path === path;
   }
-  /** @docs
-   *  @title Reset
-   *  @desc Reset the path attribute's except the path name
-   *  @note Should be called when the operating system's path has changed
+  /**
+   * Reset internal caches except path string.
+   * @returns {this} The Path instance for chaining.
    */
   reset() {
     this._stat = void 0;
+    this._full_name = void 0;
     this._name = void 0;
     this._extension = void 0;
     this._base = void 0;
@@ -425,9 +403,16 @@ class Path {
   refresh() {
     return this.reset();
   }
-  /** @docs
-   *  @title Is directory
-   *  @desc Check if the path is a directory
+  /**
+   * {Is file}
+   * Check if the path is a directory
+   */
+  is_file() {
+    return this.stat.isFile();
+  }
+  /**
+   * {Is directory}
+   * Check if the path is a directory
    */
   is_dir() {
     return this.stat.isDirectory();
@@ -437,97 +422,136 @@ class Path {
    *  @desc Check if the path exists
    */
   exists() {
-    return fs.existsSync(this.data);
+    return fs.existsSync(this.path);
   }
-  static exists(path) {
-    return fs.existsSync(path);
-  }
-  /** @docs
-   *  @title Ensure Exists
-   *  @desc Ensure a path exists, if not throw an error.
-   */
-  static ensure_exists_err(path, err_prefix = "") {
-    path = new Path(path);
-    if (!path.exists()) {
-      throw new Error(`${err_prefix}Path "${path.str()}" does not exist.`);
-    }
-  }
-  /** @docs
-   *  @title Get name
-   *  @desc Get the (full) name of the path
-   */
-  name(with_extension = true) {
-    if (with_extension === false) {
-      const name = this.name();
-      const ext = this.extension();
-      if (!ext) {
-        return name;
+  /**
+  * Get the base path of this path, correctly handling escaped separators.
+  * @param back - Number of directory levels to traverse up (default: 1).
+  * @returns The parent Path instance, or undefined if at root.
+  */
+  base(back = 1) {
+    const data = this.path;
+    const len = data.length;
+    if (back !== 1) {
+      let count = 0;
+      for (let i = len - 1; i >= 0; i--) {
+        if (data.charAt(i) === "/" && data.charAt(i - 1) !== "\\") {
+          count++;
+          if (count === back) {
+            return new Path(data.substring(0, i));
+          }
+        }
       }
-      return name.substr(0, name.length - ext.length);
+      return void 0;
     }
-    if (this._name !== void 0) {
+    if (this._base !== void 0) {
+      return this._base;
+    }
+    for (let i = len - 1; i > 0; i--) {
+      if (data.charAt(i) === "/" && data.charAt(i - 1) !== "\\") {
+        this._base = new Path(data.substring(0, i));
+        return this._base;
+      }
+    }
+    return void 0;
+  }
+  /**
+   * Get the name of the path, with correct multi-dot extension support.
+   * Handles files like `.env` and extensions like `.d.ts`, `.js.map`.
+   * @param with_extension - Include the extension in the returned name (default: true).
+   * @returns The base name of the path, including extension if specified.
+   */
+  // name(with_extension: boolean = true): string {
+  //     if (with_extension && this._full_name !== undefined) {
+  //         return this._full_name;
+  //     }
+  //     if (!with_extension && this._name !== undefined) {
+  //         return this._name;
+  //     }
+  //     const data = this.path;
+  //     // Determine start after base()
+  //     const base_path = this.base();
+  //     const start = base_path ? base_path.path.length + 1 : 0;
+  //     const basename = data.substring(start);
+  //     let name_part: string;
+  //     let ext_part: string;
+  //     const first_dot = basename.indexOf('.');
+  //     if (first_dot > 0) {
+  //         // Normal: name before first dot
+  //         name_part = basename.substring(0, first_dot);
+  //         ext_part = basename.substring(first_dot);
+  //     } else if (first_dot === 0) {
+  //         // Hidden file: check for second dot
+  //         const second_dot = basename.indexOf('.', 1);
+  //         if (second_dot > 1) {
+  //             name_part = basename.substring(0, second_dot);
+  //             ext_part = basename.substring(second_dot);
+  //         } else {
+  //             name_part = basename;
+  //             ext_part = '';
+  //         }
+  //     } else {
+  //         // No dot
+  //         name_part = basename;
+  //         ext_part = '';
+  //     }
+  //     this._name = name_part;
+  //     this._extension = ext_part;
+  //     this._full_name = name_part + ext_part;
+  //     return with_extension ? this._full_name : this._name;
+  // }
+  full_name(with_extension = true) {
+    if (with_extension && this._full_name !== void 0) {
+      return this._full_name;
+    }
+    if (!with_extension && this._name !== void 0) {
       return this._name;
     }
-    this._name = "";
-    for (let i = this.data.length - 1; i >= 0; i--) {
-      const c = this.data.charAt(i);
-      if (c === "/") {
-        break;
+    const data = this.path;
+    const base_path = this.base();
+    const start = base_path ? base_path.path.length + 1 : 0;
+    const basename = data.substring(start);
+    let name_part;
+    let ext_part;
+    const first_dot = basename.indexOf(".");
+    if (first_dot > 0) {
+      name_part = basename.substring(0, first_dot);
+      ext_part = basename.substring(first_dot);
+    } else if (first_dot === 0) {
+      const second_dot = basename.indexOf(".", 1);
+      if (second_dot > 1) {
+        name_part = basename.substring(0, second_dot);
+        ext_part = basename.substring(second_dot);
+      } else {
+        name_part = basename;
+        ext_part = "";
       }
-      this._name = c + this._name;
+    } else {
+      name_part = basename;
+      ext_part = "";
     }
-    return this._name;
+    this._name = name_part;
+    this._extension = ext_part;
+    this._full_name = name_part + ext_part;
+    return with_extension ? this._full_name : this._name;
   }
-  /** @docs
-   *  @title Get extension
-   *  @desc Get the extension of the path
+  // name(): string {
+  //     if (this._name !== undefined) {
+  //         return this._name;
+  //     }
+  //     this.full_name();
+  //     return this._name!;
+  // }
+  /**
+   * Get the extension of the path, with correct multi-dot extension support.
+   * @returns The file extension, including leading dot, or empty string if none.
    */
   extension() {
     if (this._extension !== void 0) {
       return this._extension;
     }
-    if (this._name == null) {
-      this.name();
-    }
-    this._extension = "";
-    for (let i = this._name.length - 1; i >= 0; i--) {
-      const c = this._name.charAt(i);
-      this._extension = c + this._extension;
-      if (c === ".") {
-        return this._extension;
-      }
-    }
-    this._extension = "";
+    this.full_name();
     return this._extension;
-  }
-  /** @docs
-   *  @title Get base
-   *  @desc Get the base path of the path
-   *  @note Returns `null` when the path does not have a base path
-   */
-  base(back = 1) {
-    if (back === 1 && this._base != null) {
-      return this._base;
-    }
-    let count = 0, end = 0;
-    for (end = this.data.length - 1; end >= 0; end--) {
-      const c = this.data.charAt(end);
-      if (c === "/") {
-        ++count;
-        if (back === count) {
-          break;
-        }
-      }
-    }
-    if (end === 0) {
-      return;
-    }
-    if (back === 1) {
-      this._base = new Path(this.data.substr(0, end));
-      return this._base;
-    } else {
-      return new Path(this.data.substr(0, end));
-    }
   }
   /** @docs
    *  @title Get absolute
@@ -537,7 +561,7 @@ class Path {
     if (this._abs !== void 0) {
       return this._abs;
     }
-    this._abs = new Path(pathlib.resolve(this.data));
+    this._abs = new Path(pathlib.resolve(this.path));
     return this._abs;
   }
   static abs(path) {
@@ -549,9 +573,9 @@ class Path {
    */
   join(subpath, clean = true) {
     if (subpath instanceof Path) {
-      return new Path(`${this.data}/${subpath.data}`, clean);
+      return new Path(`${this.path}/${subpath.path}`, clean);
     }
-    return new Path(`${this.data}/${subpath}`, clean);
+    return new Path(`${this.path}/${subpath}`, clean);
   }
   /** @docs
    *  @title Copy
@@ -564,9 +588,9 @@ class Path {
         return reject('Define parameter "destination".');
       }
       if (destination instanceof Path) {
-        destination = destination.data;
+        destination = destination.path;
       }
-      fs_extra.copy(this.data, destination, (err) => {
+      fs_extra.copy(this.path, destination, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -580,9 +604,9 @@ class Path {
       throw new Error('Define parameter "destination".');
     }
     if (destination instanceof Path) {
-      destination = destination.data;
+      destination = destination.path;
     }
-    fs_extra.copySync(this.data, destination);
+    fs_extra.copySync(this.path, destination);
   }
   /** @docs
    *  @title Move
@@ -591,12 +615,12 @@ class Path {
   async mv(destination) {
     return new Promise((resolve, reject) => {
       if (destination instanceof Path) {
-        destination = destination.data;
+        destination = destination.path;
       }
       if (fs.existsSync(destination)) {
         return reject("Destination path already exists.");
       }
-      fs_extra.move(this.data, destination, (err) => {
+      fs_extra.move(this.path, destination, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -615,7 +639,7 @@ class Path {
     return new Promise((resolve, reject) => {
       if (this.exists()) {
         if (this.is_dir()) {
-          fs.rm(this.data, { recursive }, (err) => {
+          fs.rm(this.path, { recursive }, (err) => {
             if (err) {
               reject(err);
             } else {
@@ -624,7 +648,7 @@ class Path {
             }
           });
         } else {
-          fs.unlink(this.data, (err) => {
+          fs.unlink(this.path, (err) => {
             if (err) {
               reject(err);
             } else {
@@ -639,9 +663,9 @@ class Path {
   del_sync({ recursive = false } = {}) {
     if (this.exists()) {
       if (this.is_dir()) {
-        fs.rmSync(this.data, { recursive });
+        fs.rmSync(this.path, { recursive });
       } else {
-        fs.unlinkSync(this.data);
+        fs.unlinkSync(this.path);
       }
     }
     return this;
@@ -652,7 +676,7 @@ class Path {
    */
   async trash() {
     return new Promise(async (resolve, reject) => {
-      const name = this.name();
+      const full_name = this.full_name();
       let trash;
       switch (os.platform()) {
         case "darwin":
@@ -670,11 +694,11 @@ class Path {
       }
       let destination;
       try {
-        destination = `${trash}/${name}`;
+        destination = `${trash}/${full_name}`;
         let counts = 0;
         while (fs.existsSync(destination)) {
           ++counts;
-          destination = `${trash}/${name}-${counts}`;
+          destination = `${trash}/${full_name}-${counts}`;
         }
         await this.mv(destination);
       } catch (err) {
@@ -692,7 +716,7 @@ class Path {
       if (this.exists()) {
         return resolve();
       }
-      fs.mkdir(this.data, { recursive: true }, (err) => {
+      fs.mkdir(this.path, { recursive: true }, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -706,7 +730,7 @@ class Path {
     if (this.exists()) {
       return this;
     }
-    fs.mkdirSync(this.data, { recursive: true });
+    fs.mkdirSync(this.path, { recursive: true });
     return this;
   }
   /** @docs
@@ -716,9 +740,37 @@ class Path {
   async touch() {
     return this.save("");
   }
+  /**
+   * Relative.
+   */
+  relative(child) {
+    if (child instanceof Path) {
+      return new Path(pathlib.relative(this.path, child.path), false);
+    }
+    return new Path(pathlib.relative(this.path, child), false);
+  }
+  quote(def = '""') {
+    const res = import_string.String.quote(this.path, def instanceof Path ? def.path : def);
+    if (res === void 0) {
+      return void 0;
+    }
+    if (def === "") {
+      throw new Error("Default value cannot be an empty string.");
+    }
+    if (res === "") {
+      throw new Error("Operation resulted in an empty string, which is not allowed.");
+    }
+    return new Path(res, false);
+  }
+  /**
+   * Return the unquoted representation of the path.
+   */
+  unquote() {
+    return new Path(import_string.String.unquote(this.path), false);
+  }
   async load({ type = "string", encoding = void 0 } = {}) {
     return new Promise((resolve, reject) => {
-      fs.readFile(this.data, encoding, (err, data) => {
+      fs.readFile(this.path, encoding, (err, data) => {
         if (err) {
           reject(err);
         } else {
@@ -745,7 +797,7 @@ class Path {
     });
   }
   load_sync({ type = "string", encoding = void 0 } = {}) {
-    const data = fs.readFileSync(this.data, encoding);
+    const data = fs.readFileSync(this.path, encoding);
     if (type == null || type === "buffer") {
       return data;
     } else if (type === "string") {
@@ -772,7 +824,7 @@ class Path {
       } else if (opts.type === "array" || opts.type === "object" || opts.type === "json" || opts.type === "json5") {
         data = JSON.stringify(data);
       } else if (opts.type === "jsonc") {
-        await import_jsonc.JSONC.save(this.data, data);
+        await import_jsonc.JSONC.save(this.path, data);
         return;
       } else if (opts.type === "number") {
         data = data.toString();
@@ -783,7 +835,7 @@ class Path {
       }
     }
     return new Promise((resolve, reject) => {
-      fs.writeFile(this.data, data, (err) => {
+      fs.writeFile(this.path, data, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -809,8 +861,34 @@ class Path {
         throw Error(`Invalid type parameter "${opts.type.toString()}".`);
       }
     }
-    fs.writeFileSync(this.data, data);
+    fs.writeFileSync(this.path, data);
     return this;
+  }
+  /**
+   * Asynchronously reads the file at this._path using a streaming interface.
+   * Calls the optional `processLine` callback for each line as it is read,
+   * and always returns an array of all lines once complete.
+   * This approach is memory-efficient for large files while allowing
+   * custom per-line processing.
+   *
+   * @param callback Optional callback invoked with each line and its index.
+   * @returns Promise resolving to an array of all lines in the file.
+   */
+  async read_lines(callback) {
+    const lines = [];
+    const rl = readline.createInterface({
+      input: fs.createReadStream(this.path),
+      crlfDelay: Infinity
+    });
+    let index = 0;
+    for await (const line of rl) {
+      if (callback) {
+        callback(line, index);
+      }
+      lines.push(line);
+      index++;
+    }
+    return lines;
   }
   async paths({ recursive = false, absolute = true, exclude, string = false } = {}) {
     const exclude_list = exclude instanceof Path.ExcludeList ? exclude : Array.isArray(exclude) ? /* @__PURE__ */ new Set() : void 0;
@@ -833,10 +911,10 @@ class Path {
     }
     return new Promise(async (resolve, reject) => {
       if (!this.is_dir()) {
-        return reject(`Path "${this.data}" is not a directory.`);
+        return reject(`Path "${this.path}" is not a directory.`);
       }
       if (!recursive) {
-        fs.readdir(this.data, (err, files) => {
+        fs.readdir(this.path, (err, files) => {
           if (err) {
             reject(err);
           } else {
@@ -844,7 +922,7 @@ class Path {
             files.forEach((name) => {
               const path = this.join(name);
               if (exclude_list == null || exclude_list.size === 0 || !exclude_list.has(path.str())) {
-                list.push(absolute ? string ? path.str() : path : string ? name : new Path(name));
+                list.push(absolute ? string ? path.str() : path : string ? name : new Path(name, false));
               }
             });
             resolve(list);
@@ -854,7 +932,7 @@ class Path {
         const files = [];
         const traverse = (path, relative_path) => {
           return new Promise((resolve2, reject2) => {
-            fs.readdir(path.data, async (err, children) => {
+            fs.readdir(path.path, async (err, children) => {
               if (err) {
                 reject2(err);
               } else {
@@ -864,7 +942,7 @@ class Path {
                     if (exclude_list != null && (exclude_list.size === 0 || !exclude_list.has(path.str()))) {
                       continue;
                     }
-                    const relative_child = absolute ? null : relative_path.join(child);
+                    const relative_child = absolute ? void 0 : relative_path ? relative_path.join(child) : new Path(child, false);
                     files.push(absolute ? string ? child_path.str() : child_path : string ? relative_child?.str() : relative_child);
                     if (child_path.is_dir()) {
                       await traverse(child_path, relative_child);
@@ -879,7 +957,7 @@ class Path {
           });
         };
         try {
-          await traverse(this, absolute ? null : new Path(""));
+          await traverse(this, void 0);
           resolve(files);
         } catch (err) {
           reject(err);
@@ -887,90 +965,99 @@ class Path {
       }
     });
   }
-  // Truncate.
-  /** @docs
-   *  @title Truncate
-   *  @desc Truncate the file
-   */
-  // async truncate(): Promise<void> {
-  //     return new Promise((resolve, reject) => {
-  //         fs.truncate(this._path, (err) => {
-  //             if (err) {
-  //                 return reject(err);
-  //             }
-  //             resolve();
-  //         });
-  //     });
-  // }
-  /** @docs
-   *  @title Common Base Path
-   *  @descr Find the common base path between an array of paths
-   *  @param
-   *      @name paths
-   *      @desc Array of path strings to analyze
-   *      @type string[]
-   *  @return
-   *      @type string | undefined
-   *      @descr Returns a string when a common base path has been found, when no common base path was found `undefined` will be returned
-   */
-  static find_common_base_path(paths) {
-    if (!Array.isArray(paths) || paths.length === 0) {
-      return "";
+  /**
+  * Asynchronously match file paths using glob patterns.
+  * Uses fast-glob when `opts.fast` is true, otherwise falls back to a native implementation.
+  *
+  * @param patterns A glob pattern or an array of patterns to match.
+  * @param opts Optional settings:
+  *   - fast: Use fast-glob for performance.
+  *   - cwd: Base directory for matching (string or Path). Defaults to this path.
+  *   - absolute: Return absolute paths. Defaults to true.
+  *   - string: Return raw string paths instead of Path objects.
+  *   - dot: Include dotfiles. Defaults to false.
+  *   - only_files: Match only files. Defaults to true.
+  *   - only_directories: Match only directories. Defaults to false.
+  *   - unique: Remove duplicate results. Defaults to true.
+  */
+  async glob(patterns, opts = {}) {
+    const { fast = true, cwd = this, absolute = true, string: as_string = false, dot = false, only_files = true, only_directories = false, unique = true } = opts;
+    const cwd_str = cwd instanceof Path ? cwd.path : cwd.toString();
+    if (fast) {
+      const fg_opts = {
+        cwd: cwd_str,
+        dot,
+        onlyFiles: only_files,
+        onlyDirectories: only_directories,
+        unique,
+        absolute
+      };
+      const entries = await (0, import_fast_glob.default)(Array.isArray(patterns) ? patterns : [patterns], fg_opts);
+      return entries.map((p) => {
+        if (as_string) {
+          return p.path;
+        }
+        const _p = new Path(p.path);
+        if (p.stats) {
+          _p._stat = p.stats;
+        }
+        return _p;
+      });
     }
-    if (paths.length === 1) {
-      return new Path(paths[0]).base()?.toString();
-    }
-    const separator = paths[0].includes("\\\\") ? "\\\\" : "/";
-    const split_first_path = paths[0].split(separator);
-    let common_length = split_first_path.length;
-    for (let i = 1; i < paths.length; i++) {
-      const split = paths[i].split(separator);
-      const min_length = Math.min(common_length, split.length);
-      let j = 0;
-      while (j < min_length && split_first_path[j] === split[j]) {
-        j++;
+    const mm = import_minimatch.Minimatch;
+    const patterns_arr = Array.isArray(patterns) ? patterns : [patterns];
+    const matched = [];
+    const all_paths = await this.paths({ recursive: true, absolute: true, string: true });
+    for (const pat of patterns_arr) {
+      const matcher = new mm(pat, { dot });
+      for (const p of all_paths) {
+        const rel = pathlib.relative(cwd_str, p);
+        if (matcher.match(rel)) {
+          const val = absolute ? p : pathlib.relative(this.path, p);
+          matched.push(as_string ? val : new Path(val, false));
+        }
       }
-      common_length = j;
-      if (common_length === 0) {
-        return void 0;
-      }
     }
-    return split_first_path.slice(0, common_length).join(separator);
+    if (unique) {
+      const seen = /* @__PURE__ */ new Set();
+      return matched.filter((v) => {
+        const key = typeof v === "string" ? v : v.path;
+        if (seen.has(key))
+          return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    return matched;
   }
   /**
-   * Asynchronously reads the file at this._path using a streaming interface.
-   * Calls the optional `processLine` callback for each line as it is read,
-   * and always returns an array of all lines once complete.
-   * This approach is memory-efficient for large files while allowing
-   * custom per-line processing.
-   *
-   * @param callback Optional callback invoked with each line and its index.
-   * @returns Promise resolving to an array of all lines in the file.
+   * Synchronously match file paths using glob patterns.
    */
-  async read_lines(callback) {
-    const lines = [];
-    const rl = readline.createInterface({
-      input: fs.createReadStream(this.data),
-      crlfDelay: Infinity
-    });
-    let index = 0;
-    for await (const line of rl) {
-      if (callback) {
-        callback(line, index);
-      }
-      lines.push(line);
-      index++;
+  glob_sync(patterns, opts = {}) {
+    const { fast = true, cwd = this, absolute = true, string: as_string = false, dot = false, only_files = true, only_directories = false, unique = true } = opts;
+    const cwd_str = cwd instanceof Path ? cwd.path : cwd.toString();
+    if (fast) {
+      const fg_opts = {
+        cwd: cwd_str,
+        dot,
+        onlyFiles: only_files,
+        onlyDirectories: only_directories,
+        unique,
+        absolute
+      };
+      const entries = import_fast_glob.default.sync(Array.isArray(patterns) ? patterns : [patterns], fg_opts);
+      return entries.map((p) => {
+        if (as_string) {
+          return p.path;
+        }
+        const _p = new Path(p.path);
+        if (p.stats) {
+          _p._stat = p.stats;
+        }
+        return _p;
+      });
     }
-    return lines;
-  }
-  /**
-   * Relative.
-   */
-  relative(child) {
-    if (child instanceof Path) {
-      return new Path(pathlib.relative(this.data, child.data), false);
-    }
-    return new Path(pathlib.relative(this.data, child), false);
+    throw new Error("Sync fallback not implemented; please use opts.fast for sync glob.");
   }
 }
 (function(Path2) {

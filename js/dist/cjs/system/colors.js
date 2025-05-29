@@ -19,9 +19,7 @@ var stdin_exports = {};
 __export(stdin_exports, {
   Color: () => Color,
   Colors: () => Colors,
-  color: () => Color,
-  colors: () => Colors,
-  default: () => stdin_default
+  colors: () => Colors
 });
 module.exports = __toCommonJS(stdin_exports);
 class Colors {
@@ -63,12 +61,50 @@ class Colors {
     cyan: "\x1B[106m",
     white: "\x1B[107m"
   };
-  // ---------------------------------------------------------
-  // Functions.
-  /**
-   * Enable ANSI color codes by resetting all color attributes.
-   */
-  static enable() {
+}
+var Color;
+(function(Color2) {
+  Color2.black = (data) => `${Colors.black}${data}${Colors.end}`;
+  Color2.red = (data) => `${Colors.red}${data}${Colors.end}`;
+  Color2.red_bold = (data) => `${Colors.red_bold}${data}${Colors.end}`;
+  Color2.green = (data) => `${Colors.green}${data}${Colors.end}`;
+  Color2.green_bold = (data) => `${Colors.bold}${Colors.green}${data}${Colors.end}`;
+  Color2.yellow = (data) => `${Colors.yellow}${data}${Colors.end}`;
+  Color2.yellow_bold = (data) => `${Colors.bold}${Colors.yellow}${data}${Colors.end}`;
+  Color2.blue = (data) => `${Colors.blue}${data}${Colors.end}`;
+  Color2.blue_bold = (data) => `${Colors.bold}${Colors.blue}${data}${Colors.end}`;
+  Color2.magenta = (data) => `${Colors.magenta}${data}${Colors.end}`;
+  Color2.magenta_bold = (data) => `${Colors.bold}${Colors.magenta}${data}${Colors.end}`;
+  Color2.cyan = (data) => `${Colors.cyan}${data}${Colors.end}`;
+  Color2.cyan_bold = (data) => `${Colors.bold}${Colors.cyan}${data}${Colors.end}`;
+  Color2.light_gray = (data) => `${Colors.light_gray}${data}${Colors.end}`;
+  Color2.gray = (data) => `${Colors.gray}${data}${Colors.end}`;
+  Color2.bold = (data) => `${Colors.bold}${data}${Colors.end}`;
+  Color2.italic = (data) => `${Colors.italic}${data}${Colors.end}`;
+  Color2.end = (data) => `${Colors.end}${data}${Colors.end}`;
+  Color2.purple = (data) => `${Colors.purple}${data}${Colors.end}`;
+  Color2.orange = (data) => `${Colors.orange}${data}${Colors.end}`;
+  Color2.bg = {
+    black: (data) => `${Colors.bg.black}${data}${Colors.end}`,
+    red: (data) => `${Colors.bg.red}${data}${Colors.end}`,
+    green: (data) => `${Colors.bg.green}${data}${Colors.end}`,
+    yellow: (data) => `${Colors.bg.yellow}${data}${Colors.end}`,
+    blue: (data) => `${Colors.bg.blue}${data}${Colors.end}`,
+    magenta: (data) => `${Colors.bg.magenta}${data}${Colors.end}`,
+    cyan: (data) => `${Colors.bg.cyan}${data}${Colors.end}`,
+    white: (data) => `${Colors.bg.white}${data}${Colors.end}`
+  };
+  Color2.bright_bg = {
+    black: (data) => `${Colors.bright_bg.black}${data}${Colors.end}`,
+    red: (data) => `${Colors.bright_bg.red}${data}${Colors.end}`,
+    green: (data) => `${Colors.bright_bg.green}${data}${Colors.end}`,
+    yellow: (data) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
+    blue: (data) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
+    magenta: (data) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
+    cyan: (data) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
+    white: (data) => `${Colors.bright_bg.white}${data}${Colors.end}`
+  };
+  function enable() {
     Colors.black = "\x1B[30m";
     Colors.red = "\x1B[31m";
     Colors.red_bold = "\x1B[31m\x1B[1m";
@@ -105,10 +141,8 @@ class Colors {
       white: "\x1B[107m"
     };
   }
-  /**
-   * Disable ANSI color codes by clearing all color attributes.
-   */
-  static disable() {
+  Color2.enable = enable;
+  function disable() {
     Colors.black = "";
     Colors.red = "";
     Colors.red_bold = "";
@@ -145,31 +179,12 @@ class Colors {
       white: ""
     };
   }
-  /**
-   * Strip all ANSI color codes from a string.
-   *
-   * @param data - The string containing ANSI codes.
-   * @returns The cleaned string without colors.
-   */
-  static strip(data) {
+  Color2.disable = disable;
+  function strip(data) {
     return data.replace(/\u001b\[[0-9;]*m/g, "");
   }
-  /** Colorize a json object. */
-  static json(value, opts) {
-    opts ??= {};
-    opts.json = true;
-    const circular_cache = /* @__PURE__ */ new Set();
-    return Colors._colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
-  }
-  /** Colorize an object. */
-  static object(value, opts) {
-    opts ??= {};
-    opts.json = true;
-    const circular_cache = /* @__PURE__ */ new Set();
-    return Colors._colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
-  }
-  /** Colorize a object. */
-  static _colorize_obj(value, indent_level = 0, nested_depth, opts = {}, circular_cache) {
+  Color2.strip = strip;
+  function _colorize_obj(value, indent_level = 0, nested_depth, opts = {}, circular_cache) {
     let indent = indent_level === false ? "" : "    ".repeat(indent_level);
     let next_indent = indent_level === false ? "" : "    ".repeat(indent_level + 1);
     let line_break_or_space = indent_level === false ? " " : "\n";
@@ -209,7 +224,7 @@ class Colors {
         return Colors.cyan + "[Circular Array]" + Colors.end;
       }
       circular_cache.add(value);
-      const items = value.map((v) => `${next_indent}${Colors._colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`).join(Colors.light_gray + "," + Colors.end + line_break_or_space);
+      const items = value.map((v) => `${next_indent}${_colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`).join(Colors.light_gray + "," + Colors.end + line_break_or_space);
       return [
         Colors.light_gray + "[" + Colors.end,
         items,
@@ -230,13 +245,13 @@ class Colors {
       let total_len = 0;
       for (const key of keys) {
         const colored_key = Colors.cyan + (opts.json ? JSON.stringify(key) : key) + Colors.end;
-        const colored_val = Colors._colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
+        const colored_val = _colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
         const item = `${next_indent}${colored_key}${Colors.light_gray}: ${Colors.end}${colored_val}`;
         if (opts.max_length != null && item.length + total_len > opts.max_length) {
           if (total_len < opts.max_length) {
-            items.push(`${indent}${item.slice(0, opts.max_length - total_len)}${Colors.end} ${Color.red_bold("... [truncated]")}`);
+            items.push(`${indent}${item.slice(0, opts.max_length - total_len)}${Colors.end} ${Color2.red_bold("... [truncated]")}`);
           } else {
-            items.push(`${next_indent}${Color.red_bold("... [truncated]")}`);
+            items.push(`${next_indent}${Color2.red_bold("... [truncated]")}`);
           }
           break;
         }
@@ -266,56 +281,24 @@ class Colors {
         return Colors.magenta + String(value) + Colors.end;
     }
   }
-}
-const Color = {
-  black: (data) => `${Colors.black}${data}${Colors.end}`,
-  red: (data) => `${Colors.red}${data}${Colors.end}`,
-  red_bold: (data) => `${Colors.red_bold}${data}${Colors.end}`,
-  green: (data) => `${Colors.green}${data}${Colors.end}`,
-  green_bold: (data) => `${Colors.bold}${Colors.green}${data}${Colors.end}`,
-  yellow: (data) => `${Colors.yellow}${data}${Colors.end}`,
-  yellow_bold: (data) => `${Colors.bold}${Colors.yellow}${data}${Colors.end}`,
-  blue: (data) => `${Colors.blue}${data}${Colors.end}`,
-  blue_bold: (data) => `${Colors.bold}${Colors.blue}${data}${Colors.end}`,
-  magenta: (data) => `${Colors.magenta}${data}${Colors.end}`,
-  magenta_bold: (data) => `${Colors.bold}${Colors.magenta}${data}${Colors.end}`,
-  cyan: (data) => `${Colors.cyan}${data}${Colors.end}`,
-  light_gray: (data) => `${Colors.light_gray}${data}${Colors.end}`,
-  gray: (data) => `${Colors.gray}${data}${Colors.end}`,
-  bold: (data) => `${Colors.bold}${data}${Colors.end}`,
-  italic: (data) => `${Colors.italic}${data}${Colors.end}`,
-  end: (data) => `${Colors.end}${data}${Colors.end}`,
-  purple: (data) => `${Colors.purple}${data}${Colors.end}`,
-  orange: (data) => `${Colors.orange}${data}${Colors.end}`,
-  strip: (data) => Colors.strip(data),
-  bg: {
-    black: (data) => `${Colors.bg.black}${data}${Colors.end}`,
-    red: (data) => `${Colors.bg.red}${data}${Colors.end}`,
-    green: (data) => `${Colors.bg.green}${data}${Colors.end}`,
-    yellow: (data) => `${Colors.bg.yellow}${data}${Colors.end}`,
-    blue: (data) => `${Colors.bg.blue}${data}${Colors.end}`,
-    magenta: (data) => `${Colors.bg.magenta}${data}${Colors.end}`,
-    cyan: (data) => `${Colors.bg.cyan}${data}${Colors.end}`,
-    white: (data) => `${Colors.bg.white}${data}${Colors.end}`
-  },
-  bright_bg: {
-    black: (data) => `${Colors.bright_bg.black}${data}${Colors.end}`,
-    red: (data) => `${Colors.bright_bg.red}${data}${Colors.end}`,
-    green: (data) => `${Colors.bright_bg.green}${data}${Colors.end}`,
-    yellow: (data) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
-    blue: (data) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
-    magenta: (data) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
-    cyan: (data) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
-    white: (data) => `${Colors.bright_bg.white}${data}${Colors.end}`
-  },
-  json: (value, opts) => Colors.json(value, opts),
-  object: (value, opts) => Colors.object(value, opts)
-};
-var stdin_default = Colors;
+  function json(value, opts) {
+    opts ??= {};
+    opts.json = true;
+    const circular_cache = /* @__PURE__ */ new Set();
+    return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+  }
+  Color2.json = json;
+  function object(value, opts) {
+    opts ??= {};
+    opts.json = true;
+    const circular_cache = /* @__PURE__ */ new Set();
+    return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+  }
+  Color2.object = object;
+})(Color || (Color = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Color,
   Colors,
-  color,
   colors
 });

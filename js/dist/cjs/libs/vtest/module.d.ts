@@ -86,7 +86,11 @@ export declare class Module {
         repeat?: number;
         no_changes?: boolean;
         refresh?: boolean | string;
-    }): Promise<boolean>;
+    }): Promise<{
+        status: boolean;
+        failed: number;
+        succeeded: number;
+    }>;
 }
 /**
  * The unit tests module cache.

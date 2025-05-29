@@ -48,7 +48,7 @@ class Repo {
   }) {
     import__.Scheme.verify({
       object: arguments[0],
-      check_unknown: true,
+      strict: true,
       scheme: {
         source: "string",
         git: { type: "boolean", default: true },
@@ -57,7 +57,7 @@ class Repo {
       }
     });
     this.source = new import__.Path(source);
-    this.name = this.source.name();
+    this.name = this.source.full_name();
     this.git_enabled = git;
     this.ssh_enabled = ssh;
     this.npm_enabled = npm;
@@ -92,7 +92,7 @@ class Repo {
     import__.Scheme.verify({
       object: this.config,
       error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
-      check_unknown: true,
+      strict: true,
       scheme: {
         version_path: {
           type: "string",

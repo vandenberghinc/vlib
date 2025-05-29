@@ -1,6 +1,6 @@
-/*
- * Author: Daan van den Bergh
- * Copyright: © 2022 Daan van den Bergh.
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
 import * as os from "os";
 import { Path } from "./path.js";
@@ -485,5 +485,4 @@ export class Daemon {
         return this.proc?.out ?? "";
     }
 }
-export default Daemon;
 //# sourceMappingURL=daemon.js.map

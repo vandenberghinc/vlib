@@ -37,5 +37,3 @@ export class Network {
     }
 }
 export { Network as network }; // also export as lowercase for compatibility.
-
-export default Network;

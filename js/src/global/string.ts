@@ -253,6 +253,8 @@ namespace StringUtils {
 
     /**
      * Removes matching quotes from the ends of the string.
+     * 
+     * @param data The string to unquote.
      */
     export function unquote(data: string | String): string {
         const s = data as string;
@@ -262,8 +264,16 @@ namespace StringUtils {
 
     /**
      * Wraps the string in quotes if not already quoted.
+     * @returns the default string when the data is an empty string or null/undefined.
+     * @param data The string to quote.
+     * @param def Optional default value to return if data is null/undefined, default is `""`.
      */
-    export function quote(data: string | String): string {
+    export function quote(data: undefined | null | string | String, def: undefined): undefined | string
+    export function quote(data: undefined | null | string | String, def?: string | String): string
+    export function quote(data: undefined | null | string | String, def: string | String = '""'): undefined | string {
+        if (!data) {
+            return def instanceof String ? def.valueOf() : def
+        }
         const s = data as string;
         if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s;
         return `"${s}"`;

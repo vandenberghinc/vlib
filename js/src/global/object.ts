@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
-namespace ObjectUtils {
+export namespace ObjectUtils {
     /**
      * Expands object x with properties from object y.
      * Modifies x in place and returns it.
@@ -41,11 +41,11 @@ namespace ObjectUtils {
     }
 
     /**
-     * Renames keys in an object.
+     * Renames keys in an object, updates the object in place.
      * @param obj The object to rename keys in.
      * @param rename An array of [oldKey, newKey] pairs.
      * @param remove An array of keys to remove from the object.
-     * @returns The modified object.
+     * @returns The modified object reference.
      */
     export function rename_keys(
         obj: Record<string, any>,
@@ -67,21 +67,91 @@ namespace ObjectUtils {
     }
 
     /**
-     * Performs a deep copy of an object.
-     * Does not support classes, only primitive objects.
-     * @param obj The object to deep copy.
-     * @returns A deep copy of the object.
+     * Filter options.
+     * Also used by `Color`.
      */
-    export function deep_copy<T>(obj: T): T {
-        return deep_copy_internal(obj);
+    export interface FilterOpts {
+        /**
+         * If true, modifies the object in place, otherwise returns a new object.
+         * Defaults to `false`.
+         */
+        update?: boolean;
+        /**
+         * If true, it handles nested objects as well.
+         * Defaults to `false`.
+         */
+        recursive?: boolean;
     }
 
     /**
-     * Deletes keys from an object recursively, including nested objects and arrays.
-     * @param obj The object to modify.
-     * @param remove_keys An array of keys to remove.
-     * @returns The modified object.
+     * Filter callback type.
      */
+    export type FilterCallback = (value: any, key: string, parents?: [string, any][]) => boolean;
+    
+    /**
+     * Filter an object by a callback.
+     */
+    export function filter(
+        obj: Record<string, any>,
+        opts: FilterCallback | (FilterOpts & { callback: FilterCallback })
+    ): Record<string, any>;
+    export function filter(
+        obj: Record<string, any>,
+        callback: FilterCallback,
+        opts?: FilterOpts,
+    ): Record<string, any>;
+    export function filter(
+        obj: Record<string, any>,
+        callback: FilterCallback | (FilterOpts & { callback: FilterCallback }),
+        opts?: FilterOpts,
+    ): Record<string, any> {
+        return typeof callback === "function"
+            ? filter_helper(obj, callback, opts, [])
+            : filter_helper(obj, callback.callback, callback, [])
+    }
+    function filter_helper(
+        obj: Record<string, any>,
+        /** The callback, keep value first so we can also use callbacks as `Boolean` */
+        callback: FilterCallback,
+        opts: undefined | FilterOpts,
+        _parents: [string, any][]
+    ): Record<string, any> {
+        const added: Record<string, any> = {};
+        const keys = Object.keys(obj);
+        for (const key in keys) {
+            if (!callback(obj[key], key, _parents)) {
+                if (opts?.update) {
+                    delete obj[key];
+                }
+                continue;
+            }
+            let v = obj[key];
+            if (opts?.recursive && typeof v === 'object' && v !== null) {
+                v = filter_helper(
+                    v,
+                    callback,
+                    opts,
+                    [..._parents, [key, obj[key]]],
+                );
+            }
+            if (opts?.update) {
+                obj[key] = v;
+            } else {
+                added[key] = v;
+            }
+
+        }
+        if (opts?.update) { return obj; }
+        return added;
+    }
+
+
+    /**
+    * Deletes keys from an object recursively, including nested objects and arrays.
+    * @param obj The object to modify.
+    * @param remove_keys An array of keys to remove.
+    * @returns The modified object.
+    */
     export function delete_recursively<T>(obj: T, remove_keys: string[] = []): T {
         function clean(o: any): void {
             if (Array.isArray(o)) {
@@ -113,6 +183,16 @@ namespace ObjectUtils {
             }
         }
         return out as Pick<T, K>;
+    }
+
+    /**
+     * Performs a deep copy of an object.
+     * Does not support classes, only primitive objects.
+     * @param obj The object to deep copy.
+     * @returns A deep copy of the object.
+     */
+    export function deep_copy<T>(obj: T): T {
+        return deep_copy_internal(obj);
     }
 
 

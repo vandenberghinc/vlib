@@ -260,6 +260,8 @@ var StringUtils;
     StringUtils.is_numeric_string = is_numeric_string;
     /**
      * Removes matching quotes from the ends of the string.
+     *
+     * @param data The string to unquote.
      */
     function unquote(data) {
         const s = data;
@@ -268,10 +270,10 @@ var StringUtils;
         return s;
     }
     StringUtils.unquote = unquote;
-    /**
-     * Wraps the string in quotes if not already quoted.
-     */
-    function quote(data) {
+    function quote(data, def = '""') {
+        if (!data) {
+            return def instanceof String ? def.valueOf() : def;
+        }
         const s = data;
         if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
             return s;

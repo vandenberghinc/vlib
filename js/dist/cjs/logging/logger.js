@@ -28,7 +28,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Logger: () => Logger,
-  default: () => stdin_default,
   logger: () => logger
 });
 module.exports = __toCommonJS(stdin_exports);
@@ -37,18 +36,10 @@ var import_cluster = __toESM(require("cluster"));
 var import_date = require("../global/date.js");
 var import_path = require("../system/path.js");
 var import_colors = require("../system/colors.js");
-var import_source_loc = require("./source_loc.js");
-var import_pipe = __toESM(require("./pipe.js"));
-const IsError = Symbol("vlib.Logger.IsError");
-const IsWarning = Symbol("vlib.Logger.IsWarning");
-const IsDebug = Symbol("vlib.Logger.IsDebug");
-class UseActiveLogLevel extends Number {
-  constructor(value) {
-    super(value);
-  }
-}
-const IsRaw = Symbol("vlib.Logger.Raw");
-class Logger extends import_pipe.default {
+var import_source_loc = require("../debugging/source_loc.js");
+var import_directives = require("../debugging/directives.js");
+var import_pipe = require("../debugging/pipe.js");
+class Logger extends import_pipe.Pipe {
   log_path;
   error_path;
   log_stream;
@@ -56,8 +47,15 @@ class Logger extends import_pipe.default {
   max_mb;
   thread;
   debug_filename;
+  /**
+   * The inherited `pipe` attribute is never used since this class overrides the `log` method, which is the only place where `pipe` is used.
+   * @ts-expect-error */
+  _out;
+  // @ts-expect-error
+  _err;
+  /** Constructor. */
   constructor({ log_level = 0, debug_filename = void 0, log_path = void 0, error_path = void 0, max_mb = void 0 } = {}) {
-    super({ log_level });
+    super({ log_level, out: (d) => process.stdout.write(d) });
     this.log_path = void 0;
     this.error_path = void 0;
     this.log_stream = void 0;
@@ -101,7 +99,7 @@ class Logger extends import_pipe.default {
     const newline_index = buffer.indexOf("\n");
     const valid_start = newline_index !== -1 ? newline_index + 1 : 0;
     const truncated = buffer.slice(valid_start);
-    const temp_path = `${file_path}.tmp_${Date.now()}`;
+    const temp_path = `${file_path}.tmp_${import_date.Date.now()}`;
     await fs.promises.writeFile(temp_path, truncated);
     await fs.promises.rename(temp_path, file_path);
     const old_stream = type === "log" ? this.log_stream : this.error_stream;
@@ -115,9 +113,8 @@ class Logger extends import_pipe.default {
   }
   // --------------------------------------------------
   // Public.
-  /** @docs:
-   *  @title: Stop
-   *  @descr: Stop the logger and close the file streams.
+  /**
+   * Stop the logger and close the file streams.
    */
   stop() {
     if (this.log_stream) {
@@ -129,17 +126,10 @@ class Logger extends import_pipe.default {
       this.error_stream.close();
     }
   }
-  /** @docs:
-   *  @title: Assign Paths
-   *  @descr: Assign paths for the logger class.
-   *  @param:
-   *      @name: log_path
-   *      @descr: The optional log path.
-   *      @type: string
-   *  @param:
-   *      @name: error_path
-   *      @descr: The optional error path.
-   *      @type: string
+  /**
+   * Assign paths for the logger class.
+   * @param log_path The optional log path.
+   * @param error_path The optional error path.
    */
   assign_paths(log_path, error_path) {
     this.log_path = new import_path.Path(log_path);
@@ -161,7 +151,6 @@ class Logger extends import_pipe.default {
     await path.read_lines((line) => {
       const match = line.match(Logger.log_file_pattern);
       if (match) {
-        console.log("Matched:", match);
         const date = match[1];
         const loc = match[2];
         const thread = match[3];
@@ -180,7 +169,6 @@ class Logger extends import_pipe.default {
         });
       } else {
         buff.push(line);
-        console.log(`Unexpected line format:`, { line });
       }
     });
     if (buff.length > 0) {
@@ -202,131 +190,76 @@ class Logger extends import_pipe.default {
   // --------------------------------------------------
   // Override the log method to support the file streams.
   /** @docs:
-   *  @title: Log
-   *  @descr: Log data to the console and file streams when defined.
-   *  @param:
-   *      @name: level
-   *      @descr: The log level of the message.
-   *      @type: number
-   *  @param:
-   *      @name: args
-   *      @descr:
-   *          The data to log.
-   *      @type: any[]
+   * Log data to the console and file streams when defined.
+   * See {@link Pipe.log} for more details.
+   *
+   * @param args
+   *      The data to log.
+   *      The first number is treated as the local log level.
+   *      Any other directives are allowed before the first non-directive / local log level argument.
    */
-  log(level, ...args) {
-    if (typeof level !== "number") {
-      args.unshift(level);
-      level = 0;
-    }
-    let active_log_level = this.log_level;
-    let loc;
-    let mode;
-    let is_raw = false;
-    for (let index = 0; index < args.length; index++) {
-      const item = args[index];
-      if (item instanceof import_source_loc.SourceLoc) {
-        loc = item;
-      } else if (item === IsError || item === IsWarning || item === IsDebug) {
-        mode = item;
-      } else if (item === Infinity) {
-        mode = IsRaw;
-        args[index] = IsRaw;
-      } else if (item === IsRaw) {
-        is_raw = true;
-      } else if (item instanceof UseActiveLogLevel) {
-        active_log_level = item.valueOf();
-      } else {
-        break;
-      }
-    }
-    ;
-    if (mode === IsDebug && this.debug_filename && loc && loc.filename !== this.debug_filename) {
+  log(...args) {
+    let { local_level, active_log_level, is_raw, mode, loc, local_level_arg_index } = this.parse_directives(args);
+    if (mode === import_directives.Directive.debug && this.debug_filename && loc && loc.filename !== this.debug_filename) {
       return;
     }
     ;
     const msg = [import_colors.Colors.gray], file_msg = [];
-    const stream = mode === IsDebug ? void 0 : mode === IsError ? this.error_stream : this.log_stream;
-    const stream_path = mode === IsDebug ? void 0 : mode === IsError ? this.error_path : this.log_path;
-    if (level > active_log_level && !stream) {
+    const stream = mode === import_directives.Directive.debug ? void 0 : mode === import_directives.Directive.error ? this.error_stream : this.log_stream;
+    const stream_path = mode === import_directives.Directive.debug ? void 0 : mode === import_directives.Directive.error ? this.error_path : this.log_path;
+    if (local_level > active_log_level && !stream) {
       return;
     }
-    const dump_buffs = () => {
-      if (msg.some((x) => typeof x === "symbol")) {
-        throw new Error("System error, encountered a symbol.");
-      }
-      if (msg.length > 0 && level <= active_log_level) {
-        console.log(msg.join(""));
-      }
-      if (stream != null && file_msg.length > 0) {
-        stream.write(file_msg.join("") + "\n", () => {
-          this._write_count++;
-          if (this._write_count >= this._truncate_interval) {
-            this._write_count = 0;
-            this.truncate_log_file(
-              stream_path,
-              // Path instance (this.log_path or this.error_path)
-              stream === this.log_stream ? "log" : "error",
-              this.max_mb * 1024 * 1024
-            ).catch(console.error);
-          }
-        });
-      }
-      msg.length = 0;
-      file_msg.length = 0;
-    };
-    if (mode !== IsDebug) {
-      const date = new import_date.VDate().format("%d-%m-%y %H:%M:%S");
-      msg.push(date, " ");
+    if (mode !== import_directives.Directive.debug) {
+      const date = new import_date.Date().format("%d-%m-%y %H:%M:%S");
       file_msg.push(`(date=${date}) `);
+      if (!is_raw) {
+        msg.push(date, " ");
+      }
     }
     loc ??= new import_source_loc.SourceLoc(1);
     if (!loc.is_unknown()) {
-      if (mode === IsDebug) {
+      if (mode === import_directives.Directive.debug && !is_raw) {
         const id = loc.caller === "<unknown>" || loc.caller === "<root>" ? loc.id : loc.filename + ":" + loc.caller;
         msg.push(`[${id}] `);
       }
       file_msg.push(`(loc=${loc.abs_id}) `);
     }
-    msg.push(this.thread !== "master" ? `(t${this.thread})` : "");
-    while (
-      // trim trailing spaces.
-      msg.length > 0 && (msg[msg.length - 1].length === 0 || msg[msg.length - 1].endsWith(" "))
-    ) {
-      if (msg[msg.length - 1].length <= 1) {
-        msg.length--;
-      } else {
-        msg[msg.length - 1] = msg[msg.length - 1].trimEnd();
+    if (!is_raw) {
+      msg.push(this.thread !== "master" ? `(t${this.thread})` : "");
+      this.trim_trailing_spaces(msg);
+      if (msg.length > 1) {
+        msg.push(": ");
       }
-    }
-    if (msg.length > 1) {
-      msg.push(": ");
     }
     msg.push(import_colors.Colors.end);
-    file_msg.push(this.thread ? `(thread=${this.thread}) ` : "", `(level=${level}) `, `(type=${mode === IsError ? "error" : mode === IsWarning ? "warning" : "log"})`, ": ");
-    this.add_args(msg, args, mode, level, active_log_level);
-    this.add_args(file_msg, args, mode, level, active_log_level);
-    dump_buffs();
-  }
-  /** Initialize a debugger / debug func with a predefined active log level */
-  debugger(active_log_level) {
-    const fn = (log_level, ...args) => {
-      if (typeof log_level === "number") {
-        this.log(log_level, IsDebug, new import_source_loc.SourceLoc(1), new UseActiveLogLevel(active_log_level), ...args);
+    file_msg.push(this.thread ? `(thread=${this.thread}) ` : "", `(level=${local_level}) `, `(type=${mode === import_directives.Directive.error ? "error" : mode === import_directives.Directive.warn ? "warning" : "log"})`, ": ");
+    this.add_args(msg, file_msg, args, mode, local_level, active_log_level, local_level_arg_index);
+    if (msg.length > 0 && local_level <= active_log_level) {
+      this.pre_pipe_process(msg);
+      if (mode === import_directives.Directive.error || mode === import_directives.Directive.warn) {
+        console.error(msg.join(""));
       } else {
-        this.log(IsDebug, new import_source_loc.SourceLoc(1), new UseActiveLogLevel(active_log_level), log_level, ...args);
+        console.log(msg.join(""));
       }
-    };
-    fn.Raw = IsRaw;
-    fn.raw = IsRaw;
-    fn.level = active_log_level;
-    fn.on = (log_level) => {
-      return active_log_level >= log_level;
-    };
-    return fn;
+    }
+    if (stream != null && file_msg.length > 0) {
+      this.pre_pipe_process(file_msg);
+      stream.write(file_msg.join("") + "\n", () => {
+        this._write_count++;
+        if (this._write_count >= this._truncate_interval) {
+          this._write_count = 0;
+          this.truncate_log_file(
+            stream_path,
+            // Path instance (this.log_path or this.error_path)
+            stream === this.log_stream ? "log" : "error",
+            this.max_mb * 1024 * 1024
+          ).catch(console.error);
+        }
+      });
+    }
   }
 }
-var stdin_default = Logger;
 const logger = new Logger({ log_level: 0 });
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

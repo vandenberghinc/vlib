@@ -5,6 +5,9 @@
  * @note Web - This file should also be accessable from the frontend / in a web environment.
  */
 
+import { ObjectOrArray, ObjectOrArrayType } from "../types/types.js";
+import { EnforceOneFor, Merge } from "../types/transform.js";
+
 
 /** 
  * {Scheme}
@@ -22,7 +25,10 @@ export namespace Scheme {
     /** User facing root scheme object */
     export type Scheme = { [field_name: string]: Scheme.SchemeOptions }
 
-    /** Scheme options. */
+    /**
+     * Scheme options.
+     * @libris
+     */
     export interface SchemeOptions {
         /** The value type. */
         type?: SchemeType;
@@ -57,6 +63,15 @@ export namespace Scheme {
          * Or a scheme for the value's of an object.
          */
         value_scheme?: SchemeOptions | string;
+        /**
+         * Tuple scheme for when the input object is an array.
+         * This can be used to verify each item in an array specifically with a predefined length.
+         * 
+         * Each index of the scheme option corresponds to the index of the input array.
+         * 
+         * @note this attribute is ignored when the input object is not an array.
+         */
+        tuple_scheme?: (string | SchemeOptions)[];
         /**
          * A list of valid values for the attribute.
          */
@@ -201,16 +216,29 @@ export namespace Scheme {
     // Core verify function.
 
     /** Argument options for verify() */
-    export interface VerifyOptions<T extends object> {
-        object: T;
-        scheme?: Record<string, Scheme.SchemeOptions | string>;
-        value_scheme?: Scheme.SchemeOptions | string | null;
-        check_unknown?: boolean;
-        parent?: string;
-        error_prefix?: string;
-        err_prefix?: string | null;
-        throw_err?: boolean;
-    }
+    export type VerifyOptions<
+        T extends object,
+        DataAlias extends boolean = boolean,
+        ErrorAlias extends boolean = boolean,
+    > =
+    // EnforceOneFor<
+        {
+            scheme?: Record<string, Scheme.SchemeOptions | string>;
+            value_scheme?: Scheme.SchemeOptions | string | null;
+            tuple_scheme?: SchemeOptions["tuple_scheme"];
+            strict?: boolean;
+            parent?: string;
+            error_prefix?: string;
+            err_prefix?: string | null;
+            throw?: boolean;
+        } & ( DataAlias extends true
+            ? { object: T; data?: never;}
+            : { object?: never; data: T; }
+        ) & (ErrorAlias extends true
+            ? { error_prefix?: string; }
+            : { object?: never; data: T; }
+        )
+    // , "scheme" | "value_scheme" | "tuple_scheme" >
 
     /** Verify response */
     export interface VerifyResponse<T extends object> {
@@ -221,25 +249,37 @@ export namespace Scheme {
 
     /**
      * Verify an object or array by scheme.
+     * 
+     * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
+     * 
+     * @template O The output type of the returned object or array.
+     * @template T The type of the object or array to verify.
+     * 
+     * @param opts The options for the verification.
+     *             See {@link Scheme.SchemeOptions} and {@link Scheme.VerifyOptions} for more details.
+     * 
      * @libris
      */
-    export function verify<T extends object>(opts: Omit<Scheme.VerifyOptions<T>, "throw_err"> & { throw_err: false; }): VerifyResponse<T>;
-    export function verify<T extends object>(opts: Omit<Scheme.VerifyOptions<T>, "throw_err"> & { throw_err?: true; }): T;
-    export function verify<T extends object>({
+    export function verify<T extends object, O extends object = T>(opts: Merge<Scheme.VerifyOptions<T>, { throw: false; }>): VerifyResponse<O>;
+    export function verify<T extends object, O extends object = T>(opts: Merge<Scheme.VerifyOptions<T>, { throw?: true; }>): O;
+    export function verify<T extends object, O extends object = T>({
         object,
+        data,
         scheme = {},
-        value_scheme = null,
-        check_unknown = false,
+        value_scheme,
+        tuple_scheme,
+        strict = false,
         parent = "",
         error_prefix = "",
-        err_prefix = null,
-        throw_err = true,
-    }: Scheme.VerifyOptions<T>): T | VerifyResponse<T> {
+        err_prefix,
+        throw: throw_err = true,
+    }: Scheme.VerifyOptions<T>): O | VerifyResponse<O> {
+
+        // Set aliases.
+        if (data != null) object = data; 
+        if (err_prefix != null) error_prefix = err_prefix;
         
-        // Set error prefix.
-        if (err_prefix !== null) {
-            error_prefix = err_prefix;
-        }
+        // Add parent separator.
         if (typeof parent === "string" && parent.length > 0 && /[a-zA-Z0-9]+/g.test(parent.charAt(parent.length - 1))) {
             parent += ".";
         }
@@ -277,10 +317,10 @@ export namespace Scheme {
                                 object: object[obj_key],
                                 scheme: scheme_item.scheme,
                                 value_scheme: scheme_item.value_scheme,
-                                check_unknown,
+                                strict: strict,
                                 parent: `${parent}${obj_key}.`,
                                 error_prefix,
-                                throw_err: true,
+                                throw: true,
                             });
                         } catch (e: any) {
                             if (!throw_err && e instanceof InternalError && e.data) { return e.data; }
@@ -309,10 +349,10 @@ export namespace Scheme {
                                 object: object[obj_key],
                                 scheme: scheme_item.scheme,
                                 value_scheme: scheme_item.value_scheme,
-                                check_unknown,
+                                strict: strict,
                                 parent: `${parent}${obj_key}.`,
                                 error_prefix,
-                                throw_err: true,
+                                throw: true,
                             });
                         } catch (e: any) {
                             if (!throw_err && e.json) { return e.json; }
@@ -456,7 +496,21 @@ export namespace Scheme {
                 }
             }
         }
-
+        
+        // Check tuple scheme.
+        // If so create a scheme object and transform the source object into an object with `argument_0`, `argument_1`, etc. keys.
+        if (Array.isArray(object) && Array.isArray(tuple_scheme)) {
+            scheme = {};
+            let out_obj: any = {};
+            for (let i = 0; i < tuple_scheme.length; i++) {
+                out_obj[`argument_${i}`] = object[i];
+                if (typeof tuple_scheme[i] === "object") {
+                    scheme[`tuple_${i}`] = tuple_scheme[i];
+                } else {
+                    scheme[`tuple_${i}`] = { type: tuple_scheme[i] as string };
+                }
+            }
+        }
 
         // When object is an array.
         if (Array.isArray(object)) {
@@ -512,7 +566,7 @@ export namespace Scheme {
 
                 // Iterate all object to check if there are any undefined object passed.
                 // This must be done before checking known attributes, otherwise it can lead to weird error messages when attributes are only required if other (wrongly-spelled) attributes are missing.
-                if (check_unknown) {
+                if (strict) {
                     const object_keys = Object.keys(object);
                     for (let x = 0; x < object_keys.length; x++) {
                         if (
@@ -591,9 +645,9 @@ export namespace Scheme {
 
         // Return when no throw err.
         if (throw_err === false) {
-            return {error: undefined, invalid_fields: {}, object};
+            return { error: undefined, invalid_fields: {}, object: object as unknown as O };
         }
-        return object;
+        return object as unknown as O;
     }
 
     // -------------------------------------------------------
@@ -609,29 +663,51 @@ export namespace Scheme {
         else { return typeof value; }
     }
 
+    /**
+     * Base type for `throw_x` functions.
+     */
+    export interface ThrowType {
+        name: string;
+        value?: any;
+        type?: Scheme.SchemeType;
+        throw?: boolean;
+    }
+
     /** 
      * Throw an error for undefined arguments
      * @libris
      */
     export function throw_undefined(
-        name: string | {
-            name: string;
-            type?: Scheme.SchemeType;
-            throw_err?: boolean;
-        },
-        type: Scheme.SchemeType = [],
-        throw_err: boolean = true
-    ): string {
+        name: string,
+        type?: Scheme.SchemeType,
+        throw_err?: boolean,
+    ): never;
+    export function throw_undefined(
+        name: ThrowType | string,
+        type: Scheme.SchemeType,
+        throw_err: false
+    ): string;
+    export function throw_undefined(
+        opts: ThrowType
+    ): never;
+    export function throw_undefined(
+        opts: Merge<ThrowType, { throw: false }>,
+    ): never;
+    export function throw_undefined(): never | string {
         // Support keyword assignment params.
-        if (typeof name === "object" && name != null) {
-            ({
-                name,
-                type = [],
-                throw_err = true,
-            } = name);
+        let opts: ThrowType;
+        if (arguments.length === 1 && typeof arguments[0] === "object" && !Array.isArray(arguments[0]) && arguments[0] != null) {
+            opts = arguments[0] as ThrowType;
+        } else {
+            // dont check types here since errors here are weird.
+            opts = {
+                name: arguments[0] as string,
+                type: arguments[1] as Scheme.SchemeType | undefined,
+                throw: arguments[2] !== false,
+            }
         }
-        const err = `Argument "${name as string}" should be a defined value${type_string(type, " of type ")}.`
-        if (throw_err) {
+        const err = `Argument "${opts.name as string}" should be a defined value${type_string(opts.type, " of type ")}.`
+        if (opts.throw !== false) {
             throw new Error(err);
         }
         return err;
@@ -641,28 +717,40 @@ export namespace Scheme {
      * Throw an error for invalid type arguments
      * @libris
      */
+
     export function throw_invalid_type(
-        name: string | {
-            name: string;
-            value: any;
-            type?: Scheme.SchemeType;
-            throw_err?: boolean;
-        },
+        name: string,
         value?: any,
-        type: Scheme.SchemeType = [],
-        throw_err: boolean = true
-    ): string {
-        // Support keyword assignment params.
-        if (typeof name === "object" && name != null) {
-            ({
-                name,
-                value,
-                type = [],
-                throw_err = true,
-            } = name);
+        type?: Scheme.SchemeType,
+        throw_err?: boolean,
+    ): never;
+    export function throw_invalid_type(
+        name: ThrowType | string,
+        value: any,
+        type: Scheme.SchemeType,
+        throw_err: false
+    ): string;
+    export function throw_invalid_type(
+        opts: ThrowType
+    ): never;
+    export function throw_invalid_type(
+        opts: Merge<ThrowType, { throw: false }>,
+    ): never;
+    export function throw_invalid_type(): string {
+        let opts: ThrowType;
+        if (arguments.length === 1 && typeof arguments[0] === "object" && !Array.isArray(arguments[0]) && arguments[0] != null) {
+            opts = arguments[0] as ThrowType;
+        } else {
+            // dont check types here since errors here are weird.
+            opts = {
+                name: arguments[0] as string,
+                value: arguments[1],
+                type: arguments[2] as Scheme.SchemeType | undefined,
+                throw: arguments[3] !== false,
+            }
         }
-        const err = `Invalid type "${Scheme.value_type(value)}" for argument "${name as string}"${type_string(type, ", the valid type is ")}.`
-        if (throw_err) {
+        const err = `Invalid type "${Scheme.value_type(opts.value)}" for argument "${opts.name as string}"${type_string(opts.type, ", the valid type is ")}.`
+        if (opts.throw) {
             throw new Error(err);
         }
         return err;   
@@ -744,4 +832,3 @@ export namespace Scheme {
 
 };
 export { Scheme as scheme }; // also export as lowercase for compatibility.
-export default Scheme;

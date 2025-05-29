@@ -28,8 +28,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Daemon: () => Daemon,
-  DaemonError: () => DaemonError,
-  default: () => stdin_default
+  DaemonError: () => DaemonError
 });
 module.exports = __toCommonJS(stdin_exports);
 var os = __toESM(require("os"));
@@ -370,7 +369,6 @@ class Daemon {
     return this.proc?.out ?? "";
   }
 }
-var stdin_default = Daemon;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Daemon,

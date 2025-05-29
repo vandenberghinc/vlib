@@ -10,27 +10,15 @@
  */
 
 import { json } from "stream/consumers";
+import { ObjectUtils } from "../index.web.js";
 
 // Types for colors.
-type ColorFunction = (data: any) => string;
-type ColorObject = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
-type ColorFunctionObject = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', ColorFunction>;
+type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
 
 /**
- * The argument options for the _colorize_obj function.
+ * The colors class serving as a container to manage ANSI color codes.
+ * We use a seperate class for this so we can also expose ansi codes as static properties.
  */
-interface ColorizeObjOptions {
-    max_depth?: number,
-    indent?: number,
-    max_length?: number,
-    json?: boolean,
-}
-
-/*  @docs:
-    @chapter: System
-    @title: Colors
-    @desc: The colors class.
-*/
 export class Colors {
     // ---------------------------------------------------------
     // Attributes.
@@ -49,7 +37,7 @@ export class Colors {
     static end = "\u001b[0m";
     static purple = "\u001b[94m";
     static orange = "\u001b[38;5;208m"; // "\u001b[38;5;214m"
-    static bg: ColorObject = {
+    static bg: BackgroundColors = {
         black: "\u001b[40m",
         red: "\u001b[41m",
         green: "\u001b[42m",
@@ -59,7 +47,7 @@ export class Colors {
         cyan: "\u001b[46m",
         white: "\u001b[47m",
     }
-    static bright_bg: ColorObject = {
+    static bright_bg: BackgroundColors = {
         black: "\u001b[100m",
         red: "\u001b[101m",
         green: "\u001b[102m",
@@ -69,6 +57,56 @@ export class Colors {
         cyan: "\u001b[106m",
         white: "\u001b[107m",
     }
+}
+
+/**
+ * The color module.
+ */
+export namespace Color {
+
+    // ---------------------------------------------------------
+    // Color functions, wrapping a data argument in a color.
+
+    export const black = (data: any) => `${Colors.black}${data}${Colors.end}`;
+    export const red = (data: any) => `${Colors.red}${data}${Colors.end}`;
+    export const red_bold = (data: any) => `${Colors.red_bold}${data}${Colors.end}`;
+    export const green = (data: any) => `${Colors.green}${data}${Colors.end}`;
+    export const green_bold = (data: any) => `${Colors.bold}${Colors.green}${data}${Colors.end}`;
+    export const yellow = (data: any) => `${Colors.yellow}${data}${Colors.end}`;
+    export const yellow_bold = (data: any) => `${Colors.bold}${Colors.yellow}${data}${Colors.end}`;
+    export const blue = (data: any) => `${Colors.blue}${data}${Colors.end}`;
+    export const blue_bold = (data: any) => `${Colors.bold}${Colors.blue}${data}${Colors.end}`;
+    export const magenta = (data: any) => `${Colors.magenta}${data}${Colors.end}`;
+    export const magenta_bold = (data: any) => `${Colors.bold}${Colors.magenta}${data}${Colors.end}`;
+    export const cyan = (data: any) => `${Colors.cyan}${data}${Colors.end}`;
+    export const cyan_bold = (data: any) => `${Colors.bold}${Colors.cyan}${data}${Colors.end}`;
+    export const light_gray = (data: any) => `${Colors.light_gray}${data}${Colors.end}`;
+    export const gray = (data: any) => `${Colors.gray}${data}${Colors.end}`;
+    export const bold = (data: any) => `${Colors.bold}${data}${Colors.end}`;
+    export const italic = (data: any) => `${Colors.italic}${data}${Colors.end}`;
+    export const end = (data: any) => `${Colors.end}${data}${Colors.end}`;
+    export const purple = (data: any) => `${Colors.purple}${data}${Colors.end}`;
+    export const orange = (data: any) => `${Colors.orange}${data}${Colors.end}`;
+    export const bg = {
+        black: (data: any) => `${Colors.bg.black}${data}${Colors.end}`,
+        red: (data: any) => `${Colors.bg.red}${data}${Colors.end}`,
+        green: (data: any) => `${Colors.bg.green}${data}${Colors.end}`,
+        yellow: (data: any) => `${Colors.bg.yellow}${data}${Colors.end}`,
+        blue: (data: any) => `${Colors.bg.blue}${data}${Colors.end}`,
+        magenta: (data: any) => `${Colors.bg.magenta}${data}${Colors.end}`,
+        cyan: (data: any) => `${Colors.bg.cyan}${data}${Colors.end}`,
+        white: (data: any) => `${Colors.bg.white}${data}${Colors.end}`,
+    };
+    export const bright_bg = {
+        black: (data: any) => `${Colors.bright_bg.black}${data}${Colors.end}`,
+        red: (data: any) => `${Colors.bright_bg.red}${data}${Colors.end}`,
+        green: (data: any) => `${Colors.bright_bg.green}${data}${Colors.end}`,
+        yellow: (data: any) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
+        blue: (data: any) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
+        magenta: (data: any) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
+        cyan: (data: any) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
+        white: (data: any) => `${Colors.bright_bg.white}${data}${Colors.end}`,
+    };
 
     // ---------------------------------------------------------
     // Functions.
@@ -76,7 +114,7 @@ export class Colors {
     /**
      * Enable ANSI color codes by resetting all color attributes.
      */
-    static enable(): void {
+    export function enable(): void {
         Colors.black = "\u001b[30m";
         Colors.red = "\u001b[31m";
         Colors.red_bold = "\u001b[31m\u001b[1m";
@@ -117,7 +155,7 @@ export class Colors {
     /**
      * Disable ANSI color codes by clearing all color attributes.
      */
-    static disable(): void {
+    export function disable(): void {
         Colors.black = "";
         Colors.red = "";
         Colors.red_bold = "";
@@ -161,36 +199,32 @@ export class Colors {
      * @param data - The string containing ANSI codes.
      * @returns The cleaned string without colors.
      */
-    static strip(data: string): string {
+    export function strip(data: string): string {
         return data.replace(/\u001b\[[0-9;]*m/g, '');
     }
 
-    /** Colorize a json object. */
-    static json(value: any, opts?: ColorizeObjOptions): string {
-        opts ??= {};
-        opts.json = true;
-        const circular_cache = new Set<any>();
-        return Colors._colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
-    }
+    // ---------------------------------------------------------
+    // Colorize functions.
 
-    /** Colorize an object. */
-    static object(value: any, opts?: ColorizeObjOptions): string {
-        opts ??= {};
-        opts.json = true;
-        const circular_cache = new Set<any>();
-        return Colors._colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    /** Colorize options for `json()` or `object()`. */
+    interface ColorizeObjOptions {
+        max_depth?: number,
+        indent?: number,
+        max_length?: number,
+        json?: boolean,
+        filter?: ObjectUtils.FilterCallback | (ObjectUtils.FilterOpts & { callback: ObjectUtils.FilterCallback }),
     }
 
     /** Colorize a object. */
-    private static _colorize_obj(
+    function _colorize_obj(
         value: any,
         indent_level: false | number = 0,
         nested_depth: number,
-        opts: ColorizeObjOptions = {},
+        opts: Omit<ColorizeObjOptions, "filter"> = {},
         circular_cache: Set<any>
     ): string {
-        let indent = indent_level === false ? ''  : '    '.repeat(indent_level);
-        let next_indent = indent_level === false ? ''  : '    '.repeat(indent_level + 1);
+        let indent = indent_level === false ? '' : '    '.repeat(indent_level);
+        let next_indent = indent_level === false ? '' : '    '.repeat(indent_level + 1);
         let line_break_or_space = indent_level === false ? ' ' : '\n';
 
         // null
@@ -240,7 +274,7 @@ export class Colors {
             }
             circular_cache.add(value);
             const items = value
-                .map(v => `${next_indent}${Colors._colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`)
+                .map(v => `${next_indent}${_colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`)
                 .join(Colors.light_gray + ',' + Colors.end + line_break_or_space);
             return [
                 Colors.light_gray + '[' + Colors.end,
@@ -266,7 +300,7 @@ export class Colors {
             let total_len = 0;
             for (const key of keys) {
                 const colored_key = Colors.cyan + (opts.json ? JSON.stringify(key) : key) + Colors.end;
-                const colored_val = Colors._colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
+                const colored_val = _colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
                 const item = `${next_indent}${colored_key}${Colors.light_gray}: ${Colors.end}${colored_val}`;
                 if (opts.max_length != null && item.length + total_len > opts.max_length) {
                     if (total_len < opts.max_length) {
@@ -307,60 +341,32 @@ export class Colors {
                 return Colors.magenta + String(value) + Colors.end;
         }
     }
+
+    /** Colorize a json object. */
+    export function json(value: any, opts?: ColorizeObjOptions): string {
+        if (opts?.filter) {
+            value = ObjectUtils.filter(value, opts.filter);
+        }
+        opts ??= {};
+        opts.json = true;
+        const circular_cache = new Set<any>();
+        return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    }
+
+    /** Colorize an object. */
+    export function object(value: any, opts?: ColorizeObjOptions): string {
+        if (opts?.filter) {
+            value = ObjectUtils.filter(value, opts.filter);
+        }
+        opts ??= {};
+        opts.json = true;
+        const circular_cache = new Set<any>();
+        return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    }
 }
-export { Colors as colors }
+export { Colors as colors }; // snake_case compatibility
 
-// Color functions instead of strings.
-export const Color = {
-    black: (data: any) => `${Colors.black}${data}${Colors.end}`,
-    red: (data: any) => `${Colors.red}${data}${Colors.end}`,
-    red_bold: (data: any) => `${Colors.red_bold}${data}${Colors.end}`,
-    green: (data: any) => `${Colors.green}${data}${Colors.end}`,
-    green_bold: (data: any) => `${Colors.bold}${Colors.green}${data}${Colors.end}`,
-    yellow: (data: any) => `${Colors.yellow}${data}${Colors.end}`,
-    yellow_bold: (data: any) => `${Colors.bold}${Colors.yellow}${data}${Colors.end}`,
-    blue: (data: any) => `${Colors.blue}${data}${Colors.end}`,
-    blue_bold: (data: any) => `${Colors.bold}${Colors.blue}${data}${Colors.end}`,
-    magenta: (data: any) => `${Colors.magenta}${data}${Colors.end}`,
-    magenta_bold: (data: any) => `${Colors.bold}${Colors.magenta}${data}${Colors.end}`,
-    cyan: (data: any) => `${Colors.cyan}${data}${Colors.end}`,
-    light_gray: (data: any) => `${Colors.light_gray}${data}${Colors.end}`,
-    gray: (data: any) => `${Colors.gray}${data}${Colors.end}`,
-    bold: (data: any) => `${Colors.bold}${data}${Colors.end}`,
-    italic: (data: any) => `${Colors.italic}${data}${Colors.end}`,
-    end: (data: any) => `${Colors.end}${data}${Colors.end}`,
-    purple: (data: any) => `${Colors.purple}${data}${Colors.end}`,
-    orange: (data: any) => `${Colors.orange}${data}${Colors.end}`,
-    strip: data => Colors.strip(data),
-    bg: {
-        black: (data: any) => `${Colors.bg.black}${data}${Colors.end}`,
-        red: (data: any) => `${Colors.bg.red}${data}${Colors.end}`,
-        green: (data: any) => `${Colors.bg.green}${data}${Colors.end}`,
-        yellow: (data: any) => `${Colors.bg.yellow}${data}${Colors.end}`,
-        blue: (data: any) => `${Colors.bg.blue}${data}${Colors.end}`,
-        magenta: (data: any) => `${Colors.bg.magenta}${data}${Colors.end}`,
-        cyan: (data: any) => `${Colors.bg.cyan}${data}${Colors.end}`,
-        white: (data: any) => `${Colors.bg.white}${data}${Colors.end}`,
-    },
-    bright_bg: {
-        black: (data: any) => `${Colors.bright_bg.black}${data}${Colors.end}`,
-        red: (data: any) => `${Colors.bright_bg.red}${data}${Colors.end}`,
-        green: (data: any) => `${Colors.bright_bg.green}${data}${Colors.end}`,
-        yellow: (data: any) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
-        blue: (data: any) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
-        magenta: (data: any) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
-        cyan: (data: any) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
-        white: (data: any) => `${Colors.bright_bg.white}${data}${Colors.end}`,
-    },
-    json: (value: any, opts?: ColorizeObjOptions): string => Colors.json(value, opts),
-    object: (value: any, opts?: ColorizeObjOptions): string => Colors.object(value, opts),
-} as const;
-export { Color as color }
-export default Colors;
-
-
-
-
+// ---------------------------------------------------------
 // Test circular references.
 // const x: any = {};
 // const y: any = { x };

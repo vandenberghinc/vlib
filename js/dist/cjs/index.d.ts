@@ -1,18 +1,48 @@
 /**
- * @author Daan van den Bergh
+ * @author Daan van den BerghX
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-export * from "./cli/cli.js";
-export * from "./cli/progress_loader.js";
+/** types/ */
+export type * as Types from "./types/index.m.d.ts";
+export type * as types from "./types/index.m.d.ts";
+/** cli/ */
+export * from "./cli/index.js";
+/** sockets/ */
 export * from "./sockets/request.js";
 export * from "./sockets/websocket.js";
+/** global/ */
 export * from "./global/index.uni.js";
+/** system/ */
 export * from "./system/index.js";
-export * from "./logging/index.js";
+/** debugging/ */
+export * as Debugging from "./debugging/index.m.uni.js";
+export * as debugging from "./debugging/index.m.uni.js";
+export { debug, Debug } from "./debugging/index.m.uni.js";
+export declare const print: (...args: any[]) => void;
+/** logging/ */
+export * as Logging from "./logging/index.m.js";
+export * as logging from "./logging/index.m.js";
+import { logger } from "./logging/logger.js";
+export { logger };
+export declare const log: (...args: (import("./debugging/directives.js").Directive | Error | any)[]) => void, warn: (level: number | any, ...errs: import("./debugging/pipe.js").Args) => void, error: (...errs: import("./debugging/pipe.js").Args) => void;
+/** scheme/ */
 export * from "./scheme/index.uni.js";
+/** jsonc/ */
 export * from "./jsonc/jsonc.js";
+/** crypto/ */
+export * from "./crypto/index.js";
+/** search/ */
+export * from "./search/index.uni.js";
+/** utils.js */
 export * from "./utils.js";
-export declare const log: (log_level: number | any, ...args: any[]) => void, debug: any, warn: (log_level: number | any, ...args: any[]) => void, error: (...args: any[]) => void;
-export declare const info: {
-    version: any;
-};
+/** code/ */
+export * as Code from "./code/index.m.uni.js";
+export * as code from "./code/index.m.uni.js";
+/** clipboard/ */
+export * from "./clipboard/index.js";
+/**
+ * Export the version number.
+ * @warning Expect an error since we should not import any of the `vts/types` files.
+ *          Otherwise we would declare these attributes globally also on non vts processed files.
+ *          @ts-expect-error */
+export declare const version: any;

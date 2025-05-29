@@ -5,7 +5,7 @@
 import pkg from 'js-beautify';
 const { js: beautify } = pkg;
 // Imports.
-import { cli, Color, Path } from '../../index.js';
+import { cli, Color, Colors, Path } from '../../index.js';
 import { modules } from './module.js';
 // -----------------------------------------------------------------
 // Perform the unit tests.
@@ -62,11 +62,6 @@ export async function perform({ results, module = cli.get({ id: "--module", def:
         console.log(`${Color.red("Error")}: No unit tests defined, add unit tests using the add() function.`);
         return false;
     }
-    // Error when interactive mode and no module is defined.
-    if (interactive && !module) {
-        console.log(`${Color.red("Error")}: Interactive mode is only available when a module is defined.`);
-        return false;
-    }
     // Check cache.
     const cache_path = new Path(results);
     if (!cache_path.exists()) {
@@ -75,13 +70,13 @@ export async function perform({ results, module = cli.get({ id: "--module", def:
     else if (!cache_path.is_dir()) {
         throw new Error(`Cache path "${results}" is not a directory.`);
     }
-    // Test target module.
-    if (module != null) {
-        const mod = modules.find(m => m.name === module);
+    // Test target module or only a single module defined.
+    if (module != null || modules.length === 1) {
+        const mod = modules.find(m => module == null || m.name === module);
         if (!mod) {
             throw new Error(`Module "${module}" was not found, the available modules are: [${modules.map(i => i.name).join(", ")}]`);
         }
-        return mod._run({
+        const res = await mod._run({
             target,
             stop_on_failure,
             stop_after,
@@ -93,13 +88,15 @@ export async function perform({ results, module = cli.get({ id: "--module", def:
             no_changes,
             refresh,
         });
+        return res.status;
     }
     // Test all modules.
+    let succeeded = 0, failed = 0;
     for (const mod of modules) {
         if (all_yes) {
             throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
         }
-        const proceed = await mod._run({
+        const res = await mod._run({
             target,
             stop_on_failure,
             stop_after,
@@ -109,10 +106,26 @@ export async function perform({ results, module = cli.get({ id: "--module", def:
             all_yes: false,
             refresh,
         });
-        if (!proceed) {
+        if (!res.status) {
             return false;
         }
+        succeeded += res.succeeded || 0;
+        failed += res.failed || 0;
     }
-    return true;
+    const prefix = debug === 0 ? " * " : "";
+    if (failed === 0) {
+        if (succeeded === 0) {
+            console.log(`${Color.red("Error")}: No unit tests are defined.`);
+            return false;
+        }
+        console.log(Color.cyan_bold(`\nExecuted ${modules.length} test modules.`));
+        console.log(`${prefix}All ${failed + succeeded} unit tests ${Colors.green}${Colors.bold}passed${Colors.end} successfully.`);
+        return true;
+    }
+    else {
+        console.log(Color.cyan_bold(`\nExecuted ${modules.length} test modules.`));
+        console.log(`${prefix}Encountered ${failed === 0 ? Colors.green : Colors.red}${Colors.bold}${failed}${Colors.end} failed unit tests.`);
+        return false;
+    }
 }
 //# sourceMappingURL=perform.js.map

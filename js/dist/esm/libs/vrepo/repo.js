@@ -1,6 +1,6 @@
-/*
- * Author: Daan van den Bergh
- * Copyright: © 2024 - 2024 Daan van den Bergh.
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
 import { Path, Scheme } from "../../index.js";
@@ -28,7 +28,7 @@ export class Repo {
         // Verify arguments.
         Scheme.verify({
             object: arguments[0],
-            check_unknown: true,
+            strict: true,
             scheme: {
                 source: "string",
                 git: { type: "boolean", default: true },
@@ -38,7 +38,7 @@ export class Repo {
         });
         // Attributes.
         this.source = new Path(source);
-        this.name = this.source.name();
+        this.name = this.source.full_name();
         this.git_enabled = git;
         this.ssh_enabled = ssh;
         this.npm_enabled = npm;
@@ -77,7 +77,7 @@ export class Repo {
         Scheme.verify({
             object: this.config,
             error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
-            check_unknown: true,
+            strict: true,
             scheme: {
                 version_path: {
                     type: 'string',

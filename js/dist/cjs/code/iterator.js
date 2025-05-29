@@ -17,28 +17,18 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  CodeIterator: () => CodeIterator
+  Iterator: () => Iterator
 });
 module.exports = __toCommonJS(stdin_exports);
-class CodeIterator {
+class Iterator {
   /** The current state. */
   state;
   /** The iterator options, keep it optionally undefined so we can perform a fast check if there are no options defined. */
-  opts;
+  config;
   /** Constructor. */
   constructor(state, opts, callback) {
-    if (typeof state === "string") {
-      state = { source: { data: state } };
-    } else if (typeof state === "object" && "data" in state) {
-      state = { source: state };
-    }
-    this.state = new CodeIterator.State(state.source, state.abs_source ?? state.source, state.source.data.length, state.offset ?? 0, state.nested_offset ?? 0, state.line ?? 1, state.col ?? 1, state.at_sof ?? true, state.is_str ?? void 0, state.is_comment ?? void 0, state.is_regex ?? void 0, {
-      parenth: state.depth?.parenth ?? 0,
-      bracket: state.depth?.bracket ?? 0,
-      brace: state.depth?.brace ?? 0,
-      template: state.depth?.template ?? 0
-    });
-    this.opts = opts;
+    this.config = opts;
+    this.state = Iterator.State.create(state);
     if (callback) {
       while (this.avail()) {
         const pos = this.state.offset;
@@ -51,151 +41,22 @@ class CodeIterator {
   }
   /** Advance a single character, tracking contexts. */
   advance() {
-    const c = this.peek();
-    const prev = this.peek_prev();
-    if (c === "\n" && prev !== "\\") {
-      this.state.offset++;
-      this.state.line++;
-      this.state.col = 1;
-      this.state.at_sof = true;
-      if (this.state.is_comment?.type === "line") {
-        this.state.is_comment = void 0;
-      }
-      return;
-    }
-    if (this.state.at_sof && !this.is_inline_whitespace()) {
-      this.state.at_sof = false;
-    }
-    if (this.state.is_code) {
-      switch (c) {
-        case "(":
-          this.state.depth.parenth++;
-          break;
-        case ")":
-          this.state.depth.parenth--;
-          break;
-        case "[":
-          this.state.depth.bracket++;
-          break;
-        case "]":
-          this.state.depth.bracket--;
-          break;
-        case "{":
-          this.state.depth.brace++;
-          break;
-        case "}":
-          this.state.depth.brace--;
-          break;
-        case "<":
-          this.state.depth.template++;
-          break;
-        case ">":
-          this.state.depth.template--;
-          break;
-      }
-    }
-    if (this.opts) {
-      if (this.state.is_str) {
-        const delim = this.state.is_str;
-        if (c === delim && prev !== "\\") {
-          this.state.is_str = void 0;
-        }
-        this.state.offset++;
-        this.state.col++;
-        return;
-      }
-      if (this.state.is_comment && this.state.is_comment.type === "block") {
-        const com = this.state.is_comment;
-        const close = com.close;
-        const pos_in_close = com.pos;
-        if (c === close[pos_in_close] && prev !== "\\") {
-          com.pos++;
-          if (com.pos === close.length) {
-            this.state.is_comment = void 0;
-          }
-        } else {
-          com.pos = c === close[0] ? 1 : 0;
-        }
-        this.state.offset++;
-        this.state.col++;
-        return;
-      }
-      if (this.state.is_regex) {
-        const rex = this.state.is_regex;
-        const close = rex.close;
-        const pos_in_close = rex.pos;
-        if (c === close[pos_in_close] && prev !== "\\") {
-          rex.pos++;
-          if (rex.pos === close.length) {
-            this.state.is_regex = void 0;
-          }
-        } else {
-          rex.pos = c === close[0] ? 1 : 0;
-        }
-        this.state.offset++;
-        this.state.col++;
-        return;
-      }
-      if (this.opts.string?.includes(c) && prev !== "\\") {
-        this.state.is_str = c;
-        this.state.offset++;
-        this.state.col++;
-        return;
-      }
-      const line = this.opts.comment?.line;
-      if (line && this.match_prefix(line)) {
-        this.state.is_comment = { type: "line", open: line, pos: 0 };
-        this.state.offset++;
-        this.state.col++;
-        return;
-      }
-      if (this.opts.comment?.block) {
-        for (const [open, close] of this.opts.comment.block) {
-          if (open.length === 1 && c === open || open.length > 1 && this.match_prefix(open)) {
-            this.state.is_comment = { type: "block", open, close, pos: 0 };
-            this.state.offset++;
-            this.state.col++;
-            return;
-          }
-        }
-      }
-      if (this.opts.regex) {
-        for (const [open, close] of this.opts.regex) {
-          if (open.length === 1 && c === open || open.length > 1 && this.match_prefix(open)) {
-            this.state.is_regex = { open, close, pos: 0 };
-            this.state.offset++;
-            this.state.col++;
-            return;
-          }
-        }
-      }
-    }
-    this.state.offset++;
-    this.state.col++;
+    this.state.advance(this.config);
   }
   /** Advance a number of positions. */
   advance_n(n) {
     while (n--)
       this.advance();
   }
+  /**
+   * Stop - set the offset to the end of the source data without advancing.
+   */
+  stop() {
+    this.state.stop();
+  }
   /** Peek characters/ */
-  peek(adjust = 0) {
+  peek(adjust) {
     return this.state.source.data[this.state.offset + adjust];
-  }
-  peek_next() {
-    return this.state.source.data[this.state.offset + 1];
-  }
-  peek_prev() {
-    return this.state.source.data[this.state.offset - 1];
-  }
-  char(adjust = 0) {
-    return this.state.source.data[this.state.offset + adjust];
-  }
-  next() {
-    return this.state.source.data[this.state.offset + 1];
-  }
-  prev() {
-    return this.state.source.data[this.state.offset - 1];
   }
   /** Has more content */
   avail() {
@@ -207,120 +68,27 @@ class CodeIterator {
   has() {
     return this.state.offset < this.state.len;
   }
-  /** Is inline whitespace (excluding line breaks). */
-  is_inline_whitespace() {
-    switch (this.peek()) {
-      case " ":
-      case "	":
-        return true;
-      default:
-        return false;
-    }
-  }
-  /** Is at end of line. */
-  is_eol() {
-    switch (this.peek()) {
-      case "\n":
-      case "\r":
-        return true;
-      default:
-        return false;
-    }
-  }
-  /** Is at end of file. */
-  is_eof() {
-    return this.state.offset >= this.state.len;
-  }
-  /** checks if the current char is excluded by previous \.  */
-  is_excluded() {
-    return this.state.source.data[this.state.offset - 1] === "\\";
-  }
-  /** Is a char allowed in a variable name so [a-zA-Z0-9_] */
-  is_variable_char(c) {
-    switch (c) {
-      case "a":
-      case "b":
-      case "c":
-      case "d":
-      case "e":
-      case "f":
-      case "g":
-      case "h":
-      case "i":
-      case "j":
-      case "k":
-      case "l":
-      case "m":
-      case "n":
-      case "o":
-      case "p":
-      case "q":
-      case "r":
-      case "s":
-      case "t":
-      case "u":
-      case "v":
-      case "w":
-      case "x":
-      case "y":
-      case "z":
-      case "A":
-      case "B":
-      case "C":
-      case "D":
-      case "E":
-      case "F":
-      case "G":
-      case "H":
-      case "I":
-      case "J":
-      case "K":
-      case "L":
-      case "M":
-      case "N":
-      case "O":
-      case "P":
-      case "Q":
-      case "R":
-      case "S":
-      case "T":
-      case "U":
-      case "V":
-      case "W":
-      case "X":
-      case "Y":
-      case "Z":
-      case "_":
-        return true;
-      default:
-        return false;
-    }
-  }
-  /** Starts with check at current position */
-  match_prefix(s) {
-    return this.state.source.data.startsWith(s, this.state.offset);
-  }
   /** Consume a string match. */
   consume_optional(s) {
-    if (s.length === 1 && this.peek() === s || s.length > 0 && this.match_prefix(s)) {
+    if (s.length === 1 && this.state.peek === s || s.length > 0 && this.state.match_prefix(s)) {
       this.advance_n(s.length);
     }
   }
   /** Consume inline whitespace (excluding line breaks). */
   consume_inline_whitespace() {
     let c;
-    while ((c = this.peek()) === " " || c === "	")
+    while ((c = this.state.peek) === " " || c === "	")
       this.advance();
   }
   /** Consume whitespace (including line breaks). */
   consume_whitespace() {
     let c;
-    while ((c = this.peek()) === " " || c === "	" || c === "\n" || c === "\r")
+    while ((c = this.state.peek) === " " || c === "	" || c === "\n" || c === "\r")
       this.advance();
   }
   consume_while(fn, slice = false) {
     const start = this.state.offset;
-    while (!this.is_eof() && fn(this.peek(), this.state.offset)) {
+    while (!this.state.is_eof && fn(this.state, this)) {
       this.advance();
     }
     if (slice) {
@@ -336,12 +104,8 @@ class CodeIterator {
       is_excluded: false
     };
     const start = this.state.offset;
-    while (!this.is_eof()) {
-      info.index = this.state.offset;
-      info.peek = this.peek();
-      info.prev = this.peek_prev();
-      info.is_excluded = info.prev === "\\";
-      if (!fn(info)) {
+    while (!this.state.is_eof) {
+      if (!fn(this.state, this)) {
         break;
       }
       switch (info.peek) {
@@ -372,14 +136,14 @@ class CodeIterator {
   }
   /** Consume until end of line. */
   consume_until_eol() {
-    return this.consume_until((c) => c === "\n");
+    return this.consume_until((s) => s.peek === "\n");
   }
   consume_until_eol_slice() {
-    return this.consume_until((c) => c === "\n", true);
+    return this.consume_until((s) => s.peek === "\n", true);
   }
   /** Consume optional end of line. */
   skip_eol() {
-    if (this.peek() === "\n" || this.peek() === "\r")
+    if (this.state.peek === "\n" || this.state.peek === "\r")
       this.advance();
   }
   /** Slice the current line till the current offset or till the end of the line without consuming. */
@@ -421,7 +185,7 @@ class CodeIterator {
     return this.state.source.data.slice(start, end);
   }
 }
-(function(CodeIterator2) {
+(function(Iterator2) {
   class State {
     source;
     abs_source;
@@ -430,15 +194,34 @@ class CodeIterator {
     nested_offset;
     line;
     col;
-    at_sof;
+    at_sol;
+    sol_index;
     is_str;
     is_comment;
     is_regex;
     depth;
+    /** Current char. */
+    peek;
+    /** Next char. */
+    next;
+    /** Previous char. */
+    prev;
+    /** Is whitespace `\s` (including line breaks `\n\r`). */
+    is_whitespace;
+    /** Is inline whitespace `\s` (excluding line breaks `\n\r`). */
+    is_inline_whitespace;
+    /** Is at end of line `\n`. */
+    is_eol;
+    /** Is a line break char `\n\r`. */
+    is_line_break;
+    /** Is at end of file. */
+    is_eof;
+    /** checks if the current char is excluded by previous \.  */
+    is_excluded;
     /**
      * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
      */
-    constructor(source, abs_source, len, offset, nested_offset, line, col, at_sof, is_str, is_comment, is_regex, depth) {
+    constructor(source, abs_source, len, offset, nested_offset, line, col, at_sol, sol_index, is_str, is_comment, is_regex, depth) {
       this.source = source;
       this.abs_source = abs_source;
       this.len = len;
@@ -446,11 +229,30 @@ class CodeIterator {
       this.nested_offset = nested_offset;
       this.line = line;
       this.col = col;
-      this.at_sof = at_sof;
+      this.at_sol = at_sol;
+      this.sol_index = sol_index;
       this.is_str = is_str;
       this.is_comment = is_comment;
       this.is_regex = is_regex;
       this.depth = depth;
+      this.update(false);
+    }
+    /** Construct from source. */
+    static create(input) {
+      let s;
+      if (typeof input === "string") {
+        s = { source: { data: input } };
+      } else if (typeof input === "object" && "data" in input) {
+        s = { source: input, offset: input?.offset ?? 0 };
+      } else {
+        s = input;
+      }
+      return new State(s.source, s.abs_source ?? s.source, s.source.data.length, s.offset ?? 0, s.nested_offset ?? 0, s.line ?? 1, s.col ?? 1, s.at_sol ?? true, s.sol_index ?? 0, s.is_str ?? void 0, s.is_comment ?? void 0, s.is_regex ?? void 0, {
+        parenth: s.depth?.parenth ?? 0,
+        bracket: s.depth?.bracket ?? 0,
+        brace: s.depth?.brace ?? 0,
+        template: s.depth?.template ?? 0
+      });
     }
     /** Is code, not string, comment or regex. */
     get is_code() {
@@ -460,19 +262,458 @@ class CodeIterator {
     get abs_offset() {
       return this.nested_offset + this.offset;
     }
+    // --------------------------------------------------------
+    // Core methods.
+    /**
+     * Perform the actual advance and update the state attributes.
+     * @note This is used so we can apply a falltrough strategy in the `advance()` method.
+     */
+    update(incr) {
+      if (incr) {
+        if (this.is_eol) {
+          this.offset++;
+          this.line++;
+          this.col = 1;
+          this.sol_index = this.offset;
+        } else {
+          this.offset++;
+          this.col++;
+        }
+      }
+      this.peek = this.source.data[this.offset];
+      this.next = this.source.data[this.offset + 1];
+      this.prev = this.source.data[this.offset - 1];
+      if (this.offset === 0) {
+        this.at_sol = true;
+      } else if (this.at_sol && !this.is_inline_whitespace) {
+        this.at_sol = false;
+      }
+      this.is_eof = this.offset >= this.len;
+      this.is_excluded = false;
+      switch (this.prev) {
+        case "\\":
+          this.is_excluded = true;
+          break;
+        default:
+          break;
+      }
+      this.is_whitespace = false;
+      this.is_inline_whitespace = false;
+      this.is_eol = false;
+      this.is_line_break = false;
+      switch (this.peek) {
+        case " ":
+        case "	":
+          this.is_inline_whitespace = true;
+          this.is_whitespace = true;
+          break;
+        case "\n":
+          if (!this.is_excluded) {
+            this.is_eol = true;
+            this.is_line_break = true;
+            this.is_whitespace = true;
+            if (this.is_comment?.type === "line") {
+              this.is_comment = void 0;
+            }
+          }
+          break;
+        case "\r":
+          if (!this.is_excluded) {
+            this.is_line_break = true;
+            this.is_whitespace = true;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    /**
+     * Advance a single character, tracking contexts.
+     * @note This method should only apply `opts` related attributes.
+     * @note Allows for fallthrough behaviour due to a `update` wrapper.
+     */
+    advance(opts) {
+      const c = this.peek;
+      const prev = this.prev;
+      if (this.is_whitespace) {
+        this.update(true);
+        return;
+      }
+      if (this.is_code) {
+        switch (c) {
+          case "(":
+            this.depth.parenth++;
+            break;
+          case ")":
+            this.depth.parenth--;
+            break;
+          case "[":
+            this.depth.bracket++;
+            break;
+          case "]":
+            this.depth.bracket--;
+            break;
+          case "{":
+            this.depth.brace++;
+            break;
+          case "}":
+            this.depth.brace--;
+            break;
+          case "<":
+            this.depth.template++;
+            break;
+          case ">":
+            this.depth.template--;
+            break;
+        }
+      }
+      if (opts) {
+        if (this.is_str) {
+          const delim = this.is_str;
+          if (c === delim && prev !== "\\") {
+            this.is_str = void 0;
+          }
+          return this.update(true);
+        }
+        if (this.is_comment && this.is_comment.type === "block") {
+          const com = this.is_comment;
+          const close = com.close;
+          const pos_in_close = com.pos;
+          if (c === close[pos_in_close] && prev !== "\\") {
+            com.pos++;
+            if (com.pos === close.length) {
+              this.is_comment = void 0;
+            }
+          } else {
+            com.pos = c === close[0] ? 1 : 0;
+          }
+          return this.update(true);
+        }
+        if (this.is_regex) {
+          const rex = this.is_regex;
+          const close = rex.close;
+          const pos_in_close = rex.pos;
+          if (c === close[pos_in_close] && prev !== "\\") {
+            rex.pos++;
+            if (rex.pos === close.length) {
+              this.is_regex = void 0;
+            }
+          } else {
+            rex.pos = c === close[0] ? 1 : 0;
+          }
+          return this.update(true);
+        }
+        if (opts.string?.includes(c) && prev !== "\\") {
+          this.is_str = c;
+          return this.update(true);
+        }
+        const line = opts.comment?.line;
+        if (line && this.match_prefix(line)) {
+          this.is_comment = { type: "line", open: line, pos: 0 };
+          return this.update(true);
+        }
+        if (opts.comment?.block) {
+          for (const [open, close] of opts.comment.block) {
+            if (open.length === 1 && c === open || open.length > 1 && this.match_prefix(open)) {
+              this.is_comment = { type: "block", open, close, pos: 0 };
+              return this.update(true);
+            }
+          }
+        }
+        if (opts.regex) {
+          for (const [open, close] of opts.regex) {
+            if (open.length === 1 && c === open || open.length > 1 && this.match_prefix(open)) {
+              this.is_regex = { open, close, pos: 0 };
+              return this.update(true);
+            }
+          }
+        }
+      }
+      this.update(true);
+    }
     /** Create a (semi-deep) copy of all attributes except for the `source` and `abs_source` attributes. */
     copy() {
-      return new CodeIterator2.State(this.source, this.abs_source, this.len, this.offset, this.nested_offset, this.line, this.col, this.at_sof, this.is_str, this.is_comment, this.is_regex, {
+      return new Iterator2.State(this.source, this.abs_source, this.len, this.offset, this.nested_offset, this.line, this.col, this.at_sol, this.sol_index, this.is_str, this.is_comment, this.is_regex, {
         parenth: this.depth.parenth,
         bracket: this.depth.bracket,
         brace: this.depth.brace,
         template: this.depth.template
       });
     }
+    /**
+     * Assign the state as stopped.
+     * Basically assigning the offset to the end of the source data.
+     * The iterator can choose wether to advance or not.
+     */
+    stop() {
+      this.offset = this.len;
+      this.update(false);
+    }
+    /**
+     * Reset the state to the start of the source data.
+     */
+    reset() {
+      this.offset = 0;
+      this.line = 1;
+      this.col = 1;
+      this.at_sol = true;
+      this.sol_index = 0;
+      this.offset = 0;
+      this.line = 1;
+      this.col = 1;
+      this.at_sol = true;
+      this.is_str = void 0;
+      this.is_comment = void 0;
+      this.is_regex = void 0;
+      this.depth = {
+        parenth: 0,
+        bracket: 0,
+        brace: 0,
+        template: 0
+      };
+      this.update(false);
+    }
+    // --------------------------------------------------------
+    // Utility methods
+    /** Cached attribute for `is_variable_char` */
+    _is_variable_char;
+    /** Is a char allowed in a variable name so [a-zA-Z0-9_] */
+    is_variable_char(c) {
+      if (this._is_variable_char === void 0) {
+        switch (c) {
+          case "a":
+          case "b":
+          case "c":
+          case "d":
+          case "e":
+          case "f":
+          case "g":
+          case "h":
+          case "i":
+          case "j":
+          case "k":
+          case "l":
+          case "m":
+          case "n":
+          case "o":
+          case "p":
+          case "q":
+          case "r":
+          case "s":
+          case "t":
+          case "u":
+          case "v":
+          case "w":
+          case "x":
+          case "y":
+          case "z":
+          case "A":
+          case "B":
+          case "C":
+          case "D":
+          case "E":
+          case "F":
+          case "G":
+          case "H":
+          case "I":
+          case "J":
+          case "K":
+          case "L":
+          case "M":
+          case "N":
+          case "O":
+          case "P":
+          case "Q":
+          case "R":
+          case "S":
+          case "T":
+          case "U":
+          case "V":
+          case "W":
+          case "X":
+          case "Y":
+          case "Z":
+          case "_":
+            return this._is_variable_char = true;
+          default:
+            return this._is_variable_char = false;
+        }
+      }
+      return this._is_variable_char;
+    }
+    /** Starts with check at current position */
+    match_prefix(s) {
+      return this.source.data.startsWith(s, this.offset);
+    }
   }
-  CodeIterator2.State = State;
-})(CodeIterator || (CodeIterator = {}));
+  Iterator2.State = State;
+  Iterator2.opts = {
+    js: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      },
+      regex: [["/", "/"]]
+    },
+    ts: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      },
+      regex: [["/", "/"]]
+    },
+    css: {
+      string: ["'", '"'],
+      comment: {
+        line: void 0,
+        block: [["/*", "*/"]]
+      }
+    },
+    html: {
+      string: ["'", '"'],
+      comment: {
+        block: [["<!--", "-->"]]
+      }
+    },
+    json: {
+      string: ['"']
+    },
+    json5: {
+      string: ['"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    jsonc: {
+      string: ['"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    yaml: {
+      string: ['"'],
+      comment: {
+        line: "#"
+      }
+    },
+    xml: {
+      string: ['"'],
+      comment: {
+        block: [["<!--", "-->"]]
+      }
+    },
+    md: {
+      string: ['"'],
+      comment: {
+        line: "<!--"
+      }
+    },
+    python: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "#",
+        block: [["'''", "'''"], ['"""', '"""']]
+      }
+    },
+    c: {
+      string: ["'", '"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    cpp: {
+      string: ["'", '"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    java: {
+      string: ["'", '"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    php: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    ruby: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "#",
+        block: [["=begin", "=end"]]
+      }
+    },
+    go: {
+      string: ["'", '"'],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    rust: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    swift: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    kotlin: {
+      string: ["'", '"', "`"],
+      comment: {
+        line: "//",
+        block: [["/*", "*/"]]
+      }
+    },
+    shell: {
+      string: ["'", '"'],
+      comment: {
+        line: "#"
+        // block: [["<<", "EOF"]],
+      }
+    },
+    bash: {
+      string: ["'", '"'],
+      comment: {
+        line: "#"
+        // block: [["<<", "EOF"]],
+      }
+    }
+  };
+  function slice_lines_from_file(path) {
+  }
+  Iterator2.slice_lines_from_file = slice_lines_from_file;
+  function slice_lines(source, opts) {
+    const it = new Iterator2(source, opts);
+    const lines = [];
+    let line = [];
+    while (it.avail()) {
+      lines.push(it.consume_until((s) => s.is_code && s.peek === "\n" && s.prev !== "\n", true));
+      lines.push(it.line());
+      it.advance();
+    }
+    return lines;
+  }
+  Iterator2.slice_lines = slice_lines;
+})(Iterator || (Iterator = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  CodeIterator
+  Iterator
 });

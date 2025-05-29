@@ -14,20 +14,24 @@ var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "defau
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 module.exports = __toCommonJS(stdin_exports);
-__reExport(stdin_exports, require("./bundle.js"), module.exports);
-__reExport(stdin_exports, require("./cjs.js"), module.exports);
-__reExport(stdin_exports, require("./css.js"), module.exports);
-__reExport(stdin_exports, require("./plugins/plugin.js"), module.exports);
+__reExport(stdin_exports, require("./utils/bundle.js"), module.exports);
+__reExport(stdin_exports, require("./utils/cjs.js"), module.exports);
+__reExport(stdin_exports, require("./utils/css.js"), module.exports);
+__reExport(stdin_exports, require("./utils/parse_imports.js"), module.exports);
+__reExport(stdin_exports, require("./utils/compute_diff.js"), module.exports);
+__reExport(stdin_exports, require("./transformer/transformer.js"), module.exports);
 __reExport(stdin_exports, require("./plugins/dirname.js"), module.exports);
 __reExport(stdin_exports, require("./plugins/header.js"), module.exports);
 __reExport(stdin_exports, require("./plugins/no_debug.js"), module.exports);
 __reExport(stdin_exports, require("./plugins/fill_templates.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  ...require("./bundle.js"),
-  ...require("./cjs.js"),
-  ...require("./css.js"),
-  ...require("./plugins/plugin.js"),
+  ...require("./utils/bundle.js"),
+  ...require("./utils/cjs.js"),
+  ...require("./utils/css.js"),
+  ...require("./utils/parse_imports.js"),
+  ...require("./utils/compute_diff.js"),
+  ...require("./transformer/transformer.js"),
   ...require("./plugins/dirname.js"),
   ...require("./plugins/header.js"),
   ...require("./plugins/no_debug.js"),

@@ -7,4 +7,3 @@ export declare class Network {
     static private_ip(family?: IPFamily): string;
 }
 export { Network as network };
-export default Network;

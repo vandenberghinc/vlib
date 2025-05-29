@@ -1,8 +1,13 @@
-// env.ts
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
-import Scheme from '../scheme/scheme.js';
+import { Scheme } from '../scheme/scheme.js';
+
 /**
  * Manages loading, caching, and syncing of environment variables.
  */
@@ -241,4 +246,4 @@ export namespace Env {
         return try_parse(types);
     }
 }
-export { Env as env };
+export { Env as env };// env.ts

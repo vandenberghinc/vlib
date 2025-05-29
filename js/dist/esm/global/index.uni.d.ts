@@ -7,5 +7,4 @@ export * from "./date.js";
 export * from "./number.js";
 export * from "./object.js";
 export * from "./string.js";
-export * as Types from "./types.js";
-export * as types from "./types.js";
+export * from "./callable.js";

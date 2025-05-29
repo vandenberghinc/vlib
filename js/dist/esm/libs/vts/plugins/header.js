@@ -2,36 +2,141 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+import * as vlib from "../../../index.js";
+import { compute_diff } from "../utils/compute_diff.js";
+import { Plugin } from "./plugin.js";
 /**
  * Add/update @author and @copyright to the top of the source file.
  * When already present then replace the content.
  * Ensure we keep the start year
  */
-export async function header_plugin(path, author, start_year) {
-    const current_year = new Date().getFullYear();
-    const header_regex = /^\/\*\*[\s\S]*?\*\//;
-    const copyright = `© ${start_year == null
-        ? current_year
-        : `${start_year} - ${current_year}`} ${author}. All rights reserved.`;
-    const data = await path.load();
-    let new_data = data;
-    const match = data.match(header_regex);
-    if (match) {
-        const existing_header = match[0];
-        // Replace only the author and copyright lines
-        const updated_header = existing_header
-            .replace(/@author\s.*$/m, `@author ${author}`)
-            .replace(/@copyright\s.*$/m, `@copyright ${copyright}`);
-        new_data = data.replace(existing_header, updated_header);
+export class Header extends Plugin {
+    /** Set id. */
+    static id = new Plugin.Id("vts-header");
+    /**
+     * Header tags transformations.
+     * Only accepts single line replacements.
+     */
+    transformations = [];
+    /** The header regex. */
+    header_regex = /^\/\*\*([\s\S]*?)(?!<\\)\*\//;
+    /** Attributes. */
+    current_year = new Date().getFullYear();
+    /** Whether to skip confirmation prompts. */
+    yes;
+    /** Create a new instance of the plugin. */
+    constructor(args) {
+        super({
+            type: ["dist", "src"],
+        });
+        this.yes = args.yes === true;
+        this.transformations = [
+            [
+                /@author\b[\s\S]*?$/g,
+                `@author ${args.author}`
+            ],
+            [
+                /@copyright\b[\s\S]*?$/g,
+                `@copyright © ${args.start_year == null
+                    ? this.current_year
+                    : `${args.start_year} - ${this.current_year}`} ${args.author}. All rights reserved.`
+            ]
+        ];
     }
-    else {
-        // No existing header, prepend new one
-        new_data = "/**\n" +
-            ` * @author ${author}\n` +
-            ` * @copyright ${copyright}\n` +
-            " */\n" +
-            data;
+    async callback(source) {
+        const match = source.data.match(this.header_regex);
+        let header;
+        let changed = false;
+        if (match) {
+            const match_start = match.index;
+            if (match_start == null) {
+                this.error(source, "Header match index is null, this should not happen.");
+                return;
+            }
+            header = match[0];
+            for (const [pattern, replacement] of this.transformations) {
+                pattern.lastIndex = 0;
+                const pattern_match = pattern.exec(header);
+                if (pattern_match) {
+                    const start_idx = pattern_match.index;
+                    const end_idx = header.indexOf("\n", start_idx) === -1
+                        ? header.length
+                        : header.indexOf("\n", start_idx);
+                    if (this.on(1))
+                        this.log(source, `Replacing header pattern ${pattern} with ${replacement}.`);
+                    changed = true;
+                    if (this.debug.on(2)) {
+                        this.log(source, `Header before replacement:\n${header.split('\n').map(l => `     | ${l}`).join('\n')}`);
+                    }
+                    header = vlib.String.replace_indices(header, replacement, start_idx, end_idx);
+                    if (this.debug.on(2)) {
+                        this.log(source, `Header after replacement:\n${header.split('\n').map(l => `     | ${l}`).join('\n')}`);
+                    }
+                }
+                else {
+                    if (this.on(1))
+                        this.log(source, `Inserting header pattern ${replacement}.`);
+                    changed = true;
+                    if (this.debug.on(2)) {
+                        this.log(source, `Header before insertion:\n${header.split('\n').map(l => `     | ${l}`).join('\n')}`);
+                    }
+                    const close_index = header.lastIndexOf("*/");
+                    if (close_index !== -1) {
+                        header = header.slice(0, close_index) + ` * ${replacement}\n` + header.slice(close_index);
+                    }
+                    if (this.debug.on(2)) {
+                        this.log(source, `Header after insertion:\n${header.split('\n').map(l => `     | ${l}`).join('\n')}`);
+                    }
+                }
+            }
+        }
+        else {
+            if (this.on(1))
+                this.log(source, "Inserting header.");
+            changed = true;
+            header =
+                "/**\n" +
+                    this.transformations.map(([_, replacement]) => ` * ${replacement}`).join("\n") +
+                    "\n */\n";
+        }
+        if (changed) {
+            if (!header.endsWith("*/\n") && !header.endsWith("*/")) {
+                header += "\n */";
+            }
+            const old_data = source.data;
+            if (!match) {
+                source.data = header + source.data;
+            }
+            else {
+                source.replace_indices(header, match.index, match.index + match[0].length);
+            }
+            source.changed = true;
+            if (source.is_src && !this.yes) {
+                const old_changed = source.changed;
+                source.changed = true;
+                console.log("Waiting for lock...");
+                await source.interactive_mutex.lock();
+                try {
+                    const { status } = compute_diff({ old: old_data, new: source.data, log_level: 0 });
+                    if (status === "identical") {
+                        if (this.debug.on(1)) {
+                            this.error(source, "No changes are made, this should not happen.");
+                            console.log(source.data.split('\n').map(l => `     | ${l}`).join('\n'));
+                        }
+                        source.changed = old_changed;
+                        return;
+                    }
+                    if (await vlib.logging.confirm(`Updating header in ${source.path.path}. Do you with to proceed?`)) {
+                        source.data = old_data;
+                        source.changed = false;
+                        return;
+                    }
+                }
+                finally {
+                    source.interactive_mutex.unlock();
+                }
+            }
+        }
     }
-    await path.save(new_data);
 }
 //# sourceMappingURL=header.js.map

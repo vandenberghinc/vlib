@@ -198,7 +198,10 @@ var StringUtils;
     return s;
   }
   StringUtils2.unquote = unquote;
-  function quote(data) {
+  function quote(data, def = '""') {
+    if (!data) {
+      return def instanceof String ? def.valueOf() : def;
+    }
     const s = data;
     if (s.startsWith('"') && s.endsWith('"') || s.startsWith("'") && s.endsWith("'"))
       return s;

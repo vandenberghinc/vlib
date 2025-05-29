@@ -2,27 +2,59 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-/** @docs
- *  @chapter: System
- *  @title: Mutex
- *  @desc: A mutual exclusion primitive useful for protecting shared data structures from concurrent access
+/**
+ * A mutual-exclusion primitive for async operations.
+ * Allows callers to `await lock()` to acquire exclusive access,
+ * and receive a `release` function to relinquish the lock.
+ * Multiple lock requests queue up automatically.
+ *
+ * @example
+ * ```ts
+ * const m = new Mutex();
+ *
+ * async function critical() {
+ *   const release = await m.lock();
+ *   try {
+ *     // ... perform exclusive work ...
+ *   } finally {
+ *     release();
+ *   }
+ * }
+ * ```
  */
 export declare class Mutex {
-    private locked;
-    private queue;
-    constructor();
-    /** @docs
-     *  @title: Lock
-     *  @desc: Acquire the mutex lock. Should be awaited
-     *  @returns
-     *      @type Promise<void>
-     *      @desc Resolves when the lock is acquired
+    /** Queue of waiting lockers' resolve callbacks */
+    private _queue;
+    /** Whether the mutex is currently held */
+    private _locked;
+    /**
+     * Acquire the mutex. Resolves when the lock is obtained.
+     * @example
+     * ```ts
+     * await mutex.lock();
+     * try {
+     *   // critical section
+     * } finally {
+     *   mutex.unlock();
+     * }
+     * ```
      */
     lock(): Promise<void>;
-    /** @docs
-     *  @title: Unlock
-     *  @desc: Release the mutex lock
+    /**
+     * Release the mutex, allowing the next waiter (if any) to acquire it.
      */
     unlock(): void;
+    /**
+     * Execute the callback under exclusive lock, auto-releasing on completion.
+     * @param callback Function to run while holding the mutex.
+     */
+    run_exclusive<T>(callback: () => Promise<T> | T): Promise<T>;
+    /**
+     * Check if the mutex is currently locked.
+     */
+    locked(): boolean;
+    /**
+     * Number of queued waiters.
+     */
+    waiting(): number;
 }
-export default Mutex;

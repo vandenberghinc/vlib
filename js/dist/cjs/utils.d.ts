@@ -14,23 +14,6 @@ export declare class Utils {
     */
     static sleep(msec: number): Promise<void>;
     /** @docs
-     *  @title: Edit object keys
-     *  @desc: Edit object keys - DEPRECATED BUT STILL USED
-     *  @param
-     *      @name obj
-     *      @desc The object to modify
-     *      @type Record<string, any>
-     *  @param
-     *      @name rename
-     *      @desc Array of [old_key, new_key] pairs
-     *      @type [string, string][]
-     *  @param
-     *      @name remove
-     *      @desc Array of keys to remove
-     *      @type string[]
-     */
-    static rename_attributes(obj?: Record<string, any>, rename?: [string, string][], remove?: string[]): Record<string, any>;
-    /** @docs
      *  @title: Debounce
      *  @desc: Create a debounced version of a function
      *  @param
@@ -43,23 +26,6 @@ export declare class Utils {
      *      @type Function
      */
     static debounce(delay: number, func: (...args: any[]) => void): (...args: any[]) => void;
-    /** @docs:
-     *  @title: Deep copy
-     *  @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
-     */
-    static deep_copy(obj: any): any;
-    /** @docs
-     *  @title: Prompt
-     *  @desc: Prompt a question from the user
-     *  @param
-     *      @name question
-     *      @desc The question to display
-     *      @type string
-     *  @returns
-     *      @type Promise<string>
-     *      @desc The user's response
-     */
-    static prompt(question: string): Promise<string>;
     /** @docs
      *  @title: Format bytes
      *  @desc: Format a byte size to human readable string
@@ -222,6 +188,11 @@ export declare class Utils {
      *  @param args Arguments to print
      */
     static print_error(...args: any[]): void;
+    /** @docs:
+     * @deprecated use vlib.Objects.deep_copy instead.
+     *  @title: Deep copy
+     *  @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
+     */
+    static deep_copy(obj: any): any;
 }
 export { Utils as utils };
-export default Utils;

@@ -1,0 +1,90 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var stdin_exports = {};
+__export(stdin_exports, {
+  diff: () => diff
+});
+module.exports = __toCommonJS(stdin_exports);
+var import_diff = require("diff");
+var import__ = require("../../index.js");
+function diff({ new: new_data, old, log_level, prefix = "", trim = true, trim_keep = 3, detected_changes }) {
+  const level = log_level ?? 0;
+  if (typeof prefix === "number") {
+    prefix = " ".repeat(prefix);
+  }
+  if (old === new_data) {
+    if (import__.debug.on(0, level))
+      import__.debug.raw(level, prefix, "Old and new data are identical.");
+    return { status: "identical" };
+  }
+  if (import__.debug.on(0, level))
+    import__.debug.raw(level, prefix, detected_changes ?? "Detected changes between old and new data, computing diff...");
+  const diffs = (0, import_diff.diffLines)(old, new_data).reduce((acc, part) => {
+    if (!part.added && !part.removed) {
+      const prev = acc[acc.length - 1];
+      if (prev && !prev.added && !prev.removed) {
+        prev.value += part.value;
+        return acc;
+      }
+    }
+    if (part.value !== "") {
+      acc.push(part);
+    }
+    return acc;
+  }, []);
+  let line_count = 0;
+  const diff_lines = diffs.map((part) => {
+    const s = part.value.split("\n");
+    line_count += s.length - 1;
+    return s;
+  });
+  const max_line_nr_length = String(line_count).length;
+  const whitespace_prefix = " ".repeat(prefix.length > 1 ? prefix.length - 1 : 0);
+  let line_nr = 0;
+  diffs.forEach((part, index) => {
+    const line_prefix = part.added ? import__.Color.green_bold("+") : part.removed ? import__.Color.red_bold("-") : " ";
+    let local_line_nr = part.removed ? line_nr : void 0;
+    let last_dots = false;
+    diff_lines[index].walk((line, i, arr) => {
+      if (local_line_nr != null) {
+        ++local_line_nr;
+      } else {
+        ++line_nr;
+      }
+      if (i === arr.length - 1 && line === "")
+        return;
+      if (trim && !part.added && !part.removed && !(i < trim_keep || i >= arr.length - trim_keep)) {
+        if (!last_dots && (i === trim_keep || i === arr.length - trim_keep - 1)) {
+          if (import__.debug.on(0, level))
+            import__.debug.raw(level, `${whitespace_prefix} ${String().padEnd(max_line_nr_length, " ")} | ${line_prefix} ${import__.Color.italic("... unchanged ...")}`);
+          last_dots = true;
+        }
+        return;
+      }
+      if (import__.debug.on(0, level))
+        import__.debug.raw(level, `${whitespace_prefix} ${String(local_line_nr != null ? local_line_nr : line_nr).padEnd(max_line_nr_length, " ")} | ${line_prefix} ${line}`);
+      last_dots = false;
+    });
+    --line_nr;
+  });
+  return { status: "diff", changes: diffs };
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  diff
+});

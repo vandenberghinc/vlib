@@ -50,22 +50,18 @@ async function perform({ results, module: module2 = import__.cli.get({ id: "--mo
     console.log(`${import__.Color.red("Error")}: No unit tests defined, add unit tests using the add() function.`);
     return false;
   }
-  if (interactive && !module2) {
-    console.log(`${import__.Color.red("Error")}: Interactive mode is only available when a module is defined.`);
-    return false;
-  }
   const cache_path = new import__.Path(results);
   if (!cache_path.exists()) {
     throw new Error(`Cache directory "${results}" does not exist.`);
   } else if (!cache_path.is_dir()) {
     throw new Error(`Cache path "${results}" is not a directory.`);
   }
-  if (module2 != null) {
-    const mod = import_module.modules.find((m) => m.name === module2);
+  if (module2 != null || import_module.modules.length === 1) {
+    const mod = import_module.modules.find((m) => module2 == null || m.name === module2);
     if (!mod) {
       throw new Error(`Module "${module2}" was not found, the available modules are: [${import_module.modules.map((i) => i.name).join(", ")}]`);
     }
-    return mod._run({
+    const res = await mod._run({
       target,
       stop_on_failure,
       stop_after,
@@ -77,12 +73,14 @@ async function perform({ results, module: module2 = import__.cli.get({ id: "--mo
       no_changes,
       refresh
     });
+    return res.status;
   }
+  let succeeded = 0, failed = 0;
   for (const mod of import_module.modules) {
     if (all_yes) {
       throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
     }
-    const proceed = await mod._run({
+    const res = await mod._run({
       target,
       stop_on_failure,
       stop_after,
@@ -92,11 +90,28 @@ async function perform({ results, module: module2 = import__.cli.get({ id: "--mo
       all_yes: false,
       refresh
     });
-    if (!proceed) {
+    if (!res.status) {
       return false;
     }
+    succeeded += res.succeeded || 0;
+    failed += res.failed || 0;
   }
-  return true;
+  const prefix = debug === 0 ? " * " : "";
+  if (failed === 0) {
+    if (succeeded === 0) {
+      console.log(`${import__.Color.red("Error")}: No unit tests are defined.`);
+      return false;
+    }
+    console.log(import__.Color.cyan_bold(`
+Executed ${import_module.modules.length} test modules.`));
+    console.log(`${prefix}All ${failed + succeeded} unit tests ${import__.Colors.green}${import__.Colors.bold}passed${import__.Colors.end} successfully.`);
+    return true;
+  } else {
+    console.log(import__.Color.cyan_bold(`
+Executed ${import_module.modules.length} test modules.`));
+    console.log(`${prefix}Encountered ${failed === 0 ? import__.Colors.green : import__.Colors.red}${import__.Colors.bold}${failed}${import__.Colors.end} failed unit tests.`);
+    return false;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

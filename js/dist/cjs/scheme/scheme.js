@@ -18,7 +18,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Scheme: () => Scheme,
-  default: () => stdin_default,
   scheme: () => Scheme
 });
 module.exports = __toCommonJS(stdin_exports);
@@ -95,10 +94,11 @@ var Scheme;
     }
     return "";
   }
-  function verify({ object, scheme = {}, value_scheme = null, check_unknown = false, parent = "", error_prefix = "", err_prefix = null, throw_err = true }) {
-    if (err_prefix !== null) {
+  function verify({ object, data, scheme = {}, value_scheme, tuple_scheme, strict = false, parent = "", error_prefix = "", err_prefix, throw: throw_err = true }) {
+    if (data != null)
+      object = data;
+    if (err_prefix != null)
       error_prefix = err_prefix;
-    }
     if (typeof parent === "string" && parent.length > 0 && /[a-zA-Z0-9]+/g.test(parent.charAt(parent.length - 1))) {
       parent += ".";
     }
@@ -127,10 +127,10 @@ var Scheme;
                 object: object2[obj_key],
                 scheme: scheme_item.scheme,
                 value_scheme: scheme_item.value_scheme,
-                check_unknown,
+                strict,
                 parent: `${parent}${obj_key}.`,
                 error_prefix,
-                throw_err: true
+                throw: true
               });
             } catch (e) {
               if (!throw_err && e instanceof InternalError && e.data) {
@@ -160,10 +160,10 @@ var Scheme;
                 object: object2[obj_key],
                 scheme: scheme_item.scheme,
                 value_scheme: scheme_item.value_scheme,
-                check_unknown,
+                strict,
                 parent: `${parent}${obj_key}.`,
                 error_prefix,
-                throw_err: true
+                throw: true
               });
             } catch (e) {
               if (!throw_err && e.json) {
@@ -284,6 +284,18 @@ var Scheme;
         }
       }
     };
+    if (Array.isArray(object) && Array.isArray(tuple_scheme)) {
+      scheme = {};
+      let out_obj = {};
+      for (let i = 0; i < tuple_scheme.length; i++) {
+        out_obj[`argument_${i}`] = object[i];
+        if (typeof tuple_scheme[i] === "object") {
+          scheme[`tuple_${i}`] = tuple_scheme[i];
+        } else {
+          scheme[`tuple_${i}`] = { type: tuple_scheme[i] };
+        }
+      }
+    }
     if (Array.isArray(object)) {
       if (value_scheme != null) {
         const scheme_item = init_scheme_item(value_scheme);
@@ -313,7 +325,7 @@ var Scheme;
             }
           }
         });
-        if (check_unknown) {
+        if (strict) {
           const object_keys = Object.keys(object);
           for (let x = 0; x < object_keys.length; x++) {
             if (object_keys[x] in scheme === false && !aliases.has(object_keys[x])) {
@@ -388,32 +400,38 @@ var Scheme;
     }
   }
   Scheme2.value_type = value_type;
-  function throw_undefined(name, type = [], throw_err = true) {
-    if (typeof name === "object" && name != null) {
-      ({
-        name,
-        type = [],
-        throw_err = true
-      } = name);
+  function throw_undefined() {
+    let opts;
+    if (arguments.length === 1 && typeof arguments[0] === "object" && !Array.isArray(arguments[0]) && arguments[0] != null) {
+      opts = arguments[0];
+    } else {
+      opts = {
+        name: arguments[0],
+        type: arguments[1],
+        throw: arguments[2] !== false
+      };
     }
-    const err = `Argument "${name}" should be a defined value${type_string(type, " of type ")}.`;
-    if (throw_err) {
+    const err = `Argument "${opts.name}" should be a defined value${type_string(opts.type, " of type ")}.`;
+    if (opts.throw !== false) {
       throw new Error(err);
     }
     return err;
   }
   Scheme2.throw_undefined = throw_undefined;
-  function throw_invalid_type(name, value, type = [], throw_err = true) {
-    if (typeof name === "object" && name != null) {
-      ({
-        name,
-        value,
-        type = [],
-        throw_err = true
-      } = name);
+  function throw_invalid_type() {
+    let opts;
+    if (arguments.length === 1 && typeof arguments[0] === "object" && !Array.isArray(arguments[0]) && arguments[0] != null) {
+      opts = arguments[0];
+    } else {
+      opts = {
+        name: arguments[0],
+        value: arguments[1],
+        type: arguments[2],
+        throw: arguments[3] !== false
+      };
     }
-    const err = `Invalid type "${Scheme2.value_type(value)}" for argument "${name}"${type_string(type, ", the valid type is ")}.`;
-    if (throw_err) {
+    const err = `Invalid type "${Scheme2.value_type(opts.value)}" for argument "${opts.name}"${type_string(opts.type, ", the valid type is ")}.`;
+    if (opts.throw) {
       throw new Error(err);
     }
     return err;
@@ -464,7 +482,6 @@ var Scheme;
   Scheme2.cast_number = cast_number;
 })(Scheme || (Scheme = {}));
 ;
-var stdin_default = Scheme;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Scheme,

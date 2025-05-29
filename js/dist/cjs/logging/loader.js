@@ -104,7 +104,7 @@ class Loader {
   success(message) {
     this.stop();
     const text = message ?? this.prefix;
-    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.Date().format("%d-%m-%y %H:%M:%S"))}: `;
     this.write(`${prefix}${import_colors.Color.green_bold("\u2714")} ${text}
 `);
   }
@@ -115,7 +115,7 @@ class Loader {
   error(message) {
     this.stop();
     const text = message ?? this.prefix;
-    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.Date().format("%d-%m-%y %H:%M:%S"))}: `;
     this.write(`${prefix}${import_colors.Color.green_bold("\u2716")} ${text}
 `);
   }
@@ -151,7 +151,7 @@ class Loader {
       parts.push(`${this.percent}%`);
     if (this.show_count)
       parts.push(`[${this.current_value}/${this.max_value}]`);
-    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+    const prefix = !this.timestamps ? "" : `${import_colors.Color.gray(new import_date.Date().format("%d-%m-%y %H:%M:%S"))}: `;
     this.write([prefix, this.prefix, ...parts].filter(Boolean).join(" "));
   }
   /** write wrapper. */

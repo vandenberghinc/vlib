@@ -114,4 +114,3 @@ export declare namespace websocket {
     }
     export {};
 }
-export default websocket;

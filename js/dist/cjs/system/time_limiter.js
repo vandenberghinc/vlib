@@ -17,8 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  TimeLimiter: () => TimeLimiter,
-  default: () => stdin_default
+  TimeLimiter: () => TimeLimiter
 });
 module.exports = __toCommonJS(stdin_exports);
 class TimeLimiter {
@@ -49,7 +48,6 @@ class TimeLimiter {
     return this._counts < this._limit;
   }
 }
-var stdin_default = TimeLimiter;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   TimeLimiter

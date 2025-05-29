@@ -47,5 +47,4 @@ export class TimeLimiter {
         return this._counts < this._limit;
     }
 }
-export default TimeLimiter;
 //# sourceMappingURL=time_limiter.js.map

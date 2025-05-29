@@ -324,5 +324,3 @@ export async function request({
         }
     });
 }
-
-export default request;

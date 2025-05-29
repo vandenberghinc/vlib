@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
 
 // ---------------------------------------------------------
 // Imports.
@@ -31,8 +35,8 @@ const cli = new vlib.CLI({
             args: [
                 { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the package." },
                 { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
-                { id: "--git", type: "array", description: "Push to all git or a list of specific git remotes.", default: [] },
-                { id: "--ssh", type: "array", description: "Push to all ssh or a list of specific ssh remotes.", default: [] },
+                { id: "--git", type: "string[]", description: "Push to all git or a list of specific git remotes.", def: [] as string[] },
+                { id: "--ssh", type: "string[]", description: "Push to all ssh or a list of specific ssh remotes.", def: [] as string[] },
                 { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
                 { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
                 { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
@@ -160,8 +164,8 @@ const cli = new vlib.CLI({
             args: [
                 { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the source path." },
                 { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." },
-                { id: "--git", type: "array", description: "Pull from all git or a list of specific git remotes.", default: [] },
-                { id: "--ssh", type: "array", description: "Pull from all ssh or a list of specific ssh remotes.", default: [] },
+                { id: "--git", type: "array", description: "Pull from all git or a list of specific git remotes.", def: [] },
+                { id: "--ssh", type: "array", description: "Pull from all ssh or a list of specific ssh remotes.", def: [] },
                 { id: ["--forced", "-f"], type: "boolean", description: "Pull with git in forced mode." },
                 { id: ["--del", "-d"], type: "boolean", description: "Pull with ssh in delete mode." },
             ],
@@ -926,7 +930,7 @@ const cli = new vlib.CLI({
                 });
 
                 // 4) Confirm deletion
-                const answer = await vlib.Utils.prompt('Do you want to delete all of these files? (yes/no): ');
+                const answer = await vlib.logging.prompt('Do you want to delete all of these files? (yes/no): ');
                 const normalized = answer.trim().toLowerCase();
 
                 if (normalized === 'y' || normalized === 'yes') {

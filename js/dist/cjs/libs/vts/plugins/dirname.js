@@ -17,21 +17,44 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  dirname_plugin: () => dirname_plugin
+  Dirname: () => Dirname
 });
 module.exports = __toCommonJS(stdin_exports);
-async function dirname_plugin(source_path, dist_path, tsconfig_path, tsconfig_dirname) {
-  const data = await dist_path.load();
-  const needs_insertion = /__(?:filename|dirname|ts_filename|ts_dirname|package_json)/.test(data);
-  if (!needs_insertion || data.includes("vts-plugin: dirname@1.0.0")) {
-    return;
+var import__ = require("../../../index.js");
+var import_plugin = require("./plugin.js");
+var import_upsert_runtime_vars = require("./upsert_runtime_vars.js");
+class Dirname extends import_plugin.Plugin {
+  /** Set id. */
+  static id = new import_plugin.Plugin.Id("vts-dirname");
+  /** Create a new instance of the plugin. */
+  constructor({ pkg_json, tsconfig }) {
+    super({
+      type: "dist"
+    });
+    const pkg_p = !pkg_json ? void 0 : pkg_json instanceof import__.Path ? pkg_json : new import__.Path(pkg_json);
+    const tsconfig_p = tsconfig instanceof import__.Path ? tsconfig : new import__.Path(tsconfig);
+    const upsert = new import_upsert_runtime_vars.UpsertRuntimeVars({
+      identifier: Dirname.id,
+      vars: [
+        ["__filename", "__dirname", "__ts_filename", "__ts_dirname", "__tsconfig", "__tsconfig_dirname", "__package_json"],
+        (source) => ({
+          __filename: "__fileURLToPath(import.meta.url);",
+          __dirname: "__path_module.dirname(__filename);",
+          __ts_filename: `"${source.safe_ts_src.path}"`,
+          __ts_dirname: source.safe_ts_src.base()?.quote("undefined") ?? "undefined",
+          __tsconfig: tsconfig_p.quote(),
+          __tsconfig_dirname: tsconfig_p.base()?.quote("undefined") ?? "undefined",
+          __package_json: pkg_p?.quote("undefined") ?? "undefined"
+        })
+      ],
+      code: {
+        before: `import {fileURLToPath as __fileURLToPath} from "url";import __path_module from "path";`
+      }
+    });
+    this.callback = (src) => upsert.callback(src);
   }
-  await dist_path.save(`// vts-plugin: dirname@1.0.0
-import { fileURLToPath as __fileURLToPath } from "url"; import __path_module from "path";const __filename = __fileURLToPath(import.meta.url);const __dirname = __path_module.dirname(__filename);const __ts_filename = ${JSON.stringify(source_path.str())};const __ts_dirname = __path_module.dirname(__ts_filename);const __tsconfig = ${tsconfig_path};const __tsconfig_dirname = ${tsconfig_dirname};
-
-` + data);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  dirname_plugin
+  Dirname
 });

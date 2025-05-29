@@ -33,7 +33,7 @@ __export(stdin_exports, {
 module.exports = __toCommonJS(stdin_exports);
 var import_fs = __toESM(require("fs"));
 var import_dotenv = require("dotenv");
-var import_scheme = __toESM(require("../scheme/scheme.js"));
+var import_scheme = require("../scheme/scheme.js");
 var Env;
 (function(Env2) {
   Env2.map = /* @__PURE__ */ new Map();
@@ -80,7 +80,7 @@ var Env;
         types = param.type;
         throw_err = param.throw ?? false;
       } else {
-        throw new Error(`Invalid argument, expected string or options object, not ${import_scheme.default.value_type(param)}`);
+        throw new Error(`Invalid argument, expected string or options object, not ${import_scheme.Scheme.value_type(param)}`);
       }
     } else if (args.length === 2) {
       name = args[0];
@@ -91,7 +91,7 @@ var Env;
         types = second.type;
         throw_err = second.throw ?? false;
       } else {
-        throw new Error(`Invalid second argument, expected boolean or options object, not ${import_scheme.default.value_type(second)}`);
+        throw new Error(`Invalid second argument, expected boolean or options object, not ${import_scheme.Scheme.value_type(second)}`);
       }
     } else {
       throw new Error(`Invalid arguments length (${args.length}), expected 1 or 2.`);

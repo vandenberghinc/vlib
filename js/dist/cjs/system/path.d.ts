@@ -8,222 +8,174 @@ import * as fs from 'fs';
  * @libris
  */
 export declare class Path {
-    data: string;
+    path: string;
     private _stat?;
+    private _full_name?;
     private _name?;
     private _extension?;
     private _base?;
     private _abs?;
-    constructor(path: string | Path, clean?: boolean);
+    constructor(path: string | Path, clean?: boolean, stats?: fs.Stats);
     trim(): void;
     /** To string. */
     toString(): string;
     str(): string;
     /** Cast to primitives. */
     [Symbol.toPrimitive](hint: 'string' | 'number' | 'default'): string | number;
-    /** @docs
-     *  @title home
-     *  @desc Get the user's home directory path
-     *  @static true
-     *  @returns
-     *      @type Path
-     *      @desc A new Path instance pointing to the user's home directory
+    /**
+     * Get the user's home directory path.
+     * @static
+     * @returns {Path} A new Path instance pointing to the user's home directory.
      */
     static home(): Path;
-    /** @docs
-     *  @title length
-     *  @desc Get the length of the current path string
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The number of characters in the path string
-     *  @funcs 2
+    /**
+     * Find the common base path between an array of paths.
+     * @param {string[]} paths - Array of path strings to analyze.
+     * @returns {string|undefined} Returns a string when a common base path has been found, or undefined otherwise.
+     */
+    static find_common_base_path(paths: string[]): string | undefined;
+    /** Check if a path exists. */
+    static exists(path: string): boolean;
+    /**
+     * Ensure a path exists; throw an error if not.
+     * @param {string|Path} path - Path to check.
+     * @param {string} [err_prefix] - Optional prefix for the error message.
+     */
+    static ensure_exists_err(path: string | Path, err_prefix?: string): void;
+    /**
+     * Get the length of the current path string.
+     * @readonly
+     * @returns {number} The number of characters in the path string.
      */
     get length(): number;
     get len(): number;
-    /** @docs
-     *  @title stat
-     *  @desc Get the file system stats for the current path
-     *  @property true
-     *  @returns
-     *      @type fs.Stats
-     *      @desc The file system stats object with modified time properties
+    /**
+     * Get the file system stats for the current path.
+     * @readonly
+     * @returns {fs.Stats} The file system stats object with modified time properties.
+     * @throws Error if the path does not exist or cannot be accessed.
      */
     get stat(): fs.Stats;
-    /** @docs
-     *  @title Device ID
-     *  @desc Get the device identifier where the file resides
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The numeric device identifier
+    /**
+     * Get the device identifier where the file resides.
+     * @readonly
+     * @returns {number} The numeric device identifier.
      */
     get dev(): number;
-    /** @docs
-     *  @title Inode number
-     *  @desc Get the file system specific inode number
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The inode number of the file
+    /**
+     * Get the file system specific inode number.
+     * @readonly
+     * @returns {number} The inode number of the file.
      */
     get ino(): number;
-    /** @docs
-     *  @title File mode
-     *  @desc Get the file mode bits
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The file mode containing permission bits and file type
+    /**
+     * Get the file mode bits (permission and type).
+     * @readonly
+     * @returns {number} The file mode bits.
      */
     get mode(): number;
-    /** @docs
-     *  @title Hard links
-     *  @desc Get the number of hard links to the file
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Number of hard links
+    /**
+     * Get the number of hard links to the file.
+     * @readonly
+     * @returns {number} The number of hard links.
      */
     get nlink(): number;
-    /** @docs
-     *  @title User ID
-     *  @desc Get the user identifier of the file's owner
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The numeric user ID
+    /**
+     * Get the user identifier of the file's owner.
+     * @readonly
+     * @returns {number} The numeric user ID.
      */
     get uid(): number;
-    /** @docs
-     *  @title Group ID
-     *  @desc Get the group identifier of the file's group
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The numeric group ID
+    /**
+     * Get the group identifier of the file's group.
+     * @readonly
+     * @returns {number} The numeric group ID.
      */
     get gid(): number;
-    /** @docs
-     *  @title Device ID (if special file)
-     *  @desc Get the device identifier for special files
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc The numeric device identifier for special files
+    /**
+     * Get the device identifier for special files.
+     * @readonly
+     * @returns {number} The device identifier for special files.
      */
     get rdev(): number;
-    /** @docs
-     *  @title Size
-     *  @desc Get the total size in bytes. For directories, calculates total size recursively
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Total size in bytes
+    /**
+     * Get the total size in bytes. For directories, calculates size recursively.
+     * @readonly
+     * @returns {number} Total size in bytes.
      */
     get size(): number;
-    /** @docs
-     *  @title Block size
-     *  @desc Get the file system block size for I/O operations
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Block size in bytes
+    /**
+     * Get the file system block size for I/O operations.
+     * @readonly
+     * @returns {number} Block size in bytes.
      */
     get blksize(): number;
-    /** @docs
-     *  @title Blocks
-     *  @desc Get the number of blocks allocated to the file
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Number of allocated blocks
+    /**
+     * Get the number of blocks allocated to the file.
+     * @readonly
+     * @returns {number} Number of allocated blocks.
      */
     get blocks(): number;
-    /** @docs
-     *  @title Access time
-     *  @desc Get the last access time of the file
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Millisecods number representing the last access time
+    /**
+     * Get the last access time of the file (in milliseconds).
+     * @readonly
+     * @returns {number} Milliseconds representing the last access time.
      */
     get atime(): number;
-    /** @docs
-     *  @title Modification time
-     *  @desc Get the last modification time of the file
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Millisecods number representing the last modification time
+    /**
+     * Get the last modification time of the file (in milliseconds).
+     * @readonly
+     * @returns {number} Milliseconds representing the last modification time.
      */
     get mtime(): number;
-    /** @docs
-     *  @title Change time
-     *  @desc Get the last change time of the file (metadata changes)
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Millisecods number representing the last change time
+    /**
+     * Get the last change time of the file metadata (in milliseconds).
+     * @readonly
+     * @returns {number} Milliseconds representing the last change time.
      */
     get ctime(): number;
-    /** @docs
-     *  @title Creation time
-     *  @desc Get the creation time of the file
-     *  @property true
-     *  @returns
-     *      @type number
-     *      @desc Millisecods number representing the file creation time
+    /**
+     * Get the creation time of the file (in milliseconds).
+     * @readonly
+     * @returns {number} Milliseconds representing the file creation time.
      */
     get birthtime(): number;
-    /** @docs
-     *  @title Disk usage
-     *  @desc Get disk usage information for the directory
-     *  @throws Error if path is not a directory
-     *  @returns
-     *      @type Promise<{available: number; free: number; total: number}>
-     *      @desc Object containing disk space information in bytes.
-     *      @attr
-     *          @name available
-     *          @descr: Space available to the current user
-     *          @type: number
-     *      @attr
-     *          @name free
-     *          @descr: Total free space
-     *          @type: number
-     *      @attr
-     *          @name total
-     *          @descr: Total disk space
-     *          @type: number
+    /**
+     * Get disk usage information for the directory.
+     * @async
+     * @throws {Error} If the path is not a directory.
+     * @returns {Promise<{available: number; free: number; total: number}>} Object containing disk space information in bytes.
      */
     disk_usage(): Promise<undefined | {
         available: number;
         free: number;
         total: number;
     }>;
-    /** @docs
-     *  @title Available space
-     *  @desc Get available disk space for the directory
-     *  @throws Error if path is not a directory
-     *  @returns
-     *      @type Promise<number>
-     *      @desc Number of bytes available to the current user
+    /**
+     * Get available disk space for the directory.
+     * @async
+     * @throws {Error} If the path is not a directory.
+     * @returns {Promise<number>} Number of bytes available to the current user.
      */
     available_space(): Promise<number | undefined>;
     /**
      * Equals another string or path.
      */
     eq(path: string | Path): boolean;
-    /** @docs
-     *  @title Reset
-     *  @desc Reset the path attribute's except the path name
-     *  @note Should be called when the operating system's path has changed
+    /**
+     * Reset internal caches except path string.
+     * @returns {this} The Path instance for chaining.
      */
     reset(): this;
     refresh(): this;
-    /** @docs
-     *  @title Is directory
-     *  @desc Check if the path is a directory
+    /**
+     * {Is file}
+     * Check if the path is a directory
+     */
+    is_file(): boolean;
+    /**
+     * {Is directory}
+     * Check if the path is a directory
      */
     is_dir(): boolean;
     /** @docs
@@ -231,28 +183,24 @@ export declare class Path {
      *  @desc Check if the path exists
      */
     exists(): boolean;
-    static exists(path: string): boolean;
-    /** @docs
-     *  @title Ensure Exists
-     *  @desc Ensure a path exists, if not throw an error.
+    /**
+ * Get the base path of this path, correctly handling escaped separators.
+ * @param back - Number of directory levels to traverse up (default: 1).
+ * @returns The parent Path instance, or undefined if at root.
+ */
+    base(back?: number): Path | undefined;
+    /**
+     * Get the name of the path, with correct multi-dot extension support.
+     * Handles files like `.env` and extensions like `.d.ts`, `.js.map`.
+     * @param with_extension - Include the extension in the returned name (default: true).
+     * @returns The base name of the path, including extension if specified.
      */
-    static ensure_exists_err(path: string | Path, err_prefix?: string): void;
-    /** @docs
-     *  @title Get name
-     *  @desc Get the (full) name of the path
-     */
-    name(with_extension?: boolean): string;
-    /** @docs
-     *  @title Get extension
-     *  @desc Get the extension of the path
+    full_name(with_extension?: boolean): string;
+    /**
+     * Get the extension of the path, with correct multi-dot extension support.
+     * @returns The file extension, including leading dot, or empty string if none.
      */
     extension(): string;
-    /** @docs
-     *  @title Get base
-     *  @desc Get the base path of the path
-     *  @note Returns `null` when the path does not have a base path
-     */
-    base(back?: number): Path | undefined;
     /** @docs
      *  @title Get absolute
      *  @desc Get the absolute path of the path
@@ -303,6 +251,21 @@ export declare class Path {
      *  @desc Create a file
      */
     touch(): Promise<void>;
+    /**
+     * Relative.
+     */
+    relative(child: string | Path): Path;
+    /**
+     * Return the quoted representation of the path.
+     * @param def The default value to return when the path is undefined.
+     *            See {@link StringUtils.quote} for more information.
+     */
+    quote(def: undefined): undefined | Path;
+    quote(def?: string | String | Path): Path;
+    /**
+     * Return the unquoted representation of the path.
+     */
+    unquote(): Path;
     /** @docs
      *  @title Load
      *  @desc Load the data from the path
@@ -382,14 +345,25 @@ export declare class Path {
         type?: Exclude<Path.LoadSaveTypeName, "jsonc">;
     }): this;
     /**
-     * Get the child paths of a directory
-     * @throws An error when the path is not a directory
-     * @param recursive Get all paths recursively.
-     * @param exclude A list of exclude paths, an exact match will be checked when a `string[]` array is provided.
-     *                However, glob- and regex patterns can be utilized as well by providing an `ExcludeList` class.
-     * @param absolute Get the absolute paths instead of relative paths.
-     * @param string Get all paths as raw strings instead of Path objects
+     * Asynchronously reads the file at this._path using a streaming interface.
+     * Calls the optional `processLine` callback for each line as it is read,
+     * and always returns an array of all lines once complete.
+     * This approach is memory-efficient for large files while allowing
+     * custom per-line processing.
+     *
+     * @param callback Optional callback invoked with each line and its index.
+     * @returns Promise resolving to an array of all lines in the file.
      */
+    read_lines(callback?: (line: string, index: number) => void): Promise<string[]>;
+    /**
+    * Get the child paths of a directory
+    * @throws An error when the path is not a directory
+    * @param recursive Get all paths recursively.
+    * @param exclude A list of exclude paths, an exact match will be checked when a `string[]` array is provided.
+    *                However, glob- and regex patterns can be utilized as well by providing an `ExcludeList` class.
+    * @param absolute Get the absolute paths instead of relative paths.
+    * @param string Get all paths as raw strings instead of Path objects
+    */
     paths(opts?: {
         recursive?: boolean;
         absolute?: boolean;
@@ -402,37 +376,26 @@ export declare class Path {
         exclude?: Path.ExcludeList | string[];
         string: true;
     }): Promise<string[]>;
-    /** @docs
-     *  @title Truncate
-     *  @desc Truncate the file
-     */
-    /** @docs
-     *  @title Common Base Path
-     *  @descr Find the common base path between an array of paths
-     *  @param
-     *      @name paths
-     *      @desc Array of path strings to analyze
-     *      @type string[]
-     *  @return
-     *      @type string | undefined
-     *      @descr Returns a string when a common base path has been found, when no common base path was found `undefined` will be returned
-     */
-    static find_common_base_path(paths: string[]): string | undefined;
     /**
-     * Asynchronously reads the file at this._path using a streaming interface.
-     * Calls the optional `processLine` callback for each line as it is read,
-     * and always returns an array of all lines once complete.
-     * This approach is memory-efficient for large files while allowing
-     * custom per-line processing.
-     *
-     * @param callback Optional callback invoked with each line and its index.
-     * @returns Promise resolving to an array of all lines in the file.
-     */
-    read_lines(callback?: (line: string, index: number) => void): Promise<string[]>;
+ * Asynchronously match file paths using glob patterns.
+ * Uses fast-glob when `opts.fast` is true, otherwise falls back to a native implementation.
+ *
+ * @param patterns A glob pattern or an array of patterns to match.
+ * @param opts Optional settings:
+ *   - fast: Use fast-glob for performance.
+ *   - cwd: Base directory for matching (string or Path). Defaults to this path.
+ *   - absolute: Return absolute paths. Defaults to true.
+ *   - string: Return raw string paths instead of Path objects.
+ *   - dot: Include dotfiles. Defaults to false.
+ *   - only_files: Match only files. Defaults to true.
+ *   - only_directories: Match only directories. Defaults to false.
+ *   - unique: Remove duplicate results. Defaults to true.
+ */
+    glob(patterns: string | string[], opts?: Path.GlobOpts): Promise<string[] | Path[]>;
     /**
-     * Relative.
+     * Synchronously match file paths using glob patterns.
      */
-    relative(child: string | Path): Path;
+    glob_sync(patterns: string | string[], opts?: Path.GlobOpts): (string | Path)[];
 }
 /**
  * Path types.
@@ -464,5 +427,18 @@ export declare namespace Path {
          * @libris
          */
         has(input: string): boolean;
+    }
+    /**
+     * Options for the `Path.glob` and `Path.glob_sync` methods.
+     */
+    interface GlobOpts {
+        fast?: boolean;
+        cwd?: string | Path;
+        absolute?: boolean;
+        string?: boolean;
+        dot?: boolean;
+        only_files?: boolean;
+        only_directories?: boolean;
+        unique?: boolean;
     }
 }

@@ -1,3 +1,7 @@
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
 "use strict";
 // Imports.
 import { Module } from "../../libs/vtest/index.js";

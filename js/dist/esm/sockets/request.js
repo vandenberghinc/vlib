@@ -254,5 +254,4 @@ export async function request({ host, port = null, endpoint = "/", method = "GET
         }
     });
 }
-export default request;
 //# sourceMappingURL=request.js.map

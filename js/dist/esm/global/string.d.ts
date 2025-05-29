@@ -106,12 +106,18 @@ declare namespace StringUtils {
     };
     /**
      * Removes matching quotes from the ends of the string.
+     *
+     * @param data The string to unquote.
      */
     function unquote(data: string | String): string;
     /**
      * Wraps the string in quotes if not already quoted.
+     * @returns the default string when the data is an empty string or null/undefined.
+     * @param data The string to quote.
+     * @param def Optional default value to return if data is null/undefined, default is `""`.
      */
-    function quote(data: string | String): string;
+    function quote(data: undefined | null | string | String, def: undefined): undefined | string;
+    function quote(data: undefined | null | string | String, def?: string | String): string;
 }
 export { StringUtils as String };
 /** Extend global string with some basic methods. */

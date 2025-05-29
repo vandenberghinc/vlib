@@ -1,3 +1,7 @@
+/**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
 export declare class DaemonError extends Error {
     constructor(...args: any[]);
 }
@@ -107,4 +111,3 @@ export declare class Daemon {
     is_running(): Promise<boolean>;
     tail(lines?: number): Promise<string>;
 }
-export default Daemon;

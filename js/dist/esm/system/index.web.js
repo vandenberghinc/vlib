@@ -3,4 +3,5 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 export * from "./colors.js";
+export * from "./mutex.js";
 //# sourceMappingURL=index.web.js.map

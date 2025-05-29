@@ -27,7 +27,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  default: () => stdin_default,
   request: () => request
 });
 module.exports = __toCommonJS(stdin_exports);
@@ -160,7 +159,6 @@ async function request({ host, port = null, endpoint = "/", method = "GET", head
     }
   });
 }
-var stdin_default = request;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   request

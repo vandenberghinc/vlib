@@ -32,10 +32,11 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var zlib = __toESM(require("zlib"));
-var import_diff = require("diff");
 var ts = __toESM(require("typescript"));
 var import_js_beautify = __toESM(require("js-beautify"));
 var import__ = require("../../index.js");
+var import_source_loc = require("../../debugging/source_loc.js");
+var import_compute_diff = require("../vts/utils/compute_diff.js");
 const { js: beautify } = import_js_beautify.default;
 class Module {
   // Module name.
@@ -79,7 +80,7 @@ class Module {
     } else if (!/[a-zA-Z0-9-_:/\*]+/.test(id)) {
       throw new Error(`Invalid unit test id "${id}", this should only contain alphanumeric characters, dashes, underscores, slashes and asterisks.`);
     }
-    const loc = new import__.SourceLoc(1);
+    const loc = new import_source_loc.SourceLoc(1);
     const override_refresh = refresh;
     this.unit_tests[id] = async ({ log_level, interactive, cache, index, all_yes = false, no_changes = false, refresh: refresh2 = false }) => {
       const use_refresh = override_refresh || (typeof refresh2 === "string" && refresh2 === id || refresh2 === true);
@@ -180,33 +181,6 @@ class Module {
           e4x: false
         });
       };
-      function log_diff(new_data, old_data) {
-        if (no_changes) {
-          return;
-        }
-        if (old_data === new_data) {
-          if (!use_refresh) {
-            debug(0, " *", import__.Color.red_bold("Cached data and new data are identical, this should not occur, carefully check the unit test output. When the unit test is validated you can ignore this message and answer [Y]."));
-          }
-          return;
-        }
-        debug(0, " *", import__.Color.yellow_bold("Detected differences between cached- and new outut:"));
-        const diffs = (0, import_diff.diffLines)(old_data, new_data);
-        diffs.forEach((part, index2) => {
-          const prev_part = diffs[index2 - 1];
-          const next_part = diffs[index2 + 1];
-          if (!part.added && !part.removed && (prev_part == null || !prev_part.added && !prev_part.removed) && (next_part == null || !next_part.added && !next_part.removed)) {
-            return;
-          }
-          const prefix = "  | " + (part.added ? import__.Color.green("+") : part.removed ? import__.Color.red("-") : " ");
-          let last_was_dots = false;
-          part.value.split("\n").forEach((line, i, arr) => {
-            if (i === arr.length - 1 && line === "")
-              return;
-            debug(0, ` ${prefix} ${line}`);
-          });
-        });
-      }
       const enter_interactive_on_failure = async (new_hash, response) => {
         const cached = this.mod_cache[id];
         const cached_data = !cached?.data ? void 0 : zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString();
@@ -227,13 +201,19 @@ ${input.split("\n").map((l) => `   | ${import__.Color.gray(l)}`).join("\n")}`);
         debug(0, ` * Unit test output: 
 ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
         if (cached_data) {
-          log_diff(response, cached_data);
+          (0, import_compute_diff.compute_diff)({
+            new: response,
+            old: cached_data,
+            log_level: void 0,
+            // use default.
+            prefix: " * "
+          });
         }
         dump_all_logs();
         let answer = all_yes ? "y" : void 0;
         if (!answer) {
           try {
-            answer = await import__.Utils.prompt(`${import__.Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
+            answer = await import__.logging.prompt(`${import__.Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
           } catch (e) {
             debug(0, import__.Color.yellow("\nAborted."));
             dump_all_logs();
@@ -293,7 +273,7 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
           dump_all_logs();
           return { success: false, hash: void 0, output: void 0, expect };
         }
-        let res_str = typeof res === "object" && res !== null ? import__.Colors.json(res) : typeof res === "string" ? res : JSON.stringify(res);
+        let res_str = typeof res === "object" && res !== null ? import__.Color.json(res) : typeof res === "string" ? res : JSON.stringify(res);
         let cached = use_refresh ? void 0 : this.mod_cache[id];
         if (cached && cached.expect !== expect) {
           debug(0, import__.Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
@@ -371,7 +351,7 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
    * @private
    */
   async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, all_yes = false, repeat = 0, no_changes = false, refresh = false }) {
-    console.log(import__.Color.green_bold(`
+    console.log(import__.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
     if (repeat > 0 && all_yes) {
       throw new Error(`The --yes option is not compatible with the --repeat option.`);
@@ -394,7 +374,7 @@ Commencing ${this.name} unit tests.`));
     const all_yes_insertions = [];
     for (let i = 0; i <= repeat; ++i) {
       if (repeat !== 0) {
-        console.log(import__.Color.green_bold(`
+        console.log(import__.Color.cyan_bold(`
 Commencing repetition ${i + 1} of unit test ${this.name}.`));
       }
       failed = 0, succeeded = 0;
@@ -417,9 +397,9 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
           console.log(`${import__.Colors.red}${import__.Colors.bold}Error${import__.Colors.end}: Encountered an error during unit test "${id}".`);
           throw e;
         }
-        const prefix = typeof debug === "string" || debug > 0 ? import__.Color.bold("Unit test " + import__.Color.blue(id)) : import__.Color.blue_bold(id);
+        const prefix2 = typeof debug === "string" || debug > 0 ? import__.Color.bold("Unit test " + import__.Color.blue(id)) : import__.Color.blue_bold(id);
         if (res.success === true) {
-          console.log(`${debug === 0 && (last_success === void 0 || last_success) ? " * " : ""}${prefix} ${import__.Colors.green}${import__.Colors.bold}succeeded${import__.Colors.end}`);
+          console.log(`${debug === 0 && (last_success === void 0 || last_success) ? " * " : ""}${prefix2} ${import__.Colors.green}${import__.Colors.bold}succeeded${import__.Colors.end}`);
           ++succeeded;
         } else {
           if (all_yes) {
@@ -429,7 +409,7 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
               console.log(`${import__.Color.red_bold(`Unable assign a "success" status for unit test "${id}" because the hash and output are not defined.`)}`);
             }
           }
-          console.log(`${prefix} ${import__.Colors.red}${import__.Colors.bold}failed${import__.Colors.end}`);
+          console.log(`${prefix2} ${import__.Colors.red}${import__.Colors.bold}failed${import__.Colors.end}`);
           ++failed;
           if (stop_on_failure || res.hash == null && interactive) {
             console.log(`Stopping unit tests on failure.`);
@@ -438,7 +418,7 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
         }
         if (stop_after === id) {
           console.log(`Stopping unit tests after "${id}".`);
-          return false;
+          return { status: false, failed, succeeded };
         }
         last_success = res.success;
       }
@@ -454,14 +434,14 @@ Warning: you enabled the --yes option in interactive mode.`)}`);
         console.log(` * ${import__.Color.gray(item.id)}`);
       }
       try {
-        const answer = await import__.Utils.prompt(`${import__.Color.bold("Do you want to continue?")} [y/n]: `);
+        const answer = await import__.logging.prompt(`${import__.Color.bold("Do you want to continue?")} [y/n]: `);
         if (answer.toLowerCase() !== "y" && answer.toLowerCase() !== "yes") {
           console.log(import__.Color.yellow("Aborted."));
-          return false;
+          return { status: false, failed, succeeded };
         }
       } catch (e) {
         console.log(import__.Color.yellow("Aborted."));
-        return false;
+        return { status: false, failed, succeeded };
       }
       for (const item of all_yes_insertions) {
         this.mod_cache[item.id] = {
@@ -472,14 +452,15 @@ Warning: you enabled the --yes option in interactive mode.`)}`);
       }
       await this.save_mod_cache(cache);
       console.log(`Saved ${all_yes_insertions.length} unit test hashes to the cache.`);
-      return true;
+      return { status: true, failed, succeeded };
     }
+    const prefix = debug === 0 ? " * " : "";
     if (failed === 0) {
-      console.log(`All ${failed + succeeded} unit tests ${import__.Colors.green}${import__.Colors.bold}passed${import__.Colors.end} successfully.`);
+      console.log(`${prefix}All ${failed + succeeded} unit tests ${import__.Colors.green}${import__.Colors.bold}passed${import__.Colors.end} successfully.`);
     } else {
-      console.log(`Encountered ${failed === 0 ? import__.Colors.green : import__.Colors.red}${import__.Colors.bold}${failed}${import__.Colors.end} failed unit tests.`);
+      console.log(`${prefix}Encountered ${failed === 0 ? import__.Colors.green : import__.Colors.red}${import__.Colors.bold}${failed}${import__.Colors.end} failed unit tests.`);
     }
-    return true;
+    return { status: true, failed, succeeded };
   }
 }
 const modules = [];

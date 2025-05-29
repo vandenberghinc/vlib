@@ -4,18 +4,8 @@
  */
 import * as fs from 'fs';
 import { Path } from "../system/path.js";
-import { SourceLoc } from './source_loc.js';
-import Pipe, { DebuggerFunc } from './pipe.js';
-/** Log directives */
-declare const IsError: unique symbol;
-type IsError = typeof IsError;
-declare const IsWarning: unique symbol;
-type IsWarning = typeof IsWarning;
-declare const IsDebug: unique symbol;
-type IsDebug = typeof IsDebug;
-declare class UseActiveLogLevel extends Number {
-    constructor(value: number);
-}
+import { Directive } from '../debugging/directives.js';
+import { Pipe } from '../debugging/pipe.js';
 /**
  * Parsed log message.
  */
@@ -27,31 +17,14 @@ export interface Log {
     type: "error" | "warning" | "log";
     message: string;
 }
-/** @docs:
- *  @chapter: System
- *  @title: Logger
- *  @descr:
- *      The logger object.
- *  @param:
- *      @name: log_level
- *      @descr: The active log level.
- *      @type: number
- *  @param:
- *      @name: log_path
- *      @descr: The optional log path.
- *      @type: string
- *  @param:
- *      @name: error_path
- *      @descr: The optional error path.
- *      @type: string
- *  @param:
- *      @name: max_mb
- *      @descr: The max mb to keep for the log files, when defined the log files will automatically be truncated.
- *      @type: number
- *  @param:
- *      @name: threading
- *      @descr: Enable threading behaviour, when enabled messages are prefixed with the thread id.
- *      @type: boolean
+/**
+ *  The logger object.
+ *
+ *  @param {number} log_level The active log level.
+ *  @param {string} log_path The optional log path.
+ *  @param {string} error_path The optional error path.
+ *  @param {number} max_mb The max mb to keep for the log files, when defined the log files will automatically be truncated.
+ *  @param {boolean} threading Enable threading behaviour, when enabled messages are prefixed with the thread id.
 */
 export declare class Logger extends Pipe {
     log_path?: Path;
@@ -61,6 +34,12 @@ export declare class Logger extends Pipe {
     max_mb?: number;
     thread: string;
     private debug_filename?;
+    /**
+     * The inherited `pipe` attribute is never used since this class overrides the `log` method, which is the only place where `pipe` is used.
+     * @ts-expect-error */
+    _out: never;
+    _err: never;
+    /** Constructor. */
     constructor({ log_level, debug_filename, log_path, error_path, max_mb, }?: {
         log_level?: number;
         log_path?: string;
@@ -80,22 +59,14 @@ export declare class Logger extends Pipe {
      * @param max_bytes Maximum allowed file size in bytes.
      */
     private truncate_log_file;
-    /** @docs:
-     *  @title: Stop
-     *  @descr: Stop the logger and close the file streams.
+    /**
+     * Stop the logger and close the file streams.
      */
     stop(): void;
-    /** @docs:
-     *  @title: Assign Paths
-     *  @descr: Assign paths for the logger class.
-     *  @param:
-     *      @name: log_path
-     *      @descr: The optional log path.
-     *      @type: string
-     *  @param:
-     *      @name: error_path
-     *      @descr: The optional error path.
-     *      @type: string
+    /**
+     * Assign paths for the logger class.
+     * @param log_path The optional log path.
+     * @param error_path The optional error path.
      */
     assign_paths(log_path: string, error_path: string): void;
     /** The log file pattern. */
@@ -105,21 +76,14 @@ export declare class Logger extends Pipe {
      */
     _parse_log_file(path: Path): Promise<Log[]>;
     /** @docs:
-     *  @title: Log
-     *  @descr: Log data to the console and file streams when defined.
-     *  @param:
-     *      @name: level
-     *      @descr: The log level of the message.
-     *      @type: number
-     *  @param:
-     *      @name: args
-     *      @descr:
-     *          The data to log.
-     *      @type: any[]
+     * Log data to the console and file streams when defined.
+     * See {@link Pipe.log} for more details.
+     *
+     * @param args
+     *      The data to log.
+     *      The first number is treated as the local log level.
+     *      Any other directives are allowed before the first non-directive / local log level argument.
      */
-    log(level: number | any, ...args: (SourceLoc | IsWarning | IsError | IsDebug | UseActiveLogLevel | Error | any)[]): void;
-    /** Initialize a debugger / debug func with a predefined active log level */
-    debugger(active_log_level: number): DebuggerFunc;
+    log(...args: (Directive | Error | any)[]): void;
 }
-export default Logger;
 export declare const logger: Logger;

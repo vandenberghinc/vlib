@@ -4,12 +4,13 @@
  */
 // External imports.
 import * as zlib from 'zlib';
-import { diffLines } from 'diff';
 import * as ts from 'typescript';
 import pkg from 'js-beautify';
 const { js: beautify } = pkg;
 // Imports.
-import { Color, Colors, Utils, Path, logging, SourceLoc } from '../../index.js';
+import { Color, Colors, Utils, Path, logging } from '../../index.js';
+import { SourceLoc } from '../../debugging/source_loc.js';
+import { compute_diff } from '../vts/utils/compute_diff.js';
 // -----------------------------------------------------------------
 // Module class.
 /**
@@ -206,49 +207,6 @@ export class Module {
                     e4x: false,
                 });
             };
-            /** Log the difference between cached data and new data strings. */
-            function log_diff(new_data, old_data) {
-                if (no_changes) {
-                    return;
-                }
-                // debug(3, ' * Scanning for differences between cached and new data...');
-                // Completely identical.
-                if (old_data === new_data) {
-                    if (!use_refresh) {
-                        debug(0, " *", Color.red_bold('Cached data and new data are identical, this should not occur, carefully check the unit test output. When the unit test is validated you can ignore this message and answer [Y].'));
-                    }
-                    return;
-                }
-                // Otherwise compute a line-by-line diff.
-                // debug(0, 'Detected differences between cached and new data. ⚠️');
-                debug(0, " *", Color.yellow_bold('Detected differences between cached- and new outut:'));
-                const diffs = diffLines(old_data, new_data);
-                diffs.forEach((part, index) => {
-                    const prev_part = diffs[index - 1];
-                    const next_part = diffs[index + 1];
-                    if (!part.added && !part.removed &&
-                        (prev_part == null || (!prev_part.added && !prev_part.removed)) &&
-                        (next_part == null || (!next_part.added && !next_part.removed))) {
-                        return;
-                    }
-                    // part.added=true → new lines (green +)
-                    // part.removed=true → old lines (red -)
-                    // otherwise unchanged (gray space)
-                    const prefix = "  | " + (part.added
-                        ? Color.green('+')
-                        : part.removed
-                            ? Color.red('-')
-                            : ' ');
-                    // indent one space so the prefix lines up
-                    let last_was_dots = false;
-                    part.value.split('\n').forEach((line, i, arr) => {
-                        // skip the final empty split after the last newline
-                        if (i === arr.length - 1 && line === '')
-                            return;
-                        debug(0, ` ${prefix} ${line}`);
-                    });
-                });
-            }
             // Enter interactive mode on failure.
             const enter_interactive_on_failure = async (new_hash, response) => {
                 // Variables.
@@ -274,7 +232,12 @@ export class Module {
                 debug(0, ` * Unit test output: \n${response.split("\n").map(l => `   | ${l}`).join("\n")}`);
                 // Provide additional info show what has changed based on previous data.
                 if (cached_data) {
-                    log_diff(response, cached_data);
+                    compute_diff({
+                        new: response,
+                        old: cached_data,
+                        log_level: undefined, // use default.
+                        prefix: " * ",
+                    });
                 }
                 // Dump all logs.
                 dump_all_logs();
@@ -282,7 +245,7 @@ export class Module {
                 let answer = all_yes ? "y" : undefined;
                 if (!answer) {
                     try {
-                        answer = await Utils.prompt(`${Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
+                        answer = await logging.prompt(`${Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
                     }
                     catch (e) {
                         debug(0, Color.yellow("\nAborted."));
@@ -350,7 +313,7 @@ export class Module {
                     dump_all_logs();
                     return { success: false, hash: undefined, output: undefined, expect };
                 }
-                let res_str = typeof res === "object" && res !== null ? Colors.json(res) : typeof res === "string" ? res : JSON.stringify(res);
+                let res_str = typeof res === "object" && res !== null ? Color.json(res) : typeof res === "string" ? res : JSON.stringify(res);
                 // Extract previous hash & data.
                 let cached = use_refresh ? undefined : this.mod_cache[id];
                 if (cached && cached.expect !== expect) {
@@ -441,7 +404,7 @@ export class Module {
      */
     async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, all_yes = false, repeat = 0, no_changes = false, refresh = false, }) {
         // Logs.
-        console.log(Color.green_bold(`\nCommencing ${this.name} unit tests.`));
+        console.log(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Check opts.
         if (repeat > 0 && all_yes) {
             throw new Error(`The --yes option is not compatible with the --repeat option.`);
@@ -470,7 +433,7 @@ export class Module {
         // For every repeat.
         for (let i = 0; i <= repeat; ++i) {
             if (repeat !== 0) {
-                console.log(Color.green_bold(`\nCommencing repetition ${i + 1} of unit test ${this.name}.`));
+                console.log(Color.cyan_bold(`\nCommencing repetition ${i + 1} of unit test ${this.name}.`));
             }
             failed = 0, succeeded = 0;
             // Start test.
@@ -523,7 +486,7 @@ export class Module {
                 }
                 if (stop_after === id) {
                     console.log(`Stopping unit tests after "${id}".`);
-                    return false;
+                    return { status: false, failed, succeeded };
                 }
                 last_success = res.success;
             }
@@ -542,15 +505,15 @@ export class Module {
             }
             // All yes permission.
             try {
-                const answer = await Utils.prompt(`${Color.bold("Do you want to continue?")} [y/n]: `);
+                const answer = await logging.prompt(`${Color.bold("Do you want to continue?")} [y/n]: `);
                 if (answer.toLowerCase() !== "y" && answer.toLowerCase() !== "yes") {
                     console.log(Color.yellow("Aborted."));
-                    return false;
+                    return { status: false, failed, succeeded };
                 }
             }
             catch (e) {
                 console.log(Color.yellow("Aborted."));
-                return false;
+                return { status: false, failed, succeeded };
             }
             // Save all yes insertions.
             for (const item of all_yes_insertions) {
@@ -562,16 +525,17 @@ export class Module {
             }
             await this.save_mod_cache(cache);
             console.log(`Saved ${all_yes_insertions.length} unit test hashes to the cache.`);
-            return true;
+            return { status: true, failed, succeeded };
         }
         // Show logs.
+        const prefix = debug === 0 ? " * " : "";
         if (failed === 0) {
-            console.log(`All ${failed + succeeded} unit tests ${Colors.green}${Colors.bold}passed${Colors.end} successfully.`);
+            console.log(`${prefix}All ${failed + succeeded} unit tests ${Colors.green}${Colors.bold}passed${Colors.end} successfully.`);
         }
         else {
-            console.log(`Encountered ${failed === 0 ? Colors.green : Colors.red}${Colors.bold}${failed}${Colors.end} failed unit tests.`);
+            console.log(`${prefix}Encountered ${failed === 0 ? Colors.green : Colors.red}${Colors.bold}${failed}${Colors.end} failed unit tests.`);
         }
-        return true;
+        return { status: true, failed, succeeded };
     }
 }
 /**

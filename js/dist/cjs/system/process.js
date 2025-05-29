@@ -27,8 +27,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  Proc: () => Proc,
-  default: () => stdin_default
+  Proc: () => Proc
 });
 module.exports = __toCommonJS(stdin_exports);
 var cp = __toESM(require("child_process"));
@@ -204,7 +203,6 @@ class Proc {
     return this;
   }
 }
-var stdin_default = Proc;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Proc

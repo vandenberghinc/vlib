@@ -30,4 +30,3 @@ export declare class Proc {
     join(): Promise<void>;
     kill(signal?: NodeJS.Signals): this;
 }
-export default Proc;

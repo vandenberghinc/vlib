@@ -17,11 +17,10 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  Date: () => VDate,
-  VDate: () => VDate
+  Date: () => Date
 });
 module.exports = __toCommonJS(stdin_exports);
-class VDate extends Date {
+class Date extends globalThis.Date {
   constructor() {
     if (arguments.length === 0) {
       super();
@@ -111,7 +110,7 @@ class VDate extends Date {
             break;
           // %j : day of year (001..366) .
           case "j":
-            formatted += String(Math.floor((this.getTime() - new Date(this.getFullYear(), 0, 0).getTime()) / (86400 * 1e3))).padStart(3, "0");
+            formatted += String(Math.floor((this.getTime() - new globalThis.Date(this.getFullYear(), 0, 0).getTime()) / (86400 * 1e3))).padStart(3, "0");
             ++i;
             break;
           // %k : hour (0..23).
@@ -191,13 +190,13 @@ class VDate extends Date {
             break;
           // %U : week number of year, with Sunday as first day of week (00..53).
           case "U":
-            formatted += String(Math.ceil((this.getTime() - new Date(this.getFullYear(), 0, 1).getTime()) / (86400 * 1e3) + 1) / 7).padStart(2, "0");
+            formatted += String(Math.ceil((this.getTime() - new globalThis.Date(this.getFullYear(), 0, 1).getTime()) / (86400 * 1e3) + 1) / 7).padStart(2, "0");
             ++i;
             break;
           // %V : ISO week number, with Monday as first day of week (01..53).
           case "V":
-            const jan4 = new Date(this.getFullYear(), 0, 4);
-            const startOfWeek = new Date(this.getFullYear(), 0, 1);
+            const jan4 = new globalThis.Date(this.getFullYear(), 0, 4);
+            const startOfWeek = new globalThis.Date(this.getFullYear(), 0, 1);
             const daysSinceJan4 = Math.floor((this.getTime() - jan4.getTime()) / (86400 * 1e3));
             const weekNumber = Math.ceil((daysSinceJan4 + jan4.getDay() + 1) / 7);
             formatted += String(weekNumber).padStart(2, "0");
@@ -210,7 +209,7 @@ class VDate extends Date {
             break;
           // %W : week number of year, with Monday as first day of week (00..53).
           case "W":
-            formatted += String(Math.floor((this.getTime() - new Date(this.getFullYear(), 0, 1).getTime()) / (86400 * 1e3) + 1) / 7).padStart(2, "0");
+            formatted += String(Math.floor((this.getTime() - new globalThis.Date(this.getFullYear(), 0, 1).getTime()) / (86400 * 1e3) + 1) / 7).padStart(2, "0");
             ++i;
             break;
           // %x : locale’s date representation (e.g., 12/31/99).
@@ -297,11 +296,11 @@ class VDate extends Date {
    *  @title Minute start
    *  @desc Get a new date object set to the start of the current minute
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the minute
    */
   minute_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setSeconds(0);
     date.setMilliseconds(0);
     return date;
@@ -310,11 +309,11 @@ class VDate extends Date {
    *  @title Hour start
    *  @desc Get a new date object set to the start of the current hour
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the hour
    */
   hour_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setMinutes(0, 0, 0);
     return date;
   }
@@ -322,11 +321,11 @@ class VDate extends Date {
    *  @title Day start
    *  @desc Get a new date object set to the start of the current day
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the day
    */
   day_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setHours(0, 0, 0, 0);
     return date;
   }
@@ -338,12 +337,12 @@ class VDate extends Date {
    *      @desc Whether to use Sunday (true) or Monday (false) as the start of the week
    *      @type boolean
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the week
    */
   week_start(sunday_start = true) {
     const diff = (this.getDay() + 7 - (sunday_start ? 0 : 1)) % 7;
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setDate(this.getDate() - diff);
     date.setHours(0, 0, 0, 0);
     return date;
@@ -352,11 +351,11 @@ class VDate extends Date {
    *  @title Month start
    *  @desc Get a new date object set to the start of the current month
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the month
    */
   month_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
     return date;
@@ -365,11 +364,11 @@ class VDate extends Date {
    *  @title Quarter year start
    *  @desc Get a new date object set to the start of the current quarter
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the quarter
    */
   quarter_year_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     const month = date.getMonth() + 1;
     if (month > 9) {
       date.setMonth(9 - 1, 1);
@@ -387,11 +386,11 @@ class VDate extends Date {
    *  @title Half year start
    *  @desc Get a new date object set to the start of the current half year
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the half year
    */
   half_year_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     if (date.getMonth() + 1 > 6) {
       date.setMonth(5, 1);
     } else {
@@ -404,11 +403,11 @@ class VDate extends Date {
    *  @title Year start
    *  @desc Get a new date object set to the start of the current year
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object set to the start of the year
    */
   year_start() {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
     return date;
@@ -421,11 +420,11 @@ class VDate extends Date {
    *      @desc Object containing increment values
    *      @type IncrementOptions
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object incremented by the specified amounts
    */
   increment({ seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0 }) {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     if (seconds > 0)
       date.setSeconds(date.getSeconds() + seconds);
     if (minutes > 0)
@@ -448,11 +447,11 @@ class VDate extends Date {
    *      @desc Object containing decrement values
    *      @type IncrementOptions
    *  @returns
-   *      @type VDate
+   *      @type Date
    *      @desc A new date object decremented by the specified amounts
    */
   decrement({ seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0 }) {
-    const date = new VDate(this.getTime());
+    const date = new Date(this.getTime());
     if (seconds > 0)
       date.setSeconds(date.getSeconds() - seconds);
     if (minutes > 0)
@@ -470,6 +469,5 @@ class VDate extends Date {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Date,
-  VDate
+  Date
 });

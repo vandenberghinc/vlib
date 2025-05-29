@@ -16,4 +16,3 @@ export declare const System: {
         received: string | number;
     }>;
 };
-export default System;

@@ -1,4 +1,8 @@
 /**
+ * @author Daan van den Bergh
+ * @copyright © 2025 Daan van den Bergh. All rights reserved.
+ */
+/**
  * Manages loading, caching, and syncing of environment variables.
  */
 export declare namespace Env {

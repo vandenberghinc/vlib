@@ -8,16 +8,11 @@
  *  Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
  *  And beware that `vlib` will be replaced with `vweb`.
  */
-type ColorObject = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
+type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
 /**
- * The argument options for the _colorize_obj function.
+ * The colors class serving as a container to manage ANSI color codes.
+ * We use a seperate class for this so we can also expose ansi codes as static properties.
  */
-interface ColorizeObjOptions {
-    max_depth?: number;
-    indent?: number;
-    max_length?: number;
-    json?: boolean;
-}
 export declare class Colors {
     static black: string;
     static red: string;
@@ -34,74 +29,79 @@ export declare class Colors {
     static end: string;
     static purple: string;
     static orange: string;
-    static bg: ColorObject;
-    static bright_bg: ColorObject;
+    static bg: BackgroundColors;
+    static bright_bg: BackgroundColors;
+}
+/**
+ * The color module.
+ */
+export declare namespace Color {
+    export const black: (data: any) => string;
+    export const red: (data: any) => string;
+    export const red_bold: (data: any) => string;
+    export const green: (data: any) => string;
+    export const green_bold: (data: any) => string;
+    export const yellow: (data: any) => string;
+    export const yellow_bold: (data: any) => string;
+    export const blue: (data: any) => string;
+    export const blue_bold: (data: any) => string;
+    export const magenta: (data: any) => string;
+    export const magenta_bold: (data: any) => string;
+    export const cyan: (data: any) => string;
+    export const cyan_bold: (data: any) => string;
+    export const light_gray: (data: any) => string;
+    export const gray: (data: any) => string;
+    export const bold: (data: any) => string;
+    export const italic: (data: any) => string;
+    export const end: (data: any) => string;
+    export const purple: (data: any) => string;
+    export const orange: (data: any) => string;
+    export const bg: {
+        black: (data: any) => string;
+        red: (data: any) => string;
+        green: (data: any) => string;
+        yellow: (data: any) => string;
+        blue: (data: any) => string;
+        magenta: (data: any) => string;
+        cyan: (data: any) => string;
+        white: (data: any) => string;
+    };
+    export const bright_bg: {
+        black: (data: any) => string;
+        red: (data: any) => string;
+        green: (data: any) => string;
+        yellow: (data: any) => string;
+        blue: (data: any) => string;
+        magenta: (data: any) => string;
+        cyan: (data: any) => string;
+        white: (data: any) => string;
+    };
     /**
      * Enable ANSI color codes by resetting all color attributes.
      */
-    static enable(): void;
+    export function enable(): void;
     /**
      * Disable ANSI color codes by clearing all color attributes.
      */
-    static disable(): void;
+    export function disable(): void;
     /**
      * Strip all ANSI color codes from a string.
      *
      * @param data - The string containing ANSI codes.
      * @returns The cleaned string without colors.
      */
-    static strip(data: string): string;
+    export function strip(data: string): string;
+    /** Colorize options for `json()` or `object()`. */
+    interface ColorizeObjOptions {
+        max_depth?: number;
+        indent?: number;
+        max_length?: number;
+        json?: boolean;
+    }
     /** Colorize a json object. */
-    static json(value: any, opts?: ColorizeObjOptions): string;
+    export function json(value: any, opts?: ColorizeObjOptions): string;
     /** Colorize an object. */
-    static object(value: any, opts?: ColorizeObjOptions): string;
-    /** Colorize a object. */
-    private static _colorize_obj;
+    export function object(value: any, opts?: ColorizeObjOptions): string;
+    export {};
 }
 export { Colors as colors };
-export declare const Color: {
-    readonly black: (data: any) => string;
-    readonly red: (data: any) => string;
-    readonly red_bold: (data: any) => string;
-    readonly green: (data: any) => string;
-    readonly green_bold: (data: any) => string;
-    readonly yellow: (data: any) => string;
-    readonly yellow_bold: (data: any) => string;
-    readonly blue: (data: any) => string;
-    readonly blue_bold: (data: any) => string;
-    readonly magenta: (data: any) => string;
-    readonly magenta_bold: (data: any) => string;
-    readonly cyan: (data: any) => string;
-    readonly light_gray: (data: any) => string;
-    readonly gray: (data: any) => string;
-    readonly bold: (data: any) => string;
-    readonly italic: (data: any) => string;
-    readonly end: (data: any) => string;
-    readonly purple: (data: any) => string;
-    readonly orange: (data: any) => string;
-    readonly strip: (data: any) => string;
-    readonly bg: {
-        readonly black: (data: any) => string;
-        readonly red: (data: any) => string;
-        readonly green: (data: any) => string;
-        readonly yellow: (data: any) => string;
-        readonly blue: (data: any) => string;
-        readonly magenta: (data: any) => string;
-        readonly cyan: (data: any) => string;
-        readonly white: (data: any) => string;
-    };
-    readonly bright_bg: {
-        readonly black: (data: any) => string;
-        readonly red: (data: any) => string;
-        readonly green: (data: any) => string;
-        readonly yellow: (data: any) => string;
-        readonly blue: (data: any) => string;
-        readonly magenta: (data: any) => string;
-        readonly cyan: (data: any) => string;
-        readonly white: (data: any) => string;
-    };
-    readonly json: (value: any, opts?: ColorizeObjOptions) => string;
-    readonly object: (value: any, opts?: ColorizeObjOptions) => string;
-};
-export { Color as color };
-export default Colors;

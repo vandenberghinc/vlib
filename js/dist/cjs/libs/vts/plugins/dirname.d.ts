@@ -2,9 +2,25 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import * as vlib from "../../../index.js";
+import { Path } from "../../../index.js";
+import { Plugin } from "./plugin.js";
 /**
- * Insert `__dirname`, `__filename`, `__ts_dirname` and `__ts_filename` variables into the source code.
- * The `__ts` variables point to the original source file, while `__dirname` and `__filename` point to the compiled file.
+ * Inserts the following variables into dist files:
+ * - `__filename`: The filename of the current file.
+ * - `__dirname`: The directory name of the current file.
+ * - `__ts_filename`: The filename of the TypeScript source file.
+ * - `__ts_dirname`: The directory name of the TypeScript source file.
+ * - `__tsconfig`: The path to the TypeScript configuration file.
+ * - `__tsconfig_dirname`: The directory name of the TypeScript configuration file.
+ *
+ * @note This plugin should not be executed for CJS
  */
-export declare function dirname_plugin(source_path: vlib.Path, dist_path: vlib.Path, tsconfig_path: string, tsconfig_dirname: string): Promise<void>;
+export declare class Dirname extends Plugin {
+    /** Set id. */
+    static id: Plugin.Id;
+    /** Create a new instance of the plugin. */
+    constructor({ pkg_json, tsconfig }: {
+        tsconfig: Path | string;
+        pkg_json?: Path | string;
+    });
+}

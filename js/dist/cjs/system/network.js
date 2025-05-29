@@ -28,7 +28,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Network: () => Network,
-  default: () => stdin_default,
   network: () => Network
 });
 module.exports = __toCommonJS(stdin_exports);
@@ -57,7 +56,6 @@ class Network {
     throw Error("Unable to retrieve the private ip.");
   }
 }
-var stdin_default = Network;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Network,

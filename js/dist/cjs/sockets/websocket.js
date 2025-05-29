@@ -27,7 +27,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  default: () => stdin_default,
   websocket: () => websocket
 });
 module.exports = __toCommonJS(stdin_exports);
@@ -513,7 +512,6 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
   }
   websocket2.Client = Client;
 })(websocket || (websocket = {}));
-var stdin_default = websocket;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   websocket

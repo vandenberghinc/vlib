@@ -4,7 +4,7 @@
  */
 
 import { Color } from "../system/colors.js";
-import { VDate } from "../global/date.js";
+import { Date } from "../global/date.js";
 
 /**
  * A CLI percentage‐based progress loader.
@@ -141,7 +141,7 @@ export class Loader {
     success(message?: string): void {
         this.stop();
         const text = message ?? this.prefix;
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write(`${prefix}${Color.green_bold("✔")} ${text}\n`);
     }
 
@@ -152,7 +152,7 @@ export class Loader {
     error(message?: string): void {
         this.stop();
         const text = message ?? this.prefix;
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write(`${prefix}${Color.green_bold("✖")} ${text}\n`);
     }
 
@@ -193,7 +193,7 @@ export class Loader {
         if (this.show_percent) parts.push(`${this.percent}%`);
         if (this.show_count)
             parts.push(`[${this.current_value}/${this.max_value}]`);
-        const prefix = !this.timestamps ? '' : `${Color.gray(new VDate().format("%d-%m-%y %H:%M:%S"))}: `;
+        const prefix = !this.timestamps ? '' : `${Color.gray(new Date().format("%d-%m-%y %H:%M:%S"))}: `;
         this.write([prefix, this.prefix, ...parts].filter(Boolean).join(" "));
     }
 

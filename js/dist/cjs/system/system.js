@@ -27,8 +27,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  System: () => System,
-  default: () => stdin_default
+  System: () => System
 });
 module.exports = __toCommonJS(stdin_exports);
 var os = __toESM(require("os"));
@@ -115,7 +114,6 @@ const System = {
     };
   }
 };
-var stdin_default = System;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   System

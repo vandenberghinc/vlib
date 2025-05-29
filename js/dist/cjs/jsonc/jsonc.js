@@ -35,12 +35,22 @@ var commentjson = __toESM(require("comment-json"));
 var import_path = require("../system/path.js");
 var JSONC;
 (function(JSONC2) {
-  function parse(file) {
-    return commentjson.parse(file, void 0, true);
+  function parse(data) {
+    return commentjson.parse(data, void 0, true);
   }
   JSONC2.parse = parse;
+  async function load(path) {
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
+    return parse(await p.load({ type: "string" }));
+  }
+  JSONC2.load = load;
+  function load_sync(path) {
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
+    return parse(p.load_sync({ type: "string" }));
+  }
+  JSONC2.load_sync = load_sync;
   async function save(path, obj) {
-    const p = new import_path.Path(path);
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
     if (!p.exists()) {
       throw new Error(`File "${path}" does not exist.`);
     }
@@ -48,10 +58,19 @@ var JSONC;
     await p.save(insert_into_file(file, obj));
   }
   JSONC2.save = save;
-  function insert_into_file(file, obj) {
-    const original_lines = file.split(/\r?\n/);
+  function save_sync(path, obj) {
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
+    if (!p.exists()) {
+      throw new Error(`File "${path}" does not exist.`);
+    }
+    const file = p.load_sync({ type: "string" });
+    p.save_sync(insert_into_file(file, obj));
+  }
+  JSONC2.save_sync = save_sync;
+  function insert_into_file(file_content, obj) {
+    const original_lines = file_content.split(/\r?\n/);
     const blank_indices = original_lines.map((line, idx) => ({ line, idx })).filter(({ line }) => line.trim() === "").map(({ idx }) => idx);
-    const ast = commentjson.parse(file, void 0, false);
+    const ast = commentjson.parse(file_content, void 0, false);
     function deep_merge(target, source) {
       for (const key of Object.keys(source)) {
         const srcVal = source[key];

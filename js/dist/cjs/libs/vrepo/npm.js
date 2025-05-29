@@ -42,7 +42,7 @@ class NPM {
   constructor({ source, version_path = void 0 }) {
     import__.Scheme.verify({
       object: arguments[0],
-      check_unknown: true,
+      strict: true,
       scheme: {
         source: "string",
         version_path: { type: "string", required: false }

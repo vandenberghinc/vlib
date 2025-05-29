@@ -19,7 +19,7 @@ export class Git {
         // Verify arguments.
         Scheme.verify({
             object: arguments[0],
-            check_unknown: true,
+            strict: true,
             scheme: {
                 source: "string",
                 username: "string",

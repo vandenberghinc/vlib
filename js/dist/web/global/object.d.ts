@@ -27,11 +27,11 @@ declare namespace ObjectUtils {
      */
     function detect_changes(x: any, y: any, include_nested?: boolean): string[] | null;
     /**
-     * Renames keys in an object.
+     * Renames keys in an object, updates the object in place.
      * @param obj The object to rename keys in.
      * @param rename An array of [oldKey, newKey] pairs.
      * @param remove An array of keys to remove from the object.
-     * @returns The modified object.
+     * @returns The modified object reference.
      */
     function rename_keys(obj: Record<string, any>, rename?: [string, string][], remove?: string[]): Record<string, any>;
     /**

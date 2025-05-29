@@ -13,4 +13,3 @@ export declare class TimeLimiter {
     });
     limit(): boolean;
 }
-export default TimeLimiter;
