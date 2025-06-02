@@ -34,8 +34,8 @@ cli.command({
     args: [
         { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the package." },
         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
-        { id: "--git", type: "string[]", required: false, description: "Push to all git or a list of specific git remotes." },
-        { id: "--ssh", type: "string[]", required: false, description: "Push to all ssh or a list of specific ssh remotes." },
+        { id: "--git", type: "string[]", def: [], description: "Push to all git or a list of specific git remotes." },
+        { id: "--ssh", type: "string[]", def: [], description: "Push to all ssh or a list of specific ssh remotes." },
         { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
         { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
         { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
@@ -74,49 +74,52 @@ cli.command({
             let ssh_remotes: RepoConfig['ssh']['remotes'] = [], git_remotes: RepoConfig['git']['remotes'] = [];
 
             // Build git remotes.
-            if (Array.isArray(git) && git.length > 0) {
-                // Add specified git remotes.
-                for (const remote of git) {
-                    const found = repo.config.git.remotes.iterate((item) => {
-                        if (item.remote === remote) {
-                            git_remotes.push(item);
-                            return true;
+            if (cli.present("--git")) {
+                if (Array.isArray(git) && git.length > 0) {
+                    // Add specified git remotes.
+                    for (const remote of git) {
+                        const found = repo.config.git.remotes.iterate((item) => {
+                            if (item.remote === remote) {
+                                git_remotes.push(item);
+                                return true;
+                            }
+                        })
+                        if (!found) {
+                            cli.throw(`Git remote "${remote}" does not exist.`);
                         }
-                    })
-                    if (!found) {
-                        cli.throw(`Git remote "${remote}" does not exist.`);
                     }
                 }
-            }
-            else if (Array.isArray(git) && git.length === 0) {
-                // Add all git remotes.
-                git_remotes = repo.config.git.remotes;
+                else if (Array.isArray(git) && git.length === 0) {
+                    // Add all git remotes.
+                    git_remotes = repo.config.git.remotes;
+                }
             }
 
             // Build ssh remotes.
-            if (Array.isArray(ssh) && ssh.length > 0) {
-                // Add specified ssh remotes.
-                for (const alias of ssh) {
-                    const found = repo.config.ssh.remotes.iterate((item) => {
-                        if (item.alias === alias) {
-                            ssh_remotes.push(item);
-                            return true;
+            if (cli.present("--ssh")) {
+                if (Array.isArray(ssh) && ssh.length > 0) {
+                    // Add specified ssh remotes.
+                    for (const alias of ssh) {
+                        const found = repo.config.ssh.remotes.iterate((item) => {
+                            if (item.alias === alias) {
+                                ssh_remotes.push(item);
+                                return true;
+                            }
+                        })
+                        if (!found) {
+                            cli.throw(`SSH remote "${alias}" does not exist.`);
                         }
-                    })
-                    if (!found) {
-                        cli.throw(`SSH remote "${alias}" does not exist.`);
                     }
                 }
-            }
-            else if (Array.isArray(ssh) && ssh.length === 0) {
-                // Add all ssh remotes.
-                ssh_remotes = repo.config.ssh.remotes;
+                else if (Array.isArray(ssh) && ssh.length === 0) {
+                    // Add all ssh remotes.
+                    ssh_remotes = repo.config.ssh.remotes;
+                }
             }
             console.log("GIT REMOTES", {git, git_remotes})
-            console.log("SSH REMOTES", {ssh, ssh_remotes})
 
             // Add all remotes when no specific remotes are defined.
-            if (git == null && ssh == null) {
+            if (!cli.present("--git") && !cli.present("--ssh")) {
                 ssh_remotes = repo.config.ssh.remotes;
                 git_remotes = repo.config.git.remotes;
             }
