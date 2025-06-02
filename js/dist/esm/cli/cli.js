@@ -858,11 +858,13 @@ export class CLI {
             debug("Running commands.");
         for (const command of this.commands) {
             if (debug.on(0))
-                debug("Running command ", command.id);
+                debug("Checking command ", and_or_str(command.id));
             const found_index = command.id instanceof And
                 ? 0
                 : this.find_index(command.id);
             if (found_index != null) {
+                if (debug.on(0))
+                    debug("Executing command ", and_or_str(command.id));
                 if (help) {
                     this.docs(command);
                     return true;
