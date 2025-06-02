@@ -112,6 +112,8 @@ cli.command({
                 // Add all ssh remotes.
                 ssh_remotes = repo.config.ssh.remotes;
             }
+            console.log("GIT REMOTES", {git, git_remotes})
+            console.log("SSH REMOTES", {ssh, ssh_remotes})
 
             // Add all remotes when no specific remotes are defined.
             if (git == null && ssh == null) {
