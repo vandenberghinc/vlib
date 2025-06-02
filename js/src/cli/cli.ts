@@ -1007,12 +1007,15 @@ export class CLI<
         let matched = false;
 
         // Check unknown args in strict mode.
+        if (debug.on(0)) debug("Starting CLI.");
         if (this.strict) {
             this._check_unknown_args();
         }
 
         // Run commands.
+        if (debug.on(0)) debug("Running commands.");
         for (const command of this.commands) {
+            if (debug.on(0)) debug("Running command ", command.id);
             const found_index = command.id instanceof And
                 ? 0
                 : this.find_index(command.id);
@@ -1025,7 +1028,7 @@ export class CLI<
         }
 
         // Show help.
-        console.log("MAtched:", matched, "Help:", help);
+        if (debug.on(0)) debug("Matched command: ", matched);
         if (!matched && help) {
             this.docs();
             return true;
