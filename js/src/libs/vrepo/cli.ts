@@ -74,7 +74,7 @@ cli.command({
             let ssh_remotes: RepoConfig['ssh']['remotes'] = [], git_remotes: RepoConfig['git']['remotes'] = [];
 
             // Build git remotes.
-            if (cli.present("--git")) {
+            if (cli.has("--git")) {
                 if (Array.isArray(git) && git.length > 0) {
                     // Add specified git remotes.
                     for (const remote of git) {
@@ -96,7 +96,7 @@ cli.command({
             }
 
             // Build ssh remotes.
-            if (cli.present("--ssh")) {
+            if (cli.has("--ssh")) {
                 if (Array.isArray(ssh) && ssh.length > 0) {
                     // Add specified ssh remotes.
                     for (const alias of ssh) {
@@ -116,10 +116,9 @@ cli.command({
                     ssh_remotes = repo.config.ssh.remotes;
                 }
             }
-            console.log("GIT REMOTES", {git, git_remotes})
 
             // Add all remotes when no specific remotes are defined.
-            if (!cli.present("--git") && !cli.present("--ssh")) {
+            if (!cli.has("--git") && !cli.has("--ssh")) {
                 ssh_remotes = repo.config.ssh.remotes;
                 git_remotes = repo.config.git.remotes;
             }

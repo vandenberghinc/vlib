@@ -388,7 +388,7 @@ export class CLI {
                         if (!arg.id) {
                             throw_error(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`);
                         }
-                        this.add_to_cmd_args(cmd_args, arg.arg_name, this.present(arg.id), cmd_args);
+                        this.add_to_cmd_args(cmd_args, arg.arg_name, this.has(arg.id), cmd_args);
                     }
                     // Get and cast.
                     else {
@@ -458,22 +458,22 @@ export class CLI {
         return index_of === -1 ? undefined : index_of;
     }
     /**
-     * Check if an argument is present.
+     * Check if the CLI has an argument index or id(s).
      * @libris
      */
-    present(id) {
+    has(id) {
         if (id instanceof Arg.Base) {
-            return this.present(id.variant === "index" ? id.index : id.id);
+            return this.has(id.variant === "index" ? id.index : id.id);
         }
         else if (typeof id === "number") {
             return id < this.argv.length;
         }
         else if (id instanceof And) {
             // should not check sequence, that is only for Arg not for Command.
-            return id.every(i => this.present(i));
+            return id.every(i => this.has(i));
         }
         else if (id instanceof Or || Array.isArray(id)) {
-            return id.some(i => this.present(i));
+            return id.some(i => this.has(i));
         }
         else {
             return this.argv_set.has(id);
@@ -845,7 +845,7 @@ export class CLI {
      * @libris
      */
     async start() {
-        const help = this.present(["-h", "--help"]);
+        const help = this.has(["-h", "--help"]);
         let matched = false;
         // Check unknown args in strict mode.
         if (this.strict) {
@@ -880,7 +880,7 @@ export class CLI {
             if (this._main.args
                 && !this._main.args.every(x => !x.required)
                 // @todo this should exclude ids that are also present in the main command args.
-                && !this._main.args.some(x => x.variant === "id" && x.id && this.present(x.id)) // ensure some of the main args are present
+                && !this._main.args.some(x => x.variant === "id" && x.id && this.has(x.id)) // ensure some of the main args are present
             ) {
                 // Ensure any of the args are found, if not then its likely not the main command.
                 this.docs();
@@ -916,7 +916,7 @@ export function get(query) {
  * @libris
  */
 export function present(id) {
-    return cli.present(id);
+    return cli.has(id);
 }
 // // ————————————————————————————————————————————————————————
 // // INTERNAL TESTS

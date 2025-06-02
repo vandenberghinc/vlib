@@ -99,10 +99,10 @@ export declare class CLI<S extends Strict = Strict> {
      */
     find_index(id: number | string | string[] | Or | And): number | undefined;
     /**
-     * Check if an argument is present.
+     * Check if the CLI has an argument index or id(s).
      * @libris
      */
-    present(id: number | string | string[] | Or | And | Arg.Base): boolean;
+    has(id: number | string | string[] | Or | And | Arg.Base): boolean;
     /**
      * {Info}
      *
