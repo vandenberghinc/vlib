@@ -867,6 +867,7 @@ export class CLI {
             }
         }
         // Show help.
+        console.log("MAtched:", matched, "Help:", help);
         if (!matched && help) {
             this.docs();
             return true;
