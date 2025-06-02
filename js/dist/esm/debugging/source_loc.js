@@ -7,6 +7,7 @@
  * @note Accessable in the frontend web library as well.
  */
 export class SourceLoc {
+    /** Attributes. */
     file = "<unknown>";
     filename = "<unknown>";
     line = "?";
@@ -15,17 +16,20 @@ export class SourceLoc {
     id = "<unknown>:?:?";
     abs_id = "<unknown>:?:?";
     adjust;
+    /** Constructor. */
     constructor(adjust = 0) {
         this.adjust = adjust;
         if (typeof Error.prepareStackTrace === "function") {
-            // ─── Node / V8 branch ─────────────────────────────────────────
+            // Node.
             this._captureWithCallSite();
         }
         else {
-            // ─── Browser / fallback branch ───────────────────────────────
+            // Browser.
             this._captureWithStackString();
         }
     }
+    // ------------------------------------------------------------------------
+    /** Helpers. */
     _captureWithCallSite() {
         // 0) set defaults
         this.file = "<unknown>";
@@ -146,6 +150,7 @@ export class SourceLoc {
         this.id = `${this.filename}${suffix}`;
         this.abs_id = `${this.file}${suffix}`;
     }
+    // ------------------------------------------------------------------------
     /** Is unknown. */
     is_unknown() {
         return this.file === "<unknown>" && this.filename === "<unknown>";

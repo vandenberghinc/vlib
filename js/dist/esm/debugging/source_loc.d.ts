@@ -7,6 +7,7 @@
  * @note Accessable in the frontend web library as well.
  */
 export declare class SourceLoc {
+    /** Attributes. */
     file: string | "<unknown>";
     filename: string | "<unknown>";
     line: number | "?";
@@ -15,7 +16,9 @@ export declare class SourceLoc {
     id: string | "<unknown>:?:?";
     abs_id: string | "<unknown>:?:?";
     private adjust;
+    /** Constructor. */
     constructor(adjust?: number);
+    /** Helpers. */
     private _captureWithCallSite;
     private _captureWithStackString;
     /** Is unknown. */

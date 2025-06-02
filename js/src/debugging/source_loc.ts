@@ -8,6 +8,8 @@
  * @note Accessable in the frontend web library as well.
  */
 export class SourceLoc {
+
+    /** Attributes. */
     public file: string | "<unknown>" = "<unknown>";
     public filename: string | "<unknown>" = "<unknown>";
     public line: number | "?" = "?";
@@ -15,21 +17,23 @@ export class SourceLoc {
     public caller: string | "<unknown>" | "<root>" | "<anonymous>" = "<unknown>";
     public id: string | "<unknown>:?:?" = "<unknown>:?:?";
     public abs_id: string | "<unknown>:?:?" = "<unknown>:?:?";
-
     private adjust: number;
 
+    /** Constructor. */
     constructor(adjust = 0) {
         this.adjust = adjust;
-
         if (typeof Error.prepareStackTrace === "function") {
-            // ─── Node / V8 branch ─────────────────────────────────────────
+            // Node.
             this._captureWithCallSite();
         } else {
-            // ─── Browser / fallback branch ───────────────────────────────
+            // Browser.
             this._captureWithStackString();
         }
     }
+    
+    // ------------------------------------------------------------------------
 
+    /** Helpers. */
     private _captureWithCallSite() {
         // 0) set defaults
         this.file = "<unknown>";
@@ -132,7 +136,6 @@ export class SourceLoc {
         //     id: this.id
         // });
     }
-
     private _captureWithStackString() {
     
         // We skip this.constructor’s own line + this.adjust frames
@@ -165,6 +168,8 @@ export class SourceLoc {
         this.id = `${this.filename}${suffix}`;
         this.abs_id = `${this.file}${suffix}`;
     }
+
+    // ------------------------------------------------------------------------
 
     /** Is unknown. */
     is_unknown() {

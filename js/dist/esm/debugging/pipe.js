@@ -328,7 +328,7 @@ export class Pipe {
                 // only log source location to console for debug messages.
                 const id = (loc.caller === "<unknown>" || loc.caller === "<root>")
                     ? loc.id
-                    : loc.filename + ":" + loc.caller;
+                    : `${loc.filename}:${loc.line}:${loc.column}:${loc.caller}`;
                 msg.push(`[${id}] `);
             }
             // trim trailing spaces.
