@@ -5,7 +5,8 @@
 /** global/ */
 export * from "./global/index.uni.js";
 /** scheme/ */
-export * from "./scheme/index.uni.js";
+export * as Scheme from "./scheme/index.m.uni.js";
+export * as scheme from "./scheme/index.m.uni.js";
 /** system/ */
 export * from "./system/index.web.js";
 /** debugging/ */

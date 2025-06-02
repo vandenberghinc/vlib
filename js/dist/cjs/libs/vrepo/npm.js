@@ -38,16 +38,18 @@ class NPM {
   config_path;
   config;
   version_path;
+  /** Constructor validator. */
+  static validator = new import__.Scheme.Validator("object", {
+    strict: true,
+    throw: true,
+    scheme: {
+      source: "string",
+      version_path: { type: "string", required: false }
+    }
+  });
   // Constructor.
   constructor({ source, version_path = void 0 }) {
-    import__.Scheme.verify({
-      object: arguments[0],
-      strict: true,
-      scheme: {
-        source: "string",
-        version_path: { type: "string", required: false }
-      }
-    });
+    NPM.validator.validate(arguments[0]);
     this.source = new import__.Path(source);
     this.config_path = this.source.join(`/package.json`);
     if (!this.config_path.exists()) {

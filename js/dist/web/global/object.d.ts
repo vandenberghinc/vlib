@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-declare namespace ObjectUtils {
+export declare namespace ObjectUtils {
     /**
      * Expands object x with properties from object y.
      * Modifies x in place and returns it.
@@ -35,22 +35,78 @@ declare namespace ObjectUtils {
      */
     function rename_keys(obj: Record<string, any>, rename?: [string, string][], remove?: string[]): Record<string, any>;
     /**
+     * Filter options.
+     * Also used by `Color`.
+     */
+    interface FilterOpts {
+        /**
+         * If true, modifies the object in place, otherwise returns a new object.
+         * Defaults to `false`.
+         */
+        update?: boolean;
+        /**
+         * If true, it handles nested objects as well.
+         * Defaults to `false`.
+         */
+        recursive?: boolean;
+    }
+    /**
+     * Filter callback type.
+     */
+    type FilterCallback = (value: any, key: string, parents?: [string, any][]) => boolean;
+    /**
+     * Filter an object by a callback.
+     */
+    function filter(obj: Record<string, any>, opts: FilterCallback | (FilterOpts & {
+        callback: FilterCallback;
+    })): Record<string, any>;
+    function filter(obj: Record<string, any>, callback: FilterCallback, opts?: FilterOpts): Record<string, any>;
+    /**
+    * Deletes keys from an object recursively, including nested objects and arrays.
+    * @param obj The object to modify.
+    * @param remove_keys An array of keys to remove.
+    * @returns The modified object.
+    */
+    function delete_recursively<T>(obj: T, remove_keys?: string[]): T;
+    /**
+     * Create a partial copy of an object with only the specified keys.
+     */
+    function partial_copy<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+    /**
      * Performs a deep copy of an object.
      * Does not support classes, only primitive objects.
      * @param obj The object to deep copy.
      * @returns A deep copy of the object.
      */
     function deep_copy<T>(obj: T): T;
+    /** Stringify options. */
+    interface StringifyOpts {
+        /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */
+        indent?: number | false | -1;
+        /** The start indent level `number` or `false` to disable indentation. */
+        start_indent?: number;
+        /** Max nested depth to show, defaults to `undefined`. */
+        max_depth?: number;
+        /** Max output length, defaults to `undefined`. */
+        max_length?: number;
+        /** Filter options for the input object. See {@link FilterOpts} for more information. */
+        filter?: FilterCallback | (FilterOpts & {
+            callback: FilterCallback;
+        });
+        /** JSON mode, defaults to `false`. */
+        json?: boolean;
+        /** Colored mode, defaults to `false`. */
+        colored?: boolean;
+        /** System attributes. */
+        _indent_str?: string;
+    }
     /**
-     * Deletes keys from an object recursively, including nested objects and arrays.
-     * @param obj The object to modify.
-     * @param remove_keys An array of keys to remove.
-     * @returns The modified object.
+     * Stringify an object or any other type.
+     * @param value The value to stringify.
+     * @param opts The options for stringification. See {@link StringifyOpts} for more information.
+     *
+     * @note That when `opts.json` is true, it still might produce an invalid JSON string since it produces a string that shows circular references as `[Circular X]` etc.
      */
-    function delete_recursively<T>(obj: T, remove_keys?: string[]): T;
-    /**
-     * Create a partial copy of an object with only the specified keys.
-     */
-    function partial_copy<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+    function stringify(value: any, opts?: StringifyOpts): string;
 }
 export { ObjectUtils as Object };

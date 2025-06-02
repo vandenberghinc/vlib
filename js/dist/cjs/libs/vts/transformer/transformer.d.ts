@@ -61,9 +61,11 @@ export declare namespace Transformer {
              */
             debug?: number | vlib.Debug;
             /**
-             * Interactive mode, defaults to false.
+             * Automatically answer yes to all interactive prompts, defaults to `false`.
+             * This should be used with caution since some plugins edit actual source files instead of dist files.
+             * By default before saving any file the user will be prompted to confirm the changes.
              */
-            interactive?: boolean;
+            yes?: boolean;
             /**
              * An in-memory record of files mapped by their path to their content.
              */
@@ -71,7 +73,7 @@ export declare namespace Transformer {
         }
     }
     /** The initialized config type. */
-    type Config = Merge<Enforce<Transformer.Opts, "interactive" | "async" | "parse_imports" | "insert_tsconfig" | "check_include" | "debug">, {
+    type Config = Merge<Enforce<Transformer.Opts, "yes" | "async" | "parse_imports" | "insert_tsconfig" | "check_include" | "debug">, {
         /** Active de debug instance. */
         debug: vlib.Debug;
         /** A shared mutex for interactive prompts, in case we run in async. */

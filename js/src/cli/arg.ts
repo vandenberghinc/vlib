@@ -3,343 +3,538 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
-import { Color, ObjectUtils } from "../index.web.js";
-import { Query } from "./query.js";
+import { ExtractFlag, IfFlag, IfFlags } from "../types/flags.js";
+import { ObjectUtils } from "../global/object.js";
+import { Color } from "../system/colors.js";
+import { value_type } from "../scheme/throw.js";
+import { Or, And, and_or_str } from "./query.js";
+import { Cast } from "./cast.js";
 
-/** Type alias for And and Or */
-type And = Query.And<string | string[] | Query.Or>;
-type Or = Query.Or<string>;
+// ------------------------------------------------------------------
+// Symbols
+
+/**
+ * A symbol to indicate no default value was used, 
+ * This way we can distinguish between `undefined` and no default value.
+ */
+export const NoDef: unique symbol = Symbol('vlib/cli/NoDef');
+export type NoDef = typeof NoDef;
+
+// ------------------------------------------------------------------
+// Argument flags.
+
+/**
+ * Strict flag, defaults to `strict`.
+ * Should only be defined on the `CLI` instance and passed down from there.
+ * 
+ * @enum {"strict"} Strict mode. When enabled some additional checks are performed. For instance either attribute `required` or `def` must be defined.
+ * @enum {"loose"} Loose mode. When passed, strict mode is disabled. This is required for some type aliases.
+ */
+export type Strict = "strict" | "loose";
+
+/** Strict utilities. */
+export namespace Strict {
+    /** Cast to its `is_strict` boolean type. */
+    export type Cast<S extends Strict> = If<S, "strict", true, false>;
+    /** Universal flag utilities after `T` is defined. */
+    type T = Strict;
+    export type Extract<F extends T> = ExtractFlag<F, T, never>;
+    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+    export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
+}
+
+/**
+ * All variants, defaults to `id`.
+ * @enum {"id"} For `id` based arguments, such as `--arg` or `-a`.
+ * @enum {"index"} For positional index arguments, such as `arg_0`, `arg_1`, etc.
+ */
+export type Variant = "id" | "index";
+export namespace Variant {
+    /** Universal flag utilities after `T` is defined. */
+    type T = Variant;
+    export type Extract<F extends T> = ExtractFlag<F, T, never>;
+    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+    export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
+} 
+
+/**
+ * The argument mode, defaults to `query`.
+ * @enum {"query"}
+ *      Query is used for search queries for the `CLI.get` method.
+ * @enum {"command"}
+ *      Command is used for the `CLI.Command.args` arguments.
+ *      This is also a query but with additional attributes.
+ */
+export type Mode = "command" | "query";
+export namespace Mode {
+    /** Universal flag utilities after `T` is defined. */
+    type T = Mode;
+    export type Extract<F extends T> = ExtractFlag<F, T, never>;
+    /** If condition - @note K may only be a single flag name. */
+    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+    export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
+} 
+
+// ------------------------------------------------------------------
+// Base argument class.
 
 /**
  * {Arg}
  * Argument options for {@link CLI.get}.
  * 
- * Serves as a base for the initialized command argument.
- * And as a query object for the CLI.get/info methods.
- * 
- * @template T The type to cast the argument to, defaults to `string`.
- * @template V The argument variant, can be "id", "index" or "main".
- * @template M The argument mode, can be "command", "option" or "query", see {@link CLI.Mode} for more info.
- * 
- * @libris
+ * @template F The argument flags.
+ * @template T Inferred casted inferred type.
+ * @template E Inferred typeof of the `enum` attribute, required for `InferArgs`.
  */
-export class Arg<
-    V extends Arg.Variant = Arg.Variant,
-    M extends Arg.Mode = Arg.Mode,
-    T extends Arg.Castable = Arg.Castable,
+export class Base<
+    const S extends Strict = Strict,
+    const M extends Mode = Mode,
+    const V extends Variant = Variant,
+    const T extends Cast.Castable = Cast.Castable,
+    const E extends readonly any[] = readonly any[],
 > {
 
+    /** The argument mode. */
+    mode: Mode.Extract<M>;
+
     /** The argument variant. */
-    variant: V;
+    variant: Variant.Extract<V>;
+
+    /** The strict mode, when `true` some additional checks are performed. */
+    strict: Strict.Cast<S>;
 
     /** The expected type, returned type will be auto casted to the mapped type. @attr */
-    type?: T;
+    type: undefined | T;
 
     /** The default value to return when not found. @attr */
-    def?: Arg.Cast<T>;
+    def: NoDef | undefined | Cast.Cast<T>;
 
     /** The id attribute for the `id` variant. @attr */
-    id!: V extends "id"
-        ? M extends "command" | "option"
-            ? Or | And
-            : string | string[] | Or | And
-        : never;
+    id: Variant.If<V, "id", Or | And>;
 
     /**
      * The index number for the `index` variant.
      * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
      * @attr
      */
-    index!: V extends "index" ? number : never;
+    index: Variant.If<V, "index", number, never>;
 
     /** When searching for this argument, exclude args found that start with a `-` prefix, so basically to ignore --arg like values. @attr */
     exclude_dash: boolean;
 
+    /** Enumerate. */
+    enum: undefined | E
+
     /**
-     * The name used as for the callback argument.
-     * 
-     * Is automatically derived from the first id of an OR operation, or the entire AND operation so we can construct a nested object tree.
+     * The name used as for the callback argument. Is auto inferred or optionally passed when flag `index` is present.
      */
-    arg_name!: M extends "query" ? never : string | Query.And
-    arg_name_str!: M extends "query" ? never : string;
-
-    /** Whether the argument is required or optional, defaults to `true`. */
-    required?: M extends "query" ? never : boolean | (() => boolean);
-
-    /** Is optional, when `required` is false or `def` is defined. */
-    optional!: M extends "query" ? never : () => boolean;
+    arg_name: Mode.If<M, "command", string>;
 
     /** Argument description. */
-    description?: M extends "query" ? never : string;
+    description: Mode.If<M, "command", undefined | string>;
 
     /** Ignore this argument. */
-    ignore?: M extends "query" ? never : boolean;
+    ignore: Mode.If<M, "command", boolean>;
+
+    /**
+     * Whether the argument is required or optional, defaults to `true`.
+     * This already resolved and has already used `opts.required` and `opts.def` etc to determine the required value.
+     */
+    required: Mode.If<M, "command", boolean>;;
 
     /** Constructor */
     constructor(
-        opts: {
-            /** exclude dash-prefixed values */
-            exclude_dash?: boolean;
-            /** explicit cast type; if omitted we treat it as undefined→string */
-            type?: T;
-            /** The default value, when the argument is not found. */
-            def?: Arg.Cast<T>;
-        }
-        /** Variant based input. */
-        & (V extends "main"
-            /** main/root command of the CLI, so no index nor id. */
-            ? { id?: never; index?: never; }
-            : V extends "id"
-                /** identifier or query */
-                ? { id: string | string[] | Or | And; index?: never; }
-                /** positional index */
-                : { id?: never; index: number }
-        )
-        /** Mode based input. */
-        & (M extends "query"
-            ? { required?: never; description?: never; ignore?: never; name?: never }
-            : {
-                /** Whether the argument is required or optional, defaults to `true`. */
-                required?: M extends "query" ? never : boolean | (() => boolean);
-                /** Argument description. */
-                description?: M extends "query" ? never : string;
-                /** Ignore this argument. */
-                ignore?: M extends "query" ? never : boolean;
-                /**
-                 * The name used as for the callback argument.
-                 * 
-                 * Is automatically derived from the first id of an OR operation, or the entire AND operation so we can construct a nested object tree.
-                 */
-                name?: M extends "query" ? never : string | Query.And
-            }
+        opts: (
+            Base.Opts<S, M, V, T, E>
+            // {
+            //     /** exclude dash-prefixed values */
+            //     exclude_dash?: boolean;
+            //     /** explicit cast type; if omitted we treat it as undefined→string */
+            //     type?: T;
+            //     /** The enumerate options. */
+            //     enum?: E;
+            //     /** The default value, when the argument is not found. */
+            //     def?: Cast.Cast<T>;
+            //     /** Whether the argument is required or optional, defaults to `true`. */
+            //     required?: boolean | (() => boolean);
+            // }
+            // /** Variant based input. */
+            // // & V extends "index" 
+            // //     /** positional index, including optional argument name */
+            // //     ? { id?: never; index: number; name?: string; }
+            // //     /** identifier or query */
+            // //     : { id: string | string[] | Or | And; index?: never; name?: never; }
+            // // )
+            // & Variant.If<V, "index",
+            //     /** positional index, including optional argument name */
+            //     { id?: never; index: number; name?: string; },
+            //     /** identifier or query */
+            //     { id: string | string[] | Or | And; index?: never; name?: never; }
+            // >
+            // /** Command & option flags. */
+            // & Mode.If<M, "command", 
+            //     {
+            //         /** Argument description. */
+            //         description?: string;
+            //         /** Ignore this argument. */
+            //         ignore?: boolean;
+            //     },
+            //     { description?: never; ignore?: never; name?: never } // also neverify `name` not sure if it works perhaps not.
+            // >
+            // /** Strict mode, ensure either `required` or `def` is defined. */
+            // & Mode.If<M, "command",
+            //     Strict.If<S, "strict",
+            //         /** Where `required` is non optional. */
+            //         | {  required: boolean | (() => boolean); def?: never; }
+            //         /** Where `def` is non optional. */
+            //         | { required?: never; def?: Cast.Cast<T>; },
+            //         {}
+            //     >,
+            //     {}
+            // >
         ),
-        variant: V | "auto",
-        mode: M,
+        // Non inferrable mode since all mode attrs are optional.
+        mode: Mode.Extract<M>,
+        // Strict mode, so we can auto infer all flags.
+        strict: Strict.Cast<S>,
     ) {
+        type This = Base<S, M, V, T, E>;
 
-        // Aliases.
-        const cmd_opt_this = mode === "option" || mode === "command" ? this as Arg<V, "command" | "option", T> : undefined;
+        // Also support direct `Arg` since this simplifies initialization types for `Command` and `CLI`.
+        // if (opts instanceof Base) {
+        //     this.variant = opts.variant;
+        //     this.mode = opts.mode;
+        //     this.strict = opts.strict;
+        //     this.type = opts.type;
+        //     this.def = opts.def;
+        //     this.id = opts.id;
+        //     this.index = opts.index;
+        //     this.exclude_dash = opts.exclude_dash;
+        //     this.enum = opts.enum;
+        //     this.arg_name = opts.arg_name;
+        //     this.description = opts.description;
+        //     this.ignore = opts.ignore;
+        //     this.required = opts.required;
+        //     return ;
+        // }
+
+        // Assign variant, mode & strict.
+        this.variant = Base.infer_variant(opts as any, true) as Variant.Extract<V>;
+        this.mode = mode;
+        this.strict = strict;
 
         // default exclude_dash to true:
         this.exclude_dash = opts.exclude_dash ?? true;
         this.type = opts.type;
-        this.def = opts.def;
+        this.def = "def" in opts ? opts.def : NoDef;
 
-        // Assign mode based attributes.
-        if (cmd_opt_this) {
-            cmd_opt_this.required = opts.required;
-            cmd_opt_this.description = opts.description;
-            cmd_opt_this.ignore = opts.ignore;
-            cmd_opt_this.optional = () => opts.def !== undefined || (
-                typeof opts.required === "function"
-                    ? opts.required() === false
-                    : opts.required === false// || arg.required === "false" || arg.required === "0" || arg.required === "no"
-            );
-        }
-
-        // Auto detect variant.
-        if (variant === "auto") {
-            if (typeof opts.index === "number") {
-                variant = "index" as V;
-            } else if (opts.id != null) {
-                variant = "id" as V;
+        // Auto infer type.
+        // Since later the types is sometimes used to check things
+        // For instance boolean types are handled differently when parsed by `CLI.run_command`.
+        // And when the type is inferred by InferArgs then it should match here.
+        // note we cant assign `enum` to `this.type`.
+        if (this.type == null) {
+            if ("def" in opts) {
+                const type = Cast.Type.parse(this.def, "string");
+                if (type == null) {
+                    throw new Error(`Invalid value type "${type}" of argument attribute "def", expected one of ${Array.from(Cast.Type.valid).join(", ")}. Argument: ${Color.object(opts)}}.`);
+                }
+                this.type = type as T;
             } else {
-                throw new Error(`Command argument ${Color.object(opts)} is missing both "id" and "index" attributes, cannot determine the variant.`);
+                this.type = "string" as T;
             }
         }
-        this.variant = variant;
-        
-        // Only assign `index` if it was in opts:
-        if ((opts as any).index !== undefined) {
-            (this as Arg<"index", M, T>).index = opts.index!;
+
+        // Assign mode based attributes.
+        if (this.mode === "command") {
+            this.description = opts.description as This["description"];
+            this.ignore = (opts.ignore ?? false) as This["ignore"];
+            opts.required ??= false;
+            this.required = (this.def === NoDef && (
+                typeof opts.required === "function"
+                    ? opts.required()
+                    : opts.required
+            )) as This["required"];
+        } else {
+            this.description = undefined as never;
+            this.ignore = false as never;
+            this.required = undefined as never;
         }
 
         // Process variant.
         switch (this.variant) {
-            case "main":
-                if (cmd_opt_this) {
-                    cmd_opt_this.arg_name = "__main__";
-                }
-                break;
             case "index":
                 if (opts.index == null) throw new Error(`Required argument attribute "index" is not defined for command argument ${Color.object(opts)}.`);
-                if (cmd_opt_this && !opts.name) {
-                    cmd_opt_this.arg_name = `arg_${opts.index}`;
+                if (opts.name) {
+                    this.arg_name = opts.name as This["arg_name"];
+                } else {
+                    this.arg_name = `arg_${opts.index}` as This["arg_name"];
                 }
+                this.index = opts.index as This["index"];
+                this.id = undefined as never;
                 break;
             case "id":
                 if (!opts.id) throw new Error(`Required argument attribute "id" is not defined for command argument ${Color.object(opts)}.`);
-                if (cmd_opt_this && !opts.name) {
-                    if (opts.id.length === 0) {
-                        throw new Error(`Invalid command argument id "${Query.to_str(opts.id)}", empty AND query.`);
-                    }
-                    if (opts.id instanceof Query.And) {
-                        if (mode === "query") {
-                            const last = opts.id[opts.id.length - 1]; // use the last child for `AND` operations.
-                            if (Array.isArray(last)) {
-                                cmd_opt_this.arg_name = last[0]; // use the first child for `OR` operations.
-                            } else {
-                                cmd_opt_this.arg_name = last;
-                            }
+                this.index = undefined as never;
+                // Assign id.
+                if (typeof opts.id === "string") {
+                    this.id = new Or(opts.id) as any;
+                } else if (opts.id instanceof Or || opts.id instanceof And) {
+                    // is any Or or And.
+                    this.id = opts.id as This["id"];
+                } else if (Array.isArray(opts.id)) {
+                    this.id = new Or(...opts.id) as any;
+                } else {
+                    // @ts-expect-error
+                    opts.id.toString();
+                    throw new Error(`Invalid command argument id "${and_or_str(opts.id)}", expected string, string[] or Or | And.`);
+                }
+
+                // Assign name.
+                if (opts.id.length === 0) {
+                    throw new Error(`Invalid command argument id "${and_or_str(opts.id)}", empty AND query.`);
+                }
+                let arg_name: string | undefined = undefined;
+                if (opts.id instanceof And) {
+                    if (mode === "query") {
+                        const last = opts.id[opts.id.length - 1]; // use the last child for `AND` operations.
+                        if (Array.isArray(last)) {
+                            arg_name = last[0]; // use the first child for `OR` operations.
                         } else {
-                            const names = opts.id.map(c => Array.isArray(c) ? c[0] : c);
-                            cmd_opt_this.arg_name = names.join(" & ");
+                            arg_name = last;
                         }
-                    }
-                    else {
-                        let child: string | any[] = opts.id
-                        while (child && typeof child !== "string") {
-                            if (child instanceof Query.And) {
-                                child = child[child.length - 1]; // use the last child for `AND` operations.
-                            } else if (Array.isArray(child)) {
-                                child = child[0]; // use the first child for `OR` operations.
-                            }
-                        }
-                        if (typeof child !== "string") {
-                            throw new Error(`Invalid command argument id "${Query.to_str(opts.id)}", could not resolve an identifier.`);
-                        }
-                        // console.log(`Resolving argument name from id "${Query.to_str(arg.id)}" to "${child}".`);
-                        let trim_start = 0, c: string | undefined;
-                        while ((c = child.charAt(trim_start)) === "-" || c === " " || c === "\t" || c === "\r" || c === "\n") {
-                            ++trim_start;
-                        }
-                        if (trim_start > 0) {
-                            child = child.slice(trim_start);
-                        }
-                        child = child.replaceAll("-", "_").trimEnd();
-                        if (typeof child !== "string" || !child) {
-                            throw new Error(`Invalid command argument id "${Query.to_str(opts.id)}", argument ended up empty after trimming.`);
-                        }
-                        cmd_opt_this.arg_name = child;
-                    }
-                    if (typeof cmd_opt_this.arg_name !== "string" || !cmd_opt_this.arg_name) {
-                        throw new Error(`Failed to resolve the argument name of command argument ${Color.object(opts)}.`);
+                    } else {
+                        const names = opts.id.map(c => Array.isArray(c) ? c[0] : c);
+                        arg_name = names.join(" & ");
                     }
                 }
+                else {
+                    let child: string | string[] | Or = opts.id
+                    
+                    while (child && typeof child !== "string") {
+                        if (child instanceof And) {
+                            child = child[child.length - 1]; // use the last child for `AND` operations.
+                        } else if (child instanceof Or || Array.isArray(child)) {
+                            child = child[0]; // use the first child for `OR` operations.
+                        }
+                    }
+                    if (typeof child !== "string") {
+                        throw new Error(`Invalid command argument id "${and_or_str(opts.id)}", could not resolve an identifier.`);
+                    }
+                    // console.log(`Resolving argument name from id "${and_or_str(arg.id)}" to "${child}".`);
+                    let trim_start = 0, c: string | undefined;
+                    while ((c = child.charAt(trim_start)) === "-" || c === " " || c === "\t" || c === "\r" || c === "\n") {
+                        ++trim_start;
+                    }
+                    if (trim_start > 0) {
+                        child = child.slice(trim_start);
+                    }
+                    child = child.replaceAll("-", "_").trimEnd();
+                    if (typeof child !== "string" || !child) {
+                        throw new Error(`Invalid command argument id "${and_or_str(opts.id)}", argument ended up empty after trimming.`);
+                    }
+                    arg_name = child;
+                }
+                if (typeof arg_name !== "string" || !arg_name) {
+                    throw new Error(`Failed to resolve the argument name of command argument ${Color.object(opts)}.`);
+                }
+                this.arg_name = arg_name as This["arg_name"];
                 break;
             default:
                 // @ts-expect-error
-                throw new Error(`Invalid command argument variant "${this.variant.toString()}". Expected "id", "main" or "index".`);
+                throw new Error(`Invalid command argument variant "${this.variant.toString()}". Expected "id" or "index".`);
         }
+    }
 
-        // Set arg name string.
-        if (mode !== "query" && this.arg_name) {
-            if (Array.isArray(this.arg_name)) {
-                (this as Arg<"id", "command">).arg_name_str = this.arg_name.join(" & ");
-            }
-            else if (typeof this.arg_name === "string") {
-                (this as Arg<"id", "command">).arg_name_str = this.arg_name;
-            }
+    /** Infer the variant type. */
+    static infer_variant(
+        obj: { id?: string | string[] | Or | And; index?: number},
+        throw_err: boolean,
+    ): undefined | Variant {
+        if (typeof obj.index === "number") {
+            return "index";
+        } else if (obj.id != null) {
+            return "id";
+        } else if (throw_err) {
+            throw new Error(`Invalid argument ${obj instanceof Base ? obj : Color.object(obj)} is missing both "id" and "index" attributes, cannot determine the variant.`);
+        }
+    }
+
+    /** Get as identifier such as id/name/main based on variant + mode. */
+    identifier(): string {
+        if (this.variant === "index") {
+            return `arg_${this.index}`;
+        } else if (this.variant === "id") {
+            return and_or_str(this.id);
+        } else {
+            // @ts-expect-error
+            throw new Error(`Invalid argument variant "${this.variant.toString()}" for identifier.`);
         }
     }
 
     /** Create a string representation of the argument identifier. */
-    toString(arg: Arg): string {
-        return `Arg(${Color.object(arg, { filter: v => "length" in v
+    toString(): string {
+        return `Arg(${Color.object({
+            variant: this.variant,
+            mode: this.mode,
+            id: and_or_str(this.id),
+            index: this.index,
+            type: this.type,
+            def: this.def,
+            required: this.required,
+        })}`;
+        return `Arg(${Color.object(this, {
+            filter: v => v && "length" in v
             ? v.length
-            : typeof v === "function"
+            : typeof v === "function" || typeof v === "boolean"
                 ? false
                 : Boolean(v)
         })}`;
     }
 }
-
-/** Argument types. */
-export namespace Arg {
+export namespace Base {
 
     /** Constructor options alias. */
     export type Opts<
-        V extends Arg.Variant = Arg.Variant,
-        M extends Arg.Mode = Arg.Mode,
-        T extends Arg.Castable = Arg.Castable,
-    > = ConstructorParameters<typeof Arg<V, M, T>>[0];
+        S extends Strict = Strict,
+        M extends Mode = Mode,
+        V extends Variant = Variant,
+        T extends Cast.Castable = Cast.Castable,
+        E extends readonly any[] = readonly any[],
+    > =
+        // ConstructorParameters<typeof Base<S, M, V, T, E>>[0];
+        {
+            /** exclude dash-prefixed values */
+            exclude_dash?: boolean;
+            /** explicit cast type; if omitted we treat it as undefined→string */
+            type?: T;
+            /** The enumerate options. */
+            enum?: E;
+            /** The default value, when the argument is not found. */
+            def?: Cast.Cast<T>;
+            /** Whether the argument is required or optional, defaults to `true`. */
+            required?: boolean | (() => boolean);
+        }
+        /** Variant based input. */
+        // & V extends "index" 
+        //     /** positional index, including optional argument name */
+        //     ? { id?: never; index: number; name?: string; }
+        //     /** identifier or query */
+        //     : { id: string | string[] | Or | And; index?: never; name?: never; }
+        // )
+        & Variant.If<V, "index",
+            /** positional index, including optional argument name */
+            { id?: never; index: number; name?: string; },
+            /** identifier or query */
+            { id: string | string[] | Or | And; index?: never; name?: never; }
+        >
+        /** Command & option flags. */
+        & Mode.If<M, "command",
+            {
+                /** Argument description. */
+                description?: string;
+                /** Ignore this argument. */
+                ignore?: boolean;
+            },
+            { description?: never; ignore?: never; name?: never } // also neverify `name` not sure if it works perhaps not.
+        >
+        /** Strict mode, ensure either `required` or `def` is defined. */
+        & Mode.If<M, "command",
+            Strict.If<S, "strict",
+                /** Where `required` is non optional. */
+                | { required: boolean | (() => boolean); def?: never; }
+                /** Where `def` is non optional. */
+                | { required?: never; def?: Cast.Cast<T>; },
+                {}
+            >,
+            {}
+        >
 
-    /** All variants. */
-    export type Variant = "id" | "index" | "main";
-
-    /**
-     * The argument mode, can be "command", "option" or "argument".
-     * @enum {"command"} command is used for the `CLI.Command.args` arguments.
-     * @enum {"option"} option is used for the `CLI.Command.options` arguments.
-     * @enum {"query"} query is used as search queries for the `CLI.get` method.
-     */
-    export type Mode = "command" | "option" | "query";
-
-    /** All supported argument types. */
-    export type Types = {
-        /** @warning Dont add `undefined` since this would clash with `CLI._cast()` detection in error vs success response. */
-
-        /** Primitive types. */
-        string: string;
-        number: number;
-        boolean: boolean;
-
-        /**
-         * Arrays.
-         * Union arrays can be created by passing an array of types, such as `["string", "number"] will become `string[] | number[]`, which can prob be casted to `(string | number)[]` with a wrapper.
-         */
-        array: string[];
-        "boolean[]": boolean[];
-        "number[]": number[];
-        "string[]": string[];
-
-        /** Object.s */
-        object: Record<string, any>;
-
-        /** Maps. */
-        "string:boolean": Map<string, boolean>;
-        "string:number": Map<string, number>;
-        "string:string": Map<string, string>;
-
-        "string:boolean|number|string": Map<string, boolean | number | string>;
-        "string:boolean|number": Map<string, boolean | number>;
-        "string:boolean|string": Map<string, boolean | string>;
-        "string:number|string": Map<string, number | string>;
-
-        "string:boolean|number|string|array": Map<string, boolean | number | string | string[]>;
-
-        "number:boolean": Map<number, number>;
-        "number:number": Map<number, number>;
-        "number:string": Map<number, string>;
-    };
-
-    /** Argument string types. */
-    export type Type = keyof Types;
-
-    /** The value type of */
-    export type Value = Types[Type];
-
-    /**
-     * The base type of castable type generics.
-     * @warning never add `undefined` etc here, do that on specific types only. 
-     */
-    export type Castable = Type | Type[];
-
-    /**
-     * Cast a type name or type names union to its corresponding value type.
-     * Also supports already casted value types as input.
-     */
-    export type Cast<T extends never | undefined | Castable | Value> =
-        [T] extends [never]
-        ? string // default is string
-        : T extends | null | undefined
-        ? string
-        : T extends Type[]
-        ? Types[T[number]]
-        : T extends Type
-        ? Types[T]
+    /** Infer `Base` from `Base.Opts` */
+    export type FromOpts<O extends Base | Opts> =
+        O extends Base ? O :
+        O extends Opts<
+            infer S extends Strict,
+            infer M extends Mode,
+            infer V extends Variant,
+            infer T extends Cast.Castable,
+            infer E extends readonly any[]
+        >
+        ? Base<S, M, V, T, E>  // note: make sure your Base’s type‐parameters line up here
         : never;
 
-
-    /** Additional initialize options for `Arg.init()`. */
-    export type InitOpts<
-        V extends Arg.Variant = Arg.Variant,
-        M extends Arg.Mode = Arg.Mode,
-        T extends Arg.Castable = Arg.Castable,
+    /** Infer `Base.Opts` from `Base` */
+    export type ToOpts<
+        B extends Opts | Base<any, any, any, any, any>
     > =
-        | Arg<V, M, T>
-        | Arg.Opts<V, M, T>
-        | And
-        | Or | string[]
-        | string;
+        B extends Opts ? B :
+        B extends Base<
+            infer S extends Strict,
+            infer M extends Mode,
+            infer V extends Variant,
+            infer T extends Cast.Castable,
+            infer E extends readonly any[]
+        >
+        ? Opts<S, M, V, T, E>
+        : never;
+
+    
+}
+
+const cmd = new Base({ id: "version" }, "command", true);
+
+// ------------------------------------------------------------------
+// Create specific argument classes.
+// This is so we dont have to define the flags every time we want to construct an argument.
+
+/**
+ * An argument of a command.
+ * Used in the array of the `CLI.Command.args` attribute.
+ */
+export class Command<
+    S extends Strict = Strict,
+    V extends Variant = Variant,
+    T extends Cast.Castable = Cast.Castable,
+    E extends readonly any[] = readonly any[],
+> extends Base<S, "command", V, T, E> {
+    constructor(
+        opts: Base.Opts<S, "command", V, T, E>,
+        strict: Strict.Cast<S>,
+    ) {
+        super(opts, "command", strict);
+    }
+}
+export namespace Command {
+    export type Opts<
+        S extends Strict = Strict,
+        V extends Variant = Variant,
+        T extends Cast.Castable = Cast.Castable,
+        E extends readonly any[] = readonly any[],
+    > = ConstructorParameters<typeof Base<S, "command", V, T, E>>[0];
+}
+
+/**
+ * The query command.
+ * Used as info query for the `CLI.info` and `CLI.get` methods.
+ */
+export class Query<
+    S extends Strict = Strict,
+    V extends Variant = Variant,
+    T extends Cast.Castable = Cast.Castable,
+    E extends readonly any[] = readonly any[],
+> extends Base<S, "query", V, T, E> {
+    constructor(
+        opts: Base.Opts<S, "query", V, T, E>,
+        strict: Strict.Cast<S>,
+    ) {
+        super(opts, "query", strict);
+    }
+}
+export namespace Query {
+    export type Opts<
+        S extends Strict = Strict,
+        V extends Variant = Variant,
+        T extends Cast.Castable = Cast.Castable,
+        E extends readonly any[] = readonly any[],
+    > = ConstructorParameters<typeof Base<S, "query", V, T, E>>[0];
 }

@@ -13,17 +13,19 @@ export class NPM {
     config_path;
     config;
     version_path;
+    /** Constructor validator. */
+    static validator = new Scheme.Validator("object", {
+        strict: true,
+        throw: true,
+        scheme: {
+            source: "string",
+            version_path: { type: "string", required: false },
+        },
+    });
     // Constructor.
     constructor({ source, version_path = undefined, }) {
         // Verify arguments.
-        Scheme.verify({
-            object: arguments[0],
-            strict: true,
-            scheme: {
-                source: "string",
-                version_path: { type: "string", required: false },
-            },
-        });
+        NPM.validator.validate(arguments[0]);
         // Parameters.
         this.source = new Path(source);
         // Config file.

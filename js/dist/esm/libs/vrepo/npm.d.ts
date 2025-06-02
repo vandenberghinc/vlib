@@ -2,12 +2,14 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path } from "../../index.js";
+import { Path, Scheme } from "../../index.js";
 export declare class NPM {
     source: Path;
     config_path: Path;
     config: any;
     version_path?: string;
+    /** Constructor validator. */
+    static validator: Scheme.Validator<object, object, "object">;
     constructor({ source, version_path, }: {
         source: string;
         version_path?: string;

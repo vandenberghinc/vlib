@@ -43,7 +43,7 @@ import { modules } from './module.js';
  * .catch(console.error);
  * ```
  */
-export async function perform({ results, module = cli.get({ id: "--module", def: undefined }), target = cli.get({ id: "--target" }), stop_on_failure = cli.present("--stop-on-failure"), stop_after = cli.get({ id: "--stop-after", def: undefined }), debug = cli.get({ id: "--debug", def: 0, type: "number" }), interactive = cli.present("--interactive"), all_yes = cli.present(["--yes", "-y"]), repeat = cli.get({ id: "--repeat", def: 0, type: "number" }), list_modules = cli.present(["--list-modules", "--list"]), no_changes = cli.present(["--no-changes", "-nc"]), refresh = cli.present("--refresh") ? true : cli.get({ id: "--refresh", def: false, type: ["string", "boolean"] }), }) {
+export async function perform({ results, module = cli.get({ id: "--module", required: false }), target = cli.get({ id: "--target" }), stop_on_failure = cli.present("--stop-on-failure"), stop_after = cli.get({ id: "--stop-after", required: false }), debug = cli.get({ id: "--debug", def: 0, type: "number" }), interactive = cli.present("--interactive"), all_yes = cli.present(["--yes", "-y"]), repeat = cli.get({ id: "--repeat", def: 0, type: "number" }), list_modules = cli.present(["--list-modules", "--list"]), no_changes = cli.present(["--no-changes", "-nc"]), refresh = cli.present("--refresh") ? true : cli.get({ id: "--refresh", def: false, type: ["string", "boolean"] }), }) {
     // List modules.
     if (list_modules) {
         if (modules.length === 0) {

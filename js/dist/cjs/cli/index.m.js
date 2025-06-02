@@ -4,8 +4,8 @@
  *
  * @warning This file should be exported as `export * as X` as indicated by the `.m` extension.
  */
-export * from "./arg.js";
-export * from "./cli.js";
-export * from "./command.js";
-export * from "./query.js";
+export { CLI, cli, get, present } from "./cli.js";
+export { And, Or, and, or } from "./query.js";
+export { Base as Arg, Base as arg } from "./arg.js";
+export { Command, Command as command } from "./command.js";
 //# sourceMappingURL=index.m.js.map

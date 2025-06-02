@@ -15,18 +15,20 @@ export class Git {
     email;
     gitignore;
     proc = new Proc();
+    /** Constructor validator. */
+    static validator = new Scheme.Validator("object", {
+        strict: true,
+        throw: true,
+        scheme: {
+            source: "string",
+            username: "string",
+            email: "string",
+            version_path: { type: "string", required: false },
+        },
+    });
     constructor({ source, username, email, version_path = undefined, }) {
         // Verify arguments.
-        Scheme.verify({
-            object: arguments[0],
-            strict: true,
-            scheme: {
-                source: "string",
-                username: "string",
-                email: "string",
-                version_path: { type: "string", required: false },
-            },
-        });
+        Git.validator.validate(arguments[0]);
         // Parameters.
         this.source = new Path(source).abs();
         this.username = username;

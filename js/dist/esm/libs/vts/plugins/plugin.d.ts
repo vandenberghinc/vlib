@@ -34,7 +34,6 @@ export declare class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
     requires_load: T extends "loaded" ? undefined : boolean;
     /**
      * Each version of the edited `data` transformation.
-     * Only stored when log level is high enough or interactive mode is enabled.
      */
     changes: string[];
     static log_level_for_changes: number;
@@ -85,9 +84,9 @@ export declare class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
      * Save the source data to the file system.
      * @note This function only saves the data when any changes were made.
      */
-    save({ plugin, interactive, }: {
+    save({ plugin, yes, /** @warning never change to `true` as default, warning docstring inside why. */ }: {
         plugin: Plugin | Plugin.Id;
-        interactive?: boolean;
+        yes?: boolean;
     }): Promise<this>;
     /**
      * Replaces characters between start and end indices with the given substring.

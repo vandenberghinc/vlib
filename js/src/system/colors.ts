@@ -10,7 +10,7 @@
  */
 
 import { json } from "stream/consumers";
-import { ObjectUtils } from "../index.web.js";
+import { ObjectUtils } from "../global/object.js";
 
 // Types for colors.
 type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
@@ -203,165 +203,14 @@ export namespace Color {
         return data.replace(/\u001b\[[0-9;]*m/g, '');
     }
 
-    // ---------------------------------------------------------
-    // Colorize functions.
-
-    /** Colorize options for `json()` or `object()`. */
-    interface ColorizeObjOptions {
-        max_depth?: number,
-        indent?: number,
-        max_length?: number,
-        json?: boolean,
-        filter?: ObjectUtils.FilterCallback | (ObjectUtils.FilterOpts & { callback: ObjectUtils.FilterCallback }),
-    }
-
-    /** Colorize a object. */
-    function _colorize_obj(
-        value: any,
-        indent_level: false | number = 0,
-        nested_depth: number,
-        opts: Omit<ColorizeObjOptions, "filter"> = {},
-        circular_cache: Set<any>
-    ): string {
-        let indent = indent_level === false ? '' : '    '.repeat(indent_level);
-        let next_indent = indent_level === false ? '' : '    '.repeat(indent_level + 1);
-        let line_break_or_space = indent_level === false ? ' ' : '\n';
-
-        // null
-        if (value === null) {
-            return Colors.gray + 'null' + Colors.end;
-        }
-
-        // minify array/obj.
-        if (
-            (Array.isArray(value) && value.length <= 3) ||
-            (typeof value === 'object' && Object.keys(value).length <= 3)
-        ) {
-            const keys = Object.keys(value);
-            let len = 0, max_len = 100;
-            for (const key of keys) {
-                len += key.length + 2; // +2 for quotes
-                if (len > max_len) {
-                    len = -1;
-                    break;
-                }
-                const t = typeof value[key];
-                if (t === 'string' || t === 'number' || t === 'boolean') {
-                    len += value[key].toString().length;
-                } else {
-                    len = -1;
-                    break;
-                }
-            }
-            if (len !== -1 && len < max_len) {
-                indent_level = false
-                indent = '';
-                next_indent = '';
-                line_break_or_space = ' ';
-            }
-        }
-
-        // array
-        if (Array.isArray(value)) {
-            if (value.length === 0) {
-                return Colors.light_gray + '[]' + Colors.end;
-            }
-            else if (opts.max_depth != null && nested_depth > opts.max_depth) {
-                return `${Colors.cyan}[Array]${Colors.end}`;
-            }
-            else if (circular_cache.has(value)) {
-                return Colors.cyan + '[Circular Array]' + Colors.end;
-            }
-            circular_cache.add(value);
-            const items = value
-                .map(v => `${next_indent}${_colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`)
-                .join(Colors.light_gray + ',' + Colors.end + line_break_or_space);
-            return [
-                Colors.light_gray + '[' + Colors.end,
-                items,
-                `${indent}${Colors.light_gray}]${Colors.end}`
-            ].join(line_break_or_space);
-        }
-
-        // object
-        if (typeof value === 'object') {
-            const keys = Object.keys(value);
-            if (keys.length === 0) {
-                return Colors.light_gray + '{}' + Colors.end;
-            }
-            else if (opts.max_depth != null && nested_depth > opts.max_depth) {
-                return `${Colors.cyan}[Object]${Colors.end}`;
-            }
-            else if (circular_cache.has(value)) {
-                return Colors.cyan + '[Circular Object]' + Colors.end;
-            }
-            circular_cache.add(value);
-            const items: string[] = []
-            let total_len = 0;
-            for (const key of keys) {
-                const colored_key = Colors.cyan + (opts.json ? JSON.stringify(key) : key) + Colors.end;
-                const colored_val = _colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
-                const item = `${next_indent}${colored_key}${Colors.light_gray}: ${Colors.end}${colored_val}`;
-                if (opts.max_length != null && item.length + total_len > opts.max_length) {
-                    if (total_len < opts.max_length) {
-                        items.push(
-                            `${indent}${item.slice(0, opts.max_length - total_len)}${Colors.end} ${Color.red_bold("... [truncated]")}`
-                        );
-                    } else {
-                        items.push(`${next_indent}${Color.red_bold("... [truncated]")}`);
-                    }
-                    break;
-                }
-                items.push(item);
-                total_len += item.length;
-            }
-            const items_str = items.join(Colors.light_gray + ',' + Colors.end + line_break_or_space)
-            const header = Colors.light_gray + '{' + Colors.end;
-            return [
-                header,
-                items_str,
-                `${indent}${Colors.light_gray}}${Colors.end}`
-            ].join(line_break_or_space);
-        }
-
-        // primitives
-        switch (typeof value) {
-            case 'string':
-                return Colors.green + JSON.stringify(value) + Colors.end;
-            case 'number':
-                return Colors.yellow + value.toString() + Colors.end;
-            case 'boolean':
-                return Colors.yellow + value.toString() + Colors.end;
-            case 'undefined':
-                return Colors.gray + 'undefined' + Colors.end;
-            case 'function':
-                return Colors.cyan + "[Function]" + Colors.end;
-            default:
-                // symbols, bigints, etc.
-                return Colors.magenta + String(value) + Colors.end;
-        }
-    }
-
     /** Colorize a json object. */
-    export function json(value: any, opts?: ColorizeObjOptions): string {
-        if (opts?.filter) {
-            value = ObjectUtils.filter(value, opts.filter);
-        }
-        opts ??= {};
-        opts.json = true;
-        const circular_cache = new Set<any>();
-        return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    export function json(value: any, opts?: ObjectUtils.StringifyOpts): string {
+        return ObjectUtils.stringify(value, {...(opts ?? {}), colored: true, json: true});
     }
 
     /** Colorize an object. */
-    export function object(value: any, opts?: ColorizeObjOptions): string {
-        if (opts?.filter) {
-            value = ObjectUtils.filter(value, opts.filter);
-        }
-        opts ??= {};
-        opts.json = true;
-        const circular_cache = new Set<any>();
-        return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    export function object(value: object, opts?: ObjectUtils.StringifyOpts): string {
+        return ObjectUtils.stringify(value, { ...(opts ?? {}), colored: true, json: false });
     }
 }
 export { Colors as colors }; // snake_case compatibility
@@ -372,3 +221,32 @@ export { Colors as colors }; // snake_case compatibility
 // const y: any = { x };
 // x.y = y;
 // console.log(Color.object(x, { max_depth: undefined, max_length: undefined }))
+
+
+
+
+// console.log("Object:", Color.json(
+//     {
+//         null: null,
+//         undefined: undefined,
+//         bool: true,
+//         num: 42,
+//         str: "Hello, World!",
+//         arr: [1, 2, 3, { nested: "value" }],
+//         obj: {
+//             key1: "value1",
+//             key2: "value2",
+//             nested: {
+//                 key3: "value3",
+//                 key4: [1, 2, 3],
+//             },
+//         },
+//         func: function () { return "I am a function"; },
+//         date: new Date(),
+//         regex: /abc/i,
+//         symbol: Symbol("mySymbol"),
+//         bigint: BigInt(12345678901234567890),
+
+//     }
+// ));
+// process.exit(1);

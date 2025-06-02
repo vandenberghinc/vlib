@@ -28,10 +28,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
+  CLI: () => CLI,
   Code: () => Code,
   Debug: () => import_index_m_uni.Debug,
   Debugging: () => Debugging,
   Logging: () => Logging,
+  Scheme: () => Scheme,
+  cli: () => cli,
   code: () => code,
   debug: () => import_index_m_uni.debug,
   debugging: () => debugging,
@@ -40,11 +43,13 @@ __export(stdin_exports, {
   logger: () => import_logger.logger,
   logging: () => logging,
   print: () => print,
+  scheme: () => scheme,
   version: () => version,
   warn: () => warn
 });
 module.exports = __toCommonJS(stdin_exports);
-__reExport(stdin_exports, require("./cli/index.js"), module.exports);
+var CLI = __toESM(require("./cli/index.m.js"));
+var cli = __toESM(require("./cli/index.m.js"));
 __reExport(stdin_exports, require("./sockets/request.js"), module.exports);
 __reExport(stdin_exports, require("./sockets/websocket.js"), module.exports);
 __reExport(stdin_exports, require("./global/index.uni.js"), module.exports);
@@ -56,7 +61,8 @@ var import_index_m_uni2 = require("./debugging/index.m.uni.js");
 var Logging = __toESM(require("./logging/index.m.js"));
 var logging = __toESM(require("./logging/index.m.js"));
 var import_logger = require("./logging/logger.js");
-__reExport(stdin_exports, require("./scheme/index.uni.js"), module.exports);
+var Scheme = __toESM(require("./scheme/index.m.uni.js"));
+var scheme = __toESM(require("./scheme/index.m.uni.js"));
 __reExport(stdin_exports, require("./jsonc/jsonc.js"), module.exports);
 __reExport(stdin_exports, require("./crypto/index.js"), module.exports);
 __reExport(stdin_exports, require("./search/index.uni.js"), module.exports);
@@ -74,10 +80,13 @@ const {
 const version = "1.5.38";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CLI,
   Code,
   Debug,
   Debugging,
   Logging,
+  Scheme,
+  cli,
   code,
   debug,
   debugging,
@@ -86,14 +95,13 @@ const version = "1.5.38";
   logger,
   logging,
   print,
+  scheme,
   version,
   warn,
-  ...require("./cli/index.js"),
   ...require("./sockets/request.js"),
   ...require("./sockets/websocket.js"),
   ...require("./global/index.uni.js"),
   ...require("./system/index.js"),
-  ...require("./scheme/index.uni.js"),
   ...require("./jsonc/jsonc.js"),
   ...require("./crypto/index.js"),
   ...require("./search/index.uni.js"),

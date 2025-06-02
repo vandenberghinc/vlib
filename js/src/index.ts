@@ -8,7 +8,8 @@ export type * as Types from "./types/index.m.d.ts"
 export type * as types from "./types/index.m.d.ts"
 
 /** cli/ */
-export * from "./cli/index.js"
+export * as CLI from "./cli/index.m.js"
+export * as cli from "./cli/index.m.js"
 
 /** sockets/ */
 export * from "./sockets/request.js"
@@ -35,7 +36,8 @@ export { logger }
 export const { log, /*debug,*/ warn, error } = logger;
 
 /** scheme/ */
-export * from "./scheme/index.uni.js"
+export * as Scheme from "./scheme/index.m.uni.js"
+export * as scheme from "./scheme/index.m.uni.js"
 
 /** jsonc/ */
 export * from "./jsonc/jsonc.js"

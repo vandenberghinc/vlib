@@ -64,7 +64,6 @@ export class Source {
     requires_load;
     /**
      * Each version of the edited `data` transformation.
-     * Only stored when log level is high enough or interactive mode is enabled.
      */
     changes = [];
     static log_level_for_changes = 1;
@@ -150,9 +149,6 @@ export class Source {
             return this.warn(plugin, `No changes made in source data, but marked as changed.`);
         }
         this.changes.push(old.data);
-        if (this.config.interactive) {
-            return;
-        }
         if (this.debug.on(Source.log_level_for_changes)) {
             compute_diff({
                 new: this.data,
@@ -180,10 +176,16 @@ export class Source {
      * Save the source data to the file system.
      * @note This function only saves the data when any changes were made.
      */
-    async save({ plugin, interactive = false, }) {
+    async save({ plugin, yes = false, /** @warning never change to `true` as default, warning docstring inside why. */ }) {
         if (this.data && this.changed) {
-            // Interactive mode, we will show the diff and ask for confirmation.
-            if (interactive) {
+            /**
+             * Interactive mode, we will show the diff and ask for confirmation.
+             *
+             * @warning ENSURE we always check for user permission in non yes mode.
+             *          This because some plugins like `Header` edit source files.
+             *          So we need to ensure the user is aware of the changes.
+             */
+            if (yes) {
                 // Acquire lock and ensure it's always released
                 await this.interactive_mutex.lock();
                 try {

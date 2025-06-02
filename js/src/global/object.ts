@@ -3,6 +3,8 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
+import { Color, Colors } from "../system/colors.js";
+
 export namespace ObjectUtils {
     /**
      * Expands object x with properties from object y.
@@ -116,6 +118,9 @@ export namespace ObjectUtils {
         opts: undefined | FilterOpts,
         _parents: [string, any][]
     ): Record<string, any> {
+        if (obj == null) {
+            throw new TypeError("ObjectUtils.filter: The object to filter must not be null or undefined.");
+        }
         const added: Record<string, any> = {};
         const keys = Object.keys(obj);
         for (const key in keys) {
@@ -126,7 +131,24 @@ export namespace ObjectUtils {
                 continue;
             }
             let v = obj[key];
-            if (opts?.recursive && typeof v === 'object' && v !== null) {
+            if (Array.isArray(v)) {
+                const nested_parents: [string, any][] = [..._parents, [key, obj[key]]];
+                for (let i = 0; i < v.length; i++) {
+                    if (typeof v[i] === 'object' && v[i] !== null) {
+                        v[i] = filter_helper(
+                            v[i],
+                            callback,
+                            opts,
+                            [...nested_parents, [i.toString(), v[i]]],
+                        );
+                    }
+                }
+            }
+            else if (
+                opts?.recursive
+                && typeof v === 'object'
+                && v !== null
+            ) {
                 v = filter_helper(
                     v,
                     callback,
@@ -271,6 +293,273 @@ export namespace ObjectUtils {
         } else {
             return obj;
         }
+    }
+
+
+    // ---------------------------------------------------------
+    // Stringify functions.
+
+    /** Stringify options. */
+    export interface StringifyOpts {
+        /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */
+        indent?: number | false | -1;
+        /** The start indent level `number` or `false` to disable indentation. */
+        start_indent?: number,
+        /** Max nested depth to show, defaults to `undefined`. */
+        max_depth?: number,
+        /** Max output length, defaults to `undefined`. */
+        max_length?: number,
+        /** Filter options for the input object. See {@link FilterOpts} for more information. */
+        filter?: FilterCallback | (FilterOpts & { callback: FilterCallback }),
+        /** JSON mode, defaults to `false`. */
+        json?: boolean,
+        /** Colored mode, defaults to `false`. */
+        colored?: boolean,
+        /** System attributes. */
+        _indent_str?: string;
+    }
+
+    /** Helper to stringify any input value. */
+    function _stringify_helper(
+        value: any,
+        indent_level: false | number, // -1 is not supported, that should be converted by stringify().
+        nested_depth: number,
+        opts: Omit<StringifyOpts, "filter">, // attribute `_indent_str` should be assigned by stringify().
+        circular_cache: Set<any>
+    ): string {
+        /**
+         * @note dont use a color map instead of ternary expressions for colors, ternary has better performance because no key lookup.
+         */
+
+        // Indentation vars.
+        let indent = indent_level === false ? '' : opts._indent_str?.repeat(indent_level) ?? "";
+        let next_indent = indent_level === false ? '' : opts._indent_str?.repeat(indent_level + 1) ?? "";
+        let line_break_or_space = indent_level === false ? ' ' : '\n';
+        
+        // null
+        if (value === null || (opts.json && value === undefined)) {
+            return opts.colored ? `${Colors.gray}null${Colors.end}` : "null";
+        }
+
+        // Undefined.
+        if (value === undefined) {
+            return opts.colored ? `${Colors.gray}undefined${Colors.end}` : "undefined";
+        }
+
+        // Date
+        if (value instanceof Date) {
+            return opts.colored ? `${Colors.magenta}Date(${value.toLocaleDateString()})${Colors.end}` : `Date(${value.toLocaleDateString()})`;
+        }
+
+        // minify primitive array/obj.
+        const is_raw_array = Array.isArray(value) && Object.getPrototypeOf(value) === Array.prototype;
+        let proto;
+        const is_raw_obj = value != null && typeof value === 'object'
+            && (
+                (proto = Object.getPrototypeOf(value)) === Object.prototype
+                || proto === null
+            )
+        if (
+            (is_raw_array && value.length <= 3) ||
+            (typeof value === 'object' && Object.keys(value).length <= 3)
+        ) {
+            const keys = Object.keys(value);
+            let len = 0, max_len = 100;
+            for (const key of keys) {
+                len += key.length + 2; // +2 for quotes
+                if (len > max_len) {
+                    len = -1; // dont minify.
+                    break;
+                }
+                const t = typeof value[key];
+                if (t === 'string') {
+                    len += value[key].length;
+                } else if (t === 'number' || t === 'boolean') {
+                    len += value[key].toString().length;
+                } else {
+                    len = -1; // dont minify.
+                    break;
+                }
+            }
+            if (len !== -1 && len < max_len) {
+                indent_level = false
+                indent = '';
+                next_indent = '';
+                line_break_or_space = ' ';
+            }
+        }
+
+        // raw array
+        if (is_raw_array) {
+            if (value.length === 0) {
+                return opts.colored ? Colors.light_gray + '[]' + Colors.end : "[]";
+            }
+            else if (opts.max_depth != null && nested_depth > opts.max_depth) {
+                return opts.colored
+                    ? `${Colors.cyan}[Array]${Colors.end}`
+                    : `[Array]`;
+            }
+            else if (circular_cache.has(value)) {
+                return opts.colored
+                    ? `${Colors.cyan}[Circular Array]${Colors.end}`
+                    : `[Circular Array]`;
+            }
+            circular_cache.add(value);
+            const items = value
+                .map(v => `${next_indent}${_stringify_helper(
+                    v,
+                    indent_level === false ? indent_level : indent_level + 1,
+                    nested_depth + 1,
+                    opts,
+                    circular_cache,
+                )}`)
+                .join(opts.colored
+                    ? Colors.light_gray + ',' + Colors.end + line_break_or_space
+                    : ',' + line_break_or_space
+                );
+            return [
+                opts.colored ? Colors.light_gray + '[' + Colors.end : "[",
+                items,
+                opts.colored ? `${indent}${Colors.light_gray}]${Colors.end}` : `${indent}]`
+            ].join(line_break_or_space);
+        }
+
+        // raw object
+        if (is_raw_obj) {
+            const keys = Object.keys(value);
+            if (keys.length === 0) {
+                return opts.colored ? `${Colors.light_gray}{}${Colors.end}`: "{}";
+            }
+            else if (opts.max_depth != null && nested_depth > opts.max_depth) {
+                return opts.colored ? `${Colors.cyan}[Object]${Colors.end}` : "[Object]";
+            }
+            else if (circular_cache.has(value)) {
+                return opts.colored ? `${Colors.cyan}[Circular Object]${Colors.end}` : "[Circular Object]";
+            }
+            circular_cache.add(value);
+            const items: string[] = []
+            let total_len = 0;
+            for (const key of keys) {
+                const formatted_key = opts.json || !/^[\w]+$/.test(key) ? JSON.stringify(key) : key;
+                const colored_key = opts.colored
+                    ? `${Colors.cyan}${formatted_key}${Colors.end}`
+                    : `${formatted_key}`;
+                const colored_val = _stringify_helper(
+                    value[key],
+                    indent_level === false ? indent_level : indent_level + 1,
+                    nested_depth + 1,
+                    opts,
+                    circular_cache,
+                );
+                const item = `${next_indent}${colored_key}${
+                    opts.colored ? Colors.light_gray : ""
+                }: ${
+                    opts.colored ? Colors.end : ""
+                }${colored_val}`;
+                if (opts.max_length != null && item.length + total_len > opts.max_length) {
+                    if (total_len < opts.max_length) {
+                        items.push(
+                            `${indent}${item.slice(0, opts.max_length - total_len)}${Colors.end} ${opts.colored
+                                ? Color.red_bold("... [truncated]")
+                                : "... [truncated]"
+                            }`
+                        );
+                    } else {
+                        items.push(`${next_indent}${opts.colored
+                            ? Color.red_bold("... [truncated]")
+                            : "... [truncated"
+                        }`);
+                    }
+                    break;
+                }
+                items.push(item);
+                total_len += item.length;
+            }
+            const items_str = items.join(opts.colored 
+                ? Colors.light_gray + ',' + Colors.end + line_break_or_space
+                : ',' + line_break_or_space
+            );
+            const header = opts.colored ? 
+                `${Colors.light_gray}{${Colors.end}`
+                : "{";
+            return [
+                header,
+                items_str,
+                indent + (opts.colored ?
+                    `${Colors.light_gray}}${Colors.end}`
+                    : "}"
+                )
+            ].join(line_break_or_space);
+        }
+
+        // primitives
+        switch (typeof value) {
+            case 'string':
+                return opts.colored 
+                    ? `${Colors.green}${JSON.stringify(value)}${Colors.end}`
+                    : JSON.stringify(value);
+            case 'number':
+                return opts.colored 
+                    ? `${Colors.yellow}${value.toString()}${Colors.end}`
+                    : value.toString();
+            case 'boolean':
+                return opts.colored 
+                    ? `${Colors.yellow}${value.toString()}${Colors.end}`
+                    : value.toString();
+            case 'function':
+                return opts.colored 
+                    ? `${Colors.cyan}[Function]${Colors.end}`
+                    : "[Function]";
+            default:
+                // Cast to string.
+                if (
+                    value instanceof String
+                    || value instanceof Number
+                    || value instanceof Boolean
+                    || value instanceof RegExp
+                ) {
+                    value = value.toString();
+                }
+                // symbols, bigints, etc.
+                if (opts.json) {
+                    return opts.colored
+                        ? `"${Colors.magenta}${String(value)}${Colors.end}"`
+                        : `"${String(value)}"`;    
+                }
+                return opts.colored 
+                    ? `${Colors.magenta}${String(value)}${Colors.end}`
+                    : String(value);
+        }
+    }
+
+    /**
+     * Stringify an object or any other type.
+     * @param value The value to stringify.
+     * @param opts The options for stringification. See {@link StringifyOpts} for more information.
+     * 
+     * @note That when `opts.json` is true, it still might produce an invalid JSON string since it produces a string that shows circular references as `[Circular X]` etc.
+     */
+    export function stringify(value: any, opts?: StringifyOpts): string {
+        if (opts?.filter && typeof value === 'object' && value !== null) {
+            value = filter(value, opts.filter); // also supports arrays.
+        }
+        const circular_cache = new Set<any>();
+        opts ??= {};
+        opts.indent ??= 4;
+        if (typeof opts.indent === "number" && opts.indent < 0) {
+            opts.indent = false;
+        }
+        opts.start_indent ??= 0;
+        if (opts.indent !== false) {
+            opts._indent_str ??= "    ";
+        }
+        return _stringify_helper(
+            value,
+            opts.indent === false ? false : opts.start_indent,
+            0,
+            opts,
+            circular_cache,
+        );
     }
 }
 export { ObjectUtils as Object };
@@ -482,3 +771,33 @@ export { ObjectUtils as Object };
 //     return obj;
 // }
 
+
+
+// console.log(ObjectUtils.stringify(
+//     {
+//         null: null,
+//         undefined: undefined,
+//         bool: true,
+//         num: 42,
+//         str: "Hello, World!",
+//         arr: [1, 2, 3, { nested: "value" }],
+//         obj: {
+//             key1: "value1",
+//             key2: "value2",
+//             nested: {
+//                 key3: "value3",
+//                 key4: [1, 2, 3],
+//             },
+//         },
+//         func: function () { return "I am a function"; },
+//         date: new Date(),
+//         regex: /abc/i,
+//         symbol: Symbol("mySymbol"),
+//         bigint: BigInt(12345678901234567890),
+
+//     },
+//     {
+//         colored: true,
+//     },
+// ));
+// process.exit(1);

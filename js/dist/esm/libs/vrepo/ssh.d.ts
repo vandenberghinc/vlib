@@ -3,10 +3,12 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  © 2024 - 2024 Daan van den Bergh.
  */
-import { Path, Proc } from "../../index.js";
+import { Path, Scheme, Proc } from "../../index.js";
 export declare class SSH {
     source: Path;
     proc: Proc;
+    /** Constructor validator. */
+    static validator: Scheme.Validator<object, object, "object">;
     constructor({ source, }: {
         source: string;
     });

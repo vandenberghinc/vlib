@@ -1,6 +1,8 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -14,143 +16,207 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  Command: () => Command
+  Base: () => Base,
+  Command: () => Command,
+  Main: () => Main
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../system/colors.js");
-var import_error = require("./error.js");
 var import_query = require("./query.js");
-var Command;
-(function(Command2) {
-  function init(variant, cmd2) {
-    let id = void 0;
-    if (variant === "id") {
-      if (!cmd2.id) {
-        (0, import_error.throw_error)(`Command attribute "id" is required for type command type "id".`);
-      }
-      id = cmd2.id instanceof import_query.Query.Or || cmd2.id instanceof import_query.Query.And ? cmd2.id : typeof cmd2.id === "string" ? new import_query.Query.Or(cmd2.id) : new import_query.Query.Or(...cmd2.id);
-    } else if (variant === "main") {
-      id = new import_query.Query.Or("<main>");
-    } else if (variant === "index") {
-      (0, import_error.throw_error)(`Command variant "index" is not supported, use "id" or "main" instead.`);
+var Scheme = __toESM(require("../scheme/index.m.uni.js"));
+var Arg = __toESM(require("./arg.js"));
+class Base {
+  /** The command mode. */
+  mode;
+  /** The command variant. */
+  variant;
+  /** The strict mode, when `true` some additional checks are performed. */
+  strict;
+  /** The id attribute for the `id` variant. @attr */
+  id;
+  /**
+   * The index number for the `index` variant.
+   * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
+   * @attr
+   */
+  index;
+  /**
+   * Description of the command for the CLI help.
+   */
+  description;
+  /**
+   * Command examples for the CLI help.
+   */
+  examples;
+  /**
+   * Callback function to execute when the command is invoked.
+   * The argument types should automatically be inferred from the `args` definitions.
+   * The command is bound to the Base instance, so `this` is the command instance.
+   * @note That we dont infer the actual args here, this causes issues with converting matching Base types.
+   *       Only infer on the user input callback so the user has the correct types.
+   */
+  callback;
+  /**
+   * Command arguments.
+   * This list of argument is also used to infer the callback argument types.
+   */
+  args;
+  /**
+   * Initialize a command object.
+   * @param variant - The command variant, this can be auto detected or an expected variant type.
+   * @param opts - The command options to initialize.
+   * @throws An error when the the command input is invalid.
+   */
+  constructor(opts, mode, strict) {
+    if (opts instanceof Base) {
+      this.variant = opts.variant;
+      this.mode = opts.mode;
+      this.strict = opts.strict;
+      this.id = opts.id;
+      this.index = opts.index;
+      this.description = opts.description;
+      this.examples = opts.examples;
+      this.callback = opts.callback;
+      this.args = opts.args;
+      return;
+    }
+    this.description = opts.description;
+    this.examples = opts.examples ?? [];
+    this.callback = opts.callback.bind(this);
+    this.mode = mode;
+    this.strict = strict;
+    this.variant = Arg.Base.infer_variant(opts, this.mode !== "main");
+    if (this.mode === "main") {
+      this.index = void 0;
+      this.id = void 0;
     } else {
-      (0, import_error.throw_error)(`Invalid command variant "${variant.toString()}". Expected "id" or "main".`);
-    }
-    if (!cmd2.args) {
-      cmd2.args = [];
-    }
-    return {
-      ...cmd2,
-      variant,
-      id,
-      args: cmd2.args.map((a) => init_cmd_arg("auto", a))
-    };
-  }
-  Command2.init = init;
-  function init_cmd_arg(variant, arg) {
-    if (variant === "auto") {
-      if (typeof arg.index === "number") {
-        variant = "index";
-      } else if (arg.id != null) {
-        variant = "id";
-      } else {
-        (0, import_error.throw_error)(`Command argument ${import_colors.Color.object(arg)} is missing both "id" and "index" attributes, cannot determine the variant.`);
+      switch (this.variant) {
+        case "index":
+          if (typeof opts.index !== "number") {
+            throw new Error(`Command variant "id" requires an "index" attribute to be defined, but got ${import_colors.Color.object(opts)}.`);
+          }
+          this.index = opts.index;
+          this.id = void 0;
+          break;
+        case "id":
+          if (opts.id == null) {
+            throw new Error(`Command variant "id" requires an "index" attribute to be defined, but got ${import_colors.Color.object(opts)}.`);
+          }
+          this.index = void 0;
+          this.id = opts.id instanceof import_query.And || opts.id instanceof import_query.Or ? opts.id : typeof opts.id === "string" ? new import_query.Or(opts.id) : new import_query.Or(...opts.id);
+          break;
+        default:
+          throw new Error(`Invalid command variant "${variant.toString()}". Expected "id", "index".`);
       }
     }
-    let arg_name = arg.name;
-    switch (variant) {
-      case "main":
-        arg_name = "__main__";
-        break;
-      case "index":
-        if (arg.index == null)
-          (0, import_error.throw_error)(`Required argument attribute "index" is not defined for command argument ${import_colors.Color.object(arg)}.`);
-        if (!arg_name) {
-          arg_name = `arg_${arg.index}`;
+    if (opts.args) {
+      this.args = opts.args.map((a) => a instanceof Arg.Command ? a : new Arg.Command(a, this.strict)) ?? [];
+    } else {
+      this.args = [];
+    }
+  }
+  /**
+   * Find a command by a query.
+   */
+  find(commands, query) {
+    if (typeof query === "number") {
+      if (query < 0 || query >= commands.length) {
+        throw new Error(`Command index ${query} is out of bounds, expected 0-${commands.length - 1}.`);
+      }
+      return commands[query];
+    } else if (typeof query === "string") {
+      const cmd = commands.find((c) => c.id === query || c.description === query);
+      if (!cmd) {
+        throw new Error(`Command with name "${query}" not found.`);
+      }
+      return cmd;
+    } else if (query && typeof query === "object" && "id" in query) {
+    } else {
+      throw new Error(`Invalid query type: ${typeof query}. Expected a number, string or an object with an id property, not "${query.toString()}".`);
+    }
+  }
+  /** Utility to check againt index. */
+  eq_index(query) {
+    if (this.variant !== "id") {
+      throw new Error("Cannot use 'eq_index' on a command with id variant, use 'eq_id' instead.");
+    }
+    return this.index === query;
+  }
+  /** Check if the id attribute matches a certain query. */
+  eq_id(query) {
+    if (this.variant !== "id") {
+      throw new Error("Cannot use `eq_id` on a command with index variant, use `eq_index` instead.");
+    }
+    return Base.eq_id(this.id, query);
+  }
+  /** Static helper method to check if the id attribute matches a certain query. */
+  static eq_id(id, query) {
+    if (id instanceof import_query.And) {
+      if (query instanceof import_query.And) {
+        if (id.length !== query.length) {
+          return false;
         }
-        break;
-      case "id":
-        if (!arg.id)
-          (0, import_error.throw_error)(`Required argument attribute "id" is not defined for command argument ${import_colors.Color.object(arg)}.`);
-        if (!arg_name) {
-          if (arg.id instanceof import_query.Query.And) {
-            arg_name = arg.id[arg.id.length - 1];
-            if (Array.isArray(arg_name)) {
-              arg_name = arg_name[0];
-            }
+        return id.every((x, i) => {
+          const y = query[i];
+          if (x instanceof import_query.And) {
+            return this.eq_id(x, y);
+          } else if (y instanceof import_query.Or || Array.isArray(y)) {
+            return this.eq_id(y, x);
           } else {
-            let child = arg.id;
-            while (child && typeof child !== "string") {
-              if (child instanceof import_query.Query.And) {
-                child = child[child.length - 1];
-              } else if (Array.isArray(child)) {
-                child = child[0];
-              }
-            }
-            if (typeof child !== "string") {
-              (0, import_error.throw_error)(`Invalid command argument id "${import_query.Query.to_str(arg.id)}", could not resolve an identifier.`);
-            }
-            arg_name = child;
-            let trim_start = 0, c;
-            while ((c = arg_name.charAt(trim_start)) === "-" || c === " " || c === "	" || c === "\r" || c === "\n") {
-              ++trim_start;
-            }
-            if (trim_start > 0) {
-              arg_name = arg_name.slice(trim_start);
-            }
-            arg_name = arg_name.replaceAll("-", "_").trimEnd();
-            if (typeof arg_name !== "string" || !arg_name) {
-              (0, import_error.throw_error)(`Invalid command argument id "${import_query.Query.to_str(arg.id)}", argument ended up empty after trimming.`);
-            }
+            return x === y;
           }
-          if (typeof arg_name !== "string" || !arg_name) {
-            (0, import_error.throw_error)(`Failed to resolve the argument name of command argument ${import_colors.Color.object(arg)}.`);
-          }
+        });
+      }
+      return id.every((x) => {
+        if (query instanceof import_query.Or || Array.isArray(query)) {
+          return this.eq_id(query, x);
+        } else {
+          return x === query;
         }
-        break;
-      default:
-        (0, import_error.throw_error)(`Invalid command argument variant "${variant.toString()}". Expected "id", "main" or "index".`);
-    }
-    return {
-      ...arg,
-      variant,
-      name: arg_name,
-      optional: arg.optional ?? (arg.required === false || arg.def !== void 0)
-    };
-  }
-  Command2.init_cmd_arg = init_cmd_arg;
-})(Command || (Command = {}));
-const cmd = {
-  id: "--push",
-  description: "Push the current project to one or multiple remotes.",
-  examples: {
-    "Push": "vrepo --push --git origin --ssh myserver,mybackupserver --del --forced"
-  },
-  args: [
-    { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the package." },
-    { id: "--sources", type: "string[]", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
-    { id: "--git", type: "string[]", description: "Push to all git or a list of specific git remotes.", def: [] },
-    { id: "--ssh", type: "string[]", description: "Push to all ssh or a list of specific ssh remotes.", def: [] },
-    { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
-    { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
-    { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
-    { id: ["--log-level", "-l"], type: "number", description: "The log level." }
-  ],
-  callback: async ({ source = null, sources = null, git = null, ssh = null, forced = false, del = false, ensure_push = false, log_level = 0 }) => {
-    const all_sources = [];
-    if (typeof source === "string") {
-      all_sources.push(source);
-    } else if (Array.isArray(sources)) {
-      all_sources.push(...sources);
+      });
+    } else if (id instanceof import_query.Or || Array.isArray(id)) {
+      if (query instanceof import_query.And) {
+        return id.some((x) => this.eq_id(query, x));
+      }
+      if (query instanceof import_query.Or || Array.isArray(query)) {
+        return id.some((x) => this.eq_id(query, x));
+      }
+      return id.includes(query);
     } else {
-      all_sources.push("./");
+      Scheme.throw_invalid_type({
+        name: "Command.eq_id.id",
+        type: ["And", "Or"],
+        throw: true,
+        /** @ts-expect-error */
+        value: id.toString()
+      });
     }
   }
-};
+}
+class Main extends Base {
+  constructor(opts, strict) {
+    super(opts, "main", strict);
+  }
+}
+class Command extends Base {
+  constructor(opts, strict) {
+    super(opts, "command", strict);
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Command
+  Base,
+  Command,
+  Main
 });

@@ -3,7 +3,8 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /** cli/ */
-export * from "./cli/index.js";
+export * as CLI from "./cli/index.m.js";
+export * as cli from "./cli/index.m.js";
 /** sockets/ */
 export * from "./sockets/request.js";
 export * from "./sockets/websocket.js";
@@ -24,7 +25,8 @@ import { logger } from "./logging/logger.js";
 export { logger };
 export const { log, /*debug,*/ warn, error } = logger;
 /** scheme/ */
-export * from "./scheme/index.uni.js";
+export * as Scheme from "./scheme/index.m.uni.js";
+export * as scheme from "./scheme/index.m.uni.js";
 /** jsonc/ */
 export * from "./jsonc/jsonc.js";
 /** crypto/ */
@@ -43,5 +45,5 @@ export * from "./clipboard/index.js";
  * @warning Expect an error since we should not import any of the `vts/types` files.
  *          Otherwise we would declare these attributes globally also on non vts processed files.
  *          @ts-expect-error */
-export const version = '1.5.38';
+export const version = '1.5.39';
 //# sourceMappingURL=index.js.map

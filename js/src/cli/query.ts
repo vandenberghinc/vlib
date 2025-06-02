@@ -1,40 +1,46 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ * 
+ * Query for And/Or operation.
+ * We need a compile time parsable query for the InferArgs type.
+ * 
+ * @warning
+ *      We only use native string's as T items not nested arrays.
+ *      This was the case in the past, but this
+ *      Became very confusing due to InferArgs and everything.
+ *      And due to the different Arg variant / modes + queries etc, just dont.
  */
 
-/** Query types. */
-export namespace Query {
+/**
+ * Type alias for `items: Arr` this is required for the `InferArgs` type to work correctly.
+ * @warning Dont use `readonly` here since that will break `InferArgs`.
+ */
+type Arr = string[];
 
-    /** And operation for argument identifiers. */
-    export class And<T = string | string[] | Or> extends Array<T> {
-        constructor(...args: T[]) { super(...args); }
-        match(fn: (value: T, index?: number, arr?: T[]) => boolean): boolean {
-            return this.every(fn);
-        }
-    }
-    export namespace And {
-        export const is = (x: any): x is And => x instanceof And;
-    }
+/** Or query. */
+export class Or<const A extends Arr = Arr> extends Array<string> {
+    readonly items: A;
+    constructor(...items: A) { super(...items); this.items = items; }
+    str() { and_or_str(this) }
+}
+export const or = <const A extends Arr = string[]>(...args: A) => new Or<A>(...args);
 
-    /**
-     * Or operation for argument identifiers.
-     * A nested string[] is considered as another OR operation.
-     */
-    export class Or<T = string> extends Array<T> {
-        constructor(...args: T[]) { super(...args); }
-        match(fn: (value: T, index?: number, arr?: T[]) => boolean): boolean {
-            return this.some(fn);
-        }
-    }
-    export namespace Or {
-        export const is = (x: any): x is Or => x instanceof And === false && Array.isArray(x);
-    }
+/** And query. */
+export class And<const A extends Arr = Arr> extends Array<string> {
+    readonly items: A;
+    constructor(...items: A) { super(...items);; this.items = items; }
+    str() { and_or_str(this) }
+}
+export const and = <const A extends Arr = Arr>(...args: A) => new And<A>(...args);
 
-    /** Convert a query / identifier to a string. */
-    export const to_str = (id: string | string[] | Query.Or<string> | Query.And<string | Query.Or<string> | string[]>): string => id instanceof And
-        ? id.map(to_str).join(" ")
-        : Array.isArray(id)
-            ? id.map(to_str).join(", ")
-            : id;
+/** Convert a query / identifier to a string. */
+export function and_or_str(id: string | string[] | And | Or): string {
+    return typeof id === "string"
+        ? id
+        : id instanceof And
+            ? id.join(" ")
+            : id instanceof Or || Array.isArray(id)
+                ? id.join(", ")
+                : (() => { throw new TypeError(`Invalid query identifier: ${id}`) })();
 }

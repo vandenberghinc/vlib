@@ -38,17 +38,19 @@ class Git {
   email;
   gitignore;
   proc = new import__.Proc();
+  /** Constructor validator. */
+  static validator = new import__.Scheme.Validator("object", {
+    strict: true,
+    throw: true,
+    scheme: {
+      source: "string",
+      username: "string",
+      email: "string",
+      version_path: { type: "string", required: false }
+    }
+  });
   constructor({ source, username, email, version_path = void 0 }) {
-    import__.Scheme.verify({
-      object: arguments[0],
-      strict: true,
-      scheme: {
-        source: "string",
-        username: "string",
-        email: "string",
-        version_path: { type: "string", required: false }
-      }
-    });
+    Git.validator.validate(arguments[0]);
     this.source = new import__.Path(source).abs();
     this.username = username;
     this.email = email;

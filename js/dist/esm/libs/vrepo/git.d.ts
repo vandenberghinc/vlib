@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  © 2024 - 2024 Daan van den Bergh.
  */
-import { Path, Proc } from "../../index.js";
+import { Path, Scheme, Proc } from "../../index.js";
 import { Ignore } from 'ignore';
 export declare class Git {
     source: Path;
@@ -11,6 +11,8 @@ export declare class Git {
     email: string;
     gitignore: Ignore;
     proc: Proc;
+    /** Constructor validator. */
+    static validator: Scheme.Validator<object, object, "object">;
     constructor({ source, username, email, version_path, }: {
         source: string;
         username: string;

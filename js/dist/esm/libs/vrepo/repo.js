@@ -20,22 +20,24 @@ export class Repo {
     git;
     ssh;
     npm;
+    /** Constructor validator. */
+    static validator = new Scheme.Validator("object", {
+        strict: true,
+        throw: true,
+        scheme: {
+            source: "string",
+            git: { type: "boolean", default: true },
+            ssh: { type: "boolean", default: true },
+            npm: { type: "boolean", default: true },
+        },
+    });
     // Constructor.
     constructor({ source, git = true, // git enabled.
     ssh = true, // ssh enabled.
     npm = true, // npm enabled.
      }) {
         // Verify arguments.
-        Scheme.verify({
-            object: arguments[0],
-            strict: true,
-            scheme: {
-                source: "string",
-                git: { type: "boolean", default: true },
-                ssh: { type: "boolean", default: true },
-                npm: { type: "boolean", default: true },
-            },
-        });
+        Repo.validator.validate(arguments[0]);
         // Attributes.
         this.source = new Path(source);
         this.name = this.source.full_name();
@@ -74,10 +76,10 @@ export class Repo {
             }
         }
         this.assert_init();
-        Scheme.verify({
-            object: this.config,
+        Scheme.validate(this.config, {
             error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
             strict: true,
+            throw: true,
             scheme: {
                 version_path: {
                     type: 'string',

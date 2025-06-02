@@ -22,6 +22,7 @@ __export(stdin_exports, {
   colors: () => Colors
 });
 module.exports = __toCommonJS(stdin_exports);
+var import_object = require("../global/object.js");
 class Colors {
   // ---------------------------------------------------------
   // Attributes.
@@ -184,115 +185,12 @@ var Color;
     return data.replace(/\u001b\[[0-9;]*m/g, "");
   }
   Color2.strip = strip;
-  function _colorize_obj(value, indent_level = 0, nested_depth, opts = {}, circular_cache) {
-    let indent = indent_level === false ? "" : "    ".repeat(indent_level);
-    let next_indent = indent_level === false ? "" : "    ".repeat(indent_level + 1);
-    let line_break_or_space = indent_level === false ? " " : "\n";
-    if (value === null) {
-      return Colors.gray + "null" + Colors.end;
-    }
-    if (Array.isArray(value) && value.length <= 3 || typeof value === "object" && Object.keys(value).length <= 3) {
-      const keys = Object.keys(value);
-      let len = 0, max_len = 100;
-      for (const key of keys) {
-        len += key.length + 2;
-        if (len > max_len) {
-          len = -1;
-          break;
-        }
-        const t = typeof value[key];
-        if (t === "string" || t === "number" || t === "boolean") {
-          len += value[key].toString().length;
-        } else {
-          len = -1;
-          break;
-        }
-      }
-      if (len !== -1 && len < max_len) {
-        indent_level = false;
-        indent = "";
-        next_indent = "";
-        line_break_or_space = " ";
-      }
-    }
-    if (Array.isArray(value)) {
-      if (value.length === 0) {
-        return Colors.light_gray + "[]" + Colors.end;
-      } else if (opts.max_depth != null && nested_depth > opts.max_depth) {
-        return `${Colors.cyan}[Array]${Colors.end}`;
-      } else if (circular_cache.has(value)) {
-        return Colors.cyan + "[Circular Array]" + Colors.end;
-      }
-      circular_cache.add(value);
-      const items = value.map((v) => `${next_indent}${_colorize_obj(v, indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache)}`).join(Colors.light_gray + "," + Colors.end + line_break_or_space);
-      return [
-        Colors.light_gray + "[" + Colors.end,
-        items,
-        `${indent}${Colors.light_gray}]${Colors.end}`
-      ].join(line_break_or_space);
-    }
-    if (typeof value === "object") {
-      const keys = Object.keys(value);
-      if (keys.length === 0) {
-        return Colors.light_gray + "{}" + Colors.end;
-      } else if (opts.max_depth != null && nested_depth > opts.max_depth) {
-        return `${Colors.cyan}[Object]${Colors.end}`;
-      } else if (circular_cache.has(value)) {
-        return Colors.cyan + "[Circular Object]" + Colors.end;
-      }
-      circular_cache.add(value);
-      const items = [];
-      let total_len = 0;
-      for (const key of keys) {
-        const colored_key = Colors.cyan + (opts.json ? JSON.stringify(key) : key) + Colors.end;
-        const colored_val = _colorize_obj(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
-        const item = `${next_indent}${colored_key}${Colors.light_gray}: ${Colors.end}${colored_val}`;
-        if (opts.max_length != null && item.length + total_len > opts.max_length) {
-          if (total_len < opts.max_length) {
-            items.push(`${indent}${item.slice(0, opts.max_length - total_len)}${Colors.end} ${Color2.red_bold("... [truncated]")}`);
-          } else {
-            items.push(`${next_indent}${Color2.red_bold("... [truncated]")}`);
-          }
-          break;
-        }
-        items.push(item);
-        total_len += item.length;
-      }
-      const items_str = items.join(Colors.light_gray + "," + Colors.end + line_break_or_space);
-      const header = Colors.light_gray + "{" + Colors.end;
-      return [
-        header,
-        items_str,
-        `${indent}${Colors.light_gray}}${Colors.end}`
-      ].join(line_break_or_space);
-    }
-    switch (typeof value) {
-      case "string":
-        return Colors.green + JSON.stringify(value) + Colors.end;
-      case "number":
-        return Colors.yellow + value.toString() + Colors.end;
-      case "boolean":
-        return Colors.yellow + value.toString() + Colors.end;
-      case "undefined":
-        return Colors.gray + "undefined" + Colors.end;
-      case "function":
-        return Colors.cyan + "[Function]" + Colors.end;
-      default:
-        return Colors.magenta + String(value) + Colors.end;
-    }
-  }
   function json(value, opts) {
-    opts ??= {};
-    opts.json = true;
-    const circular_cache = /* @__PURE__ */ new Set();
-    return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    return import_object.ObjectUtils.stringify(value, { ...opts ?? {}, colored: true, json: true });
   }
   Color2.json = json;
   function object(value, opts) {
-    opts ??= {};
-    opts.json = true;
-    const circular_cache = /* @__PURE__ */ new Set();
-    return _colorize_obj(value, opts?.indent ?? 0, 0, opts, circular_cache);
+    return import_object.ObjectUtils.stringify(value, { ...opts ?? {}, colored: true, json: false });
   }
   Color2.object = object;
 })(Color || (Color = {}));

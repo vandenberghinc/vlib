@@ -1,6 +1,6 @@
 {
     "name": "@vandenberghinc/vlib",
-    "version": "1.5.38",
+    "version": "1.5.39",
     "description": "vlib",
     "type": "module",
     "module": "./dist/esm/index.js",

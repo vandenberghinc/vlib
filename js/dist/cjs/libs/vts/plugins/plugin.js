@@ -78,7 +78,6 @@ class Source {
   requires_load;
   /**
    * Each version of the edited `data` transformation.
-   * Only stored when log level is high enough or interactive mode is enabled.
    */
   changes = [];
   static log_level_for_changes = 1;
@@ -156,9 +155,6 @@ class Source {
       return this.warn(plugin, `No changes made in source data, but marked as changed.`);
     }
     this.changes.push(old.data);
-    if (this.config.interactive) {
-      return;
-    }
     if (this.debug.on(Source.log_level_for_changes)) {
       (0, import_compute_diff.compute_diff)({
         new: this.data,
@@ -186,9 +182,13 @@ class Source {
    * Save the source data to the file system.
    * @note This function only saves the data when any changes were made.
    */
-  async save({ plugin, interactive = false }) {
+  async save({
+    plugin,
+    yes = false
+    /** @warning never change to `true` as default, warning docstring inside why. */
+  }) {
     if (this.data && this.changed) {
-      if (interactive) {
+      if (yes) {
         await this.interactive_mutex.lock();
         try {
           const multiple = this.changes.length > 1;

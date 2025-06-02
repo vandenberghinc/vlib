@@ -11,16 +11,18 @@ import { Path, Scheme, Proc } from "../../index.js";
 export class SSH {
     source;
     proc;
+    /** Constructor validator. */
+    static validator = new Scheme.Validator("object", {
+        strict: true,
+        throw: true,
+        scheme: {
+            source: "string",
+        },
+    });
     // Constructor.
     constructor({ source, }) {
         // Verify arguments.
-        Scheme.verify({
-            object: arguments[0],
-            strict: true,
-            scheme: {
-                source: "string",
-            },
-        });
+        SSH.validator.validate(arguments[0]);
         // Parameters.
         this.source = new Path(source);
         // Attributes.

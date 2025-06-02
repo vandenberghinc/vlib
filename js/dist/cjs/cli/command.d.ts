@@ -2,15 +2,68 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Arg as BaseArg } from "./arg.js";
-import { Query } from "./query.js";
-export interface ArgDef<T extends BaseArg.Castable = BaseArg.Type | BaseArg.Type[]> {
-    id: string;
-    type: T;
+import type { Cast } from "./cast.js";
+import { And, Or } from "./query.js";
+import type { InferArgs } from "./infer_args.js";
+import { ExtractFlag, IfFlag } from "../types/flags.js";
+import * as Arg from "./arg.js";
+import { Strict } from "./arg.js";
+/**
+ * All variants, defaults to `id`.
+ * @enum {"id"} For `id` based arguments, such as `--arg` or `-a`.
+ * @enum {"index"} For positional index arguments, such as `arg_0`, `arg_1`, etc.
+ */
+export type Variant = "id" | "index";
+export declare namespace Variant {
+    /** Universal flag utilities after `T` is defined. */
+    type T = Variant;
+    export type Extract<F extends T> = ExtractFlag<F, T, never>;
+    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+    export {};
 }
-type InferArgs<Arr extends readonly ArgDef<BaseArg.Castable>[]> = any;
-/** Command base options. */
-export type Command<V extends BaseArg.Variant = BaseArg.Variant, Args extends ArgDef[] = ArgDef[], Initialized extends boolean = boolean> = {
+/**
+ * The argument mode, defaults to `command`.
+ * @enum {"command"}
+ *      For CLI optional command such as `--help`, `--version`, etc.
+ *      And also for global options of the CLI such as `--verbose`, `--debug`, etc.
+ * @enum {"main"} For the main command, which is the root command of the CLI.
+ */
+export type Mode = "command" | "main";
+export declare namespace Mode {
+    /** Universal flag utilities after `T` is defined. */
+    type T = Mode;
+    export type Extract<F extends T> = ExtractFlag<F, T, never>;
+    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+    export {};
+}
+/**
+ * Utility type for generic `A` command arguments.
+ */
+export type Args<S extends Strict> = readonly Arg.Command.Opts<S>[];
+export declare namespace Base {
+    /** Command constructor options. */
+    type Opts<S extends Strict = Strict, M extends Mode = Mode, V extends Variant = Variant, A extends Args<S> = Args<S>> = ConstructorParameters<typeof Base<S, M, V, A>>[0];
+}
+/**
+ * The base command class of derived command classes.
+ * @note For instance when no Variant flag is set then never is used as id etc.
+ *       This is fine because we let the derived classes handle the default variant and fixed mode.
+ */
+export declare abstract class Base<const S extends Strict = Strict, const M extends Mode = Mode, const V extends Variant = Variant, const A extends Args<S> = Args<S>> {
+    /** The command mode. */
+    mode: Mode.Extract<M>;
+    /** The command variant. */
+    variant: Variant.Extract<V>;
+    /** The strict mode, when `true` some additional checks are performed. */
+    strict: Strict.Cast<S>;
+    /** The id attribute for the `id` variant. @attr */
+    id: Mode.If<M, "main", never, Variant.If<V, "id", Or | And>>;
+    /**
+     * The index number for the `index` variant.
+     * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
+     * @attr
+     */
+    index: Mode.If<M, "main", never, Variant.If<V, "index", number, never>>;
     /**
      * Description of the command for the CLI help.
      */
@@ -18,83 +71,86 @@ export type Command<V extends BaseArg.Variant = BaseArg.Variant, Args extends Ar
     /**
      * Command examples for the CLI help.
      */
-    examples?: string | string[] | {
+    examples: string | string[] | {
         [key: string]: string;
     };
     /**
      * Callback function to execute when the command is invoked.
+     * The argument types should automatically be inferred from the `args` definitions.
+     * The command is bound to the Base instance, so `this` is the command instance.
+     * @note That we dont infer the actual args here, this causes issues with converting matching Base types.
+     *       Only infer on the user input callback so the user has the correct types.
      */
-    callback: (args: InferArgs<Args>) => void | Promise<void>;
-} & (V extends "main" ? {
-    id?: never;
-} : Initialized extends true ? {
-    id: Query.And | Query.Or;
-} : {
-    id: string | string[] | Query.Or<string> | Query.And<string | Query.Or<string>>;
-}) & (Initialized extends true ? {
-    args: Command.Arg<BaseArg.Variant, Initialized>[];
-} : {
-    args?: Command.Arg<BaseArg.Variant, Initialized>[];
-});
-/** Command types. */
-export declare namespace Command {
+    callback: (this: Base<S, M, V, A>, args: Record<string, any>) => void | Promise<void>;
     /**
-     * Command types.
-     * Opts suffix are user input options, without is the initialized type.
+     * Command arguments.
+     * This list of argument is also used to infer the callback argument types.
      */
-    type Main<Args extends ArgDef[] = ArgDef[]> = Command<"main", Args, true>;
-    type MainOpts<Args extends ArgDef[] = ArgDef[]> = Command<"main", Args, false>;
-    type Id<Args extends ArgDef[] = ArgDef[]> = Command<"id", Args, true>;
-    type IdOpts<Args extends ArgDef[] = ArgDef[]> = Command<"id", Args, false>;
-    /**
-     * The command argument options.
-     */
-    type Arg<V extends BaseArg.Variant = BaseArg.Variant, Initialized extends boolean = boolean, T extends BaseArg.Castable = BaseArg.Castable, D extends BaseArg.Cast<T> = never> = BaseArg<T, D, V> & {
-        /**
-         * Whether the argument is required or optional, defaults to `true`.
-         */
-        required?: boolean;
-        /**
-         * Argument description.
-         */
-        description?: string;
-        /**
-         * Ignore this argument.
-         */
-        ignore?: boolean;
-    } & (Initialized extends true ? {
-        /** The argument variant. */
-        variant: V;
-        /**
-         * The name used as for the callback argument.
-         *
-         * Is automatically derived from the first id of an OR operation, or the entire AND operation so we can construct a nested object tree.
-         */
-        name: string | Query.And;
-        /**
-         * Is optional, when `required` is false or `def` is defined.
-         */
-        optional: boolean;
-    } : {
-        variant?: never;
-        name?: string | Query.And;
-        optional?: never;
-    });
+    args: Arg.Command<S>[];
     /**
      * Initialize a command object.
      * @param variant - The command variant, this can be auto detected or an expected variant type.
-     * @param cmd - The command to initialize.
+     * @param opts - The command options to initialize.
      * @throws An error when the the command input is invalid.
-     * @returns The initialized command.
      */
-    function init<V extends BaseArg.Variant = BaseArg.Variant, Args extends ArgDef[] = ArgDef[]>(variant: V, cmd: Command<V, Args, boolean>): Command<V, Args, true>;
+    constructor(opts: Base<S, M, V, A> | ({
+        description: Base["description"];
+        examples?: Base["examples"];
+        callback: (this: Base<S, M, V, A>, args: InferArgs<A>) => void | Promise<void>;
+        args?: A;
+    } & Mode.If<M, "main", 
+    /** main/root command of the CLI, so no index nor id. */
+    {
+        id?: never;
+        index?: never;
+    }, Variant.If<V, "id", 
+    /** identifier or query */
+    {
+        id: string | string[] | Or;
+        index?: never;
+    }, 
+    /** positional index */
+    {
+        id?: never;
+        index: number;
+    }>>), mode: Mode.Extract<M>, strict: Strict.Cast<S>);
     /**
-     * Initialize a command argument.
-     * @param variant - The command argument variant, this can be auto detected or an expected variant type.
-     * @param arg - The command argument to initialize.
-     * @throws An error when the the command argument input is invalid.
-     * @returns The initialized command argument.
+     * Find a command by a query.
      */
-    function init_cmd_arg<V extends BaseArg.Variant = BaseArg.Variant, T extends BaseArg.Castable = BaseArg.Castable, D extends BaseArg.Cast<T> = never>(variant: V | "auto", arg: Arg<V, boolean, T, D>): Arg<V, true, T, D>;
+    find(commands: readonly Arg.Command[], query: {
+        id: string | string[] | And | Or;
+    }): Arg.Command<Arg.Strict, Arg.Variant, Cast.Castable, readonly any[]> | undefined;
+    /** Utility to check againt index. */
+    eq_index(query: this["index"]): boolean;
+    /** Check if the id attribute matches a certain query. */
+    eq_id(query: any): any;
+    /** Static helper method to check if the id attribute matches a certain query. */
+    private static eq_id;
+}
+type _Variant = Variant;
+/**
+ * Main command argument, used for the main CLI command.
+ * Also ensure a default variant is set.
+ */
+export declare class Main<const S extends Strict = Strict, const V extends Variant = Variant, const A extends Args<S> = Args<S>> extends Base<S, "main", V, A> {
+    constructor(opts: Base.Opts<S, "main", V, A>, strict: Strict.Cast<S>);
+}
+export declare namespace Main {
+    type Variant = _Variant;
+    type Opts<S extends Strict = Strict, V extends Variant = Variant, A extends Args<S> = Args<S>> = ConstructorParameters<typeof Main<S, V, A>>[0];
+}
+/**
+ * A non main command.
+ * Used as CLI commands.
+ * Also ensure a default variant is set.
+ */
+export declare class Command<const S extends Strict = Strict, const V extends Variant = Variant, const A extends Args<S> = Args<S>> extends Base<S, "command", V, A> {
+    constructor(opts: Base.Opts<S, "command", V, A>, strict: Strict.Cast<S>);
+}
+export declare namespace Command {
+    type Variant = _Variant;
+    type Opts<S extends Strict = Strict, V extends Variant = Variant, A extends Args<S> = Args<S>> = ConstructorParameters<typeof Command<S, V, A>>[0];
+    /** Alias for use outside of this file. */
+    type Args<S extends Strict> = readonly Arg.Command.Opts<S>[];
 }
 export {};

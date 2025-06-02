@@ -8,6 +8,7 @@
  *  Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
  *  And beware that `vlib` will be replaced with `vweb`.
  */
+import { ObjectUtils } from "../global/object.js";
 type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
 /**
  * The colors class serving as a container to manage ANSI color codes.
@@ -36,27 +37,27 @@ export declare class Colors {
  * The color module.
  */
 export declare namespace Color {
-    export const black: (data: any) => string;
-    export const red: (data: any) => string;
-    export const red_bold: (data: any) => string;
-    export const green: (data: any) => string;
-    export const green_bold: (data: any) => string;
-    export const yellow: (data: any) => string;
-    export const yellow_bold: (data: any) => string;
-    export const blue: (data: any) => string;
-    export const blue_bold: (data: any) => string;
-    export const magenta: (data: any) => string;
-    export const magenta_bold: (data: any) => string;
-    export const cyan: (data: any) => string;
-    export const cyan_bold: (data: any) => string;
-    export const light_gray: (data: any) => string;
-    export const gray: (data: any) => string;
-    export const bold: (data: any) => string;
-    export const italic: (data: any) => string;
-    export const end: (data: any) => string;
-    export const purple: (data: any) => string;
-    export const orange: (data: any) => string;
-    export const bg: {
+    const black: (data: any) => string;
+    const red: (data: any) => string;
+    const red_bold: (data: any) => string;
+    const green: (data: any) => string;
+    const green_bold: (data: any) => string;
+    const yellow: (data: any) => string;
+    const yellow_bold: (data: any) => string;
+    const blue: (data: any) => string;
+    const blue_bold: (data: any) => string;
+    const magenta: (data: any) => string;
+    const magenta_bold: (data: any) => string;
+    const cyan: (data: any) => string;
+    const cyan_bold: (data: any) => string;
+    const light_gray: (data: any) => string;
+    const gray: (data: any) => string;
+    const bold: (data: any) => string;
+    const italic: (data: any) => string;
+    const end: (data: any) => string;
+    const purple: (data: any) => string;
+    const orange: (data: any) => string;
+    const bg: {
         black: (data: any) => string;
         red: (data: any) => string;
         green: (data: any) => string;
@@ -66,7 +67,7 @@ export declare namespace Color {
         cyan: (data: any) => string;
         white: (data: any) => string;
     };
-    export const bright_bg: {
+    const bright_bg: {
         black: (data: any) => string;
         red: (data: any) => string;
         green: (data: any) => string;
@@ -79,29 +80,21 @@ export declare namespace Color {
     /**
      * Enable ANSI color codes by resetting all color attributes.
      */
-    export function enable(): void;
+    function enable(): void;
     /**
      * Disable ANSI color codes by clearing all color attributes.
      */
-    export function disable(): void;
+    function disable(): void;
     /**
      * Strip all ANSI color codes from a string.
      *
      * @param data - The string containing ANSI codes.
      * @returns The cleaned string without colors.
      */
-    export function strip(data: string): string;
-    /** Colorize options for `json()` or `object()`. */
-    interface ColorizeObjOptions {
-        max_depth?: number;
-        indent?: number;
-        max_length?: number;
-        json?: boolean;
-    }
+    function strip(data: string): string;
     /** Colorize a json object. */
-    export function json(value: any, opts?: ColorizeObjOptions): string;
+    function json(value: any, opts?: ObjectUtils.StringifyOpts): string;
     /** Colorize an object. */
-    export function object(value: any, opts?: ColorizeObjOptions): string;
-    export {};
+    function object(value: object, opts?: ObjectUtils.StringifyOpts): string;
 }
 export { Colors as colors };

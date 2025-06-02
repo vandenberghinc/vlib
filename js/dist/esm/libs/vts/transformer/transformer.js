@@ -33,7 +33,7 @@ export class Transformer {
     constructor(config) {
         this.config = {
             ...config,
-            interactive: config.interactive ?? false,
+            yes: config.yes ?? false,
             interactive_mutex: new vlib.Mutex(),
             async: config.async ?? true,
             parse_imports: config.parse_imports ?? false,
@@ -300,7 +300,7 @@ export class Transformer {
      */
     async run() {
         // Variable aliases.
-        let { debug, interactive, } = this.config;
+        let { debug, yes, } = this.config;
         // Dump plugins.
         if (this.config.plugins && this.on(2)) {
             this.log(`Found ${this.config.plugins.length} plugin${this.config.plugins.length === 1 ? "" : "s"} to run:`);
@@ -328,7 +328,7 @@ export class Transformer {
          */
         const process_file = async (source) => {
             // Capture the changes.
-            const capture_changes = interactive || this.on(Source.log_level_for_changes);
+            const capture_changes = yes || this.on(Source.log_level_for_changes);
             // Run the plugins.
             for (const plugin of plugins) {
                 if (!plugin || !plugin.callback) {
@@ -362,7 +362,7 @@ export class Transformer {
             // Write changes.
             if (!source.in_memory) {
                 if (source?.data != null && source.changed) {
-                    await source.save({ interactive, plugin: Transformer.id });
+                    await source.save({ yes, plugin: Transformer.id });
                 }
             }
         };

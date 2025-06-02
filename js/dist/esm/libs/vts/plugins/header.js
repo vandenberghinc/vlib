@@ -3,7 +3,6 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import * as vlib from "../../../index.js";
-import { compute_diff } from "../utils/compute_diff.js";
 import { Plugin } from "./plugin.js";
 /**
  * Add/update @author and @copyright to the top of the source file.
@@ -103,7 +102,6 @@ export class Header extends Plugin {
             if (!header.endsWith("*/\n") && !header.endsWith("*/")) {
                 header += "\n */";
             }
-            const old_data = source.data;
             if (!match) {
                 source.data = header + source.data;
             }
@@ -111,31 +109,6 @@ export class Header extends Plugin {
                 source.replace_indices(header, match.index, match.index + match[0].length);
             }
             source.changed = true;
-            if (source.is_src && !this.yes) {
-                const old_changed = source.changed;
-                source.changed = true;
-                console.log("Waiting for lock...");
-                await source.interactive_mutex.lock();
-                try {
-                    const { status } = compute_diff({ old: old_data, new: source.data, log_level: 0 });
-                    if (status === "identical") {
-                        if (this.debug.on(1)) {
-                            this.error(source, "No changes are made, this should not happen.");
-                            console.log(source.data.split('\n').map(l => `     | ${l}`).join('\n'));
-                        }
-                        source.changed = old_changed;
-                        return;
-                    }
-                    if (await vlib.logging.confirm(`Updating header in ${source.path.path}. Do you with to proceed?`)) {
-                        source.data = old_data;
-                        source.changed = false;
-                        return;
-                    }
-                }
-                finally {
-                    source.interactive_mutex.unlock();
-                }
-            }
         }
     }
 }

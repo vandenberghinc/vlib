@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path } from "../../index.js";
+import { Path, Scheme } from "../../index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
@@ -41,6 +41,8 @@ export declare class Repo {
     git?: Git;
     ssh?: SSH;
     npm?: NPM;
+    /** Constructor validator. */
+    static validator: Scheme.Validator<object, object, "object">;
     constructor({ source, git, // git enabled.
     ssh, // ssh enabled.
     npm, }: {

@@ -58,7 +58,7 @@ class Transformer {
   constructor(config) {
     this.config = {
       ...config,
-      interactive: config.interactive ?? false,
+      yes: config.yes ?? false,
       interactive_mutex: new vlib.Mutex(),
       async: config.async ?? true,
       parse_imports: config.parse_imports ?? false,
@@ -291,7 +291,7 @@ ${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n"
    * Run the plugin.
    */
   async run() {
-    let { debug, interactive } = this.config;
+    let { debug, yes } = this.config;
     if (this.config.plugins && this.on(2)) {
       this.log(`Found ${this.config.plugins.length} plugin${this.config.plugins.length === 1 ? "" : "s"} to run:`);
       for (let i = 0; i < this.config.plugins.length; i++) {
@@ -310,7 +310,7 @@ ${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n"
     const plugins = this.config.plugins?.filter((p) => p && p.callback);
     const has_dist = plugins.some((p) => p.has_dist);
     const process_file = async (source) => {
-      const capture_changes = interactive || this.on(import_plugin.Source.log_level_for_changes);
+      const capture_changes = yes || this.on(import_plugin.Source.log_level_for_changes);
       for (const plugin of plugins) {
         if (!plugin || !plugin.callback) {
           continue;
@@ -340,7 +340,7 @@ ${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n"
       }
       if (!source.in_memory) {
         if (source?.data != null && source.changed) {
-          await source.save({ interactive, plugin: Transformer.id });
+          await source.save({ yes, plugin: Transformer.id });
         }
       }
     };

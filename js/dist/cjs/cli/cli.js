@@ -1,6 +1,8 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -14,20 +16,32 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
   CLI: () => CLI,
-  cli: () => cli
+  cli: () => cli,
+  get: () => get,
+  present: () => present
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_iterator = require("../code/iterator.js");
-var import_scheme = require("../scheme/scheme.js");
+var Scheme = __toESM(require("../scheme/index.m.uni.js"));
 var import_colors = require("../system/colors.js");
 var import_error = require("./error.js");
-var import_command = require("./command.js");
 var import_query = require("./query.js");
 var import_index_m_uni = require("../debugging/index.m.uni.js");
+var import_logger = require("../logging/logger.js");
+var Arg = __toESM(require("./arg.js"));
+var import_command = require("./command.js");
 Error.stackTraceLimit = 100;
 class CLI {
   /** The CLI name. */
@@ -37,9 +51,9 @@ class CLI {
   /** The CLI version. */
   version;
   /** The main command for when no specific command is detected. */
-  main;
+  _main;
   /** The list of commands. */
-  commands;
+  commands = [];
   /**
    * The list of global option arguments.
    * @todo not implemented yet.
@@ -48,11 +62,14 @@ class CLI {
   /** The notes. */
   notes;
   /** The argc start index. */
-  start_index;
-  /** The argv map. */
-  argv_map = new Set(process.argv);
+  // private start_index: number;
+  /** The argv set & map. */
+  argv;
+  argv_set;
   /** Argv info map. */
   argv_info = /* @__PURE__ */ new Map();
+  /** Whether to throw an error when an unknown command is detected, defaults to false. */
+  strict;
   /**
    * The constructor.
    * @param name The CLI name.
@@ -61,25 +78,79 @@ class CLI {
    * @param notes The CLI notes.
    * @param main The main command for when no specific command is detected.
    * @param commands The list of commands.
-   * @param start_index The argc start index, defaults to 2.
+   * @param strict Whether to throw an error when an unknown command is detected, defaults to false.
    */
-  constructor({ name = "CLI", main, commands = [], options = [], description, version = "1.0.0", notes = [], start_index = 2, _sys = false } = {}) {
+  constructor({
+    name = "CLI",
+    description,
+    version = "1.0.0",
+    argv = process.argv,
+    // default start index is 2.
+    notes = [],
+    options = [],
+    strict,
+    _sys = false
+  }) {
     this.name = name;
     this.description = description;
     this.version = version;
-    this.commands = commands.map((c) => import_command.Command.init("id", c));
-    this.main = main ? import_command.Command.init("main", main) : void 0;
-    this.options = options.map((o) => import_command.Command.init_cmd_arg("index", o));
     this.notes = notes;
-    this.start_index = start_index;
+    this.strict = strict ?? false;
+    this.options = options.map((o) => o instanceof import_command.Command ? o : new import_command.Command(o, this.strict));
+    argv = argv.slice(2);
+    this.argv = argv;
+    this.argv_set = new Set(argv);
     this._init(_sys);
   }
+  /** Check unknown arguments. */
+  _check_unknown_args() {
+    const known_id_args = /* @__PURE__ */ new Set();
+    const add_arg = (arg) => {
+      if (arg.variant === "id" && arg.id) {
+        if (arg.id instanceof import_query.Or || arg.id instanceof import_query.And) {
+          arg.id.walk((id) => known_id_args.add(id));
+        } else {
+          known_id_args.add(arg.id);
+        }
+      }
+    };
+    const add_command = (cmd) => {
+      if (cmd.id instanceof import_query.Or || cmd.id instanceof import_query.And) {
+        cmd.id.walk((id) => known_id_args.add(id));
+      } else {
+        known_id_args.add(cmd.id);
+      }
+      if (cmd.args?.length) {
+        cmd.args.walk(add_arg);
+      }
+    };
+    for (const cmd of this.commands) {
+      add_command(cmd);
+    }
+    this.commands.walk(add_command);
+    this.options.walk(add_command);
+    if (this._main) {
+      add_command(this._main);
+    }
+    for (let i = 0; i < this.argv.length; i++) {
+      const item = this.argv[i];
+      if (item.charAt(0) !== "-" || item === "--help" || item === "-h") {
+        continue;
+      }
+      if (!known_id_args.has(item)) {
+        if (this.strict) {
+          this.throw(`Unknown argument "${item}".`);
+        } else {
+          import_logger.logger.warn(`Unknown argument "${item}".`);
+        }
+      }
+    }
+  }
   /**
-   * Has command wrapper.
-   * Does not check the main command.
+   * Check if a command with an id query exists.
    */
-  _has_command(id) {
-    return this.commands.some((cmd) => cmd.id ? import_query.Query.match(cmd.id, id) : false);
+  _has_id_command(id) {
+    return this.commands.some((cmd) => cmd.variant === "id" ? cmd.eq_id(id) : false);
   }
   /**
    * Initialize the CLI.
@@ -88,40 +159,40 @@ class CLI {
    */
   _init(_sys = false) {
     if (_sys === false) {
-      if (this.version != null && !this._has_command(["--version", "-v"])) {
-        this.commands.push(import_command.Command.init("id", {
+      if (this.version != null && !this._has_id_command(["--version", "-v"])) {
+        this.command({
           id: ["--version", "-v"],
           description: "Show the CLI version.",
-          callback: () => console.log(`${this.name} v${this.version}`)
-        }));
+          callback: (args) => console.log(`${this.name} v${this.version}`)
+        });
       }
     }
   }
   /** Throw a cast single error. */
   _cast_single_error(value, type) {
-    return `Unable to cast "${value}" of type "${import_scheme.Scheme.value_type(value)}" to type "${Array.isArray(type) ? type.join(" | ") : type}".`;
+    return `Unable to cast "${value}" of type "${Scheme.value_type(value)}" to type "${Array.isArray(type) ? type.join(" | ") : type}".`;
   }
   /**
    * Cast a single type with info options.
    */
-  _cast_single(input, type) {
+  _cast_single(query, input, type) {
     let value;
     switch (type) {
       case "string":
-        return { found: true, value: input };
+        return { status: "success", value: input, query };
+      // return i;
       case "number": {
-        const value2 = import_scheme.Scheme.cast_number(input, { strict: true, preserve: true });
+        const value2 = Scheme.cast.number(input, { strict: true, preserve: true });
         if (typeof value2 === "string") {
-          return { error: this._cast_single_error(input, type) };
+          return { status: "invalid_value", error: this._cast_single_error(input, type), query };
         }
-        return { found: true, value: value2 };
+        return { status: "success", value: value2, query };
       }
       case "boolean":
-        value = import_scheme.Scheme.cast_bool(input, { preserve: true });
+        value = Scheme.cast.boolean(input, { preserve: true });
         if (typeof value === "string") {
-          return { error: this._cast_single_error(input, type) };
+          return { status: "invalid_value", error: this._cast_single_error(input, type), query };
         }
-        return { found: true, value };
       // Array.
       case "array":
       case "string[]":
@@ -131,13 +202,13 @@ class CLI {
         const value_type = type === "array" ? "string" : type.slice(0, -2);
         const value_types = value_type.split("|");
         if (value_types.length === 1 && value_types[0] === "string") {
-          return { found: true, value: out };
+          return { status: "success", value: out, query };
         } else {
-          const res = out.map((item) => this._cast(item, value_types));
+          const res = out.map((item) => this._cast(query, item, value_types));
           if (res.some((r) => r.error)) {
-            return { error: this._cast_single_error(input, type) };
+            return { status: "invalid_type", error: this._cast_single_error(input, type), query };
           }
-          return { found: true, value: res.map((r) => r.value) };
+          return { status: "success", value: res.map((r) => r.value), query };
         }
       }
       // Object.
@@ -154,7 +225,7 @@ class CLI {
       case "number:number":
       case "number:string": {
         if (typeof input !== "string") {
-          (0, import_error.throw_error)(`Unable to cast "${import_scheme.Scheme.value_type(input)}" to an "object".`);
+          (0, import_error.throw_error)(`Unable to cast "${Scheme.value_type(input)}" to an "object".`);
         }
         let key;
         let key_start = 0, value_start = 0;
@@ -187,54 +258,173 @@ class CLI {
           let key_type = type.slice(7);
           key_type = key_type.slice(0, key_type.indexOf(","));
           const value_type = type.slice(7 + key_type.length + 2, -1).split("|");
-          const casted = /* @__PURE__ */ new Map();
+          const record = key_type === "string" ? {} : void 0;
+          const map = record == null ? /* @__PURE__ */ new Map() : void 0;
           Object.keys(parsed).walk((key2) => {
-            casted.set(key_type === "string" ? key2 : this._cast(key2, key_type), value_type.length === 1 && value_type[0] === "string" ? parsed[key2] : this._cast(parsed[key2], value_type));
+            if (record) {
+              record[key2] = value_type.length === 1 && value_type[0] === "string" ? parsed[key2] : this._cast(query, parsed[key2], value_type);
+            } else {
+              map?.set(key_type === "string" ? key2 : this._cast(query, key2, key_type), value_type.length === 1 && value_type[0] === "string" ? parsed[key2] : this._cast(query, parsed[key2], value_type));
+            }
           });
-          return { found: true, value: casted };
+          return { status: "success", value: map ?? record, query };
         }
-        return { found: true, value: parsed };
+        return { status: "success", value: parsed, query };
       }
       default:
         (0, import_error.throw_error)(`Unsupported cast type "${type.toString()}".`);
     }
   }
   /** Cast types. */
-  _cast(value, type) {
+  _cast(query, value, type) {
     if (type == null) {
-      return { found: true, value: void 0 };
+      return { status: "success", value: void 0, query };
     } else if (type == "string") {
-      return { found: true, value };
+      return { status: "success", value, query };
     }
     if (Array.isArray(type)) {
       for (const t of type) {
-        const res = this._cast_single(value, t);
+        const res = this._cast_single(query, value, t);
         if (!res.error) {
           return res;
         }
       }
-      return { error: this._cast_single_error(value, type) };
+      return { status: "invalid_type", error: this._cast_single_error(value, type), query };
     }
-    return this._cast_single(value, type);
+    return this._cast_single(query, value, type);
   }
   /** Wrapper function to add an info object and return the info for one line returns. */
-  add_info(cache_id, info) {
+  add_info(info) {
+    if (!info.query) {
+      throw new Error("Query is not defined in info object.");
+    }
+    const query = info.query;
+    if (info.status === "success" && query.enum) {
+      if (!query.enum.includes(info.value)) {
+        const joined = query.enum.map((item) => {
+          if (item == null) {
+            return "null";
+          } else if (typeof item !== "string" && !(item instanceof String)) {
+            return item.toString();
+          }
+          return `"${item.toString()}"`;
+        }).join(", ");
+        (0, import_error.throw_error)(`Argument "${query.identifier()}" must be one of the following enumerated values [${joined}].`);
+      }
+    }
+    const cache_id = `${query.id ?? query.index ?? ""}-${query.type}`;
     this.argv_info.set(cache_id, info);
     return info;
+  }
+  // Add an argument to the command arguments object.
+  add_to_cmd_args(cmd_args, name, value, parent) {
+    if (name instanceof import_query.And) {
+      if (parent === cmd_args) {
+        let id = name[name.length - 1];
+        if (typeof id !== "string")
+          id = id[0];
+        id = id.replace(/^-+/, "");
+        parent[id] = value;
+      }
+      if (name.length === 0) {
+        (0, import_error.throw_error)("Cannot insert an empty name array.");
+      } else if (name.length === 1) {
+        const id = name[0].replace(/^-+/, "");
+        parent[id] = value;
+      } else {
+        const first = name[0].replace(/^-+/, "");
+        parent[first] ??= {};
+        this.add_to_cmd_args(cmd_args, name.slice(1), value, parent[first]);
+      }
+    } else if (Array.isArray(name)) {
+      const id = name[0].replace(/^-+/, "");
+      parent[id] = value;
+    } else {
+      parent[name.replace(/^-+/, "")] = value;
+    }
+  }
+  /** Run a command. */
+  async run_command(command, args_start_index = 0) {
+    const cmd_args = { _command: command };
+    if (command.args?.length) {
+      for (const arg of command.args) {
+        try {
+          if (!arg.arg_name) {
+            (0, import_error.throw_error)(`Argument is not initialized: ${arg}`);
+          }
+          if (arg.type === "boolean") {
+            if (!arg.id) {
+              (0, import_error.throw_error)(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`);
+            }
+            this.add_to_cmd_args(cmd_args, arg.arg_name, this.present(arg.id), cmd_args);
+          } else {
+            const { status, value } = this.info(arg, args_start_index);
+            if (status === "not_found" && arg.required) {
+              (0, import_error.throw_error)(`Required argument "${(0, import_query.and_or_str)(arg.arg_name)}" was not found`);
+            } else if (status === "success" || status === "default") {
+              this.add_to_cmd_args(cmd_args, arg.arg_name, value, cmd_args);
+            }
+          }
+        } catch (err) {
+          this.docs(command);
+          this.throw(err);
+        }
+      }
+    }
+    if (import_index_m_uni.debug.on(2))
+      (0, import_index_m_uni.debug)(`Running command: ${"id" in command ? command.id ? (0, import_query.and_or_str)(command.id) : "<unknown>" : "<main>"}`);
+    if (import_index_m_uni.debug.on(3))
+      (0, import_index_m_uni.debug)("With arguments:", cmd_args);
+    try {
+      if (command.mode === "main") {
+        await Promise.resolve(command.callback(cmd_args));
+      } else {
+        await Promise.resolve(command.callback(cmd_args));
+      }
+    } catch (err) {
+      this.docs(command);
+      this.error(err);
+      process.exit(1);
+    }
+  }
+  /**
+   * Find an argument's index by its id.
+   * @libris
+   */
+  find_index(id) {
+    let index_of = -1;
+    if (typeof id === "number") {
+      return id < this.argv.length ? id : void 0;
+    } else if (id instanceof import_query.And) {
+      throw new Error("Cannot find index of an 'and' query, use 'or' or a single id instead.");
+    } else if (id instanceof import_query.Or || Array.isArray(id)) {
+      for (const item of id) {
+        const i = this.argv.indexOf(item);
+        if (i !== -1) {
+          return i;
+        }
+      }
+      return void 0;
+    } else {
+      index_of = this.argv.indexOf(id);
+    }
+    return index_of === -1 ? void 0 : index_of;
   }
   /**
    * Check if an argument is present.
    * @libris
    */
   present(id) {
-    if (typeof id === "number") {
-      return this.start_index + id < process.argv.length;
-    } else if (id instanceof import_query.Query.And) {
+    if (id instanceof Arg.Base) {
+      return this.present(id.variant === "index" ? id.index : id.id);
+    } else if (typeof id === "number") {
+      return id < this.argv.length;
+    } else if (id instanceof import_query.And) {
       return id.every((i) => this.present(i));
-    } else if (id instanceof import_query.Query.Or || Array.isArray(id)) {
+    } else if (id instanceof import_query.Or || Array.isArray(id)) {
       return id.some((i) => this.present(i));
     } else {
-      return this.argv_map.has(id);
+      return this.argv_set.has(id);
     }
   }
   /**
@@ -242,39 +432,36 @@ class CLI {
    *
    * Get info about an argument.
    *
-   * @template T
-   *      The type of the argument to get, defaults to "string".
-   *      Automatically inferred from the `type` option.
-   *      The returned `info.value` will be casted to this type.
-   * @template D  System template to check if the provided `def` attribute is of the same type as the resulted return type.
-   *
-   * @param arg The argument get options. See {@link Arg} for option information.
-   * @param opts The options for the info method.
-   * @param opts.def When `true`, the optional default value will be returned as a `found` response. Defaults to `false`.
+   * @param q The argument query. See {@link Arg.Query} for information.
    *
    * @libris
    */
-  info(arg, opts) {
-    const { id, index, type = "string", exclude_dash = true } = arg;
+  info(q, _s_index) {
+    const query = typeof q === "string" || Array.isArray(q) || q instanceof import_query.Or || q instanceof import_query.And ? new Arg.Query({ id: q, type: "string" }, this.strict) : q instanceof Arg.Base ? q : new Arg.Query(q, this.strict);
+    const { id, index, def, type = "string", exclude_dash = true } = query;
     if (!id && index == null) {
-      this.throw("Either parameter 'id' or 'index' must be defined.");
+      throw new Error("Invalid argument, either parameter 'id' or 'index' must be defined. Argument: " + import_colors.Color.object(query));
     }
-    const cache_id = `${arg.id ?? arg.index ?? ""}-${arg.type}`;
+    const cache_id = `${id ?? index ?? ""}-${type}`;
     if (this.argv_info.has(cache_id)) {
       return this.argv_info.get(cache_id);
     }
     if (index != null && id == null) {
-      const value = process.argv[this.start_index + index];
-      if (value === void 0) {
-        return this.add_info(cache_id, { error: `There is no argument at index "${index}".` });
+      const offset = _s_index == null ? index : _s_index + index;
+      if (offset < this.argv.length) {
+        return this.add_info({
+          status: "not_found",
+          error: `Invalid query, the query must contain an id or index`,
+          query
+        });
       }
-      return this.add_info(cache_id, this._cast(value, type));
+      return this.add_info(this._cast(query, this.argv[offset], type));
     }
     let value_index = void 0;
-    if (id instanceof import_query.Query.And) {
+    if (id instanceof import_query.And) {
       let and_i = 0;
-      for (let i = this.start_index; i < process.argv.length; i++) {
-        if (process.argv[i] === id[and_i]) {
+      for (let i = 0; i < this.argv.length; i++) {
+        if (this.argv[i] === id[and_i]) {
           ++and_i;
           if (and_i === id.length) {
             value_index = i + 1;
@@ -284,47 +471,67 @@ class CLI {
           break;
         }
       }
-    } else if (Array.isArray(id)) {
-      const i = id.some((i2) => this.argv_map.has(i2)) ? process.argv.findIndex((arg2) => id.includes(arg2), this.start_index) : -1;
-      if (i !== -1) {
-        value_index = i + 1;
+    } else if (id instanceof import_query.Or && id.some((i) => this.argv_set.has(i))) {
+      value_index = this.argv.findIndex((arg) => id.includes(arg));
+      if (value_index !== -1) {
+        value_index += 1;
       }
-    } else {
-      value_index = process.argv.indexOf(id, this.start_index);
+    } else if (typeof id === "string" && this.argv_set.has(id)) {
+      value_index = this.argv.indexOf(id);
+      if (value_index !== -1) {
+        value_index += 1;
+      }
     }
-    if (value_index != null && value_index < process.argv.length && process.argv[value_index] !== void 0) {
-      const value = process.argv[value_index];
+    if (value_index != null && value_index != -1 && value_index < this.argv.length && this.argv[value_index] !== void 0) {
+      const value = this.argv[value_index];
       if (value === void 0 || exclude_dash && value.charAt(0) === "-") {
-        if (opts?.def && arg.def !== void 0) {
-          return this.add_info(cache_id, { found: true, value: arg.def });
+        if (def !== Arg.NoDef) {
+          return this.add_info({
+            status: "default",
+            value: def,
+            query
+          });
         }
-        return this.add_info(cache_id, { error: `No value found for argument "${import_query.Query.to_str(id)}".` });
+        return this.add_info({
+          status: "not_found",
+          error: `Not a valid value found for argument "${(0, import_query.and_or_str)(id)}".`,
+          query
+        });
       }
-      return this.add_info(cache_id, this._cast(value, type));
+      return this.add_info(this._cast(query, value, type));
     }
-    if (arg.def !== void 0) {
-      return this.add_info(cache_id, { found: true, value: arg.def });
+    if (def !== Arg.NoDef) {
+      return this.add_info({
+        status: "default",
+        value: def,
+        query
+      });
     }
-    return this.add_info(cache_id, { error: `No value found for argument "${import_query.Query.to_str(id ?? "undefined")}".` });
+    return this.add_info({
+      status: "not_found",
+      error: `No value found for argument "${(0, import_query.and_or_str)(id ?? "undefined")}".`,
+      query
+    });
   }
   /**
    * {Get}
-   *
    * Get an argument.
-   *
-   * @template T
-   *      The type of the argument to get, defaults to "string".
-   *      Automatically inferred from the `type` option.
-   *      The returned value will be casted to this type.
-   * @template D  System template to check if the provided `def` attribute is of the same type as the resulted return type.
-   *
-   * @param o The get options. See {@link Arg} for option information.
-   *
+   * @param query The argument get options. See {@link Arg.Base} for option information.
    * @libris
    */
-  get(o) {
-    const opts = typeof arguments[0] === "string" || Array.isArray(arguments[0]) ? { id: arguments[0], type: "string", def: void 0, exclude_dash: true } : arguments[0];
-    return this.info(opts).value;
+  get(query) {
+    const res = this.info(query);
+    if (res.error) {
+      if (res.status === "not_found") {
+        if (res.query.required) {
+          this.throw(`Required argument "${(0, import_query.and_or_str)(res.query.id ?? res.query.index)}" was not found.`);
+        } else {
+          return void 0;
+        }
+      }
+      this.throw(res.error);
+    }
+    return res.value;
   }
   /**
    * Log an error.
@@ -338,6 +545,9 @@ class CLI {
    * @libris
    */
   throw(...err) {
+    if (err.length === 1 && typeof err[0] === "string") {
+      (0, import_error.throw_error)(new Error(err[0]));
+    }
     (0, import_error.throw_error)(...err);
   }
   /**
@@ -345,7 +555,7 @@ class CLI {
    *
    * @libris
    */
-  docs(command_or_commands = null) {
+  docs(command_or_commands) {
     if (command_or_commands == null) {
       command_or_commands = this.commands;
     }
@@ -385,7 +595,7 @@ Description:
       const list = [];
       command_or_commands.forEach((command) => {
         const list_item = ["", ""];
-        list_item[0] = `    ${import_query.Query.to_str(command.id ?? "<main>")}`;
+        list_item[0] = `    ${(0, import_query.and_or_str)(command.id ?? "<main>")}`;
         list_item[1] = (command.description ?? "") + "\n";
         list.push(list_item);
         if (command.args?.length) {
@@ -398,12 +608,12 @@ Description:
             if (arg.id == null) {
               list_item2[0] = `        argument ${arg_index}`;
             } else {
-              list_item2[0] = `        ${import_query.Query.to_str(arg.id)}`;
+              list_item2[0] = `        ${(0, import_query.and_or_str)(arg.id)}`;
             }
             if (arg.type != null && arg.type !== "boolean") {
               list_item2[0] += ` <${arg.type}>`;
             }
-            if (arg.required === true) {
+            if (arg.required) {
               list_item2[0] += " (required)";
             }
             list_item2[1] = (arg.description ?? "") + "\n";
@@ -436,7 +646,7 @@ Notes:
       if (this.description) {
         docs += this.description + "\n";
       }
-      docs += `Usage: $ ${this.name} ${import_query.Query.to_str(command_or_commands.id ?? `<main>>`)} [options]
+      docs += `Usage: $ ${this.name} ${(0, import_query.and_or_str)(command_or_commands.id ?? `<main>`)} [options]
 `;
       if (command_or_commands.description) {
         docs += `
@@ -457,12 +667,12 @@ Options:
           if (arg.id == null) {
             list_item[0] = `    argument ${arg_index}`;
           } else {
-            list_item[0] = `    ${import_query.Query.to_str(arg.id)}`;
+            list_item[0] = `    ${(0, import_query.and_or_str)(arg.id)}`;
           }
           if (arg.type != null && arg.type !== "boolean") {
             list_item[0] += ` <${arg.type}>`;
           }
-          if (arg.required === true) {
+          if (arg.required) {
             list_item[0] += " (required)";
           }
           list_item[1] = (arg.description ?? "") + "\n";
@@ -471,7 +681,7 @@ Options:
         });
         add_keys_and_values(list);
       }
-      if (command_or_commands.examples != null) {
+      if (command_or_commands.examples?.length) {
         docs += `
 Examples:
 `;
@@ -501,80 +711,45 @@ Examples:
     }
     console.log(docs);
   }
-  // Add an argument to the command arguments object.
-  add_to_cmd_args(cmd_args, name, value, parent) {
-    if (name instanceof import_query.Query.And) {
-      if (parent === cmd_args) {
-        let id = name[name.length - 1];
-        if (typeof id !== "string")
-          id = id[0];
-        id = id.replace(/^-+/, "");
-        parent[id] = value;
-      }
-      if (name.length === 0) {
-        (0, import_error.throw_error)("Cannot insert an empty name array.");
-      } else if (name.length === 1) {
-        const id = typeof name[0] === "string" ? name[0] : name[0][0].replace(/^-+/, "");
-        parent[id] = value;
-      } else {
-        const first = typeof name[0] === "string" ? name[0] : name[0][0].replace(/^-+/, "");
-        parent[first] ??= {};
-        this.add_to_cmd_args(cmd_args, name.slice(1), value, parent[first]);
-      }
-    } else if (name instanceof import_query.Query.Or || Array.isArray(name)) {
-      const id = name[0].replace(/^-+/, "");
-      parent[id] = value;
-    } else {
-      parent[name.replace(/^-+/, "")] = value;
+  /**
+   * Add the main command.
+   *
+   * @param main The main command to set.
+   *
+   * @returns The current CLI instance for chaining.
+   *
+   * @dev_note We require a special function for this
+   *           Dont allow passing this in constructor opts.
+   *           This is so we can infer the args using InferArgs.
+   *           That doesnt work when passing a commands array to the constructor.
+   */
+  main(main) {
+    if (this._main) {
+      (0, import_error.throw_error)("Main command already set.");
     }
+    this._main = main instanceof import_command.Main ? main : new import_command.Main(main, this.strict);
+    if (import_index_m_uni.debug.on(3))
+      (0, import_index_m_uni.debug)("Added main command: ", this._main);
+    return this;
   }
-  /** Run a command. */
-  async command(command) {
-    const cmd_args = { _command: command };
-    if (command.args?.length) {
-      for (const arg of command.args) {
-        try {
-          if (!arg.name) {
-            (0, import_error.throw_error)(`Argument "${arg.id}" is not initialized.`);
-          }
-          if (arg.type === "boolean") {
-            if (!arg.id) {
-              (0, import_error.throw_error)(`Argument "${arg.name}" is not initialized with an id, this is required for boolean types.`);
-            }
-            this.add_to_cmd_args(cmd_args, arg.name, this.present(arg.id), cmd_args);
-          } else {
-            let res;
-            if (typeof arg.index === "number") {
-            } else {
-            }
-            const { found, value } = this.info(arg, { def: false });
-            if (found === false && arg.required === true) {
-              (0, import_error.throw_error)(`Define parameter "${arg.id}".`);
-            }
-            if (found === true && value == null && arg.def !== void 0) {
-              this.add_to_cmd_args(cmd_args, arg.name, arg.def, cmd_args);
-            } else if (value != null) {
-              this.add_to_cmd_args(cmd_args, arg.name, value, cmd_args);
-            }
-          }
-        } catch (err) {
-          this.docs(command);
-          this.error(err);
-          return true;
-        }
-      }
-    }
-    if (import_index_m_uni.debug.on(1))
-      (0, import_index_m_uni.debug)(`Running command: ${"id" in command ? command.id ? import_query.Query.to_str(command.id) : "<unknown>" : "<main>"}`);
+  /**
+   * Add an identifier based command mode to the CLI.
+   *
+   * @param cmd The command to add.
+   *
+   * @returns The current CLI instance for chaining.
+   *
+   * @dev_note We require a special function for this
+   *           Dont allow passing this in constructor opts.
+   *           This is so we can infer the args using InferArgs.
+   *           That doesnt work when passing a commands array to the constructor.
+   */
+  command(cmd) {
+    const c = cmd instanceof import_command.Command ? cmd : new import_command.Command(cmd, this.strict);
     if (import_index_m_uni.debug.on(2))
-      (0, import_index_m_uni.debug)("With args:", cmd_args);
-    try {
-      await Promise.resolve(command.callback(cmd_args));
-    } catch (err) {
-      this.docs(command);
-      this.error(err);
-      process.exit(1);
-    }
+      (0, import_index_m_uni.debug)("Added command: ", c);
+    this.commands.push(c);
+    return this;
   }
   /**
    * Start the cli.
@@ -584,13 +759,17 @@ Examples:
   async start() {
     const help = this.present(["-h", "--help"]);
     let matched = false;
+    if (this.strict) {
+      this._check_unknown_args();
+    }
     for (const command of this.commands) {
-      if (this.present(command.id)) {
+      const found_index = command.id instanceof import_query.And ? 0 : this.find_index(command.id);
+      if (found_index != null) {
         if (help) {
           this.docs(command);
           return true;
         }
-        await this.command(command);
+        await this.run_command(command, found_index);
         matched = true;
         break;
       }
@@ -599,17 +778,17 @@ Examples:
       this.docs();
       return true;
     }
-    if (!matched && this.main) {
+    if (!matched && this._main) {
       if (help) {
-        this.docs(this.main);
+        this.docs(this._main);
         return true;
       }
-      if (this.main.args && !this.main.args.every((x) => x.optional) && !this.main.args.some((x) => x.variant === "id" && x.id && this.present(x.id))) {
+      if (this._main.args && !this._main.args.every((x) => !x.required) && !this._main.args.some((x) => x.variant === "id" && x.id && this.present(x.id))) {
         this.docs();
         this.error("Invalid mode, not main.");
         return false;
       }
-      await this.command(this.main);
+      await this.run_command(this._main);
       matched = true;
     }
     if (!matched) {
@@ -620,16 +799,17 @@ Examples:
     return true;
   }
 }
-const cli = new CLI({ _sys: true });
-(function(CLI2) {
-  CLI2.Command = import_command.Command;
-  CLI2.Query = import_query.Query;
-})(CLI || (CLI = {}));
-const nr1 = cli.get({ id: "--nr", type: "number" });
-const nr2 = cli.get({ id: "--nr", type: "number", def: 0 });
-const arr1 = cli.get({ id: "--nr", type: "number[]", def: [] });
+const cli = new CLI({ _sys: true, strict: true });
+function get(query) {
+  return cli.get(query);
+}
+function present(id) {
+  return cli.present(id);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CLI,
-  cli
+  cli,
+  get,
+  present
 });

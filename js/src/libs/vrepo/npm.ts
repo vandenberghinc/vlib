@@ -18,6 +18,16 @@ export class NPM {
     config: any;
     version_path?: string;
 
+    /** Constructor validator. */
+    static validator = new Scheme.Validator("object", {
+        strict: true,
+        throw: true,
+        scheme: {
+            source: "string",
+            version_path: { type: "string", required: false },
+        },
+    });
+
     // Constructor.
     constructor({
         source,
@@ -28,14 +38,7 @@ export class NPM {
     }) {
 
         // Verify arguments.
-        Scheme.verify({
-            object: arguments[0],
-            strict: true,
-            scheme: {
-                source: "string",
-                version_path: {type: "string", required: false},
-            },
-        })
+        NPM.validator.validate(arguments[0]);
 
         // Parameters.
         this.source = new Path(source);

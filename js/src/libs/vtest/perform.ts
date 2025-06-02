@@ -54,10 +54,10 @@ import { Module, modules } from './module.js';
  */
 export async function perform({
     results,
-    module = cli.get({ id: "--module", def: undefined }),
+    module = cli.get({ id: "--module", required: false }),
     target = cli.get({ id: "--target" }),
     stop_on_failure = cli.present("--stop-on-failure"),
-    stop_after = cli.get({ id: "--stop-after", def: undefined }),
+    stop_after = cli.get({ id: "--stop-after", required: false }),
     debug = cli.get({ id: "--debug", def: 0, type: "number" }),
     interactive = cli.present("--interactive"),
     all_yes = cli.present(["--yes", "-y"]),

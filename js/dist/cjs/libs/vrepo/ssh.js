@@ -24,15 +24,17 @@ var import__ = require("../../index.js");
 class SSH {
   source;
   proc;
+  /** Constructor validator. */
+  static validator = new import__.Scheme.Validator("object", {
+    strict: true,
+    throw: true,
+    scheme: {
+      source: "string"
+    }
+  });
   // Constructor.
   constructor({ source }) {
-    import__.Scheme.verify({
-      object: arguments[0],
-      strict: true,
-      scheme: {
-        source: "string"
-      }
-    });
+    SSH.validator.validate(arguments[0]);
     this.source = new import__.Path(source);
     this.proc = new import__.Proc();
   }

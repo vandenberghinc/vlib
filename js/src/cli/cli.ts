@@ -4,30 +4,24 @@
  */
 
 import { Iterator } from '../code/iterator.js';
-import { Scheme } from '../scheme/scheme.js';
-import { Colors } from '../system/colors.js';
+import * as Scheme from '../scheme/index.m.uni.js';
+import { Color, Colors } from '../system/colors.js';
 import { Path } from '../system/path.js';
 import type { Merge, StringLiteral, ArrayLiteral, IsNever } from '../types/index.m.js';
-import { error, throw_error } from './error.js';
-import { Command, Command as _Command } from './command.js';
-import { Query, Query as _Query } from './query.js';
+import { error as dump_error, throw_error } from './error.js';
+import { And, Or, and_or_str } from './query.js';
 import { debug } from '../debugging/index.m.uni.js';
-import { Arg, Arg as _Arg } from './arg.js';
+import * as InferArgs from './infer_args.js';
+import { logger } from '../logging/logger.js';
+import { ObjectUtils } from '../global/object.js';
+import { CastFlag, ExtractFlag } from '../types/flags.js';
+import type { Cast } from './cast.js';
+import * as Arg from './arg.js';
+import { Strict } from './arg.js';
+import { Command, Main, Base as BaseCommand } from './command.js';
 
 // Increase stack trace limit by default.
 Error.stackTraceLimit = 100;
-
-/** Type alias for And and Or */
-type And = Query.And<string | string[] | Query.Or>;
-type Or = Query.Or<string>;
-
-/** Type alias for an info() query. */
-export type InfoQuery<T extends Arg.Castable> =
-    | Arg<Arg.Variant, Arg.Mode, T>
-    | Arg.Opts<Arg.Variant, Arg.Mode, T>
-    | And
-    | Or | string[]
-    | string;
 
 /**  
  * Build a cli.
@@ -39,7 +33,9 @@ export type InfoQuery<T extends Arg.Castable> =
  * @param commands {array[object]} Array of command objects.
  * @nav CLI
 */
-export class CLI {
+export class CLI<
+    S extends Strict = Strict,
+> {
 
     /** The CLI name. */
     private name: string;
@@ -51,28 +47,32 @@ export class CLI {
     private version: string;
     
     /** The main command for when no specific command is detected. */
-    private main?: Command.Main;
+    private _main?: Main<S>;
 
     /** The list of commands. */
-    private commands: Command.Id[];
+    private commands: Command<S>[] = [];
 
     /**
      * The list of global option arguments.
      * @todo not implemented yet.
      */
-    private options: Arg<"id", "option">[];
+    private options: Command<S>[];
 
     /** The notes. */
     private notes: string[];
 
     /** The argc start index. */
-    private start_index: number;
+    // private start_index: number;
 
-    /** The argv map. */
-    private argv_map: Set<string> = new Set(process.argv);
+    /** The argv set & map. */
+    private argv: string[]; 
+    private argv_set: Set<string>;
 
     /** Argv info map. */
-    private argv_info: Map<string, CLI.Info> = new Map();
+    private argv_info: Map<string, Info> = new Map();
+    
+    /** Whether to throw an error when an unknown command is detected, defaults to false. */
+    strict: Strict.Cast<S>;
 
     /**
      * The constructor.
@@ -82,48 +82,107 @@ export class CLI {
      * @param notes The CLI notes.
      * @param main The main command for when no specific command is detected.
      * @param commands The list of commands.
-     * @param start_index The argc start index, defaults to 2.
+     * @param strict Whether to throw an error when an unknown command is detected, defaults to false.
      */
     constructor(
         {
             name = "CLI",
-            main,
-            commands = [],
-            options = [],
             description,
             version = "1.0.0",
+            argv = process.argv, // default start index is 2.
             notes = [],
-            start_index = 2,
+            options = [],
+            strict,
             _sys = false,
         }: {
             name?: string;
-            main?: Command.MainOpts;
-            commands?: Command.IdOpts[]; // commands with id.
-            options?: Command.IdOpts[]; // global options.
             description?: string;
             version?: string;
             notes?: string[];
             start_index?: number;
+            argv?: string[]; 
+            options?: Command.Opts<S>[]; // global options.
             _sys?: boolean; // is internal system cli.
-            // @todo add something like.
-            // check_unknown: boolean | { exclude: string[] }
-        } = {}
+        }
+            & Strict.If<
+                S,
+                "strict",
+                // with infer inside so the `S` template is inferred correctly from the constructor.
+                { strict: "strict" extends S ? true : false },
+                { strict?: "strict" extends S ? true : false }
+            >
     ) {
         this.name = name;
         this.description = description;
         this.version = version;
-        this.commands = commands.map(c => new Command(c, "id"));
-        this.main = main ? new Command(main, "main") : undefined;
-        this.options = options.map(o => new Arg(o, "id", "option"));
         this.notes = notes;
-        this.start_index = start_index;
+        this.strict = (strict ?? false) as Strict.Cast<S>;
+        this.options = options.map(o => o instanceof Command
+            ? o
+            : new Command(o, this.strict)
+        );
+        argv = argv.slice(2);
+        this.argv = argv;
+        this.argv_set = new Set(argv);       
         this._init(_sys);
+    }
+
+    /** Check unknown arguments. */
+    private _check_unknown_args(): void {
+        
+        // Build a list of all known args.
+        const known_id_args = new Set<string>();
+        const add_arg = (arg: Arg.Command<S>) => {
+            if (arg.variant === "id" && arg.id) {
+                if (arg.id instanceof Or || arg.id instanceof And) {
+                    arg.id.walk(id => known_id_args.add(id));
+                } else {
+                    known_id_args.add(arg.id);
+                }
+            }
+        }
+        const add_command = (cmd: Command<S> | Main<S>) => {
+            if (cmd.id instanceof Or || cmd.id instanceof And) {
+                cmd.id.walk(id => known_id_args.add(id));
+            } else {
+                known_id_args.add(cmd.id);
+            }
+            if (cmd.args?.length) {
+                cmd.args.walk(add_arg);
+            }
+        }
+        for (const cmd of this.commands) {
+            add_command(cmd);   
+        }
+        this.commands.walk(add_command);
+        this.options.walk(add_command);
+        if (this._main) { add_command(this._main); }
+
+        // Iterate over the argv and check for unknown args.
+        for (let i = 0; i < this.argv.length; i++) {
+            const item = this.argv[i];
+            if (
+                item.charAt(0) !== "-" // skip non-args.
+                || item === "--help" // skip help since that is handled internally and is not added.
+                || item === "-h" 
+            ) {
+                continue; 
+            }
+            if (!known_id_args.has(item)) {
+                if (this.strict) {
+                    this.throw(`Unknown argument "${item}".`);
+                } else {
+                    logger.warn(`Unknown argument "${item}".`);
+                }
+            }
+        }
+
     }
 
     /**
      * Check if a command with an id query exists.
      */
-    private _has_id_command(id: string | string[] | Command.Arg["id"]): boolean {
+    private _has_id_command(id: string | string[] | Command["id"]): boolean {
         return this.commands.some(cmd => cmd.variant === "id"
             ? cmd.eq_id(id)
             : false
@@ -140,18 +199,18 @@ export class CLI {
         /** Add --version command. */
         if (_sys === false) {
             if (this.version != null && !this._has_id_command(["--version", "-v"])) {
-                this.commands.push(new Command({
+                this.command({
                     id: ["--version", "-v"],
                     description: "Show the CLI version.",
-                    callback: () => console.log(`${this.name} v${this.version}`)
-                }));
+                    callback: (args: any): void => console.log(`${this.name} v${this.version}`),
+                })
             }
         }
         
     }
 
     /** Throw a cast single error. */
-    private _cast_single_error<T extends Arg.Castable>(value: any, type: T | T[]): string {
+    private _cast_single_error(value: any, type: Cast.Castable): string {
         return `Unable to cast "${value}" of type "${Scheme.value_type(value)}" to type "${
             Array.isArray(type) ? type.join(" | ") : type
         }".`;
@@ -160,48 +219,52 @@ export class CLI {
     /**
      * Cast a single type with info options.
      */
-    private _cast_single<T extends Arg.Type>(
-        query: Arg, // not guaranteed the same type as T.
+    private _cast_single<A extends Arg.Base = Arg.Base>(
+        query: A,
         input: string,
-        type: T,
-    ): CLI.Info<CLI.Info.Mode, T> | CLI.Info<"error"> {
+        type: Cast.Type,
+    ): Info<"success", A> | Info<"error", A> {
+
+        // Type alias.
+        type Casted = InferArgs.ExtractArgValueType<A>;
+
         // Handle string.
         let value: any;
-        let error: CLI.Info<"error">;
         switch (type) {
             case "string":
-                return { found: true, value: input as Arg.Cast<T>, query };
+                return { status: "success", value: input as Casted, query };
+                // return i;
             case "number": {
-                const value = Scheme.cast_number(input, { strict: true, preserve: true });
+                const value = Scheme.cast.number(input, { strict: true, preserve: true });
                 if (typeof value === "string") {
-                    error = { error: this._cast_single_error(input, type), query }; return error;
+                    return { status: "invalid_value", error: this._cast_single_error(input, type), query };
                 }
-                return { found: true, value: value as Arg.Cast<T>, query };
+                return { status: "success", value: value as Casted, query };
             }
             case "boolean":
-                value = Scheme.cast_bool(input, { preserve: true });
+                value = Scheme.cast.boolean(input, { preserve: true });
                 if (typeof value === "string") {
-                    error = { error: this._cast_single_error(input, type), query }; return error;
+                    return { status: "invalid_value", error: this._cast_single_error(input, type), query };
                 }
-                return { found: true, value, query };
 
             // Array.
             case "array":
             case "string[]": case "boolean[]": case "number[]":
+            // case "(string|boolean)[]"] // could be supported.
             {
                 const out = Array.isArray(input) ? input : input.split(",");
                 const value_type = type === "array"
                     ? "string"
-                    : type.slice(0, -2) as Arg.Type;
-                const value_types = value_type.split("|") as Arg.Castable[];
+                    : type.slice(0, -2) as Cast.Type;
+                const value_types = value_type.split("|") as Cast.Type[];
                 if (value_types.length === 1 && value_types[0] === "string") {
-                    return { found: true, value: out as Arg.Cast<T>, query };
+                    return { status: "success", value: out as Casted, query };
                 } else {
                     const res = out.map(item => this._cast(query, item, value_types));
                     if (res.some(r => r.error)) {
-                        error = { error: this._cast_single_error(input, type), query }; return error;
+                        return { status: "invalid_type", error: this._cast_single_error(input, type), query };
                     }
-                    return { found: true, value: res.map(r => r.value) as Arg.Cast<T>, query };
+                    return { status: "success", value: res.map(r => r.value) as Casted, query };
                 }
             }
 
@@ -259,19 +322,27 @@ export class CLI {
                     if (type !== "object") {
                         let key_type = type.slice(7);
                         key_type = key_type.slice(0, key_type.indexOf(","));
-                        const value_type = type.slice(7 + key_type.length + 2, -1).split("|") as Arg.Type[];
-                        const casted = new Map<any, any>();
+                        const value_type = type.slice(7 + key_type.length + 2, -1).split("|") as Cast.Type[];
+                        const record = key_type === "string" ? {} as Record<string, any> : undefined;
+                        const map = record == null ? new Map<any, any>() : undefined;
                         Object.keys(parsed).walk(key => {
-                            casted.set(
-                                key_type === "string" ? key : this._cast(query, key, key_type as Arg.Type),
-                                value_type.length === 1 && value_type[0] === "string"
-                                    ? parsed[key]
-                                    : this._cast(query, parsed[key], value_type)
-                            );
+                            if (record) {
+                                record[key] = 
+                                    value_type.length === 1 && value_type[0] === "string"
+                                        ? parsed[key]
+                                        : this._cast(query, parsed[key], value_type)
+                            } else {
+                                map?.set(
+                                    key_type === "string" ? key : this._cast(query, key, key_type as Cast.Type),
+                                    value_type.length === 1 && value_type[0] === "string"
+                                        ? parsed[key]
+                                        : this._cast(query, parsed[key], value_type)
+                                );
+                            }
                         });
-                        return { found: true, value: casted as Arg.Cast<T>, query };
+                        return { status: "success", value: (map ?? record) as Casted, query };
                     }
-                    return { found: true, value: parsed as Arg.Cast<T>, query };
+                    return { status: "success", value: parsed as Casted, query };
                 }
             default:
                 // @ts-expect-error
@@ -280,75 +351,217 @@ export class CLI {
     }
 
     /** Cast types. */
-    private _cast<T extends Arg.Castable>(
-        query: Arg, // not guaranteed the same type as T.
+    private _cast<A extends Arg.Base = Arg.Base>(
+        query: A,
         value: string,
-        type: T | T[],
-    ): CLI.Info<CLI.Info.Mode, T> | CLI.Info<"error"> {
+        type: Cast.Castable,
+    ): Info<"success", A> | Info<"error", A> {
+
+        // Type alias.
+        type Casted = InferArgs.ExtractArgValueType<A>;
         
         // Handle undefined.
         if (type == null) {
-            return { found: true, value: undefined as Arg.Cast<T>, query };
+            return { status: "success", value: undefined as Casted, query };
         } else if (type == "string") {
-            // const f: CLI.Info<"found", T> = 
-            return { found: true, value: value as Arg.Cast<T>, query };
+            return { status: "success", value: value as Casted, query };
         }
 
         // Handle OR operation.
         if (Array.isArray(type)) {
             for (const t of type) {
-                const res = this._cast_single(query, value, t as Arg.Type) as CLI.Info<CLI.Info.Mode, T>;
-                if (!res.error) { return res; }
+                const res = this._cast_single(query, value, t);
+                if (!res.error) {
+                    return res;
+                }
             }
-            return { error: this._cast_single_error(value, type), query };
+            return { status: "invalid_type", error: this._cast_single_error(value, type), query };
         }
 
         // Handle single type.
-        return this._cast_single(query, value, type) as CLI.Info<CLI.Info.Mode, T>;
+        return this._cast_single(query, value, type);
     }
 
     /** Wrapper function to add an info object and return the info for one line returns. */
-    private add_info<T extends Arg.Castable>(
-        cache_id: string,
-        info: CLI.Info<"error"> | CLI.Info<CLI.Info.Mode, T>
-    ): CLI.Info<"error"> | CLI.Info<CLI.Info.Mode, T> {
+    private add_info<I extends Info>(info: I): I {
+
+        // Check query.
+        if (!info.query) {
+            throw new Error("Query is not defined in info object.");
+        }
 
         // Check enum.
-        // if (scheme_item.enum) {
-        //     if (!scheme_item.enum.includes(object[key])) {
-        //         const field = `${parent}${value_scheme_key || key}`;
-        //         const joined = scheme_item.enum.map(item => {
-        //             if (item == null) {
-        //                 return 'null';
-        //             } else if (typeof item !== "string" && !(item instanceof String)) {
-        //                 return item.toString();
-        //             }
-        //             return `"${item.toString()}"`;
-        //         }).join(", ");
-        //         return throw_err_h(`${error_prefix}Attribute "${field}" must be one of the following enumerated values [${joined}].`, field);
-        //     }
-        // }
+        // Dont perform enum check when default value is returned.
+        const query = info.query;
+        if (info.status === "success" && query.enum) {
+            if (!query.enum.includes(info.value)) {
+                const joined = query.enum.map(item => {
+                    if (item == null) {
+                        return 'null';
+                    } else if (typeof item !== "string" && !(item instanceof String)) {
+                        return item.toString();
+                    }
+                    return `"${item.toString()}"`;
+                }).join(", ");
+                throw_error(`Argument "${query.identifier()}" must be one of the following enumerated values [${joined}].`);
+            }
+        }
 
         // Add item to the cache.
+        const cache_id = `${query.id ?? query.index ?? ""}-${query.type}`;
         this.argv_info.set(cache_id, info);
 
         // Return info.
         return info
     }
 
+    // Add an argument to the command arguments object.
+    private add_to_cmd_args(
+        cmd_args: Record<string, any>,
+        name: string | And | Or,
+        value: any,
+        parent: Record<string, any>,
+    ): void {
+        /**
+         * @todo the old version inserted it as nested objects
+         *       however this is not compatible with InferArgs
+         *       so we need to insert it as flat keys joined by a `_` separator according to InferArgs.
+         * @priority
+         */
+        if (name instanceof And) {
+
+            // Insert root also directly.
+            // Use last since an array is always an And operation.
+            if (parent === cmd_args) {
+                let id = name[name.length - 1];
+                if (typeof id !== "string") id = id[0]
+                id = id.replace(/^-+/, ""); // remove leading dashes.
+                parent[id] = value;
+            }
+
+            // Insert as nested object(s).
+            if (name.length === 0) { throw_error("Cannot insert an empty name array."); }
+            else if (name.length === 1) {
+                const id = name[0] // (typeof name[0] === "string" ? name[0] : name[0][0])
+                    .replace(/^-+/, ""); // remove leading dashes.
+                parent[id] = value;
+            } else {
+                const first = name[0] // (typeof name[0] === "string" ? name[0] : name[0][0])
+                    .replace(/^-+/, ""); // remove leading dashes.
+                parent[first] ??= {};
+                this.add_to_cmd_args(cmd_args, name.slice(1) as And, value, parent[first]);
+            }
+        } else if (Array.isArray(name)) {
+            const id = name[0]
+                .replace(/^-+/, ""); // remove leading dashes.
+            parent[id] = value;
+        } else {
+            parent[name.replace(/^-+/, "")] = value;
+        }
+    }
+
+    /** Run a command. */
+    private async run_command(
+        command: Command<S> | Main<S>,
+        args_start_index: number = 0,
+    ): Promise<void> { 
+
+        // Get arguments.
+        const cmd_args: Record<string, any> = { _command: command };
+
+        // Parse arguments.
+        if (command.args?.length) {
+            for (const arg of command.args) {
+                try {
+                    if (!arg.arg_name) { throw_error(`Argument is not initialized: ${arg}`); }
+
+                    // Type bool.
+                    if (arg.type === "boolean") {
+                        if (!arg.id) {
+                            throw_error(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`);
+                        }
+                        this.add_to_cmd_args(cmd_args, arg.arg_name, this.present(arg.id), cmd_args);
+                    }
+                    // Get and cast.
+                    else {
+                        // Build get options to satisfy overloads
+                        const { status, value } = this.info(arg, args_start_index);
+                        // console.log(`Arg status "${status}" from ${arg}:`, value);
+                        if (status === "not_found" && arg.required) {
+                            throw_error(`Required argument "${and_or_str(arg.arg_name)}" was not found`);
+                        }
+                        else if (status === "success" || status === "default") {
+                            this.add_to_cmd_args(cmd_args, arg.arg_name, value, cmd_args);
+                        }
+                    }
+                } catch (err) {
+                    this.docs(command);
+                    this.throw(err);
+                }
+            }
+        }
+        if (debug.on(2)) debug(`Running command: ${"id" in command ? command.id ? and_or_str(command.id) : "<unknown>" : "<main>"}`);
+        if (debug.on(3)) debug("With arguments:", cmd_args);
+
+        // Call the callback.
+        try {
+            // required if statement for ts `this` context complaints.
+            if (command.mode === "main") {
+                await Promise.resolve(
+                    command.callback(cmd_args as any)
+                );
+            } else {
+                await Promise.resolve(
+                    command.callback(cmd_args as any)
+                );
+            }
+        } catch (err) {
+            this.docs(command);
+            this.error(err);
+            process.exit(1);
+        }
+    }
+
+    /**
+     * Find an argument's index by its id.  
+     * @libris
+     */
+    find_index(id: number | string | string[] | Or | And): number | undefined {
+        let index_of: number | -1 = -1;
+        if (typeof id === "number") {
+            return id < this.argv.length ? id : undefined;
+        } else if (id instanceof And) {
+            // not supported, no good way to univerally know if to return the start or end index of the found match.
+            throw new Error("Cannot find index of an 'and' query, use 'or' or a single id instead.");
+        } else if (id instanceof Or || Array.isArray(id)) {
+            // return id.some(i => this.present(i));
+            for (const item of id) {
+                const i = this.argv.indexOf(item);
+                if (i !== -1) { return i; }
+            }
+            return undefined;
+        } else {
+            index_of = this.argv.indexOf(id as string);
+        }
+        return index_of === -1 ? undefined : index_of;
+    }
+
     /**
      * Check if an argument is present.
      * @libris
      */
-    present(id: number | string | string[] | Or | And): boolean {
-        if (typeof id === "number") {
-            return this.start_index + id < process.argv.length
-        } else if (id instanceof Query.And) {
+    present(id: number | string | string[] | Or | And | Arg.Base): boolean {
+        if (id instanceof Arg.Base) {
+            return this.present(id.variant === "index" ? id.index : id.id);
+        } else if (typeof id === "number") {
+            return id < this.argv.length
+        } else if (id instanceof And) {
+            // should not check sequence, that is only for Arg not for Command.
             return id.every(i => this.present(i));
-        } else if (Array.isArray(id)) {
+        } else if (id instanceof Or || Array.isArray(id)) {
             return id.some(i => this.present(i));
         } else {
-            return this.argv_map.has(id);
+            return this.argv_set.has(id);
         }
     }
 
@@ -357,143 +570,177 @@ export class CLI {
      * 
      * Get info about an argument.
      * 
-     * @template T 
-     *      The type of the argument to get, defaults to "string".
-     *      Automatically inferred from the `type` option.
-     *      The returned `info.value` will be casted to this type.
-     * 
-     * @param arg The argument get options. See {@link Arg} for option information.
-     * @param opts The options for the info method.
-     * @param opts.def When `true`, the optional default value will be returned as a `found` response. Defaults to `false`.
+     * @param q The argument query. See {@link Arg.Query} for information.
      * 
      * @libris
      */
-    info<T extends Arg.Castable = "string">(
-        query: 
-            | Arg<Arg.Variant, Arg.Mode, T>
-            | Arg.Opts<Arg.Variant, Arg.Mode, T>
+    info<
+        const O extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">    
+    >(
+        q: 
+            | O
             | And
             | Or | string[]
             | string,
-        opts?: { def?: boolean }
-    ): CLI.Info<CLI.Info.Mode, T> | CLI.Info<"error"> {
+        _s_index?: number, // start index when searching for arguments by index.
+    ): Info<"success", Arg.Base.FromOpts<O>> | Info<"error", Arg.Base.FromOpts<O>> {
+
+        // Type alias.
+        type Q = Arg.Base.FromOpts<O>;
+        type Casted = InferArgs.ExtractArgValueType<Q>;
+        type I = Info<"success", Q> | Info<"error", Q>;
 
         // Initialize args.
-        const arg = typeof query === "string" || Array.isArray(query)
-            ? new Arg({ id: query, type: "string", }, "id", "query")
-            : query instanceof Arg
-                ? query
-                : new Arg<Arg.Variant, Arg.Mode, T>(query, "auto", "query")
-        let err_info: CLI.Info<"error">;
+        // Ensure query is of type `A` so the return type is correct when using `query` inside the add_info obj param.
+        const query: Q = 
+            (typeof q === "string" || Array.isArray(q) || q instanceof Or || q instanceof And)
+            ? new Arg.Query({ id: q, type: "string" }, this.strict) as any
+            : q instanceof Arg.Base
+                ? q
+                : new Arg.Query(
+                    q as any,
+                    this.strict
+                )
 
         // Unpack the arg.
         const {
             id, index, def,
             type = "string",
             exclude_dash = true,
-        } = arg;
+        } = query;
 
         // Check args.
         if (!id && index == null) {
-            this.throw("Either parameter 'id' or 'index' must be defined.");
+            throw new Error("Invalid argument, either parameter 'id' or 'index' must be defined. Argument: " + Color.object(query));
         }
 
         // Check cache.
         const cache_id = `${id ?? index ?? ""}-${type}`;
         if (this.argv_info.has(cache_id)) {
-            return this.argv_info.get(cache_id) as CLI.Info<CLI.Info.Mode, T>;
+            return this.argv_info.get(cache_id) as I;
         }
-        // console.log(`Searching for id="${id ? Query.to_str(id) : undefined}" index=${index} with type "${type}"...`);
+        // console.log(`Searching for id="${id ? and_or_str(id) : undefined}" index=${index} with type "${type}"...`);
 
         /**
          * Search by index.
          * @warning This must precede over search by id, since the id is now always required.
          */
         if (index != null && id == null) {
-            const value = process.argv[this.start_index + index];
-            if (value === undefined) {
-                err_info = { error: `No value found for argument at index ${index}.`, query: arg as Arg<Arg.Variant, Arg.Mode, T> };
-                return this.add_info(cache_id, err_info);
+            const offset = _s_index == null ? index : _s_index + index;
+            if (offset < this.argv.length) {
+                return this.add_info({
+                    status: "not_found",
+                    error: `Invalid query, the query must contain an id or index`,
+                    query,
+                });
             }
-            return this.add_info<T>(cache_id, this._cast<T>(arg, value, type as T));
+            return this.add_info(this._cast(query, this.argv[offset], type) as any);
         }
 
         // Find the value index.
         let value_index: number | undefined = undefined;
-        if (id instanceof Query.And) {
+        if (id instanceof And) {
             let and_i = 0;
-            for (let i = this.start_index; i < process.argv.length; i++) {
-                if (process.argv[i] === id[and_i]) {
+            for (let i = 0; i < this.argv.length; i++) {
+                if (this.argv[i] === id[and_i]) {
                     ++and_i;
                     if (and_i === id.length) {
                         value_index = i + 1; // next index is the value.
                         break;
                     }
-                } else if (and_i > 0/* && process.argv[i]?.charAt(0) !== "-"*/) {
+                } else if (and_i > 0/* && this.argv[i]?.charAt(0) !== "-"*/) {
                     // matches must be consecutive, abort if not.
                     break;
                 }
             }
-        } else if (Array.isArray(id)) {
-            const i = id.some(i => this.argv_map.has(i))
-                ? process.argv.findIndex(arg => id.includes(arg), this.start_index)
-                : -1;
-            if (i !== -1) {
-                value_index = i + 1;
+        } else if (
+            id instanceof Or// || Array.isArray(id))
+            && id.some(i => this.argv_set.has(i)) // fast lookup
+        ) {
+            value_index = this.argv.findIndex(arg => id.includes(arg))
+            if (value_index !== -1) {
+                value_index += 1; // next index is the value.
             }
-        } else {
-            value_index = process.argv.indexOf(id as string, this.start_index);
+        } else if (
+            typeof id === "string"
+            && this.argv_set.has(id)
+        ) {
+            value_index = this.argv.indexOf(id as string);
+            if (value_index !== -1) {
+                value_index += 1; // next index is the value.
+            }
         }
+        // console.log("ID:", id )
+        // console.log("Args:", this.argv);
         if (
             value_index != null
-            && value_index < process.argv.length
-            && process.argv[value_index] !== undefined
+            && value_index != -1
+            && value_index < this.argv.length
+            && this.argv[value_index] !== undefined
         ) {
-            const value = process.argv[value_index];
+            const value = this.argv[value_index];
             if (value === undefined || (exclude_dash && value.charAt(0) === "-")) {
-                if (opts?.def && def !== undefined) {
-                    return this.add_info<T>(cache_id, { found: false, value: def as Arg.Cast<T>, query: arg });
+                if (def !== Arg.NoDef) {
+                    return this.add_info({
+                        status: "default",
+                        value: def as any,
+                        query,
+                    });
                 }
-                err_info = { error: `No value found for argument at index ${index}.`, query: arg as Arg<Arg.Variant, Arg.Mode, T> };
-                return this.add_info<T>(cache_id, { error: `No value found for argument "${Query.to_str(id)}".`, query: arg as Arg<Arg.Variant, Arg.Mode, T> });
+                return this.add_info({
+                    status: "not_found",
+                    error: `Not a valid value found for argument "${and_or_str(id)}".`,
+                    query
+                });
             }
-            return this.add_info<T>(cache_id, this._cast<T>(arg, value, type as T));
+            return this.add_info(this._cast(query as any, value, type))
         }
-        if (opts?.def && def !== undefined) {
-            return this.add_info<T>(cache_id, { found: true, value: def as Arg.Cast<T>, query: arg as Arg<Arg.Variant, Arg.Mode, T> });
+        if (def !== Arg.NoDef) {
+            return this.add_info({
+                status: "default",
+                value: def as any,
+                query,
+            });
         }
-        return this.add_info<T>(cache_id, { error: `No value found for argument "${Query.to_str(id ?? "undefined")}".`, query: arg as Arg<Arg.Variant, Arg.Mode, T> });
+        return this.add_info({
+            status: "not_found",
+            error: `No value found for argument "${and_or_str(id ?? "undefined")}".`,
+            query,
+        });
     }
 
     /**
      * {Get}
-     * 
      * Get an argument.
-     * 
-     * @template T 
-     *      The type of the argument to get, defaults to "string".
-     *      Automatically inferred from the `type` option.
-     *      The returned value will be casted to this type.
-     * 
-     * @param o The get options. See {@link Arg} for option information.
-     * 
+     * @param query The argument get options. See {@link Arg.Base} for option information.
      * @libris
      */
-    get<T extends Arg.Castable = "string">(query: 
-        | Arg<Arg.Variant, Arg.Mode, T>
-        | Arg.Opts<Arg.Variant, Arg.Mode, T>
+    get<
+        const Q extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">,
+    >(query:
+        | Q
         | And
         | Or | string[]
         | string,
-    ): Arg.Cast<T> {
-        const res = this.info(query, { def: true });
+    ): InferArgs.IsOptional<Q> extends true
+        ? undefined | InferArgs.ExtractArgValueType<Q, "string">
+        : InferArgs.ExtractArgValueType<Q, "string">
+    {
+        type Res = InferArgs.IsOptional<Q> extends true
+            ? undefined | InferArgs.ExtractArgValueType<Q, "string">
+            : InferArgs.ExtractArgValueType<Q, "string">
+        const res = this.info<Q>(query);
         if (res.error) {
+            if (res.status === "not_found") {
+                if (res.query.required) {
+                    this.throw(`Required argument "${and_or_str(res.query.id ?? res.query.index)}" was not found.`);
+                } else {
+                    return undefined as Res;
+                }
+            }
             this.throw(res.error);
         }
-        if (!res.found) {
-            this.throw(`Argument "${res.query}" not found.`);
-        }
-        return res.value!;
+        return res.value as Res;
     }
 
     /**
@@ -501,7 +748,7 @@ export class CLI {
      * @libris
      */
     error(...err: any[]): void {
-        error(...err);
+        dump_error(...err);
     }
 
     /**
@@ -509,6 +756,9 @@ export class CLI {
      * @libris
      */
     throw(...err: any[]): never {
+        if (err.length === 1 && typeof err[0] === "string") {
+            throw_error(new Error(err[0]));
+        }
         throw_error(...err);
     }
 
@@ -517,7 +767,11 @@ export class CLI {
      * 
      * @libris
      */
-    docs(command_or_commands: Command | Command[] | null = null): void {
+    docs(command_or_commands?:
+        | Main<S>
+        | Command<S>
+        | Command<S>[]
+    ): void {
         // Assign to commands when undefined
         if (command_or_commands == null) {
             command_or_commands = this.commands;
@@ -568,7 +822,7 @@ export class CLI {
                 const list_item: [string, string] = ["", ""];
 
                 // Add command.
-                list_item[0] = `    ${Query.to_str(command.id ?? "<main>")}`;
+                list_item[0] = `    ${and_or_str(command.id ?? "<main>")}`;
                 list_item[1] = (command.description ?? "") + "\n";
                 list.push(list_item);
 
@@ -583,12 +837,12 @@ export class CLI {
                         if (arg.id == null) {
                             list_item[0] = `        argument ${arg_index}`;
                         } else {
-                            list_item[0] = `        ${Query.to_str(arg.id)}`;
+                            list_item[0] = `        ${and_or_str(arg.id)}`;
                         }
-                        if (arg.type != null && (arg as Arg).type !== "boolean") {
+                        if (arg.type != null && arg.type !== "boolean") {
                             list_item[0] += ` <${arg.type}>`;
                         }
-                        if ((typeof arg.required === "function" && arg.required()) || (typeof arg.required === "boolean" && arg.required)) {
+                        if (arg.required) {
                             list_item[0] += " (required)";
                         }
                         list_item[1] = (arg.description ?? "") + "\n";
@@ -630,7 +884,7 @@ export class CLI {
             }
 
             // Usage.
-            docs += `Usage: $ ${this.name} ${Query.to_str(command_or_commands.id ?? `<main>>`)} [options]\n`;
+            docs += `Usage: $ ${this.name} ${and_or_str(command_or_commands.id ?? `<main>`)} [options]\n`;
 
             // Description.
             if (command_or_commands.description) {
@@ -651,12 +905,12 @@ export class CLI {
                         list_item[0] = `    argument ${arg_index}`;
                     }
                     else {
-                        list_item[0] = `    ${Query.to_str(arg.id)}`;
+                        list_item[0] = `    ${and_or_str(arg.id)}`;
                     }
                     if (arg.type != null && arg.type !== "boolean") {
                         list_item[0] += ` <${arg.type}>`;
                     }
-                    if ((typeof arg.required === "function" && arg.required()) || (typeof arg.required === "boolean" && arg.required)) {
+                    if (arg.required) {
                         list_item[0] += " (required)";
                     }
                     list_item[1] = (arg.description ?? "") + "\n";
@@ -667,7 +921,7 @@ export class CLI {
             }
 
             // Examples.
-            if (command_or_commands.examples != null) {
+            if (command_or_commands.examples?.length) {
                 docs += `\nExamples:\n`;
                 if (typeof command_or_commands.examples === "string") {
                     docs += `    ${Colors.italic}${command_or_commands.examples.startsWith("$") ? "" : "$ "}${command_or_commands.examples}${Colors.end}\n`;
@@ -699,109 +953,48 @@ export class CLI {
         console.log(docs);
     }
 
-    // Add an argument to the command arguments object.
-    private add_to_cmd_args(
-        cmd_args: Record<string, any>,
-        name: string | Query.And | Query.Or,
-        value: any,
-        parent: Record<string, any>,
-    ): void {
-        if (name instanceof Query.And) {
-
-            // Insert root also directly.
-            // Use last since an array is always an And operation.
-            if (parent === cmd_args) {
-                let id = name[name.length - 1];
-                if (typeof id !== "string") id = id[0]
-                id = id.replace(/^-+/, ""); // remove leading dashes.
-                parent[id] = value;
-            }
-
-            // Insert as nested object(s).
-            if (name.length === 0) { throw_error("Cannot insert an empty name array."); }
-            else if (name.length === 1) {
-                const id = typeof name[0] === "string" ? name[0] : name[0][0]
-                    .replace(/^-+/, ""); // remove leading dashes.
-                parent[id] = value;
-            } else {
-                const first = typeof name[0] === "string" ? name[0] : name[0][0]
-                    .replace(/^-+/, ""); // remove leading dashes.
-                parent[first] ??= {};
-                this.add_to_cmd_args(cmd_args, name.slice(1) as Query.And, value, parent[first]);
-            }
-        } else if (Array.isArray(name)) {
-            const id = name[0]
-                .replace(/^-+/, ""); // remove leading dashes.
-            parent[id] = value;
-        } else {
-            parent[name.replace(/^-+/, "")] = value;
+    /**
+     * Add the main command.
+     * 
+     * @param main The main command to set.
+     * 
+     * @returns The current CLI instance for chaining.
+     * 
+     * @dev_note We require a special function for this
+     *           Dont allow passing this in constructor opts.
+     *           This is so we can infer the args using InferArgs.
+     *           That doesnt work when passing a commands array to the constructor.
+     */
+    main<const A extends Command.Args<S> = Command.Args<S>>(
+        main: Main.Opts<S, Main.Variant, A>
+    ): this {
+        if (this._main) {
+            throw_error("Main command already set.");
         }
+        this._main = (main instanceof Main ? main : new Main<S, Main.Variant, A>(main, this.strict)) as Main<S>;
+        if (debug.on(3)) debug("Added main command: ", this._main);
+        return this;
     }
 
-    /** Run a command. */
-    async command(command: Command) {
-
-        // Get arguments.
-        const cmd_args: Record<string, any> = { _command: command };
-
-        // Parse arguments.
-        if (command.args?.length) {
-            for (const arg of command.args) {
-                try {
-                    if (!arg.arg_name) { throw_error(`Argument "${arg.id}" is not initialized.`); }
-
-                    // Type bool.
-                    if (arg.type === "boolean") {
-                        if (!arg.id) {
-                            throw_error(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`);
-                        }
-                        this.add_to_cmd_args(cmd_args, arg.arg_name, this.present(arg.id), cmd_args);
-                    }
-                    // Get and cast.
-                    else {
-                        // Build get options to satisfy overloads
-                        let res;
-                        if (typeof arg.index === "number") {
-                        } else {
-
-                        }
-                        const { found, value } = this.info(arg, { def: false });
-                        // const { found, value } = this.info({
-                        //     id: arg.id,
-                        //     type: arg.type ?? "string",
-                        //     index: arg.index,
-                        // });
-                        // console.log(`Found arg "${Query.to_str(arg.id)}" at index ${arg_index}:`, value);
-                        if (found === false && (
-                            (typeof arg.required === "function" && arg.required())
-                            || (typeof arg.required === "boolean" && arg.required)
-                        )) {
-                            throw_error(`Required argument "${Query.to_str(arg.arg_name)}" not found.`);
-                        }
-                        if (found === true && value == null && arg.def !== undefined) {
-                            this.add_to_cmd_args(cmd_args, arg.arg_name, arg.def, cmd_args);
-                        } else if (value != null) {
-                            this.add_to_cmd_args(cmd_args, arg.arg_name, value, cmd_args);
-                        }
-                    }
-                } catch (err) {
-                    this.docs(command);
-                    this.error(err);
-                    return true;
-                }
-            }
-        }
-        if (debug.on(1)) debug(`Running command: ${"id" in command ? command.id ? Query.to_str(command.id) : "<unknown>" : "<main>"}`);
-        if (debug.on(2)) debug("With args:", cmd_args);
-
-        // Call the callback.
-        try {
-            await Promise.resolve(command.callback(cmd_args as any));
-        } catch (err) {
-            this.docs(command);
-            this.error(err);
-            process.exit(1);
-        }
+    /**
+     * Add an identifier based command mode to the CLI.
+     * 
+     * @param cmd The command to add.
+     * 
+     * @returns The current CLI instance for chaining.
+     * 
+     * @dev_note We require a special function for this
+     *           Dont allow passing this in constructor opts.
+     *           This is so we can infer the args using InferArgs.
+     *           That doesnt work when passing a commands array to the constructor.
+     */
+    command<const A extends Command.Args<S> = Command.Args<S>>(
+        cmd: Command.Opts<S, Command.Variant, A>
+    ): this {
+        const c = (cmd instanceof Command ? cmd : new Command<S, Command.Variant, A>(cmd, this.strict)) as Command<S>;
+        if (debug.on(2)) debug("Added command: ", c);
+        this.commands.push(c);
+        return this;
     }
 
     /**
@@ -813,15 +1006,19 @@ export class CLI {
         const help = this.present(["-h", "--help"]);
         let matched = false;
 
+        // Check unknown args in strict mode.
+        if (this.strict) {
+            this._check_unknown_args();
+        }
+
+        // Run commands.
         for (const command of this.commands) {
-            if (this.present(command.id)) {
-                // console.log(`Running main command: ${Query.to_str(command.id)}`);
-                if (help) {
-                    // show command help.
-                    this.docs(command);
-                    return true;
-                }
-                await this.command(command);
+            const found_index = command.id instanceof And
+                ? 0
+                : this.find_index(command.id);
+            if (found_index != null) {
+                if (help) { this.docs(command); return true; }
+                await this.run_command(command, found_index);
                 matched = true;
                 break;
             }
@@ -834,25 +1031,20 @@ export class CLI {
         }
 
         // Show main command.
-        if (!matched && this.main) {
-            // console.log(`Running main command: ${this.main.id}`);
-            if (help) {
-                // show command help.
-                this.docs(this.main);
-                return true;
-            }
+        if (!matched && this._main) {
+            if (help) { this.docs(this._main); return true; }
             if (
-                this.main.args
-                && !this.main.args.every(x => x.optional) // except when all args are optional.
-                && !this.main.args.some(x => x.variant === "id" && x.id && this.present(x.id)) // ensure some of the main args are present
+                this._main.args
+                && !this._main.args.every(x => !x.required)
+                // @todo this should exclude ids that are also present in the main command args.
+                && !this._main.args.some(x => x.variant === "id" && x.id && this.present(x.id)) // ensure some of the main args are present
             ) {
                 // Ensure any of the args are found, if not then its likely not the main command.
                 this.docs();
                 this.error("Invalid mode, not main.");
-                // console.log("Present args:", this.main.args.map(x => x.id).join(", "));
                 return false;
             }
-            await this.command(this.main);
+            await this.run_command(this._main);
             matched = true;
         }
 
@@ -866,77 +1058,119 @@ export class CLI {
         return true;
     }
 }
-export const cli = new CLI({ _sys: true });
 
 /**
- * CLI types.
- * @note We need to build the CLI module here.
- *       Due to conflicting names and re-exports of CLI class + creating a CLI namespace.
+ * Info response.
+ * @note that we use a `found` attribute to ensure robust checking instead of checkng if value is undefined, because that can happen while still returning a found value / default value.
+ * 
+ * @todo apply enum cast in `info()` response
  */
-export namespace CLI {
-
+export type Info<
+    /** The info mode. */
+    M extends Info.Mode = Info.Mode,
+    /** The attached search query, used to derive `Info` attributes. */
+    A extends Arg.Base | Arg.Base.Opts = Arg.Base,
+> =
     /**
-     * Info response.
-     * @note that we use a `found` attribute to ensure robust checking instead of checkng if value is undefined, because that can happen while still returning a found value / default value.
+     * Error response.
      */
-    export type Info<
-        M extends Info.Mode = Info.Mode,
-        T extends Arg.Castable = Arg.Castable,
-    > =
-        // invalid cast from T + `def` combination - the type casted value is not the same as the default value.
-        M extends "invalid_cast" ? {
-            error?: never;
-            found?: boolean;
-            value?: never;
-            query: _Arg; // not guaranteed T since T can be a child of an array / OR.
-        }
-        // perform invalid cast check, if so use that mode.
-        : [Arg.Cast<T>] extends [never] ? Info<"invalid_cast", T>
-        // error response.
-        : M extends "error" ? {
-            error: string;
-            found?: never;
-            value?: never;
-            query: _Arg, // not guaranteed T since T can be a child of an array / OR.
-        }
-        // not found response.
-        : M extends "not_found" ? {
-            error?: never;
-            found: false;
-            value?: Arg.Cast<T>; // can still be defined with the value of the `Arg.def` attribute.
-            query: _Arg; // not guaranteed T since T can be a child of an array / OR.
-        }
-        // found response.
-        : M extends "found" ? {
-            error?: never;
-            found: true;
-            value: Arg.Cast<T>;
-            query: _Arg; // not guaranteed T since T can be a child of an array / OR.
-        } 
-        // invalid mode.
-        : never;
-
-    /** Info types. */
-    export namespace Info {
-
-        /** Info mode type. */
-        export type Mode = "error" | "found" | "not_found" | "invalid_cast";
-
-    }
-
-    /**
-     * Create module.
-     */
-    export type Arg = _Arg;
-    export const Arg = _Arg;
-    export type Command = _Command;
-    export const Command = _Command;
-    // export type Query = _Query;
-    export const Query = _Query;
+    M extends "error" ? {
+        error: string;
+        status: "not_found" | "invalid_type" | "invalid_value"
+        value?: never;
+        query: A,
+    } :
+    /** Found response. */
+    M extends "success" ? {
+        /** Error is never defined so can be used as a type guard. */
+        error?: never;
+        /**
+         * The status of the query
+         * - `success` means the query was found and the value was casted.
+         * - `default` means the query was not found and the default entry value was returned.
+         */
+        status: "success" | "default";
+        /** The casted value type. */
+        value: InferArgs.IsOptional<A> extends true
+            ? undefined | InferArgs.ExtractArgValueType<A, "string">
+            : InferArgs.ExtractArgValueType<A, "string">;
+        /** The attached query. */
+        query: A,
+    } :
+    /** Invalid mode. */
+    never;
+export namespace Info {
+    /** The info mode. */
+    export type Mode = "error" | "success";
 }
 
+// ------------------------------------------------------------------
+// Public functions.
+
+// Public CLI instance.
+export const cli = new CLI({ _sys: true, strict: true });
+
+/**
+ * Get an argument.
+ * @param query The argument get options. See {@link Arg.Base} for option information.
+ * @libris
+ */
+export function get<
+    const A extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">,
+>(query: A | Or | string[] | string): InferArgs.IsOptional<A> extends true
+    ? undefined | InferArgs.ExtractArgValueType<A, "string">
+    : InferArgs.ExtractArgValueType<A, "string">
+{
+    return cli.get(query) as any;
+}
+
+/**
+ * Check if an argument is present.
+ * @libris
+ */
+export function present(id: number | string | string[] | Or | And | Arg.Base): boolean {
+    return cli.present(id);
+}
+
+
+// // ————————————————————————————————————————————————————————
+// // INTERNAL TESTS
+
+// const opt1x = cli.get(new Arg.Base({ id: "--str", type: "string", required: false }, "query", false));
+// const opt1y = cli.get({ id: "--str", type: "string", required: false });
+// // @ts-expect-error
+// const opt1: string = cli.get({ id: "--str", type: "string", required: false }); //
+// const opt2: string = cli.get({ id: "--str", type: "string", required: true }); //
+
+// const str1: string = cli.get({ id: "--str", type: "string" }); //
 // const nr1: number = cli.get({ id: "--nr", type: "number" }); 
 // const nr2: number = cli.get({ id: "--nr", type: "number", def: 0 });
 // const arr1: number[] = cli.get({ id: "--nr", type: "number[]", def: [] as number[] });
+
+// new CLI()
+// .command({
+//     id: "test",
+//     description: "test",
+//     args: [
+//         { name: "source", type: "string" },
+//         // { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
+//         // { id: "--git", type: "string[]", description: "Push to all git or a list of specific git remotes.", def: [] },
+//         // { id: "--ssh", type: "string[]", description: "Push to all ssh or a list of specific ssh remotes.", def: [] },
+//         // { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
+//         // { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
+//         // { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
+//         // { id: ["--log-level", "-l"], type: "number", description: "The log level." },
+//     ] as const,
+//     callback: ({
+//         source,
+//         // sources = null,
+//         // git = null,
+//         // ssh = null,
+//         // forced = false,
+//         // del = false,
+//         // ensure_push = false,
+//         // log_level = 0,
+//     }) => {}
+// });
 
 
