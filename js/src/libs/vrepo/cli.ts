@@ -34,8 +34,8 @@ cli.command({
     args: [
         { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the package." },
         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
-        { id: "--git", type: "string[]", description: "Push to all git or a list of specific git remotes.", def: [] },
-        { id: "--ssh", type: "string[]", description: "Push to all ssh or a list of specific ssh remotes.", def: [] },
+        { id: "--git", type: "string[]", required: false, description: "Push to all git or a list of specific git remotes." },
+        { id: "--ssh", type: "string[]", required: false, description: "Push to all ssh or a list of specific ssh remotes." },
         { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
         { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
         { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
@@ -61,7 +61,7 @@ cli.command({
         } else {
             all_sources.push("./");
         }
-        console.log("Sources:", all_sources)
+
         // Iterate sources array.
         for (const source of all_sources) {
             const repo: Repo = new Repo({
@@ -92,7 +92,6 @@ cli.command({
                 // Add all git remotes.
                 git_remotes = repo.config.git.remotes;
             }
-            console.log("Git remotes:", git_remotes)
 
             // Build ssh remotes.
             if (Array.isArray(ssh) && ssh.length > 0) {
@@ -164,8 +163,8 @@ cli.command({
     args: [
         { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the source path." },
         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." },
-        { id: "--git", type: "array", description: "Pull from all git or a list of specific git remotes.", def: [] },
-        { id: "--ssh", type: "array", description: "Pull from all ssh or a list of specific ssh remotes.", def: [] },
+        { id: "--git", type: "array", required: false, description: "Pull from all git or a list of specific git remotes." },
+        { id: "--ssh", type: "array", required: false, description: "Pull from all ssh or a list of specific ssh remotes." },
         { id: ["--forced", "-f"], type: "boolean", description: "Pull with git in forced mode." },
         { id: ["--del", "-d"], type: "boolean", description: "Pull with ssh in delete mode." },
     ],
