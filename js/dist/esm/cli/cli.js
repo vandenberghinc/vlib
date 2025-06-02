@@ -881,6 +881,8 @@ export class CLI {
         }
         // Show main command.
         if (!matched && this._main) {
+            if (debug.on(2))
+                debug("Checking main command.");
             if (help) {
                 this.docs(this._main);
                 return true;
@@ -895,6 +897,8 @@ export class CLI {
                 this.error("Invalid mode, not main.");
                 return false;
             }
+            if (debug.on(2))
+                debug("Executing main command.");
             await this.run_command(this._main);
             matched = true;
         }
@@ -904,6 +908,8 @@ export class CLI {
             this.error("Invalid mode.");
             return false;
         }
+        if (debug.on(2))
+            debug("CLI run finished");
         return true;
     }
 }
