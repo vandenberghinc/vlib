@@ -4,7 +4,7 @@
     <td align="center" width="140">
       <a href="https://github.com/vandenberghinc/vlib">
         <!-- pre-rounded graphic -->
-        <img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.128.png"
+        <img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
              alt="VLib logo" width="128" height="128">
       </a>
     </td>
@@ -12,7 +12,7 @@
     <td align="left" style="vertical-align:middle;">
       <h1 style="margin:0;">VLib</h1>
       <em>
-        Generic developer library.
+        Generic development library.
       </em>
     </td>
   </tr>
