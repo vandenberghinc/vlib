@@ -12,7 +12,7 @@
     <td align="left" style="vertical-align:middle;">
       <h1 style="margin:0;">VLib</h1>
       <em>
-        <code>Generic developer library.
+        Generic developer library.
       </em>
     </td>
   </tr>
