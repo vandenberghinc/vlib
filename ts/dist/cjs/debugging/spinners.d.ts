@@ -30,5 +30,12 @@ export declare namespace Spinners {
     function pause_all(): void;
     /** Resume the last active spinner if any. */
     function resume_last(): void;
+    /**
+     * Almost ensure a safe print after this func is executed.
+     * By resetting the last dumped line if there is an active spinner.
+     */
+    function ensure_safe_print(): void;
+    /** Clear the current line. */
+    function clear_current_line(): void;
 }
 export { Spinners as spinners };

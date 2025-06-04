@@ -330,18 +330,14 @@ class Pipe {
     if (r.ignored || !r.data) {
       return;
     }
-    if (this._out === console.log && this.needs_linebreak_from_spinners()) {
-      this._out("");
+    if (this._out === console.log && import_spinners.Spinners.has_active()) {
+      import_spinners.Spinners.clear_current_line();
     }
     if (r.mode === import_directives.Directive.error || r.mode === import_directives.Directive.warn) {
       this._err(r.data.join(""));
     } else {
       this._out(r.data.join(""));
     }
-  }
-  /** Check if we need to write a line break for the active spinners before logging. */
-  needs_linebreak_from_spinners() {
-    return import_spinners.Spinners.has_active();
   }
   /**
    * Log a raw message to the console.

@@ -61,5 +61,20 @@ export namespace Spinners {
         }
     }
 
+    /**
+     * Almost ensure a safe print after this func is executed.
+     * By resetting the last dumped line if there is an active spinner.
+     */
+    export function ensure_safe_print(): void {
+        if (active.some(spinner => spinner.running)) {
+            clear_current_line();
+        }
+    }
+
+    /** Clear the current line. */
+    export function clear_current_line(): void {
+        process.stdout.write('\r\x1b[K'); // Clear the current line
+    }
+
 }
 export { Spinners as spinners }; // snake_case compatibility.

@@ -451,10 +451,10 @@ cli.command({
   }
 });
 cli.command({
-  id: vlib.CLI.and("--npm", "--publish"),
+  id: vlib.CLI.and("--npm", "--push"),
   description: "Publish a npm package.",
   examples: {
-    "Publish": "vrepo --npm --publish"
+    "Publish": "vrepo --npm --push"
   },
   args: [
     { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the source path." },

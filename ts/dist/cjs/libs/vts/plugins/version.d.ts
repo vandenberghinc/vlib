@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path } from "@vandenberghinc/vlib";
+import { Path } from "../../../index.js";
 import { Plugin } from "./plugin.js";
 /**
  * Version plugin, insert __version into dist files.

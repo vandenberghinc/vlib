@@ -94,7 +94,7 @@ export class Repo {
                         }
                     }
                 },
-                ssh: {
+                ssh: !this.ssh_enabled ? "any" : {
                     type: "object",
                     required: this.ssh_enabled,
                     scheme: {
@@ -112,7 +112,7 @@ export class Repo {
                         },
                     },
                 },
-                git: {
+                git: !this.git_enabled ? "any" : {
                     type: "object",
                     required: this.git_enabled,
                     scheme: {

@@ -56,6 +56,16 @@ var Spinners;
     }
   }
   Spinners2.resume_last = resume_last;
+  function ensure_safe_print() {
+    if (Spinners2.active.some((spinner) => spinner.running)) {
+      clear_current_line();
+    }
+  }
+  Spinners2.ensure_safe_print = ensure_safe_print;
+  function clear_current_line() {
+    process.stdout.write("\r\x1B[K");
+  }
+  Spinners2.clear_current_line = clear_current_line;
 })(Spinners || (Spinners = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

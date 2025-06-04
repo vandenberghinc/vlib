@@ -52,6 +52,21 @@ export var Spinners;
         }
     }
     Spinners.resume_last = resume_last;
+    /**
+     * Almost ensure a safe print after this func is executed.
+     * By resetting the last dumped line if there is an active spinner.
+     */
+    function ensure_safe_print() {
+        if (Spinners.active.some(spinner => spinner.running)) {
+            clear_current_line();
+        }
+    }
+    Spinners.ensure_safe_print = ensure_safe_print;
+    /** Clear the current line. */
+    function clear_current_line() {
+        process.stdout.write('\r\x1b[K'); // Clear the current line
+    }
+    Spinners.clear_current_line = clear_current_line;
 })(Spinners || (Spinners = {}));
 export { Spinners as spinners }; // snake_case compatibility.
 //# sourceMappingURL=spinners.js.map

@@ -72,7 +72,7 @@ var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
 const print = (...args) => (0, import_index_m_uni2.debug)(0, ...args);
 const { log, warn, error } = import_logger.logger.loggers();
-const version = "1.6.13";
+const version = "1.6.16";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CLI,

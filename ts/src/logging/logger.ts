@@ -15,6 +15,7 @@ import { SourceLoc } from '../debugging/source_loc.js';
 import { Utils } from '../utils.js';
 import { Directive } from '../debugging/directives.js';
 import { Pipe } from '../debugging/pipe.js';
+import { Spinners } from '../debugging/spinners.js';
 
 /**
  * Parsed log message.
@@ -326,9 +327,7 @@ export class Logger extends Pipe {
 
         /** Dump buffs */
         if (msg.length > 0 && local_level <= active_log_level) {
-            if (this.needs_linebreak_from_spinners()) {
-                console.log();
-            }
+            Spinners.ensure_safe_print();
             this.pre_pipe_process(msg);
             if (mode === Directive.error || mode === Directive.warn) {
                 console.error(msg.join(''));

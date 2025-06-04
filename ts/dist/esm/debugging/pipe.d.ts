@@ -198,8 +198,6 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
      *      Any other directives are allowed before the first non-directive / local log level argument.
      */
     log(...args: (Directive | Error | any)[]): void;
-    /** Check if we need to write a line break for the active spinners before logging. */
-    protected needs_linebreak_from_spinners(): boolean;
     /**
      * Log a raw message to the console.
      */

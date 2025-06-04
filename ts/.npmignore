@@ -1,35 +1,21 @@
 # Project dependent files.
-/include
-/bundle.js
+tests
 
-# Git files.
-/.git*
-
-# npm files.
-.npmignore
-/node_modules
-package-lock.json
-Info.plist
-icon.icns
-
-# VIDE files.
-.vide
-
-# VPackage files.
-.vpackage
-
-# VDocs files.
+# Default excludes.
 /docs
 .vdocs
-
-# VWeb files.
-/.db
-
-# others.
-/test.js
+.vrepo
 /.old
 /bin
 /test
 /tests
 /dev
-recents
+tsconfig.*json
+/.git*
+/node_modules
+package-lock.json
+.npmignore
+Info.plist
+icon.icns
+unit_tests
+/src

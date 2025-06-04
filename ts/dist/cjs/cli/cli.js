@@ -784,24 +784,39 @@ Examples:
       if (this.strict) {
         this._check_unknown_args();
       }
-      if (import_index_m_uni.debug.on(2))
-        (0, import_index_m_uni.debug)("Running commands.");
-      for (const command of this.commands) {
-        if (import_index_m_uni.debug.on(2))
-          (0, import_index_m_uni.debug)("Checking command ", (0, import_query.and_or_str)(command.id));
-        const found_index = this.find_arg(command).index;
-        if (found_index != null) {
-          if (import_index_m_uni.debug.on(2))
-            (0, import_index_m_uni.debug)("Executing command ", (0, import_query.and_or_str)(command.id));
-          if (help) {
-            this.docs(command);
-            return;
+      const max_visit = 1;
+      const run_commands = (visit = 0) => {
+        for (const command of this.commands) {
+          if (visit === 0 && command.id instanceof import_query.And === false) {
+            continue;
           }
-          await this.run_command(command, found_index);
+          if (import_index_m_uni.debug.on(2))
+            (0, import_index_m_uni.debug)("Checking command ", (0, import_query.and_or_str)(command.id));
+          const found_index = this.find_arg(command).index;
+          if (found_index != null) {
+            if (import_index_m_uni.debug.on(2))
+              (0, import_index_m_uni.debug)("Executing command ", (0, import_query.and_or_str)(command.id));
+            if (help) {
+              this.docs(command);
+              return true;
+            }
+            return this.run_command(command, found_index);
+          }
+        }
+      };
+      for (let visit = 0; visit <= max_visit; ++visit) {
+        const promise = run_commands(visit);
+        if (promise === true) {
+          matched = true;
+          break;
+        } else if (promise) {
+          await promise;
           matched = true;
           break;
         }
       }
+      if (import_index_m_uni.debug.on(2))
+        (0, import_index_m_uni.debug)("Running commands.");
       if (import_index_m_uni.debug.on(2))
         (0, import_index_m_uni.debug)("Matched command: ", matched);
       if (!matched && help) {

@@ -911,25 +911,47 @@ export class CLI {
             if (this.strict) {
                 this._check_unknown_args();
             }
-            // Run commands.
-            if (debug.on(2))
-                debug("Running commands.");
-            for (const command of this.commands) {
-                if (debug.on(2))
-                    debug("Checking command ", and_or_str(command.id));
-                const found_index = this.find_arg(command).index;
-                if (found_index != null) {
-                    if (debug.on(2))
-                        debug("Executing command ", and_or_str(command.id));
-                    if (help) {
-                        this.docs(command);
-                        return;
+            // Run commands in separate visits.
+            const max_visit = 1; // including the max, so `<=`.
+            const run_commands = (visit = 0) => {
+                for (const command of this.commands) {
+                    // Only process `AND` identifiers in the first visit.
+                    // These precedence over `OR` or single identifiers.
+                    // This is the most logical behaviour since the user expects a uniue pattern match.
+                    // @warning never change this behaviour.
+                    if (visit === 0 && command.id instanceof And === false) {
+                        continue;
                     }
-                    await this.run_command(command, found_index);
+                    // Check if the arg is present.
+                    if (debug.on(2))
+                        debug("Checking command ", and_or_str(command.id));
+                    const found_index = this.find_arg(command).index;
+                    if (found_index != null) {
+                        if (debug.on(2))
+                            debug("Executing command ", and_or_str(command.id));
+                        if (help) {
+                            this.docs(command);
+                            return true;
+                        }
+                        return this.run_command(command, found_index);
+                    }
+                }
+            };
+            for (let visit = 0; visit <= max_visit; ++visit) {
+                const promise = run_commands(visit);
+                if (promise === true) {
+                    matched = true;
+                    break;
+                }
+                else if (promise) {
+                    await promise;
                     matched = true;
                     break;
                 }
             }
+            // Run commands.
+            if (debug.on(2))
+                debug("Running commands.");
             // Show help.
             if (debug.on(2))
                 debug("Matched command: ", matched);

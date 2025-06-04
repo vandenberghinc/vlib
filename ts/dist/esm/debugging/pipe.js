@@ -386,8 +386,8 @@ export class Pipe {
             return;
         }
         if (this._out === console.log
-            && this.needs_linebreak_from_spinners()) {
-            this._out("");
+            && Spinners.has_active()) {
+            Spinners.clear_current_line();
         }
         if (r.mode === Directive.error || r.mode === Directive.warn) {
             this._err(r.data.join(""));
@@ -395,10 +395,6 @@ export class Pipe {
         else {
             this._out(r.data.join(""));
         }
-    }
-    /** Check if we need to write a line break for the active spinners before logging. */
-    needs_linebreak_from_spinners() {
-        return Spinners.has_active();
     }
     /**
      * Log a raw message to the console.

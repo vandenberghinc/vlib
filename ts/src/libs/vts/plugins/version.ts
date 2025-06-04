@@ -4,7 +4,7 @@
  */
 
 // External imports.
-import { Path } from "@vandenberghinc/vlib";
+import { Path } from "../../../index.js";
 import { Plugin } from "./plugin.js";
 import { UpsertRuntimeVars } from "./upsert_runtime_vars.js";
 import { load_pkg_json } from "../utils/pkg_json.js";
