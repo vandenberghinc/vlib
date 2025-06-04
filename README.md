@@ -1,7 +1,7 @@
 <h1 style="display:inline-flex;align-items:center;margin:0;">
   <a href="https://github.com/vandenberghinc/vlib" style="margin-right:8px;">
     <img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.256.png"
-         width="50" height="50"
+         width="100" height="100"
          alt="VLib logo"
          style="border-radius:8px;">
   </a>
