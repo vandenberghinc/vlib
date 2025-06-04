@@ -1,16 +1,17 @@
-<!-- hero block -->
-<a href="https://github.com/vandenberghinc/vlib">
-  <img
-    src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
-    alt="VLib logo"
-    width="128" height="128"
-    style="float:left;margin:0 14px 4px 0;" />
-</a>
-
-<h1 style="margin:0;">VLib</h1>
-<em style="color:#6a737d;">Generic development library</em>
-
-<div style="clear:both;"></div>
+<!-- hero -->
+<div style="display:flex;align-items:center;gap:12px;">
+  <a href="https://github.com/vandenberghinc/vlib">
+    <img
+      src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
+      alt="VLib logo"
+      width="64" height="64"
+      style="border-radius:12px;" />
+  </a>
+  <div>
+    <strong style="font-size:1.8rem;line-height:1;">VLib</strong><br>
+    <em style="color:#6a737d;">Generic development library</em>
+  </div>
+</div>
 
 
 
