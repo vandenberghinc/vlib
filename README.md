@@ -1,18 +1,16 @@
-<!-- hero -->
-<div style="display:flex;align-items:center;gap:12px;">
+<h1>
   <a href="https://github.com/vandenberghinc/vlib">
-    <img
-      src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
-      alt="VLib logo"
-      width="64" height="64"
-      style="border-radius:12px;" />
+    <img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
+         width="48" height="48"
+         alt="VLib logo"
+         style="vertical-align:middle;border-radius:8px;">
   </a>
-  <div>
-    <strong style="font-size:1.8rem;line-height:1;">VLib</strong><br>
-    <em style="color:#6a737d;">Generic development library</em>
-  </div>
-</div>
+  <span style="vertical-align:middle;">VLib</span>
+</h1>
 
+<p>
+  <em style="color:#6a737d;">Generic development library</em>
+</p>
 
 
 **VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks. While the repository includes a comprehensive C++ codebase, this README focuses on the TypeScript library.
