@@ -1,22 +1,31 @@
-<table border="0" cellpadding="0" cellspacing="0">
+<!-- banner / hero block -->
+<table
+  style="border:none;border-collapse:collapse;margin:0;padding:0;"
+  cellpadding="0" cellspacing="0"
+>
   <tr>
-    <!-- Icon column -->
-    <td align="center" width="140">
+    <!-- icon -->
+    <td style="border:none;padding:0 12px 0 0;vertical-align:middle;">
       <a href="https://github.com/vandenberghinc/vlib">
-        <!-- pre-rounded graphic -->
-        <img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
-             alt="VLib logo" width="128" height="128">
+        <img
+          src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
+          alt="VLib logo"
+          width="128" height="128"
+          style="display:block;border-radius:0;"  <!-- square icon -->
+        />
       </a>
     </td>
-    <!-- Title + subtitle column -->
-    <td align="left" style="vertical-align:middle;margin:0">
-      <h1 style="margin:0;">VLib</h1>
-      <em>
-        Generic development library.
+    <!-- title / subtitle -->
+    <td style="border:none;padding:0;vertical-align:middle;">
+      <h1 style="margin:0;font-size:2.2em;">VLib</h1>
+      <!-- subtle grey subtitle -->
+      <em style="color:#6a737d;font-style:normal;">
+        Generic&nbsp;development&nbsp;library
       </em>
     </td>
   </tr>
 </table>
+
 
 **VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks. While the repository includes a comprehensive C++ codebase, this README focuses on the TypeScript library.
 
