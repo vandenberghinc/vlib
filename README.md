@@ -2,7 +2,7 @@
   <a href="https://github.com/vandenberghinc/vlib">
     <img
       src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
-      width="128" height="128"
+      width="64" height="64"
       alt="VLib logo"
       style="border-radius:8px;">
   </a>
