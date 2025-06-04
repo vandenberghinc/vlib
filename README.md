@@ -6,8 +6,8 @@
       alt="VLib logo"
       style="border-radius:8px;">
   </a>
-  VLIB
 </h1>
+# VLIB
 <p><em style="color:#6a737d;">Generic development library</em></p>
 
 
