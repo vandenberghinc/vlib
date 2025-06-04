@@ -1,4 +1,4 @@
-<h1 style="display:inline-flex;align-items:flex-start;margin:0;gap:8px;">
+<!-- <h1 style="display:inline-flex;align-items:flex-start;margin:0;gap:8px;"> -->
   <a href="https://github.com/vandenberghinc/vlib">
     <img
       src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.256.png"
@@ -6,7 +6,7 @@
       alt="VLib logo"
       style="border-radius:8px;">
   </a>
-</h1>
+<!-- </h1> -->
 # VLIB
 <p><em style="color:#6a737d;">Generic development library</em></p>
 
