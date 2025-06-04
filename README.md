@@ -8,7 +8,6 @@
              alt="VLib logo" width="128" height="128">
       </a>
     </td>
-
     <!-- Title + subtitle column -->
     <td align="left" style="vertical-align:middle;">
       <h1 style="margin:0;">VLib</h1>
