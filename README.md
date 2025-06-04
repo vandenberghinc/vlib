@@ -12,7 +12,7 @@
     <td align="left" style="vertical-align:middle;">
       <h1 style="margin:0;">VLib</h1>
       <em>
-        <code>Van&nbsp;Den&nbsp;Bergh&nbsp;Inc.</code>’s general-purpose&nbsp;TypeScript&nbsp;toolkit
+        <code>Generic developer library.
       </em>
     </td>
   </tr>
