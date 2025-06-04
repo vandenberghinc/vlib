@@ -9,7 +9,7 @@
       </a>
     </td>
     <!-- Title + subtitle column -->
-    <td align="left" style="vertical-align:middle;">
+    <td align="left" style="vertical-align:middle;margin:0">
       <h1 style="margin:0;">VLib</h1>
       <em>
         Generic development library.
