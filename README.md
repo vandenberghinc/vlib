@@ -8,7 +8,9 @@
 >
 </a>
 \
+&nbsp;
 \
+&nbsp;
 
 **VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks. While the repository includes a comprehensive C++ codebase, this README focuses on the TypeScript library.
 
