@@ -588,7 +588,7 @@ export class Path {
     async cp(destination) {
         return new Promise((resolve, reject) => {
             if (destination == null) {
-                return reject("Define parameter \"destination\".");
+                return reject(new Error("Define parameter \"destination\"."));
             }
             if (destination instanceof Path) {
                 destination = destination.path;
@@ -622,7 +622,7 @@ export class Path {
                 destination = destination.path;
             }
             if (fs.existsSync(destination)) {
-                return reject("Destination path already exists.");
+                return reject(new Error("Destination path already exists."));
             }
             fs_extra.move(this.path, destination, (err) => {
                 if (err) {
@@ -696,10 +696,10 @@ export class Path {
                     trash = pathlib.join(xdg_data_home, 'Trash');
                     break;
                 default:
-                    return reject("Unsupported platform.");
+                    return reject(new Error("Unsupported platform."));
             }
             if (trash == null) {
-                return reject("Unsupported platform.");
+                return reject(new Error("Unsupported platform."));
             }
             let destination;
             try {
@@ -965,7 +965,7 @@ export class Path {
         }
         return new Promise(async (resolve, reject) => {
             if (!this.is_dir()) {
-                return reject(`Path "${this.path}" is not a directory.`);
+                return reject(new Error(`Path "${this.path}" is not a directory.`));
             }
             if (!recursive) {
                 fs.readdir(this.path, (err, files) => {

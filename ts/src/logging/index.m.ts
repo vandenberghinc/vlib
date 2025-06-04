@@ -8,5 +8,5 @@ export * from "./terminal_divider.js";
 export { Logger, logger } from "./logger.js";
 export * from "../debugging/source_loc.js"; // also add SourceLoc here for convenience
 export * from "./loader.js";
-export * from "./spinner.js";
+export * from "../debugging/spinner.js";
 export * from "./prompts.js";

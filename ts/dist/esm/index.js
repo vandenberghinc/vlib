@@ -45,5 +45,5 @@ export * from "./clipboard/index.js";
  * @warning Expect an error since we should not import any of the `vts/types` files.
  *          Otherwise we would declare these attributes globally also on non vts processed files.
  *          @ts-expect-error */
-export const version = '1.6.1';
+export const version = '1.6.13';
 //# sourceMappingURL=index.js.map

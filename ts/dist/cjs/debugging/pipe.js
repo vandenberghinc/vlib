@@ -25,6 +25,7 @@ var import_date = require("../global/date.js");
 var import_colors = require("../system/colors.js");
 var import_source_loc = require("./source_loc.js");
 var import_directives = require("./directives.js");
+var import_spinners = require("../debugging/spinners.js");
 class Pipe {
   /**
    * The active log level.
@@ -329,11 +330,18 @@ class Pipe {
     if (r.ignored || !r.data) {
       return;
     }
+    if (this._out === console.log && this.needs_linebreak_from_spinners()) {
+      this._out("");
+    }
     if (r.mode === import_directives.Directive.error || r.mode === import_directives.Directive.warn) {
       this._err(r.data.join(""));
     } else {
       this._out(r.data.join(""));
     }
+  }
+  /** Check if we need to write a line break for the active spinners before logging. */
+  needs_linebreak_from_spinners() {
+    return import_spinners.Spinners.has_active();
   }
   /**
    * Log a raw message to the console.

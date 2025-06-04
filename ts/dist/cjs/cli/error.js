@@ -20,6 +20,7 @@ __export(stdin_exports, {
   CLIError: () => CLIError
 });
 module.exports = __toCommonJS(stdin_exports);
+var import_spinners = require("../debugging/spinners.js");
 var import_colors = require("../system/colors.js");
 class CLIError extends globalThis.Error {
   /** The error name. */
@@ -45,7 +46,7 @@ class CLIError extends globalThis.Error {
   /** Dump an `Error` stack */
   add_error_stack(lines, error, nested_depth = 0, id) {
     const indent = nested_depth === 0 ? "" : " ".repeat(nested_depth * 4);
-    lines.push(indent + import_colors.Color.red(typeof error.name === "string" ? error.name : "Error") + (id ? " " + import_colors.Color.gray(`[${id}]`) : "") + `: ${error.message}`);
+    lines.push(indent + import_colors.Color.red(typeof error.name === "string" ? error.name : "Error") + (id ? " " + import_colors.Color.gray(`[${id}]`) : "") + `: ${error.message ?? error}`);
     if (error.stack) {
       const split = error.stack.split("\n");
       if (split.length > 1) {
@@ -65,7 +66,10 @@ class CLIError extends globalThis.Error {
     }
     this.add_error_stack(lines, this, 0, this.id);
     if (this.error) {
-      this.add_error_stack(lines, this.error, 1);
+      this.add_error_stack(lines, this.error, 0);
+    }
+    if (import_spinners.Spinners.has_active()) {
+      console.log();
     }
     console.error(import_colors.Colors.end + lines.join("\n"));
   }

@@ -16,11 +16,11 @@ export declare class NPM {
         version_path?: string;
     });
     logged_in(): Promise<boolean>;
-    login(): Promise<string | undefined>;
+    login(): Promise<void>;
     save(): void;
     increment_version({ save }?: {
         save?: boolean | undefined;
-    }): Promise<string>;
+    }): Promise<any>;
     publish({ only_if_changed, }: {
         only_if_changed?: boolean | undefined;
     }): Promise<{

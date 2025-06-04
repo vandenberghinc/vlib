@@ -61,29 +61,21 @@ class NPM {
   }
   // Check if the user is logged in.
   async logged_in() {
-    return new Promise(async (resolve) => {
-      const proc = new import__.Proc();
-      await proc.start({
-        command: "npm",
-        args: ["whoami"],
-        working_directory: this.source.str(),
-        interactive: false
-      });
-      if (proc.exit_status !== 0) {
-        return resolve(false);
-      }
-      resolve(true);
+    const proc = new import__.Proc();
+    await proc.start({
+      command: "npm",
+      args: ["whoami"],
+      working_directory: this.source.str(),
+      interactive: false
     });
+    return proc.exit_status === 0;
   }
   // Log a user in.
   async login() {
-    return new Promise(async (resolve, reject) => {
-      const logged_in = await this.logged_in();
-      if (logged_in === false) {
-        return reject("No npm user is logged in, execute ($ npm login).");
-      }
-      resolve(void 0);
-    });
+    const logged_in = await this.logged_in();
+    if (logged_in === false) {
+      throw new Error("No npm user is logged in, execute ($ npm login).");
+    }
   }
   // Save the config.
   save() {
@@ -91,84 +83,72 @@ class NPM {
   }
   // Increment the version.
   async increment_version({ save = true } = {}) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let version = this.config.version;
-        if (version === void 0) {
-          version = "1.0.0";
-        } else {
-          const split = version.split(".").map((x) => parseInt(x));
-          split[split.length - 1] += 1;
-          version = split.join(".");
-        }
-        if (save) {
-          this.config.version = version;
-          this.save();
-        }
-        resolve(version);
-      } catch (err) {
-        return reject(err);
-      }
-    });
+    let version = this.config.version;
+    if (version === void 0) {
+      version = "1.0.0";
+    } else {
+      const split = version.split(".").map((x) => parseInt(x));
+      split[split.length - 1] += 1;
+      version = split.join(".");
+    }
+    if (save) {
+      this.config.version = version;
+      this.save();
+    }
+    return version;
   }
   // Publish a package.
   async publish({ only_if_changed = false }) {
-    return new Promise(async (resolve, reject) => {
-      if (only_if_changed && !await this.has_commits()) {
-        return resolve({ has_changed: false, live_version: this.config.version });
-      }
-      try {
-        await this.login();
-      } catch (err) {
-        return reject(err);
-      }
-      if (this.version_path) {
-        const version_export = new import__.Path(this.version_path);
-        version_export.save_sync(`module.exports="${this.config.version}";`);
-      }
-      if (this.config.bin !== void 0) {
-        const proc2 = new import__.Proc();
-        await proc2.start({
-          command: "npm",
-          args: ["link"],
-          working_directory: this.source.str(),
-          interactive: false
-        });
-        if (proc2.exit_status !== 0) {
-          if (proc2.err) {
-            console.log(proc2.err);
-          }
-          return reject(proc2.err);
-        }
-      }
-      const old_version = this.config.version;
-      await this.increment_version();
-      const readme = this.source.join(`/README.md`);
-      let readme_data;
-      if (readme.exists()) {
-        readme_data = await readme.load();
-        await readme.save(readme_data.replace(/version-.s*-blue/, `badge/version-${this.config.version}-blue`));
-      }
-      const proc = new import__.Proc();
-      await proc.start({
+    if (only_if_changed && !await this.has_commits()) {
+      return { has_changed: false, live_version: this.config.version };
+    }
+    await this.login();
+    if (this.version_path) {
+      const version_export = new import__.Path(this.version_path);
+      version_export.save_sync(`module.exports="${this.config.version}";`);
+    }
+    if (this.config.bin !== void 0) {
+      const proc2 = new import__.Proc();
+      await proc2.start({
         command: "npm",
-        args: ["publish"],
+        args: ["link"],
         working_directory: this.source.str(),
         interactive: false
       });
-      if (proc.exit_status !== 0) {
-        this.config.version = old_version;
-        this.save();
-        if (readme_data !== void 0) {
-          await readme.save(readme_data);
+      if (proc2.exit_status !== 0) {
+        if (proc2.err) {
+          console.log(proc2.err);
         }
-        if (proc.err) {
-          console.log(proc.err);
-        }
-        return reject(`Failed to publish pacakge ${this.config.name}.`);
+        throw new Error(proc2.err);
       }
-      resolve({ has_changed: true, live_version: this.config.version });
+    }
+    const old_version = this.config.version;
+    await this.increment_version();
+    const readme = this.source.join(`/README.md`);
+    let readme_data;
+    if (readme.exists()) {
+      readme_data = await readme.load();
+      await readme.save(readme_data.replace(/version-.s*-blue/, `badge/version-${this.config.version}-blue`));
+    }
+    const proc = new import__.Proc();
+    await proc.start({
+      command: "npm",
+      args: ["publish"],
+      working_directory: this.source.str(),
+      interactive: false
     });
+    if (proc.exit_status !== 0) {
+      this.config.version = old_version;
+      this.save();
+      if (readme_data !== void 0) {
+        await readme.save(readme_data);
+      }
+      if (proc.err) {
+        console.log(proc.err);
+      }
+      throw new Error(`Failed to publish pacakge ${this.config.name}.`);
+    }
+    return { has_changed: true, live_version: this.config.version };
   }
   // Checks whether the local package differs from the published version by comparing tarball SHA-1 checksums.
   async has_commits(log_level = -1, tmp_dir = "/tmp") {

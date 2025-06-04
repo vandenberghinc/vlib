@@ -7,6 +7,7 @@ import { Date } from "../global/date.js";
 import { Color, Colors } from "../system/colors.js";
 import { SourceLoc } from './source_loc.js';
 import { ActiveLogLevel, Directive } from './directives.js';
+import { Spinners } from "../debugging/spinners.js";
 /**
  * Pipe class.
  * Responsible for logging data to a pipe function, typically `console.log`.
@@ -384,12 +385,20 @@ export class Pipe {
         if (r.ignored || !r.data) {
             return;
         }
+        if (this._out === console.log
+            && this.needs_linebreak_from_spinners()) {
+            this._out("");
+        }
         if (r.mode === Directive.error || r.mode === Directive.warn) {
             this._err(r.data.join(""));
         }
         else {
             this._out(r.data.join(""));
         }
+    }
+    /** Check if we need to write a line break for the active spinners before logging. */
+    needs_linebreak_from_spinners() {
+        return Spinners.has_active();
     }
     /**
      * Log a raw message to the console.
@@ -511,4 +520,24 @@ export const pipe = new Pipe({
 // }
 // debug_me();
 // Utils.safe_exit();
+// ----------------------------------------------------------------------
+// // Test if we can mix spinners and logging automatically.
+// import { Spinner } from "./spinner.js";
+// const interval = 1000;
+// const spinner_1 = new Spinner("Spinner 1");
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Logging data 1 during spinner 1");
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Logging data 2 during spinner 1");
+// const spinner_2 = new Spinner("Spinner 2");
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Logging data 3 during spinner 2");
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Logging data 3 during spinner 2");
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Stopping spinner 2...");
+// spinner_2.stop();
+// await new Promise(resolve => setTimeout(resolve, interval));
+// pipe.log(0, "Stopping spinner 1...");
+// spinner_1.stop();
 //# sourceMappingURL=pipe.js.map

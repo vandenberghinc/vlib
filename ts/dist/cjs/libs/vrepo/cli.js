@@ -396,10 +396,8 @@ cli.command({
       }
       pkg.version = new_version;
       if (dry_run) {
-        spinner.pause();
         vlib.log("Dry run: would increment version in ", json_path, " to ", vlib.Color.bold(new_version));
         vlib.log("Dry run: would be file content: ", JSON.stringify(pkg, null, 4));
-        spinner.resume();
       } else {
         await json_path.save(JSON.stringify(pkg, null, 4));
       }
@@ -422,9 +420,7 @@ cli.command({
         throw this.error(err.message);
       }
       if (dry_run) {
-        spinner.pause();
         vlib.log("Dry run: would increment version in ", version_path, " to ", vlib.Color.bold(new_version));
-        spinner.resume();
       } else {
         await version_path.save(new_version, { type: "string" });
       }
@@ -640,9 +636,7 @@ cli.command({
         }
         const config = await dependency_path.load({ type: "object" });
         if (config.vrepo_links?.length) {
-          spinner.pause();
           await unlink(dependency);
-          spinner.resume();
         }
         cmd += " " + name;
         const repo = new import_repo.Repo({
@@ -665,9 +659,7 @@ cli.command({
       await package_json_path.save(JSON.stringify(package_json, null, 4));
       if (npm_publishes && install) {
         await new Promise((resolve) => setTimeout(resolve, 2500));
-        spinner.pause();
         await poll_npm_install(source2);
-        spinner.resume();
       }
       spinner.success();
     };
@@ -704,7 +696,7 @@ cli.command({
         }
       }
       local_spinner.error();
-      throw last_err;
+      throw cli.error(`Timed out waiting for npm packages to become live after ${max_elapsed / 1e3} seconds.`, { docs: true });
     };
     for (const source2 of all_sources) {
       await unlink(source2);

@@ -5,6 +5,7 @@
 
 // Imports.
 import * as Code from "../code/index.m.uni.js";
+import { Spinners } from "../debugging/spinners.js";
 import { Color, Colors } from "../system/colors.js";
 
 /**
@@ -56,7 +57,7 @@ export class CLIError extends globalThis.Error {
         lines.push(indent
             +  Color.red(typeof error.name === "string" ? error.name : "Error")
             + (id ? " " + Color.gray(`[${id}]`) : "")
-            + `: ${error.message}`
+            + `: ${error.message ?? error}`
         );
         if (error.stack) {
             // const lines = Code.Iterator.slice_lines(error.stack);
@@ -77,7 +78,11 @@ export class CLIError extends globalThis.Error {
         if (this.docs) { lines.push(this.docs + "\n"); }
         this.add_error_stack(lines, this, 0, this.id);
         if (this.error) {
-            this.add_error_stack(lines, this.error, 1);
+            // this.add_error_stack(lines, this.error, 1);
+            this.add_error_stack(lines, this.error, 0);
+        }
+        if (Spinners.has_active()) {
+            console.log();
         }
         console.error(Colors.end + lines.join("\n"));
     }

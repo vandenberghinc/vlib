@@ -1062,6 +1062,7 @@ export class CLI<
             throw this.error("Main command already set.");
         }
         this._main = (main instanceof Main ? main : new Main<S, Main.Variant, A>(main, this.strict)) as Main<S>;
+        this._main.init(this);
         if (debug.on(3)) debug("Added main command: ", this._main);
         return this;
     }
@@ -1082,8 +1083,9 @@ export class CLI<
         cmd: Command.Opts<S, Command.Variant, A>
     ): this {
         const c = (cmd instanceof Command ? cmd : new Command<S, Command.Variant, A>(cmd, this.strict)) as Command<S>;
-        if (debug.on(2)) debug("Added command: ", c);
+        c.init(this);
         this.commands.push(c);
+        if (debug.on(2)) debug("Added command: ", c);
         return this;
     }
 

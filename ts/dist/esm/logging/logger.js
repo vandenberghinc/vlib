@@ -258,6 +258,9 @@ export class Logger extends Pipe {
         this.add_args(msg, file_msg, args, mode, local_level, active_log_level, local_level_arg_index);
         /** Dump buffs */
         if (msg.length > 0 && local_level <= active_log_level) {
+            if (this.needs_linebreak_from_spinners()) {
+                console.log();
+            }
             this.pre_pipe_process(msg);
             if (mode === Directive.error || mode === Directive.warn) {
                 console.error(msg.join(''));

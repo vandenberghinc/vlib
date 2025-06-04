@@ -745,6 +745,7 @@ Examples:
       throw this.error("Main command already set.");
     }
     this._main = main instanceof import_command.Main ? main : new import_command.Main(main, this.strict);
+    this._main.init(this);
     if (import_index_m_uni.debug.on(3))
       (0, import_index_m_uni.debug)("Added main command: ", this._main);
     return this;
@@ -763,9 +764,10 @@ Examples:
    */
   command(cmd) {
     const c = cmd instanceof import_command.Command ? cmd : new import_command.Command(cmd, this.strict);
+    c.init(this);
+    this.commands.push(c);
     if (import_index_m_uni.debug.on(2))
       (0, import_index_m_uni.debug)("Added command: ", c);
-    this.commands.push(c);
     return this;
   }
   /**

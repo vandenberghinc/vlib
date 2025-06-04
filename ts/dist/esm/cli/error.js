@@ -2,6 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+import { Spinners } from "../debugging/spinners.js";
 import { Color, Colors } from "../system/colors.js";
 /**
  * An CLI error.
@@ -37,7 +38,7 @@ export class CLIError extends globalThis.Error {
         lines.push(indent
             + Color.red(typeof error.name === "string" ? error.name : "Error")
             + (id ? " " + Color.gray(`[${id}]`) : "")
-            + `: ${error.message}`);
+            + `: ${error.message ?? error}`);
         if (error.stack) {
             // const lines = Code.Iterator.slice_lines(error.stack);
             const split = error.stack.split("\n");
@@ -59,7 +60,11 @@ export class CLIError extends globalThis.Error {
         }
         this.add_error_stack(lines, this, 0, this.id);
         if (this.error) {
-            this.add_error_stack(lines, this.error, 1);
+            // this.add_error_stack(lines, this.error, 1);
+            this.add_error_stack(lines, this.error, 0);
+        }
+        if (Spinners.has_active()) {
+            console.log();
         }
         console.error(Colors.end + lines.join("\n"));
     }

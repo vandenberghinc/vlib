@@ -236,6 +236,9 @@ class Logger extends import_pipe.Pipe {
     file_msg.push(this.thread ? `(thread=${this.thread}) ` : "", `(level=${local_level}) `, `(type=${mode === import_directives.Directive.error ? "error" : mode === import_directives.Directive.warn ? "warning" : "log"})`, ": ");
     this.add_args(msg, file_msg, args, mode, local_level, active_log_level, local_level_arg_index);
     if (msg.length > 0 && local_level <= active_log_level) {
+      if (this.needs_linebreak_from_spinners()) {
+        console.log();
+      }
       this.pre_pipe_process(msg);
       if (mode === import_directives.Directive.error || mode === import_directives.Directive.warn) {
         console.error(msg.join(""));

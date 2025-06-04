@@ -871,6 +871,7 @@ export class CLI {
             throw this.error("Main command already set.");
         }
         this._main = (main instanceof Main ? main : new Main(main, this.strict));
+        this._main.init(this);
         if (debug.on(3))
             debug("Added main command: ", this._main);
         return this;
@@ -889,9 +890,10 @@ export class CLI {
      */
     command(cmd) {
         const c = (cmd instanceof Command ? cmd : new Command(cmd, this.strict));
+        c.init(this);
+        this.commands.push(c);
         if (debug.on(2))
             debug("Added command: ", c);
-        this.commands.push(c);
         return this;
     }
     /**
