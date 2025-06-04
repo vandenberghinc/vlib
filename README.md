@@ -5,6 +5,7 @@
          alt="VLib logo"
          style="border-radius:8px;">
   </a>
+  </a>&nbsp;<!-- non-breaking space -->
   VLib
 </h1>
 <p><em style="color:#6a737d;">Generic development library</em></p>
