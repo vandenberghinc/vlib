@@ -1,0 +1,52 @@
+# File: .github/workflows/codeql.yml
+name: "CodeQL ESM TypeScript Scans"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ts/src/**'
+      - '.github/workflows/codeql.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ts/src/**'
+      - '.github/workflows/codeql.yml'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql-scan-ts:
+    name: "CodeQL Scan TS"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,typescript
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: ./ts
+
+      - name: Perform backend CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          working-directory: ./ts
+          category: "codeql-backend-scan"
+
+  

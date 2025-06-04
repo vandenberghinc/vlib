@@ -63,7 +63,7 @@ export default {
 		// `${__dirname}/../include/vlib/types/base/array.h`,
 
 		`${__dirname}/../include/`,
-		`${__dirname}/../ts/src/`,
+		`${__dirname}//src/`,
 	],
 	output: [`${__dirname}/index.html`]
 }

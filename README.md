@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/icon.green.png" width="150" alt="VLib">
+<img src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.1024.webp" width="150" alt="VLib">
 
 **VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks. While the repository includes a comprehensive C++ codebase, this README focuses on the TypeScript library.
 
@@ -84,3 +84,4 @@ VLib is organized into multiple modules, each targeting a specific area:
 - **VTS:** The TypeScript pre/post-processing tools (`libs/vts/`), used internally and available for custom build processes (e.g. adding boilerplate to compiled outputs or performing text transformations on generated code).
 
 > **Note:** Many parts of VLib are designed to work in both Node.js and browser environments. For example, the validation, utility, and data structures modules can be used in web applications, while certain modules are Node-specific (such as the CLI framework and file system tools). The build system produces separate bundles for Node (CommonJS and ESM) and for web (bundled ESM) to ensure compatibility across environments.
+

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+in="${1:-}"
+prefix="${2:-icon}"
+
+if [[ -z $in ]];           then echo "Usage: $(basename "$0") <image> [prefix]" >&2; exit 1; fi
+if [[ ! -f $in ]];         then echo "Error: '$in' not found."               >&2; exit 1; fi
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ICO (multiple embedded sizes)
+# ──────────────────────────────────────────────────────────────────────────────
+magick "$in" \
+  -resize 256x256 \
+  -define icon:auto-resize="16,24,32,48,64,128,256" \
+  "${prefix}.ico"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Stand-alone PNG + WEBP sizes
+# ──────────────────────────────────────────────────────────────────────────────
+for s in 64 128 256 512 1024; do
+  magick "$in" -resize "${s}x${s}" "${prefix}.${s}.png"
+  magick "$in" -resize "${s}x${s}" "${prefix}.${s}.webp"
+done
+
+echo "✔  Finished – files written with prefix '${prefix}'"
