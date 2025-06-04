@@ -11,7 +11,7 @@
           src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.512.png"
           alt="VLib logo"
           width="128" height="128"
-          style="display:block;border-radius:0;"  <!-- square icon -->
+          style="display:block;border-radius:0;"
         />
       </a>
     </td>
