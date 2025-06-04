@@ -7,7 +7,7 @@
       style="border-radius:8px;">
   </a>
 <!-- </h1> -->
-<br><br><br>
+<br><br>
 
 # VLIB
 <p><em style="color:#6a737d;">Generic development library</em></p>
