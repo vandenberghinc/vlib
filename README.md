@@ -1,6 +1,6 @@
 <a href="url"> <img
     src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.1024.webp" alt="VLib"
-    height="auto" width="125" style="border-radius:5px"
+    height="auto" width="125" style="border-radius:50%"
 > </a>
 <br>
 
