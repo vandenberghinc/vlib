@@ -3,62 +3,62 @@
     "version": "1.6.20",
     "description": "Generic TypeScript library built for VInc applications.",
     "type": "module",
-    "module": "./dist/esm/index.js",
-    "main": "./dist/cjs/index.js",
-    "types": "./dist/esm/index.d.ts",
+    "module": "./dist/esm/vlib/index.js",
+    "main": "./dist/cjs/vlib/index.js",
+    "types": "./dist/esm/vlib/index.d.ts",
     "exports": {
         ".": {
-            "import": "./dist/esm/index.js",
-            "types": "./dist/esm/index.d.ts",
-            "require": "./dist/cjs/index.js"
+            "import": "./dist/esm/vlib/index.js",
+            "types": "./dist/esm/vlib/index.d.ts",
+            "require": "./dist/cjs/vlib/index.js"
         },
         "./types": {
             "types": "./dist/esm/global/types.d.ts"
         },
         "./frontend": {
-            "import": "./dist/web/index.web.js",
-            "types": "./dist/web/index.web.d.ts"
+            "import": "./dist/web/vlib/index.web.js",
+            "types": "./dist/web/vlib/index.web.d.ts"
         },
         "./debug": {
-            "import": "./dist/esm/debugging/index.m.uni.js",
-            "types": "./dist/esm/debugging/index.m.uni.d.ts",
-            "require": "./dist/cjs/debugging/index.m.uni.js"
+            "import": "./dist/esm/vlib/debugging/index.m.uni.js",
+            "types": "./dist/esm/vlib/debugging/index.m.uni.d.ts",
+            "require": "./dist/cjs/vlib/debugging/index.m.uni.js"
         },
         "./vtest": {
-            "import": "./dist/esm/libs/vtest/index.js",
-            "types": "./dist/esm/libs/vtest/index.d.ts",
-            "require": "./dist/cjs/libs/vtest/index.js"
+            "import": "./dist/esm/vtest/index.js",
+            "types": "./dist/esm/vtest/index.d.ts",
+            "require": "./dist/cjs/vtest/index.js"
         },
         "./vrepo": {
-            "import": "./dist/esm/libs/vrepo/index.js",
-            "types": "./dist/esm/libs/vrepo/index.d.ts",
-            "require": "./dist/cjs/libs/vrepo/index.js"
+            "import": "./dist/esm/vrepo/index.js",
+            "types": "./dist/esm/vrepo/index.d.ts",
+            "require": "./dist/cjs/vrepo/index.js"
         },
         "./vts": {
-            "import": "./dist/esm/libs/vts/index.js",
-            "types": "./dist/esm/libs/vts/index.d.ts",
-            "require": "./dist/cjs/libs/vts/index.js"
+            "import": "./dist/esm/vts/index.js",
+            "types": "./dist/esm/vts/index.d.ts",
+            "require": "./dist/cjs/vts/index.js"
         },
         "./vts/types/dirname": {
-            "types": "./dist/esm/libs/vts/types/dirname.d.ts"
+            "types": "./dist/esm/vts/types/dirname.d.ts"
         },
         "./vts/types/version": {
-            "types": "./dist/esm/libs/vts/types/version.d.ts"
+            "types": "./dist/esm/vts/types/version.d.ts"
         }
     },
     "bin": {
-        "vtest": "./dist/esm/libs/vtest/cli.js",
-        "vrepo": "./dist/esm/libs/vrepo/cli.js",
-        "vts": "./dist/esm/libs/vts/cli.js"
+        "vtest": "./dist/esm/vtest/cli.js",
+        "vrepo": "./dist/esm/vrepo/cli.js",
+        "vts": "./dist/esm/vts/cli.js"
     },
     "scripts": {
         "build": "npm run build:esm && npm run build:cjs && npm run build:web",
-        "build:esm": "tsc -p tsconfig.json && npm run --silent fill-version-esm && chmod +x dist/esm/libs/vrepo/cli.js && chmod +x dist/esm/libs/vts/cli.js && chmod +x dist/esm/libs/vtest/cli.js",
-        "build:cjs": "node dist/esm/libs/vts/cli.js --transform-esm --src dist/esm/ --dest dist/cjs/ --override --platform node --target es2023",
+        "build:esm": "tsc -p tsconfig.json && npm run --silent fill-version-esm && chmod +x dist/esm/vrepo/cli.js && chmod +x dist/esm/vts/cli.js && chmod +x dist/esm/vtest/cli.js",
+        "build:cjs": "node dist/esm/vts/cli.js --transform-esm --src dist/esm/ --dest dist/cjs/ --override --platform node --target es2023",
         "build:web": "tsc -p tsconfig.web.json && npm run --silent fill-version",
-        "test": "node dist/esm/libs/vtest/cli.js  --results ./unit_tests/results --import dist/esm/jsonc/unit_tests/unit_tests.js,dist/esm/libs/vts/unit_tests/dirname.js,dist/esm/libs/vts/unit_tests/version.js,dist/esm/libs/vts/unit_tests/header.js,dist/esm/libs/vts/unit_tests/fill_templates.js,dist/esm/libs/vts/unit_tests/regex_replace.js,dist/esm/libs/vts/unit_tests/no_debug.js",
-        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = './dist/esm/index.js'; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8');\"",
-        "fill-version": "node dist/esm/libs/vts/cli.js -y --fill-version -s ./dist/esm/index.js,./dist/web/index.web.js -p ./package.json --allow-not-found"
+        "test": "node dist/esm/vtest/cli.js  --results .unit_tests --import dist/esm/unit_tests/index.js",
+        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = './dist/esm/vlib/index.js'; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8');\"",
+        "fill-version": "node dist/esm/vts/cli.js -y --fill-version -s ./dist/esm/vlib/index.js,./dist/web/vlib/index.web.js -p ./package.json --allow-not-found"
     },
     "keywords": [
         "vlib",

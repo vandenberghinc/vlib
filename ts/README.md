@@ -82,9 +82,9 @@ VLib is organized into multiple modules, each targeting a specific area:
 - **Networking:** The `sockets/` module provides a simple HTTP/HTTPS request function and WebSocket client, abstracting Node.js networking APIs for ease of use.
 - **JSONC:** JSON-with-comments support (`jsonc/`) allowing you to parse JSON or config files that include comments.
 - **Crypto:** Basic cryptography helpers (`crypto/`), such as hashing utilities (e.g. generating SHA-256 digests via Node's crypto module).
-- **VTest:** The unit testing library (`libs/vtest/`) enabling you to write tests that can be executed with the `vtest` CLI, including features like selective test runs and result output to files.
-- **VRepo:** The repository management library (`libs/vrepo/`), which underpins the `vrepo` CLI commands for multi-remote Git/SSH operations and npm publishing automation.
-- **VTS:** The TypeScript pre/post-processing tools (`libs/vts/`), used internally and available for custom build processes (e.g. adding boilerplate to compiled outputs or performing text transformations on generated code).
+- **VTest:** The unit testing library (`vtest/`) enabling you to write tests that can be executed with the `vtest` CLI, including features like selective test runs and result output to files.
+- **VRepo:** The repository management library (`vrepo/`), which underpins the `vrepo` CLI commands for multi-remote Git/SSH operations and npm publishing automation.
+- **VTS:** The TypeScript pre/post-processing tools (`vts/`), used internally and available for custom build processes (e.g. adding boilerplate to compiled outputs or performing text transformations on generated code).
 
 > **Note:** Many parts of VLib are designed to work in both Node.js and browser environments. For example, the validation, utility, and data structures modules can be used in web applications, while certain modules are Node-specific (such as the CLI framework and file system tools). The build system produces separate bundles for Node (CommonJS and ESM) and for web (bundled ESM) to ensure compatibility across environments.
 

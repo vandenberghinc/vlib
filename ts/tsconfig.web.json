@@ -18,9 +18,35 @@
         "allowJs": true,
         "checkJs": false,
         "noImplicitAny": false,
+        "paths": {
+            "@vlib": [
+                "./src/vlib/index.ts"
+            ],
+            "@vlib/*": [
+                "./src/vlib/*"
+            ],
+            "@vrepo": [
+                "./src/vrepo/index.ts"
+            ],
+            "@vrepo/*": [
+                "./src/vrepo/*"
+            ],
+            "@vtest": [
+                "./src/vtest/index.ts"
+            ],
+            "@vtest/*": [
+                "./src/vtest/*"
+            ],
+            "@vts": [
+                "./src/vts/index.ts"
+            ],
+            "@vts/*": [
+                "./src/vts/*"
+            ],
+        },
     },
     "include": [
-        "src/index.web.ts",
+        "src/vlib/index.web.ts",
     ],
     "exclude": [
         "**/unit_tests/**/*",

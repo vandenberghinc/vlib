@@ -1,0 +1,119 @@
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var stdin_exports = {};
+__export(stdin_exports, {
+  perform: () => perform
+});
+module.exports = __toCommonJS(stdin_exports);
+var import_js_beautify = __toESM(require("js-beautify"));
+var import_vlib = require("../vlib/index.js");
+var import_module = require("./module.js");
+const { js: beautify } = import_js_beautify.default;
+async function perform({ results, module: module2 = import_vlib.cli.get({ id: "--module", required: false }), target = import_vlib.cli.get({ id: "--target" }), stop_on_failure = import_vlib.cli.present("--stop-on-failure"), stop_after = import_vlib.cli.get({ id: "--stop-after", required: false }), debug = import_vlib.cli.get({ id: "--debug", def: 0, type: "number" }), interactive = import_vlib.cli.present("--interactive"), all_yes = import_vlib.cli.present(["--yes", "-y"]), repeat = import_vlib.cli.get({ id: "--repeat", def: 0, type: "number" }), list_modules = import_vlib.cli.present(["--list-modules", "--list"]), no_changes = import_vlib.cli.present(["--no-changes", "-nc"]), refresh = import_vlib.cli.present("--refresh") ? true : import_vlib.cli.get({ id: "--refresh", def: false, type: ["string", "boolean"] }) }) {
+  if (list_modules) {
+    if (import_module.modules.length === 0) {
+      console.log(`Available unit test modules: None`);
+    } else {
+      console.log(`Available unit test modules:`);
+      for (const mod of import_module.modules) {
+        console.log(` * ${mod.name}`);
+      }
+    }
+    return true;
+  }
+  if (import_module.modules.length === 0) {
+    console.log(`${import_vlib.Color.red("Error")}: No unit tests defined, add unit tests using the add() function.`);
+    return false;
+  }
+  const cache_path = new import_vlib.Path(results);
+  if (!cache_path.exists()) {
+    throw new Error(`Cache directory "${results}" does not exist.`);
+  } else if (!cache_path.is_dir()) {
+    throw new Error(`Cache path "${results}" is not a directory.`);
+  }
+  if (module2 != null || import_module.modules.length === 1) {
+    const mod = import_module.modules.find((m) => module2 == null || m.name === module2);
+    if (!mod) {
+      throw new Error(`Module "${module2}" was not found, the available modules are: [${import_module.modules.map((i) => i.name).join(", ")}]`);
+    }
+    const res = await mod._run({
+      target,
+      stop_on_failure,
+      stop_after,
+      debug,
+      interactive,
+      cache: cache_path,
+      all_yes,
+      repeat,
+      no_changes,
+      refresh
+    });
+    return res.status;
+  }
+  let succeeded = 0, failed = 0;
+  for (const mod of import_module.modules) {
+    if (all_yes) {
+      throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
+    }
+    const res = await mod._run({
+      target,
+      stop_on_failure,
+      stop_after,
+      debug,
+      interactive,
+      cache: cache_path,
+      all_yes: false,
+      refresh
+    });
+    if (!res.status) {
+      return false;
+    }
+    succeeded += res.succeeded || 0;
+    failed += res.failed || 0;
+  }
+  const prefix = debug === 0 ? " * " : "";
+  if (failed === 0) {
+    if (succeeded === 0) {
+      console.log(`${import_vlib.Color.red("Error")}: No unit tests are defined.`);
+      return false;
+    }
+    console.log(import_vlib.Color.cyan_bold(`
+Executed ${import_module.modules.length} test modules.`));
+    console.log(`${prefix}All ${failed + succeeded} unit tests ${import_vlib.Colors.green}${import_vlib.Colors.bold}passed${import_vlib.Colors.end} successfully.`);
+    return true;
+  } else {
+    console.log(import_vlib.Color.cyan_bold(`
+Executed ${import_module.modules.length} test modules.`));
+    console.log(`${prefix}Encountered ${failed === 0 ? import_vlib.Colors.green : import_vlib.Colors.red}${import_vlib.Colors.bold}${failed}${import_vlib.Colors.end} failed unit tests.`);
+    return false;
+  }
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  perform
+});

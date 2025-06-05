@@ -14,11 +14,40 @@
         "allowJs": true,
         "checkJs": false,
         "noImplicitAny": false,
+        "paths": {
+            "@vlib": [
+                "./src/vlib/index.ts"
+            ],
+            "@vlib/*": [
+                "./src/vlib/*"
+            ],
+            "@vrepo": [
+                "./src/vrepo/index.ts"
+            ],
+            "@vrepo/*": [
+                "./src/vrepo/*"
+            ],
+            "@vtest": [
+                "./src/vtest/index.ts"
+            ],
+            "@vtest/*": [
+                "./src/vtest/*"
+            ],
+            "@vts": [
+                "./src/vts/index.ts"
+            ],
+            "@vts/*": [
+                "./src/vts/*"
+            ],
+        },
         // "noImplicitAny": true,
         // "suppressImplicitAnyIndexErrors": false
     },
     "include": [
         "src/**/*",
-        "test/**/*",
     ],
+    "exclude": [
+        "**/dist",
+        "**/node_modules",
+    ]
 }
