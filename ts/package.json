@@ -1,0 +1,96 @@
+{
+    "name": "@vandenberghinc/vlib",
+    "version": "1.6.20",
+    "description": "Generic TypeScript library built for VInc applications.",
+    "type": "module",
+    "module": "./dist/esm/vlib/index.js",
+    "main": "./dist/cjs/vlib/index.js",
+    "types": "./dist/esm/vlib/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/vlib/index.js",
+            "types": "./dist/esm/vlib/index.d.ts",
+            "require": "./dist/cjs/vlib/index.js"
+        },
+        "./types": {
+            "types": "./dist/esm/global/types.d.ts"
+        },
+        "./frontend": {
+            "import": "./dist/web/vlib/index.web.js",
+            "types": "./dist/web/vlib/index.web.d.ts"
+        },
+        "./debug": {
+            "import": "./dist/esm/vlib/debugging/index.m.uni.js",
+            "types": "./dist/esm/vlib/debugging/index.m.uni.d.ts",
+            "require": "./dist/cjs/vlib/debugging/index.m.uni.js"
+        },
+        "./vtest": {
+            "import": "./dist/esm/vtest/index.js",
+            "types": "./dist/esm/vtest/index.d.ts",
+            "require": "./dist/cjs/vtest/index.js"
+        },
+        "./vrepo": {
+            "import": "./dist/esm/vrepo/index.js",
+            "types": "./dist/esm/vrepo/index.d.ts",
+            "require": "./dist/cjs/vrepo/index.js"
+        },
+        "./vts": {
+            "import": "./dist/esm/vts/index.js",
+            "types": "./dist/esm/vts/index.d.ts",
+            "require": "./dist/cjs/vts/index.js"
+        },
+        "./vts/types/dirname": {
+            "types": "./dist/esm/vts/types/dirname.d.ts"
+        },
+        "./vts/types/version": {
+            "types": "./dist/esm/vts/types/version.d.ts"
+        }
+    },
+    "bin": {
+        "vtest": "./dist/esm/vtest/cli.js",
+        "vrepo": "./dist/esm/vrepo/cli.js",
+        "vts": "./dist/esm/vts/cli.js"
+    },
+    "scripts": {
+        "build": "npm run build:esm && npm run build:cjs && npm run build:web",
+        "build:esm": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json && npm run --silent fill-version-esm && chmod +x dist/esm/vrepo/cli.js && chmod +x dist/esm/vts/cli.js && chmod +x dist/esm/vtest/cli.js",
+        "build:cjs": "node dist/esm/vts/cli.js --transform-esm --src dist/esm/ --dest dist/cjs/ --override --platform node --target es2023",
+        "build:web": "tsc -p tsconfig.web.json && tsc-alias -p tsconfig.web.json && npm run --silent fill-version",
+        "test": "node dist/esm/vtest/cli.js  -c ./vtest.json",
+        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = './dist/esm/vlib/index.js'; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8');\" && node dist/esm/vlib/index.js",
+        "fill-version": "node dist/esm/vts/cli.js -y --fill-version -s 'dist/*/vlib/index*.js' -p ./package.json --allow-not-found && node dist/web/vlib/index.web.js"
+    },
+    "keywords": [
+        "vlib",
+        "vinc"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "author": "Daan van den Bergh",
+    "dependencies": {
+        "bson": "^6.10.3",
+        "clean-css": "^5.3.3",
+        "clipboardy": "^4.0.0",
+        "comment-json": "^4.2.5",
+        "diff": "^7.0.0",
+        "diskusage": "^1.2.0",
+        "dotenv": "^16.5.0",
+        "esbuild": "^0.25.4",
+        "fast-glob": "^3.3.3",
+        "fs-extra": "^11.3.0",
+        "glob": "^11.0.2",
+        "https": "^1.0.0",
+        "ignore": "^5.3.2",
+        "js-beautify": "^1.15.4",
+        "json5": "^2.2.3",
+        "minimatch": "^10.0.1",
+        "sysinfo": "^0.0.1",
+        "systeminformation": "^5.25.11",
+        "typescript": "^5.8.3",
+        "ws": "^8.18.1"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.14"
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "compilerOptions": {
+        "rootDir": "./src/",
+        "outDir": "./dist/web",
+        "declarationDir": "./dist/web",
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "lib": [
+            "ES2022",
+            "DOM"
+        ],
+        "sourceMap": true,
+        "declaration": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "allowJs": true,
+        "checkJs": false,
+        "noImplicitAny": false,
+        "paths": {
+            "@vlib": [
+                "./src/vlib/index.ts"
+            ],
+            "@vlib/*": [
+                "./src/vlib/*"
+            ],
+            "@vrepo": [
+                "./src/vrepo/index.ts"
+            ],
+            "@vrepo/*": [
+                "./src/vrepo/*"
+            ],
+            "@vtest": [
+                "./src/vtest/index.ts"
+            ],
+            "@vtest/*": [
+                "./src/vtest/*"
+            ],
+            "@vts": [
+                "./src/vts/index.ts"
+            ],
+            "@vts/*": [
+                "./src/vts/*"
+            ],
+        },
+    },
+    "include": [
+        "src/vlib/index.web.ts",
+    ],
+    "exclude": [
+        "**/unit_tests/**/*",
+    ],
+}

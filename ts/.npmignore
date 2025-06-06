@@ -1,0 +1,21 @@
+# Project dependent files.
+tests
+
+# Default excludes.
+/docs
+.vdocs
+.vrepo
+/.old
+/bin
+/test
+/tests
+/dev
+tsconfig.*json
+/.git*
+/node_modules
+package-lock.json
+.npmignore
+Info.plist
+icon.icns
+unit_tests
+/src

@@ -1,0 +1,26 @@
+{
+  "author": "Tom de Grunt <tom@degrunt.nl>",
+  "name": "sysinfo",
+  "description": "Output system, os, and process information as JSON",
+  "keywords" : [
+      "json",
+      "system",
+      "process",
+      "os",
+      "information"
+  ],  
+  "version": "0.0.1",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "repository" : {
+    "type" : "git",
+    "url" : "http://github.com/tdegrunt/sysinfo.git"
+  },
+  "engines": {
+    "node": ">= 0.6.18"
+  },
+  "description": "System and OS information",
+  "license": "MIT",
+  "main": "index.js"
+}
