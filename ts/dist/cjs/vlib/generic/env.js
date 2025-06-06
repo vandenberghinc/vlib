@@ -43,7 +43,7 @@ var Env;
     }
   }
   const loaded_dotenvs = /* @__PURE__ */ new Set();
-  function import_file(path, opts = { refresh: false }) {
+  function from(path, opts = { refresh: false }) {
     if (loaded_dotenvs.has(path) && !opts.refresh) {
       return;
     }
@@ -62,7 +62,8 @@ var Env;
       }
     }
   }
-  Env2.import_file = import_file;
+  Env2.from = from;
+  Env2.import_file = from;
   function has(name) {
     return Env2.map.has(name);
   }

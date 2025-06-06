@@ -10,6 +10,13 @@ import { execSync } from "node:child_process";
 import * as vlib from "../vlib/index.js";
 // Imports.
 import { Repo } from "./repo.js";
+// Wrapper function to locate the configuration file.
+const find_config_path = () => vlib.cli.find_config_path({
+    name: ["vrepo", ".vrepo"],
+    extension: ["", ".json", ".jsonc"],
+    up: 1,
+    cwd: process.cwd(),
+})?.path;
 // CLI.
 const cli = new vlib.cli.CLI({ name: "vrepo", version: "1.0.2", strict: true });
 // ---------------------------------------------------------------
@@ -33,7 +40,7 @@ cli.command({
     async callback({ source = undefined, ssh = undefined, git = undefined, remote = "origin", destination = undefined, branch = "main", }) {
         // Create sources array.
         if (typeof source !== "string") {
-            source = "./";
+            source = find_config_path() || "./";
         }
         // Init repo.
         const repo = new Repo({
@@ -129,7 +136,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -330,7 +337,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -405,7 +412,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -466,7 +473,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -534,7 +541,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -593,7 +600,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -653,7 +660,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -759,7 +766,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -910,7 +917,7 @@ cli.command({
 //             } else if (Array.isArray(sources)) {
 //                 all_sources.push(...sources);
 //             } else {
-//                 all_sources.push("./");
+//                 all_sources.push(find_config_path() || "./");
 //             }
 //             // Iterate sources array.
 //             for (const source of all_sources) {
@@ -962,7 +969,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });
@@ -1012,7 +1019,7 @@ cli.command({
             all_sources.push(...sources);
         }
         else {
-            all_sources.push("./");
+            all_sources.push(find_config_path() || "./");
         }
         if (all_sources.some(p => vlib.GlobPattern.is(p))) {
             all_sources = await vlib.Path.glob(all_sources, { string: true });

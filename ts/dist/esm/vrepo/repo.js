@@ -3,7 +3,7 @@
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Path, Scheme } from "../vlib/index.js";
+import { Path, Scheme, CLI } from "../vlib/index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
@@ -31,6 +31,15 @@ export class Repo {
             npm: { type: "boolean", default: true },
         },
     });
+    // Wrapper function to locate the configuration file.
+    static find_config_path(cwd = process.cwd()) {
+        return CLI.find_config_path({
+            name: ["vtest", ".vtest"],
+            extension: ["", ".json", ".jsonc"],
+            up: 1,
+            cwd,
+        });
+    }
     // Constructor.
     constructor({ source, git = true, // git enabled.
     ssh = true, // ssh enabled.
@@ -39,13 +48,31 @@ export class Repo {
         // Verify arguments.
         Repo.validator.validate(arguments[0]);
         // Attributes.
-        this.source = new Path(source);
-        this.name = this.source.full_name();
         this.git_enabled = git;
         this.ssh_enabled = ssh;
         this.npm_enabled = npm;
-        // Load the config file.
-        this.config_path = this.source.join(".vrepo");
+        const path = new Path(source);
+        if (!path.exists()) {
+            throw new Error(`Source path "${path.str()}" does not exist.`);
+        }
+        if (path.is_dir()) {
+            this.source = path;
+            const found = Repo.find_config_path();
+            if (!found) {
+                throw new Error(`Source path "${path.str()}" does not contain a "vtest.json" like configuration file.`);
+            }
+            this.config_path = found;
+        }
+        else {
+            const b = path.base();
+            if (!b) {
+                throw new Error(`Source path "${path.str()}" is not a directory or does not have a base name.`);
+            }
+            this.source = b;
+            this.config_path = path;
+        }
+        // Source name.
+        this.name = this.source.full_name();
     }
     async init() {
         if (!this.config_path.exists()) {

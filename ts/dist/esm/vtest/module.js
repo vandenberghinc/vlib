@@ -73,7 +73,7 @@ export class Module {
         const loc = new SourceLoc(1);
         // Add unit test.
         const override_refresh = refresh;
-        this.unit_tests[id] = async ({ log_level, interactive, cache, index, all_yes = false, no_changes = false, refresh = false }) => {
+        this.unit_tests[id] = async ({ log_level, interactive, cache, index, yes = false, no_changes = false, refresh = false, }) => {
             // Combine refresh.
             const use_refresh = override_refresh || ((typeof refresh === "string" && refresh === id) ||
                 refresh === true);
@@ -248,7 +248,7 @@ export class Module {
                 // Dump all logs.
                 dump_all_logs();
                 // Prompt for unit test success.
-                let answer = all_yes ? "y" : undefined;
+                let answer = yes ? "y" : undefined;
                 if (!answer) {
                     try {
                         answer = await logging.prompt(`${Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
@@ -408,11 +408,11 @@ export class Module {
      * Run the unit tests of the module
      * @private
      */
-    async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, all_yes = false, repeat = 0, no_changes = false, refresh = false, }) {
+    async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, yes = false, repeat = 0, no_changes = false, refresh = false, }) {
         // Logs.
         console.log(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Check opts.
-        if (repeat > 0 && all_yes) {
+        if (repeat > 0 && yes) {
             throw new Error(`The --yes option is not compatible with the --repeat option.`);
         }
         // Variables.
@@ -453,9 +453,9 @@ export class Module {
                     res = await unit_tests[id]({
                         log_level: debug,
                         cache,
-                        interactive: all_yes ? false : interactive,
+                        interactive: yes ? false : interactive,
                         index: id_index,
-                        all_yes: false,
+                        yes: false,
                         no_changes,
                         refresh,
                     });
@@ -473,7 +473,7 @@ export class Module {
                 }
                 // Failed.
                 else {
-                    if (all_yes) {
+                    if (yes) {
                         if (res.hash && res.output) {
                             all_yes_insertions.push({ id, hash: res.hash, output: res.output, expect: res.expect });
                         }
@@ -498,7 +498,7 @@ export class Module {
             }
         }
         // All yes insertions.
-        if (all_yes && all_yes_insertions.length > 0) {
+        if (yes && all_yes_insertions.length > 0) {
             // Error.
             if (!interactive) {
                 throw new Error(`The --yes option is only available when interactive mode is enabled.`);

@@ -30,7 +30,7 @@ export declare class Module {
         cache: Path;
         interactive: boolean;
         index: number;
-        all_yes?: boolean;
+        yes?: boolean;
         no_changes?: boolean;
         refresh?: string | boolean;
     }) => Promise<{
@@ -75,14 +75,14 @@ export declare class Module {
      * Run the unit tests of the module
      * @private
      */
-    _run({ target, stop_on_failure, stop_after, debug, interactive, cache, all_yes, repeat, no_changes, refresh, }: {
+    _run({ target, stop_on_failure, stop_after, debug, interactive, cache, yes, repeat, no_changes, refresh, }: {
         target?: string;
         stop_on_failure?: boolean;
         stop_after?: string;
         debug?: string | number;
         interactive?: boolean;
         cache: Path;
-        all_yes?: boolean;
+        yes?: boolean;
         repeat?: number;
         no_changes?: boolean;
         refresh?: boolean | string;

@@ -75,6 +75,10 @@ export declare namespace Transformer {
              * When `yes` is `true`, this will always be set to `true`.
              */
             capture_changes?: boolean;
+            /**
+             * List the inluded files and stop, defaults to `false`.
+             */
+            list_files?: boolean;
         }
     }
     /** The initialized config type. */

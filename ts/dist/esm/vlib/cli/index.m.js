@@ -9,4 +9,5 @@ export { CLI, cli, get, present } from "./cli.js";
 export { And, Or, and, or } from "./query.js";
 export { Base as Arg, Base as arg } from "./arg.js";
 export { Command, Command as command } from "./command.js";
+export { find_config_path } from "./utils.js";
 //# sourceMappingURL=index.m.js.map

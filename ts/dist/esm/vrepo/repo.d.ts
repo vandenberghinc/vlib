@@ -61,6 +61,7 @@ export declare class Repo {
             };
         };
     }>;
+    static find_config_path(cwd?: string): Path | undefined;
     constructor({ source, git, // git enabled.
     ssh, // ssh enabled.
     npm, }: {

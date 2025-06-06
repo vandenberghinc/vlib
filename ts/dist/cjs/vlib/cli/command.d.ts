@@ -83,8 +83,7 @@ export declare abstract class Base<const S extends Strict = Strict, const M exte
      * @note That we dont infer the actual args here, this causes issues with converting matching Base types.
      *       Only infer on the user input callback so the user has the correct types.
      */
-    callback: (args: Record<string, any>, //InferArgs<A>
-    cli: CLI<S>) => void | Promise<void>;
+    callback: (args: Record<string, any>, cli: CLI<S>) => any | Promise<any>;
     /**
      * Command arguments.
      * This list of argument is also used to infer the callback argument types.
@@ -101,7 +100,7 @@ export declare abstract class Base<const S extends Strict = Strict, const M exte
     constructor(opts: Base<S, M, V, A> | ({
         description: Base["description"];
         examples?: Base["examples"];
-        callback: (this: Base<S, M, V, A>, args: InferArgs<A>) => void | Promise<void>;
+        callback: (this: Base<S, M, V, A>, args: InferArgs<A>) => any | Promise<any>;
         args?: A;
     } & Mode.If<M, "main", 
     /** main/root command of the CLI, so no index nor id. */

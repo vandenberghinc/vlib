@@ -30,8 +30,9 @@ cli.main({
         { id: ["--async"], type: "boolean", def: false, description: "Run the transformer in parallel, defaults to 'false'." },
         { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },
         { id: ["--yes", "-y"], type: "boolean", required: false, description: "Automatically answer yes to all prompts." },
+        { id: ["--list-files", "--list-includes"], type: "boolean", description: "List the included file paths without performing anything." },
     ],
-    async callback({ tsconfig = process.cwd(), include = [], exclude = [], header, dirname = false, version, no_debug = false, templates, exact_templates, yes = false, async: parallel = false, debug = 0, }) {
+    async callback({ tsconfig = process.cwd(), include = [], exclude = [], header, dirname = false, version, no_debug = false, templates, exact_templates, yes = false, async: parallel = false, debug = 0, list_files = false, }) {
         if (header && !header.author) {
             throw this.error("The --header --author argument is required when using the header plugin.", { docs: true });
         }
@@ -43,6 +44,7 @@ cli.main({
             exclude,
             yes,
             debug,
+            list_files,
             plugins: create_plugins({
                 tsconfig,
                 pkg_json: resolve_pkg_json(tsconfig, { throw: false }),

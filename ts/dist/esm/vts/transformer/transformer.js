@@ -151,6 +151,9 @@ export class Transformer {
         if (error) {
             return { error };
         }
+        if (this.config.list_files) {
+            return {};
+        }
         this.tsconfig_base = tsconfig_base;
         if (this.config.files?.size === 0 && matched_files.length === 0) {
             return { error: { type: "warning", message: "No files matched the include patterns." } };
@@ -317,6 +320,9 @@ export class Transformer {
         const res = await this.init_sources();
         if (res.error) {
             return res;
+        }
+        if (this.config.list_files) {
+            return {};
         }
         // Drop all undefined plugins or plugins that do not have a callback.
         const plugins = this.config.plugins?.filter(p => p && p.callback);

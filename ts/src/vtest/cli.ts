@@ -8,21 +8,39 @@
 
 // Imports.
 import * as vlib from "@vlib";
-import { perform } from "./perform.js";
+import { Tester } from "./perform.js";
+
+// Wrapper function to locate the configuration file.
+const find_config_path = () => vlib.cli.find_config_path({
+    name: [ "vtest", ".vtest" ],
+    extension: [ "", ".json", ".jsonc" ],
+    up: 1,
+    cwd: process.cwd(),
+})?.path;
 
 // CLI.
 const cli = new vlib.cli.CLI({
     name: "vtest",
-    version: "1.0.0",
+    version: "1.0.1",
     strict: false,
 });
 
 cli.main({
-    description: "Execute the defined VTest modules.",
+    description: 
+    `
+    Execute the defined VTest modules.
+    When no "--config" option is passed, the CLI will search for a configuration file named 'vtest.json', '.vtest.json', 'vtest.jsonc', or '.vtest.jsonc' in the current working directory or above.
+    Unless the '--config' option is defined as "ignore", in which case no configuration file will be loaded.
+    
+    Any additional options passed will override the options in the loaded configuration.
+    
+    A configuration file must be located at the root of the project.
+    `.dedent(true),
     examples: {
         "Run": "vtest --include 'dist/**/unit_tests/**/*.js'",
     },
     args: [
+        { id: ["--config", "-c"], type: "string", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above." },
         { id: ["--include", "-i"], type: "string[]", description: "The glob patterns of unit test files to include." },
         { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The glob patterns of unit test files to exclude." },
         { id: ["--results", "-r"], type: "string", def: process.cwd() + "/.unit_tests", description: "The directory to write the results to." },
@@ -38,36 +56,28 @@ cli.main({
         { id: ["--no-changes", "-nc"], type: "boolean", description: "Do not log any diff changes between cached and new data when in interactive mode." },
         { id: ["--refresh"], type: ["boolean", "string"], def: false, description: "Refresh the cache before running the tests. Can be set to 'true' or a path to refresh from." },
         { id: ["--env"], type: "string[]", description: "The path to one or multiple environment files to import." },
-        { id: ["--list-imports", "--list-includes"], type: "boolean", description: "List the computed included paths without performing anything." },
+        { id: ["--list-files", "--list-includes"], type: "boolean", description: "List the included file paths without performing anything." },
     ],
-    async callback(args) {
-        const included = await vlib.Path.glob(args.include, { exclude: args.exclude, string: true });
-        if (args.list_imports) {
-            // Dump the included paths and exit.
-            console.log(`Include patterns: ${args.include?.map(i => `\n - ${i}`).join("")}`);
-            console.log(`Exclude patterns: ${args.exclude?.map(i => `\n - ${i}`).join("")}`);
-            console.log(`Found ${included.length} included paths: ${included?.map(i => `\n - ${i}`).join("")}`);
-            return;
+    callback: (args) => {
+        let tester: Tester;
+        let default_path: string | undefined;
+        
+        // Load default config if no config is provided.
+        if (!args.config && (default_path = find_config_path())) {
+            args.config = default_path;
         }
-        for (const p of included) {
-            if (args.debug >= 1) {
-                vlib.logger.marker(`Importing unit test module: ${p}`);
-            }
-            await import(new vlib.Path(p).abs().str());
+        
+        // Load and merge args.
+        if (args.config && args.config.toLowerCase() !== "ignore") {
+            tester = new Tester(args.config);
+            tester.merge(args);
         }
-        delete (args as any).imports;
-        if (!args.results) {
-            throw this.error("The --results argument is required.", { docs: true });
-        }
-        if (args.env?.length) {
-            for (const env of args.env) {
-                if (args.debug >= 1) {
-                    vlib.logger.marker(`Importing environment file ${env}`);
-                }
-                vlib.env.import_file(env);
-            }
-        }
-        await perform({...args, results: args.results!})
+        
+        // Use args only.
+        else { tester = new Tester(args); }
+        
+        // Run the tester.
+        return tester.run();
     }
 });
 

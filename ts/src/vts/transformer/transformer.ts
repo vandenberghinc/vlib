@@ -89,6 +89,10 @@ export namespace Transformer {
              * When `yes` is `true`, this will always be set to `true`.
              */
             capture_changes?: boolean;
+            /**
+             * List the inluded files and stop, defaults to `false`.
+             */
+            list_files?: boolean;
         }
     }
 
@@ -274,6 +278,9 @@ export class Transformer {
         if (this.on(1)) this.log(`Processing include patterns...`);
         const { error, tsconfig_base, matched_files } =  await this.create_include_patterns()
         if (error) { return { error }; }
+        if (this.config.list_files) {
+            return {};
+        }
         this.tsconfig_base = tsconfig_base;
         if (this.config.files?.size === 0 && matched_files.length === 0) {
             return { error: { type: "warning", message: "No files matched the include patterns." } };
@@ -453,6 +460,7 @@ export class Transformer {
         // Initialize sources.
         const res = await this.init_sources();
         if (res.error) { return res; }
+        if (this.config.list_files) { return {}; }
         
         // Drop all undefined plugins or plugins that do not have a callback.
         const plugins = this.config.plugins?.filter(p => p && p.callback) as Enforce<Plugin, "callback">[];

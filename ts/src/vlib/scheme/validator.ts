@@ -588,8 +588,15 @@ export namespace Validator {
         T extends object = object,
     > = 
         {
+            /**
+             * Allow unknown attributes
+             * When `false`, errors will be thrown when unknown attributes are found.
+             * Defaults to `true`.
+             */
             unknown?: boolean,
+            /** The parent prefix. */
             parent?: string,
+            /** The error prefix. */
             error_prefix?: string,
             err_prefix?: string | null,
             /** Throw occurred errors, defaults to `false` */

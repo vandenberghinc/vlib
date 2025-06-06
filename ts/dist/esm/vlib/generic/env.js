@@ -26,10 +26,11 @@ export var Env;
     const loaded_dotenvs = new Set();
     /**
      * Import a dotenv file path.
+     * This joins all found environment variables into the current environment.
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      */
-    function import_file(path, opts = { refresh: false }) {
+    function from(path, opts = { refresh: false }) {
         // Check cache.
         if (loaded_dotenvs.has(path) && !opts.refresh) {
             return;
@@ -55,7 +56,8 @@ export var Env;
             }
         }
     }
-    Env.import_file = import_file;
+    Env.from = from;
+    Env.import_file = from; // Alias for compatibility
     /**
      * Check whether an environment variable is set.
      */

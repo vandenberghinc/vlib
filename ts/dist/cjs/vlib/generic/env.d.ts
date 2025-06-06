@@ -12,6 +12,7 @@ export declare namespace Env {
     type EnvType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'string_array' | 'number_array' | 'boolean_array';
     /**
     * Options for retrieving a typed environment variable.
+    * @todo apply cast from arg/scheme modules or new infer
     */
     interface GetOptions {
         name: string;
@@ -25,12 +26,14 @@ export declare namespace Env {
     const map: Map<string, string>;
     /**
      * Import a dotenv file path.
+     * This joins all found environment variables into the current environment.
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      */
-    function import_file(path: string, opts?: {
+    function from(path: string, opts?: {
         refresh?: boolean;
     }): void;
+    const import_file: typeof from;
     /**
      * Check whether an environment variable is set.
      */

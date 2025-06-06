@@ -82,7 +82,7 @@ class Module {
     }
     const loc = new import_source_loc.SourceLoc(1);
     const override_refresh = refresh;
-    this.unit_tests[id] = async ({ log_level, interactive, cache, index, all_yes = false, no_changes = false, refresh: refresh2 = false }) => {
+    this.unit_tests[id] = async ({ log_level, interactive, cache, index, yes = false, no_changes = false, refresh: refresh2 = false }) => {
       const use_refresh = override_refresh || (typeof refresh2 === "string" && refresh2 === id || refresh2 === true);
       const logs = [];
       const debug = (level, ...args) => {
@@ -214,7 +214,7 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
           }
         }
         dump_all_logs();
-        let answer = all_yes ? "y" : void 0;
+        let answer = yes ? "y" : void 0;
         if (!answer) {
           try {
             answer = await import_vlib.logging.prompt(`${import_vlib.Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
@@ -354,10 +354,10 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
    * Run the unit tests of the module
    * @private
    */
-  async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, all_yes = false, repeat = 0, no_changes = false, refresh = false }) {
+  async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, yes = false, repeat = 0, no_changes = false, refresh = false }) {
     console.log(import_vlib.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
-    if (repeat > 0 && all_yes) {
+    if (repeat > 0 && yes) {
       throw new Error(`The --yes option is not compatible with the --repeat option.`);
     }
     let failed = 0, succeeded = 0;
@@ -391,9 +391,9 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
           res = await unit_tests[id]({
             log_level: debug,
             cache,
-            interactive: all_yes ? false : interactive,
+            interactive: yes ? false : interactive,
             index: id_index,
-            all_yes: false,
+            yes: false,
             no_changes,
             refresh
           });
@@ -406,7 +406,7 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
           console.log(`${debug === 0 && (last_success === void 0 || last_success) ? " * " : ""}${prefix2} ${import_vlib.Colors.green}${import_vlib.Colors.bold}succeeded${import_vlib.Colors.end}`);
           ++succeeded;
         } else {
-          if (all_yes) {
+          if (yes) {
             if (res.hash && res.output) {
               all_yes_insertions.push({ id, hash: res.hash, output: res.output, expect: res.expect });
             } else {
@@ -427,7 +427,7 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
         last_success = res.success;
       }
     }
-    if (all_yes && all_yes_insertions.length > 0) {
+    if (yes && all_yes_insertions.length > 0) {
       if (!interactive) {
         throw new Error(`The --yes option is only available when interactive mode is enabled.`);
       }

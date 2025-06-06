@@ -17,42 +17,36 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  And: () => import_query.And,
-  Arg: () => import_arg.Base,
-  CLI: () => import_cli.CLI,
-  Command: () => import_command.Command,
-  Error: () => import_error.CLIError,
-  Or: () => import_query.Or,
-  and: () => import_query.and,
-  arg: () => import_arg.Base,
-  cli: () => import_cli.cli,
-  command: () => import_command.Command,
-  find_config_path: () => import_utils.find_config_path,
-  get: () => import_cli.get,
-  or: () => import_query.or,
-  present: () => import_cli.present
+  find_config_path: () => find_config_path
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_error = require("./error.js");
-var import_cli = require("./cli.js");
-var import_query = require("./query.js");
-var import_arg = require("./arg.js");
-var import_command = require("./command.js");
-var import_utils = require("./utils.js");
+var import_path = require("../generic/path.js");
+function find_config_path({ name, extension = "", cwd = process.cwd(), up = 1 }) {
+  const paths = [];
+  if (typeof name === "string")
+    name = [name];
+  if (!extension)
+    extension = [""];
+  else if (typeof extension === "string")
+    extension = [extension];
+  for (const n of name) {
+    for (const e of extension) {
+      paths.push(new import_path.Path(`${cwd}/${n}${e}`));
+    }
+  }
+  let up_str = "";
+  for (let i = 0; i < up; i++) {
+    up_str += "../";
+    for (const n of name) {
+      for (const e of extension) {
+        paths.push(new import_path.Path(`${cwd}/${up_str}/${n}${e}`));
+      }
+    }
+  }
+  ;
+  return paths.find((p) => p.exists() && p.is_file());
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  And,
-  Arg,
-  CLI,
-  Command,
-  Error,
-  Or,
-  and,
-  arg,
-  cli,
-  command,
-  find_config_path,
-  get,
-  or,
-  present
+  find_config_path
 });

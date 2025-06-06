@@ -122,9 +122,9 @@ export abstract class Base<
      */
     callback: (
         // this: Base<S, M, V, A>, // dont add here, its auto inferred and it causes issues.
-        args: Record<string, any>, //InferArgs<A>
+        args: Record<string, any>, 
         cli: CLI<S>, // The CLI instance that invoked the command.
-    ) => void | Promise<void>;
+    ) => any | Promise<any>;
  
     /**
      * Command arguments.
@@ -146,7 +146,7 @@ export abstract class Base<
             {
                 description: Base["description"],
                 examples?: Base["examples"],
-                callback: (this: Base<S, M, V, A>, args: InferArgs<A>) => void | Promise<void>,
+                callback: (this: Base<S, M, V, A>, args: InferArgs<A>) => any | Promise<any>,
                 args?: A;
             } & Mode.If<M, "main",
                 /** main/root command of the CLI, so no index nor id. */

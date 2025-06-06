@@ -54,7 +54,7 @@ export class Module {
         cache: Path,
         interactive: boolean,
         index: number, // index of the unit test in the module.
-        all_yes?: boolean,
+        yes?: boolean,
         no_changes?: boolean,
         refresh?: string | boolean,
     }) => Promise<{ success: boolean, hash?: string, output?: string, expect: Expect }>> = {};
@@ -132,7 +132,15 @@ export class Module {
 
         // Add unit test.
         const override_refresh = refresh;
-        this.unit_tests[id] = async ({ log_level, interactive, cache, index, all_yes = false, no_changes = false, refresh = false }) => {
+        this.unit_tests[id] = async ({
+            log_level,
+            interactive,
+            cache,
+            index,
+            yes = false,
+            no_changes = false,
+            refresh = false,
+        }) => {
 
             // Combine refresh.
             const use_refresh = override_refresh || (
@@ -333,7 +341,7 @@ export class Module {
                 dump_all_logs();
 
                 // Prompt for unit test success.
-                let answer = all_yes ? "y" : undefined;
+                let answer = yes ? "y" : undefined;
                 if (!answer) {
                     try {
                         answer = await logging.prompt(`${Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
@@ -511,7 +519,7 @@ export class Module {
         debug = 0,
         interactive = true,
         cache,
-        all_yes = false,
+        yes = false,
         repeat = 0,
         no_changes = false,
         refresh = false,
@@ -522,7 +530,7 @@ export class Module {
         debug?: string | number;
         interactive?: boolean;
         cache: Path;
-        all_yes?: boolean;
+        yes?: boolean;
         repeat?: number;
         no_changes?: boolean;
         refresh?: boolean | string;
@@ -532,7 +540,7 @@ export class Module {
         console.log(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
 
         // Check opts.
-        if (repeat > 0 && all_yes) {
+        if (repeat > 0 && yes) {
             throw new Error(`The --yes option is not compatible with the --repeat option.`);
         }
         
@@ -581,9 +589,9 @@ export class Module {
                     res = await unit_tests[id]({
                         log_level: debug,
                         cache,
-                        interactive: all_yes ? false : interactive,
+                        interactive: yes ? false : interactive,
                         index: id_index,
-                        all_yes: false,
+                        yes: false,
                         no_changes,
                         refresh,
                     });
@@ -604,7 +612,7 @@ export class Module {
                 }
                 // Failed.
                 else {
-                    if (all_yes) {
+                    if (yes) {
                         if (res.hash && res.output) {
                             all_yes_insertions.push({ id, hash: res.hash, output: res.output, expect: res.expect });
                         } else {
@@ -631,7 +639,7 @@ export class Module {
         }
 
         // All yes insertions.
-        if (all_yes && all_yes_insertions.length > 0) {
+        if (yes && all_yes_insertions.length > 0) {
 
             // Error.
             if (!interactive) {

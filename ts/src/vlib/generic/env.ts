@@ -29,6 +29,7 @@ export namespace Env {
 
     /**
     * Options for retrieving a typed environment variable.
+    * @todo apply cast from arg/scheme modules or new infer
     */
     export interface GetOptions {
         name: string;
@@ -52,10 +53,11 @@ export namespace Env {
 
     /**
      * Import a dotenv file path.
+     * This joins all found environment variables into the current environment.
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      */
-    export function import_file(
+    export function from(
         path: string,
         opts: { refresh?: boolean } = { refresh: false }
     ): void {
@@ -87,6 +89,7 @@ export namespace Env {
             }
         }
     }
+    export const import_file = from; // Alias for compatibility
 
     /**
      * Check whether an environment variable is set.
