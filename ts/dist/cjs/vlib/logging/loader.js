@@ -21,7 +21,7 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../generic/colors.js");
-var import_date = require("../global/date.js");
+var import_date = require("../primitives/date.js");
 class Loader {
   /** Minimum value of the range. */
   min_value;

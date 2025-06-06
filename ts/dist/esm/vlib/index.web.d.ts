@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /** global/ */
-export * from "./global/index.uni.js";
+export * from "./primitives/index.uni.js";
 /** scheme/ */
 export * as Scheme from "./scheme/index.m.uni.js";
 export * as scheme from "./scheme/index.m.uni.js";

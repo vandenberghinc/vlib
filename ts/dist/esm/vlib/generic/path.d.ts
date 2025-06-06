@@ -184,18 +184,21 @@ export declare class Path {
      */
     exists(): boolean;
     /**
- * Get the base path of this path, correctly handling escaped separators.
- * @param back - Number of directory levels to traverse up (default: 1).
- * @returns The parent Path instance, or undefined if at root.
- */
-    base(back?: number): Path | undefined;
-    /**
-     * Get the name of the path, with correct multi-dot extension support.
-     * Handles files like `.env` and extensions like `.d.ts`, `.js.map`.
-     * @param with_extension - Include the extension in the returned name (default: true).
-     * @returns The base name of the path, including extension if specified.
+     * Get the base path of this path, correctly handling escaped separators.
+     * @param back - Number of directory levels to traverse up (default: 1).
+     * @returns The parent Path instance, or undefined if at root.
      */
-    full_name(with_extension?: boolean): string;
+    base(back?: number): Path | undefined;
+    /** Convert to a unix based path. */
+    unix(): Path;
+    /**
+     * Get the full name of the path, including the file extension.
+     * @param with_ext - Whether to include the file extension in the returned name (default: true).
+     * @returns The full name of the path, with or without the extension.
+     */
+    full_name(with_ext?: boolean): string;
+    /** Get the name of the file path without the extension. */
+    name(): string;
     /**
      * Get the extension of the path, with correct multi-dot extension support.
      * @returns The file extension, including leading dot, or empty string if none.
@@ -384,11 +387,11 @@ export declare class Path {
      *      A glob pattern or an array of patterns to match.
      *      By default all paths are treated as subpaths of the current path or the `cwd` option.
      * @param opts Optional settings.
-     * @param opts.fast Use fast-glob for performance.
+     * @param opts.exclude A list of glob or regex patterns to exclude from the results.
      * @param opts.cwd Base directory for matching (string or Path). Defaults to this path.
      * @param opts.absolute Return absolute paths. Defaults to true.
      * @param opts.string Return raw string paths instead of Path objects.
-     * @param opts.dot Include dotfiles. Defaults to false.
+     * @param opts.dot Include dotfiles. Defaults to true.
      * @param opts.only_files Match only files. Defaults to false.
      * @param opts.only_directories Match only directories. Defaults to false.
      * @param opts.unique Remove duplicate results. Defaults to true.
@@ -443,6 +446,7 @@ export declare namespace Path {
          * Options for the `Path.glob` and `Path.glob_sync` methods.
          */
         type Opts<Flags extends "string" | "path" = "string" | "path"> = {
+            exclude?: string[];
             fast?: boolean;
             cwd?: string | Path;
             absolute?: boolean;

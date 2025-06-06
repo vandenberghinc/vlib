@@ -39,8 +39,102 @@ var readline = __toESM(require("readline"));
 var import_minimatch = require("minimatch");
 var import_json5 = __toESM(require("json5"));
 var import_jsonc = require("../jsonc/jsonc.js");
-var import_string = require("../global/string.js");
+var import_string = require("../primitives/string.js");
 var import_fast_glob = __toESM(require("fast-glob"));
+const multi_dot_extensions = /* @__PURE__ */ new Set([
+  // Compressed archives
+  ".tar.gz",
+  ".tar.bz2",
+  ".tar.bz",
+  ".tar.xz",
+  ".tar.Z",
+  ".tar.lz",
+  ".tar.lzma",
+  ".tar.zst",
+  ".tar.lz4",
+  ".cpio.gz",
+  ".cpio.bz2",
+  ".cpio.xz",
+  ".iso.gz",
+  ".iso.bz2",
+  ".iso.xz",
+  ".jar.gz",
+  ".war.gz",
+  ".ear.gz",
+  // Source‐map files
+  ".js.map",
+  ".css.map",
+  ".html.map",
+  ".mjs.map",
+  ".cjs.map",
+  // Minified assets
+  ".min.js",
+  ".min.css",
+  ".min.html",
+  ".min.json",
+  ".min.svg",
+  // Testing/spec conventions
+  ".spec.ts",
+  ".spec.tsx",
+  ".spec.js",
+  ".spec.jsx",
+  ".test.ts",
+  ".test.tsx",
+  ".test.js",
+  ".test.jsx",
+  // User scripts/styles
+  ".user.js",
+  ".user.css",
+  // Flow-typed JS files
+  ".js.flow",
+  ".jsx.flow",
+  // TypeScript declaration files
+  ".d.ts",
+  // Rails/ERB templates
+  ".html.erb",
+  ".js.erb",
+  ".css.erb",
+  ".scss.erb",
+  ".sass.erb",
+  ".coffee.erb",
+  ".xml.erb",
+  ".json.erb",
+  ".yml.erb",
+  ".md.erb",
+  // Haml templates
+  ".html.haml",
+  ".js.haml",
+  ".css.haml",
+  // Slim templates
+  ".html.slim",
+  ".js.slim",
+  ".css.slim",
+  // Liquid templates (Jekyll, Shopify, etc.)
+  ".html.liquid",
+  ".md.liquid",
+  ".xml.liquid",
+  ".yml.liquid",
+  // Laravel Blade
+  ".blade.php",
+  // “CSS Modules” conventions
+  ".module.css",
+  ".module.scss",
+  ".module.sass",
+  ".module.less",
+  // “Global” styles conventions
+  ".global.css",
+  ".global.scss"
+]);
+const multi_dot_extensions_suffixes = new Set(Array.from(multi_dot_extensions).reduce((acc, ext) => {
+  const parts = ext.split(".");
+  if (parts.length < 2)
+    return acc;
+  const add = `.${parts.last()}`;
+  if (!acc.includes(add))
+    acc.push(add);
+  return acc;
+}, []));
+const multi_dot_extensions_regex = new RegExp(`(${Array.from(multi_dot_extensions_suffixes).map((ext) => ext.replaceAll(".", "\\.")).join("|")})$`, "g");
 class Path {
   // Attributes.
   path;
@@ -425,10 +519,10 @@ class Path {
     return fs.existsSync(this.path);
   }
   /**
-  * Get the base path of this path, correctly handling escaped separators.
-  * @param back - Number of directory levels to traverse up (default: 1).
-  * @returns The parent Path instance, or undefined if at root.
-  */
+   * Get the base path of this path, correctly handling escaped separators.
+   * @param back - Number of directory levels to traverse up (default: 1).
+   * @returns The parent Path instance, or undefined if at root.
+   */
   base(back = 1) {
     const data = this.path;
     const len = data.length;
@@ -455,93 +549,50 @@ class Path {
     }
     return void 0;
   }
+  /** Convert to a unix based path. */
+  unix() {
+    return new Path(this.path.split(pathlib.sep).join("/"), false);
+  }
   /**
-   * Get the name of the path, with correct multi-dot extension support.
-   * Handles files like `.env` and extensions like `.d.ts`, `.js.map`.
-   * @param with_extension - Include the extension in the returned name (default: true).
-   * @returns The base name of the path, including extension if specified.
+   * Get the full name of the path, including the file extension.
+   * @param with_ext - Whether to include the file extension in the returned name (default: true).
+   * @returns The full name of the path, with or without the extension.
    */
-  // name(with_extension: boolean = true): string {
-  //     if (with_extension && this._full_name !== undefined) {
-  //         return this._full_name;
-  //     }
-  //     if (!with_extension && this._name !== undefined) {
-  //         return this._name;
-  //     }
-  //     const data = this.path;
-  //     // Determine start after base()
-  //     const base_path = this.base();
-  //     const start = base_path ? base_path.path.length + 1 : 0;
-  //     const basename = data.substring(start);
-  //     let name_part: string;
-  //     let ext_part: string;
-  //     const first_dot = basename.indexOf('.');
-  //     if (first_dot > 0) {
-  //         // Normal: name before first dot
-  //         name_part = basename.substring(0, first_dot);
-  //         ext_part = basename.substring(first_dot);
-  //     } else if (first_dot === 0) {
-  //         // Hidden file: check for second dot
-  //         const second_dot = basename.indexOf('.', 1);
-  //         if (second_dot > 1) {
-  //             name_part = basename.substring(0, second_dot);
-  //             ext_part = basename.substring(second_dot);
-  //         } else {
-  //             name_part = basename;
-  //             ext_part = '';
-  //         }
-  //     } else {
-  //         // No dot
-  //         name_part = basename;
-  //         ext_part = '';
-  //     }
-  //     this._name = name_part;
-  //     this._extension = ext_part;
-  //     this._full_name = name_part + ext_part;
-  //     return with_extension ? this._full_name : this._name;
-  // }
-  full_name(with_extension = true) {
-    if (with_extension && this._full_name !== void 0) {
+  full_name(with_ext = true) {
+    if (with_ext && this._full_name !== void 0) {
       return this._full_name;
     }
-    if (!with_extension && this._name !== void 0) {
+    if (!with_ext && this._name !== void 0) {
       return this._name;
     }
     const data = this.path;
     const base_path = this.base();
     const start = base_path ? base_path.path.length + 1 : 0;
     const basename = data.substring(start);
-    let name_part;
-    let ext_part;
-    const first_dot = basename.indexOf(".");
-    if (first_dot > 0) {
-      name_part = basename.substring(0, first_dot);
-      ext_part = basename.substring(first_dot);
-    } else if (first_dot === 0) {
-      const second_dot = basename.indexOf(".", 1);
-      if (second_dot > 1) {
-        name_part = basename.substring(0, second_dot);
-        ext_part = basename.substring(second_dot);
-      } else {
-        name_part = basename;
-        ext_part = "";
+    const last_dot = basename.lastIndexOf(".");
+    if (last_dot !== -1) {
+      this._extension = basename.substring(last_dot);
+      if (multi_dot_extensions_suffixes.has(this._extension)) {
+        const m = multi_dot_extensions_regex.exec(basename);
+        if (m)
+          this._extension = m[0];
       }
+      this._name = basename.substring(0, last_dot);
     } else {
-      name_part = basename;
-      ext_part = "";
+      this._name = basename;
+      this._extension = "";
     }
-    this._name = name_part;
-    this._extension = ext_part;
-    this._full_name = name_part + ext_part;
-    return with_extension ? this._full_name : this._name;
+    this._full_name = this._name + this._extension;
+    return with_ext ? this._full_name : this._name;
   }
-  // name(): string {
-  //     if (this._name !== undefined) {
-  //         return this._name;
-  //     }
-  //     this.full_name();
-  //     return this._name!;
-  // }
+  /** Get the name of the file path without the extension. */
+  name() {
+    if (this._name !== void 0) {
+      return this._name;
+    }
+    this.full_name();
+    return this._name;
+  }
   /**
    * Get the extension of the path, with correct multi-dot extension support.
    * @returns The file extension, including leading dot, or empty string if none.
@@ -973,11 +1024,11 @@ class Path {
    *      A glob pattern or an array of patterns to match.
    *      By default all paths are treated as subpaths of the current path or the `cwd` option.
    * @param opts Optional settings.
-   * @param opts.fast Use fast-glob for performance.
+   * @param opts.exclude A list of glob or regex patterns to exclude from the results.
    * @param opts.cwd Base directory for matching (string or Path). Defaults to this path.
    * @param opts.absolute Return absolute paths. Defaults to true.
    * @param opts.string Return raw string paths instead of Path objects.
-   * @param opts.dot Include dotfiles. Defaults to false.
+   * @param opts.dot Include dotfiles. Defaults to true.
    * @param opts.only_files Match only files. Defaults to false.
    * @param opts.only_directories Match only directories. Defaults to false.
    * @param opts.unique Remove duplicate results. Defaults to true.
@@ -987,13 +1038,14 @@ class Path {
     const as_string = opts?.string ?? false;
     return (await (0, import_fast_glob.default)(Array.isArray(patterns) ? patterns : [patterns], {
       cwd: opts?.cwd instanceof Path ? opts?.cwd.path : opts?.cwd,
-      dot: opts?.dot ?? false,
+      dot: opts?.dot ?? true,
       onlyFiles: opts?.only_files ?? false,
       onlyDirectories: opts?.only_directories ?? false,
       unique: opts?.unique ?? true,
       absolute: opts?.absolute ?? true,
-      stats: opts?.stats ?? false
+      stats: opts?.stats ?? false,
       // set as true to statisfy type requirements
+      ignore: opts?.exclude
     })).map((p) => typeof p === "string" ? as_string ? p : new Path(p, false) : as_string ? p.path : new Path(p.path, false, p.stats));
   }
   /**
@@ -1003,13 +1055,14 @@ class Path {
     const as_string = opts?.string ?? false;
     return import_fast_glob.default.sync(Array.isArray(patterns) ? patterns : [patterns], {
       cwd: opts?.cwd instanceof Path ? opts?.cwd.path : opts?.cwd,
-      dot: opts?.dot ?? false,
+      dot: opts?.dot ?? true,
       onlyFiles: opts?.only_files ?? false,
       onlyDirectories: opts?.only_directories ?? false,
       unique: opts?.unique ?? true,
       absolute: opts?.absolute ?? true,
-      stats: opts?.stats ?? false
+      stats: opts?.stats ?? false,
       // set as true to statisfy type requirements
+      ignore: opts?.exclude
     }).map((p) => typeof p === "string" ? as_string ? p : new Path(p, false) : as_string ? p.path : new Path(p.path, false, p.stats));
   }
 }

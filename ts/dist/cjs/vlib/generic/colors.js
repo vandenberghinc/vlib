@@ -22,7 +22,7 @@ __export(stdin_exports, {
   colors: () => Colors
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_object = require("../global/object.js");
+var import_object = require("../primitives/object.js");
 class Colors {
   // ---------------------------------------------------------
   // Attributes.

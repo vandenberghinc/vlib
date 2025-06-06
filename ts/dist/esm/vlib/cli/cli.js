@@ -437,7 +437,11 @@ export class CLI {
             if (error instanceof CLIError) {
                 throw error;
             }
-            throw this.error(`Encountered an error while executing cli command "${command.identifier()}".`, { error, command });
+            if (debug.on(1)) {
+                throw this.error(`Encountered an error while executing cli command "${command.identifier()}".`, { error, command });
+            }
+            Error.stackTraceLimit = 25;
+            throw error;
         }
     }
     /** Find the index of an argument / command. */
@@ -903,6 +907,7 @@ export class CLI {
      */
     async start() {
         try {
+            // Vars.
             const help = this.has(["-h", "--help"]);
             let matched = false;
             // Check unknown args in strict mode.

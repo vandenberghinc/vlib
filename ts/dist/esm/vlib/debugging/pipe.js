@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Date } from "../global/date.js";
+import { Date } from "../primitives/date.js";
 import { Color, Colors } from "../generic/colors.js";
 import { SourceLoc } from './source_loc.js';
 import { ActiveLogLevel, Directive } from './directives.js';

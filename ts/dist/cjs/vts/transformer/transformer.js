@@ -56,16 +56,19 @@ class Transformer {
   tsconfig_base = void 0;
   /** Constructor. */
   constructor(config) {
+    const { yes = false } = config;
     this.config = {
       ...config,
-      yes: config.yes ?? false,
+      yes,
       interactive_mutex: new vlib.Mutex(),
-      async: config.async ?? true,
+      async: (config.async ?? true) && yes,
+      // dont run in async if yes is false, otherwise the logs are hard to read with interactive prompts.
       parse_imports: config.parse_imports ?? false,
       insert_tsconfig: config.insert_tsconfig ?? false,
       check_include: config.check_include ?? true,
       debug: config.debug instanceof vlib.Debug ? config.debug : new vlib.Debug(config.debug ?? 0),
-      files: config.files ? new Map(Object.entries(config.files ?? {})) : void 0
+      files: config.files ? new Map(Object.entries(config.files ?? {})) : void 0,
+      capture_changes: !yes || (config.capture_changes ?? false)
     };
   }
   /**
@@ -185,7 +188,7 @@ class Transformer {
       if (in_memory) {
         return;
       }
-      if (/[*?{}]/.test(include)) {
+      if (vlib.GlobPattern.is(include)) {
         include_patterns.push(include);
         if (this.on(2))
           this.log(`Adding included pattern "${include}".`);
@@ -196,13 +199,13 @@ class Transformer {
         throw new Error(`Included path "${include}" does not exist.`);
       }
       if (path.is_dir()) {
-        include_patterns.push(include);
+        include_patterns.push(`${path.unix().path}/**/*.{js,jsx,ts,tsx}`);
         if (this.on(2))
           this.log(`Adding included directory "${include}".`);
         return;
       }
       if (!this.config.parse_imports) {
-        include_patterns.push(include);
+        include_patterns.push(path.unix().path);
         if (this.on(2))
           this.log(`Adding included file "${include}".`);
         return;
@@ -253,24 +256,24 @@ class Transformer {
       }
     }
     let not_found;
-    if (this.config.check_include && (not_found = include_patterns.filter((include) => !/[*?{}]/.test(include))).length) {
+    if (this.config.check_include && (not_found = include_patterns.filter((i) => !vlib.GlobPattern.is(i))).length) {
       throw new Error(`Included path${not_found.length > 1 ? "s" : ""} ${not_found.map((l) => `"${l}"`).join(", ")} do${not_found.length > 1 ? "es" : ""} not exist.`);
     }
     if (this.on(1))
       this.log(`Found ${include_patterns.length} include patterns.`);
-    if (include_patterns.length && this.on(2))
-      this.log(`Include patterns:
-${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n")}`);
-    const matched_files = include_patterns.length === 0 ? [] : await (0, import_fast_glob.default)(include_patterns.map((p) => {
-      const path = new import_vlib.Path(p);
-      return !path.exists() || !path.is_dir() ? p : `${p.split(import_path.default.sep).join("/")}/**/*.{js,jsx,ts,tsx}`;
-    }), { dot: true, onlyFiles: true, ignore: exclude_patterns, absolute: true, cwd: tsconfig_base?.path || process.cwd() });
+    if (this.on(2))
+      this.log(`Include patterns:${include_patterns.length ? include_patterns.map((l, i) => `
+      - ${l.replace(/^[./]*/, "")}`).join("") : "[]"}`);
+    const matched_files = include_patterns.length === 0 ? [] : await (0, import_fast_glob.default)(include_patterns, { dot: true, onlyFiles: true, ignore: exclude_patterns, absolute: true, cwd: tsconfig_base?.path || process.cwd() });
     if (matched_files.length === 0 && !this.config.files?.size) {
       this.warn(`No files matched the include patterns: ${include_patterns.join(", ")}`);
       return { error: { type: "warning", message: "No files matched the include patterns." } };
     }
     if (this.on(1))
       this.log(`Found ${matched_files.length} files to consider.`);
+    if (this.on(2))
+      this.log(`Matched files:${matched_files.length ? matched_files.map((l, i) => `
+      - ${l.replace(/^[./]*/, "")}`).join("") : "[]"}`);
     return { tsconfig_base, matched_files };
   }
   /**
@@ -308,9 +311,11 @@ ${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n"
       return res;
     }
     const plugins = this.config.plugins?.filter((p) => p && p.callback);
+    await Promise.all(plugins.map((p) => p.build({
+      debug: this.config.debug
+    })));
     const has_dist = plugins.some((p) => p.has_dist);
     const process_file = async (source) => {
-      const capture_changes = yes || this.on(import_plugin.Source.log_level_for_changes);
       for (const plugin of plugins) {
         if (!plugin || !plugin.callback) {
           continue;
@@ -322,7 +327,7 @@ ${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n"
           if (source.requires_load) {
             await source.load();
           }
-          const old = capture_changes ? { data: source.data } : void 0;
+          const old = this.config.capture_changes ? { data: source.data } : void 0;
           const changed = source.changed;
           source.changed = false;
           const p = plugin.callback(source);

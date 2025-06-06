@@ -1,13 +1,13 @@
 {
     "compilerOptions": {
+        "rootDir": "./src/",
+        "outDir": "./dist/esm",
+        "declarationDir": "./dist/esm",
         "target": "es2023",
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "declaration": true,
-        "declarationDir": "./dist/esm",
-        "outDir": "./dist/esm",
         "sourceMap": true,
-        "rootDir": "./src/",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,

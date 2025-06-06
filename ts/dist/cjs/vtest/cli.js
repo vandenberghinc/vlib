@@ -31,11 +31,12 @@ const cli = new vlib.cli.CLI({
 cli.main({
   description: "Execute the defined VTest modules.",
   examples: {
-    "Run": "vtest --import tests/module_1/unit_test.js,tests/module_2/unit_test.js --results tests/results/"
+    "Run": "vtest --include 'dist/**/unit_tests/**/*.js'"
   },
   args: [
-    { id: ["--imports", "--import", "-i"], type: "string[]", description: "The dist paths of the unit test module files to import, supports glob patterns." },
-    { id: ["--results", "-r"], type: "string", description: "The directory to write the results to." },
+    { id: ["--include", "-i"], type: "string[]", description: "The glob patterns of unit test files to include." },
+    { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The glob patterns of unit test files to exclude." },
+    { id: ["--results", "-r"], type: "string", def: process.cwd() + "/.unit_tests", description: "The directory to write the results to." },
     { id: ["--module", "-m"], type: "string", description: "The module to run, e.g. 'module_1'." },
     { id: ["--target", "-t"], type: "string", required: false, description: "An optional identifier of a module unit test, when defined only the targeted unit test(s) will be executed. Supports wildcard patterns '*'." },
     { id: ["--stop-on-failure", "-f"], type: "boolean", description: "Stop running tests on the first failure." },
@@ -47,17 +48,25 @@ cli.main({
     { id: ["--list-modules", "--list"], type: "boolean", description: "List all available unit test modules." },
     { id: ["--no-changes", "-nc"], type: "boolean", description: "Do not log any diff changes between cached and new data when in interactive mode." },
     { id: ["--refresh"], type: ["boolean", "string"], def: false, description: "Refresh the cache before running the tests. Can be set to 'true' or a path to refresh from." },
-    { id: ["--env", "-e"], type: "string[]", description: "The path to one or multiple environment files to import." }
+    { id: ["--env"], type: "string[]", description: "The path to one or multiple environment files to import." },
+    { id: ["--list-imports", "--list-includes"], type: "boolean", description: "List the computed included paths without performing anything." }
   ],
   async callback(args) {
-    if (args.imports.some((p) => vlib.GlobPattern.is(p))) {
-      args.imports = await vlib.Path.glob(args.imports, { string: true });
+    const included = await vlib.Path.glob(args.include, { exclude: args.exclude, string: true });
+    if (args.list_imports) {
+      console.log(`Include patterns: ${args.include?.map((i) => `
+ - ${i}`).join("")}`);
+      console.log(`Exclude patterns: ${args.exclude?.map((i) => `
+ - ${i}`).join("")}`);
+      console.log(`Found ${included.length} included paths: ${included?.map((i) => `
+ - ${i}`).join("")}`);
+      return;
     }
-    for (const i of args.imports) {
+    for (const p of included) {
       if (args.debug >= 1) {
-        vlib.logger.marker(`Importing unit test module: ${i}`);
+        vlib.logger.marker(`Importing unit test module: ${p}`);
       }
-      await import(new vlib.Path(i).abs().str());
+      await import(new vlib.Path(p).abs().str());
     }
     delete args.imports;
     if (!args.results) {

@@ -10,7 +10,7 @@
  */
 
 import { json } from "stream/consumers";
-import { ObjectUtils } from "../global/object.js";
+import { ObjectUtils } from "../primitives/object.js";
 
 // Types for colors.
 type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;

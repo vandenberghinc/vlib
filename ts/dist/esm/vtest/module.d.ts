@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path } from '../vlib/index.js';
+import { Path } from "../vlib/index.js";
 /** Expect type. */
 type Expect = "error" | "success";
 /** User inputted unit test callback type */

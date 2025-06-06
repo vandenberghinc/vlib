@@ -28,7 +28,13 @@ export class Scheme extends Map<string, Entry> {
     ) {
 
         // Initialize the map.
-        super(Object.entries(scheme).map(([key, value]) => [key, value instanceof Entry ? value : new Entry(value)]));
+        super();
+
+        // Skip empty values to avoid runtime errors.
+        for (const [key, value] of Object.entries(scheme)) {
+            if (!value) continue;
+            this.set(key, value instanceof Entry ? value : new Entry(value));
+        }
 
         // Update instance when parent and parent_key are provided.
         if (parent != null && parent_key != null) {

@@ -1,7 +1,7 @@
 "use strict";
 var import_vtest = require("../../vtest/index.js");
 var import_jsonc = require("../jsonc/jsonc.js");
-const tests = new import_vtest.Module({ name: "jsonc" });
+const tests = new import_vtest.Module({ name: "vlib/jsonc" });
 tests.add("parse:1", "success", () => import_jsonc.JSONC.parse(`
     {
         "key": "value",

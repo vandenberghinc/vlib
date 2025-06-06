@@ -3,7 +3,7 @@
  * Workaround for tsconfig complaints when importing library subpaths in commonjs.
  */
 import * as esbuild from 'esbuild';
-import { Utils, Path, debug as _debug } from '../../vlib/index.js';
+import { Utils, Path, debug as _debug } from "../../vlib/index.js";
 /**
  * Recursively converts all ESM files in a directory to CommonJS.
  * Writes outputs to a parallel directory structure under `output_dir`.

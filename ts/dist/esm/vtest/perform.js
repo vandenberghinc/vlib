@@ -5,7 +5,7 @@
 import pkg from 'js-beautify';
 const { js: beautify } = pkg;
 // Imports.
-import { cli, Color, Colors, Path } from '../vlib/index.js';
+import { cli, Color, Colors, Path } from "../vlib/index.js";
 import { modules } from './module.js';
 // -----------------------------------------------------------------
 // Perform the unit tests.

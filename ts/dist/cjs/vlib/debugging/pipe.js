@@ -21,7 +21,7 @@ __export(stdin_exports, {
   pipe: () => pipe
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_date = require("../global/date.js");
+var import_date = require("../primitives/date.js");
 var import_colors = require("../generic/colors.js");
 var import_source_loc = require("./source_loc.js");
 var import_directives = require("./directives.js");

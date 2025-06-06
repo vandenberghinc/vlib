@@ -8,7 +8,7 @@ import * as ts from 'typescript';
 import pkg from 'js-beautify';
 const { js: beautify } = pkg;
 // Imports.
-import { Color, Colors, Utils, Path, logging } from '../vlib/index.js';
+import { Color, Colors, Utils, Path, logging } from "../vlib/index.js";
 import { SourceLoc } from '../vlib/debugging/source_loc.js';
 import { compute_diff } from '../vts/utils/compute_diff.js';
 // -----------------------------------------------------------------

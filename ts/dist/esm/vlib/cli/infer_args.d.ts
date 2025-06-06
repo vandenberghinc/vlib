@@ -45,18 +45,18 @@ type Snake<S extends string> = S extends `${infer H}-${infer T}` ? `${H}_${Snake
 type PickFirst<T extends readonly any[], Def = never> = T extends readonly [infer F] ? F : T extends readonly [infer F, ...any] ? F : T extends readonly [] ? Def : Def;
 /** Extract the runtime key of. */
 type KeyOf<A extends InferArgsBase> = A["name"] extends string ? A["name"] : A["name"] extends And ? JoinArray<"/", A["name"]["items"]> : A["index"] extends number ? `arg_${A["index"]}` : A["id"] extends string ? A["id"] : A["id"] extends And ? JoinArray<"/", A["id"]["items"]> : A["id"] extends Or ? PickFirst<A["id"]["items"], "error_or_op_not_a_string_1"> : A["id"] extends readonly [infer F extends string, ...string[]] ? F : `error_key_not_found`;
-/** Given some default‐value type D, return its widened form:
+/** Process the default value and return its type.
  *  - string‐literal → string
  *  - number‐literal → number
  *  - boolean‐literal → boolean
  *  - readonly [ … ] or Array<…> → (widened) array of the element type
  *  - everything else → itself (e.g. class instances, plain objects, etc.)
  */
-type WidenDefault<D> = D extends string ? string : D extends number ? number : D extends boolean ? boolean : D extends readonly (infer U)[] ? U[] : D;
+type DefaultValueToType<D> = D extends string ? string : D extends number ? number : D extends boolean ? boolean : D extends readonly (infer U)[] ? U[] : D;
 /** Extract the runtime value type of an argument. */
 export type ExtractArgValueType<A extends InferArgsBase, Default extends Cast.Castable = never> = A extends {
     def: infer D extends undefined | Cast.Value;
-} ? WidenDefault<D> : A extends {
+} ? DefaultValueToType<D> : A extends {
     enum: readonly (infer U)[];
 } ? U : A["type"] extends Cast.Castable ? Cast.Cast<A["type"], Default> : Default;
 /** Is the argument optional? */

@@ -21,7 +21,7 @@ __export(stdin_exports, {
   debug: () => debug
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_callable = require("../global/callable.js");
+var import_callable = require("../generic/callable.js");
 var import_directives = require("./directives.js");
 var import_pipe = require("./pipe.js");
 var import_source_loc = require("./source_loc.js");

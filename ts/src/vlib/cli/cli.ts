@@ -13,7 +13,7 @@ import { And, Or, and_or_str } from './query.js';
 import { debug } from '../debugging/index.m.uni.js';
 import * as InferArgs from './infer_args.js';
 import { logger } from '../logging/logger.js';
-import { ObjectUtils } from '../global/object.js';
+import { ObjectUtils } from '../primitives/object.js';
 import type { CastFlag, ExtractFlag } from '../types/flags.js';
 import type { Cast } from './cast.js';
 import * as Arg from './arg.js';
@@ -530,10 +530,14 @@ export class CLI<
             }
         } catch (error: any) {
             if (error instanceof CLIError) { throw error; }
-            throw this.error(
-                `Encountered an error while executing cli command "${command.identifier()}".`,
-                { error, command },
-            );
+            if (debug.on(1)) {
+                throw this.error(
+                    `Encountered an error while executing cli command "${command.identifier()}".`,
+                    { error, command },
+                );
+            }
+            Error.stackTraceLimit = 25;
+            throw error;
         }
     }
 
@@ -1096,6 +1100,8 @@ export class CLI<
      */
     async start(): Promise<void> {
         try {
+
+            // Vars.
             const help = this.has(["-h", "--help"]);
             let matched = false;
 

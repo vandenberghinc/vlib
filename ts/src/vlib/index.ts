@@ -3,6 +3,9 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
+// Set stacktrace limit.
+Error.stackTraceLimit = 25;
+
 /** types/ */
 export type * as Types from "./types/index.m.js"
 export type * as types from "./types/index.m.js"
@@ -16,7 +19,7 @@ export * from "./sockets/request.js"
 export * from "./sockets/websocket.js"
 
 /** global/ */
-export * from "./global/index.uni.js"
+export * from "./primitives/index.uni.js"
 
 /** generic/ */
 export * from "./generic/index.js"
@@ -43,7 +46,8 @@ export * as scheme from "./scheme/index.m.uni.js"
 export * from "./jsonc/jsonc.js"
 
 /** crypto/ */
-export * from "./crypto/index.js"
+export * as Crypto from "./crypto/index.m.js"
+export * as crypto from "./crypto/index.m.js"
 
 /** search/ */
 export * from "./search/index.uni.js"

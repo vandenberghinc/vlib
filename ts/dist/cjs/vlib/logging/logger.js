@@ -33,7 +33,7 @@ __export(stdin_exports, {
 module.exports = __toCommonJS(stdin_exports);
 var fs = __toESM(require("fs"));
 var import_cluster = __toESM(require("cluster"));
-var import_date = require("../global/date.js");
+var import_date = require("../primitives/date.js");
 var import_path = require("../generic/path.js");
 var import_colors = require("../generic/colors.js");
 var import_source_loc = require("../debugging/source_loc.js");

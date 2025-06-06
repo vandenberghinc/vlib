@@ -11,7 +11,7 @@
  *      Became very confusing due to InferArgs and everything.
  *      And due to the different Arg variant / modes + queries etc, just dont.
  */
-import { ArrayUtils } from "../global/array.js";
+import { ArrayUtils } from "../primitives/array.js";
 /** Or query. */
 export class Or extends Array {
     /** Readonly items for `InferArgs`. */

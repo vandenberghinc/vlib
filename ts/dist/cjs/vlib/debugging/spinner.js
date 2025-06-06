@@ -21,7 +21,7 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../generic/colors.js");
-var import_date = require("../global/date.js");
+var import_date = require("../primitives/date.js");
 var import_spinners = require("./spinners.js");
 class Spinner {
   /** The spinner frames to cycle through. */

@@ -8,7 +8,7 @@
  *  Therefore, it must be a standalone script not depending on anything from vlib except for Array.iterate.
  *  And beware that `vlib` will be replaced with `vweb`.
  */
-import { ObjectUtils } from "../global/object.js";
+import { ObjectUtils } from "../primitives/object.js";
 type BackgroundColors = Record<'black' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan' | 'white', string>;
 /**
  * The colors class serving as a container to manage ANSI color codes.

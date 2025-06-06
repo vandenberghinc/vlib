@@ -34,8 +34,8 @@ cli.main({
   },
   args: [
     { id: ["--tsconfig", "--project", "-p"], type: "string", required: false, description: "The source path to tsconfig or a directory with a tsconfig.json file. By default the current working directory will be used when omitted." },
-    { id: ["--include", "-i"], type: "string[]", required: false, description: "The source files or directories to include in the transformation. Defaults to all files in the tsconfig directory." },
-    { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The source files or directories to exclude from the transformation." },
+    { id: ["--include", "-i"], type: "string[]", required: false, description: "The source files or directories to include in the transformation. Defaults to all files in the tsconfig directory. Supports glob patterns." },
+    { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The source files or directories to exclude from the transformation. Supports glob patterns." },
     { id: vlib.cli.and("--header", "--author"), type: "string", required: false, description: "The author name to use in the header plugin." },
     { id: vlib.cli.and("--header", "--year"), type: "number", required: false, description: "The copyright year to use in the header plugin." },
     { id: ["--dirname", "-d"], type: "boolean", required: false, description: "Enable the dirname plugin." },
@@ -88,7 +88,7 @@ cli.command({
     "Fill templates": "vts --fill-templates --dist path/to/dir --templates key1=value1,key2=value2"
   },
   args: [
-    { id: ["--src", "--source", "-s"], type: "string[]", required: false, description: "The dist directory or target path (in which) to fill the templates." },
+    { id: ["--src", "--source", "-s"], type: "string[]", required: false, description: "The dist directory or target path (in which) to fill the templates. Supports glob patterns." },
     { id: ["--templates", "-t"], type: "object", description: "The templates to fill, e.g. 'x:true,y:false'" },
     { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." },
     { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },
@@ -116,7 +116,7 @@ cli.command({
     "Fill templates": "vts --fill-templates --src path/to/dir --package path/to/package.json"
   },
   args: [
-    { id: ["--src", "--source", "-s"], type: "string[]", description: "The dist directory or target path (in which) to fill the templates." },
+    { id: ["--src", "--source", "-s"], type: "string[]", description: "The dist directory or target path (in which) to fill the templates. Supports glob patterns." },
     { id: ["--pkg", "--package", "-p"], type: "string", required: false, description: "The path to the package.json file to read the version from." },
     { id: ["--allow-not-found", "-a"], type: "boolean", description: "Allow the source files to not be found." },
     { id: ["--debug", "--log-level", "-d"], type: "number", def: 0, description: "Set the active log level." },

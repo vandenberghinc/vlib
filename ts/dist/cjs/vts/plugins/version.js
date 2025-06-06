@@ -39,6 +39,7 @@ class Version extends import_plugin.Plugin {
       vars: { __version: version ? version : (0, import_pkg_json.load_pkg_json)(pkg_json, { version: true }).version }
     });
     this.callback = (src) => upsert.callback(src);
+    this.plugins.push(upsert);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

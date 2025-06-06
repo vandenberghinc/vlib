@@ -82,14 +82,14 @@ type KeyOf<A extends InferArgsBase> =
 // ————————————————————————————————————————————————————————
 // Value extraction.
 
-/** Given some default‐value type D, return its widened form:
+/** Process the default value and return its type.
  *  - string‐literal → string
  *  - number‐literal → number
  *  - boolean‐literal → boolean
  *  - readonly [ … ] or Array<…> → (widened) array of the element type
  *  - everything else → itself (e.g. class instances, plain objects, etc.)
  */
-type WidenDefault<D> =
+type DefaultValueToType<D> =
     // if D is any kind of string literal, make it `string`
     D extends string ? string :
     // if D is any numeric literal, make it `number`
@@ -106,7 +106,7 @@ export type ExtractArgValueType<
     A extends InferArgsBase,
     Default extends Cast.Castable = never // default type
 > =
-    A extends { def: infer D extends undefined | Cast.Value } ? WidenDefault<D> :
+    A extends { def: infer D extends undefined | Cast.Value } ? DefaultValueToType<D> :
     // A extends { def: infer D extends Exclude<any, NoDef> } ? WidenDefault<D> :
     // A extends { def: infer D extends Cast.Cast<
     //     A["type"] extends Cast.Castable ? A["type"] : Default

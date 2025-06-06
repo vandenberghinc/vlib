@@ -12,7 +12,7 @@ export * as cli from "./cli/index.m.js";
 export * from "./sockets/request.js";
 export * from "./sockets/websocket.js";
 /** global/ */
-export * from "./global/index.uni.js";
+export * from "./primitives/index.uni.js";
 /** generic/ */
 export * from "./generic/index.js";
 /** debugging/ */
@@ -32,7 +32,8 @@ export * as scheme from "./scheme/index.m.uni.js";
 /** jsonc/ */
 export * from "./jsonc/jsonc.js";
 /** crypto/ */
-export * from "./crypto/index.js";
+export * as Crypto from "./crypto/index.m.js";
+export * as crypto from "./crypto/index.m.js";
 /** search/ */
 export * from "./search/index.uni.js";
 /** utils.js */

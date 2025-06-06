@@ -84,6 +84,11 @@ export namespace Transformer {
              * An in-memory record of files mapped by their path to their content.
              */
             files?: Record<string, string>;
+            /**
+             * Capture changes, defaults to `false`.
+             * When `yes` is `true`, this will always be set to `true`.
+             */
+            capture_changes?: boolean;
         }
     }
 
@@ -135,11 +140,12 @@ export class Transformer {
 
     /** Constructor. */
     constructor(config: Transformer.Opts) {
+        const { yes = false } = config;
         this.config = {
             ...config,
-            yes: config.yes ?? false,
+            yes,
             interactive_mutex: new vlib.Mutex(),
-            async: config.async ?? true,
+            async: (config.async ?? true) && yes, // dont run in async if yes is false, otherwise the logs are hard to read with interactive prompts.
             parse_imports: config.parse_imports ?? false,
             insert_tsconfig: config.insert_tsconfig ?? false,
             check_include: config.check_include ?? true,
@@ -147,6 +153,7 @@ export class Transformer {
                 ? config.debug
                 : new vlib.Debug(config.debug ?? 0),
             files: config.files ? new Map(Object.entries(config.files ?? {})) : undefined,
+            capture_changes: !yes || (config.capture_changes ?? false),
         };
     }
 
@@ -307,7 +314,7 @@ export class Transformer {
             if (in_memory) {
                 return;
             }
-            if (/[*?{}]/.test(include)) {
+            if (vlib.GlobPattern.is(include)) {
                 include_patterns.push(include);
                 if (this.on(2)) this.log(`Adding included pattern "${include}".`);
                 return;
@@ -317,12 +324,12 @@ export class Transformer {
                 throw new Error(`Included path "${include}" does not exist.`);
             }
             if (path.is_dir()) {
-                include_patterns.push(include);
+                include_patterns.push(`${path.unix().path}/**/*.{js,jsx,ts,tsx}`);
                 if (this.on(2)) this.log(`Adding included directory "${include}".`);
                 return;
             }
             if (!this.config.parse_imports) {
-                include_patterns.push(include);
+                include_patterns.push(path.unix().path);
                 if (this.on(2)) this.log(`Adding included file "${include}".`);
                 return;
             }
@@ -331,7 +338,7 @@ export class Transformer {
                 parse_imports(include, { recursive: true, external: false })
                     .then(parsed_imports => {
                         if (this.on(2)) this.log(`Parsed imports from tsconfig include "${include}":`, parsed_imports);
-                        include_patterns.push(...parsed_imports);
+                        include_patterns.push(...parsed_imports); // not unix but ok.
                         resolve();
                     })
                     .catch(reject);
@@ -378,22 +385,17 @@ export class Transformer {
         let not_found: string[];
         if (
             this.config.check_include
-            && (not_found = include_patterns.filter(include => !/[*?{}]/.test(include))).length
+            && (not_found = include_patterns.filter(i => !vlib.GlobPattern.is(i))).length
         ) {
             throw new Error(`Included path${not_found.length > 1 ? "s" : ""} ${not_found.map(l => `"${l}"`).join(", ")} do${not_found.length > 1 ? "es" : ""} not exist.`);
         }
 
         if (this.on(1)) this.log(`Found ${include_patterns.length} include patterns.`);
-        if (include_patterns.length && this.on(2)) this.log(`Include patterns:\n${include_patterns.map((l, i) => `      - ${l.replace(/^[./]*/, "")}`).join("\n")}`);
+        if (this.on(2)) this.log(`Include patterns:${include_patterns.length ? include_patterns.map((l, i) => `\n      - ${l.replace(/^[./]*/, "")}`).join("") : "[]"}`);
 
         // List all files matching include, filtering out exclude
         const matched_files = include_patterns.length === 0 ? [] as never : await fg(
-            include_patterns.map((p: string) => {
-                const path = new Path(p);
-                return !path.exists() || !path.is_dir()
-                    ? p
-                    : `${p.split(path_module.sep).join('/')}/**/*.{js,jsx,ts,tsx}`
-            }),
+            include_patterns,
             { dot: true, onlyFiles: true, ignore: exclude_patterns, absolute: true, cwd: tsconfig_base?.path || process.cwd() },
         )
         if (matched_files.length === 0 && !this.config.files?.size) {
@@ -401,6 +403,7 @@ export class Transformer {
             return { error: { type: "warning", message: "No files matched the include patterns." } };
         }
         if (this.on(1)) this.log(`Found ${matched_files.length} files to consider.`);
+        if (this.on(2)) this.log(`Matched files:${matched_files.length ? matched_files.map((l, i) => `\n      - ${l.replace(/^[./]*/, "")}`).join("") : "[]"}`);
 
         return { tsconfig_base, matched_files };
 
@@ -454,6 +457,11 @@ export class Transformer {
         // Drop all undefined plugins or plugins that do not have a callback.
         const plugins = this.config.plugins?.filter(p => p && p.callback) as Enforce<Plugin, "callback">[];
 
+        // Update debug instance on plugins.
+        await Promise.all(plugins.map(p => p.build({
+            debug: this.config.debug,
+        })));
+
         // Check if we have dist plugins.
         const has_dist = plugins.some(p => p.has_dist);
 
@@ -461,9 +469,9 @@ export class Transformer {
          * Wrapper function to process a file.
          */
         const process_file = async (source: Source): Promise<void> => {
-
-            // Capture the changes.
-            const capture_changes = yes || this.on(Source.log_level_for_changes);
+            // if (this.on(2)) {
+            //     this.log(`Processing source ${source.non_unique_id.path} [${source.type}]...`);
+            // }
 
             // Run the plugins.
             for (const plugin of plugins) {
@@ -471,10 +479,13 @@ export class Transformer {
                 let not_processed = true;
 
                 // Run src.
-                if ((source.is_src && plugin.has_src) || (source.is_dist && plugin.has_dist)) {
+                if (
+                    (source.is_src && plugin.has_src) ||
+                    (source.is_dist && plugin.has_dist)
+                ) {
                     if (plugin.on(2)) plugin.log(source, `Processing source [${source.type}]...`);
                     if (source.requires_load) { await source.load(); }
-                    const old = capture_changes ? { data: source.data! } : undefined;
+                    const old = this.config.capture_changes ? { data: source.data! } : undefined;
                     const changed = source.changed;
                     source.changed = false; // reset to detect local changes.
                     const p = plugin.callback(source);

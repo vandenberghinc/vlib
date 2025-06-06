@@ -40,7 +40,7 @@ export class UpsertRuntimeVars extends Plugin {
                 ? { keys: vars[0], vars: vars[1] }
                 : { keys: Object.keys(vars), vars: vars };
         this.insert_pattern = new RegExp(`/\\*\\* ${this.identifier} \\*/.*?/\\*\\* ${this.identifier} END \\*/[\r\n]*`, "g");
-        this.needs_insertion_pattern = new RegExp(`(${this.var_opts.keys.map(key => key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")).join("|")})`, "g");
+        this.needs_insertion_pattern = new RegExp(`(${this.var_opts.keys.map(key => key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")).join("|")})`, "");
         // Ensure code opts are properly formatted.
         this.code = {
             before: code.before ? (code.before + ";") : "",
@@ -49,7 +49,7 @@ export class UpsertRuntimeVars extends Plugin {
     }
     /** Process source callback. */
     async callback(source) {
-        if (this.debug.on(3))
+        if (this.debug.on(2))
             this.log(source, "Running plugin...");
         // Check if the file already contains the variables.
         if (!this.needs_insertion_pattern.test(source.data)) {

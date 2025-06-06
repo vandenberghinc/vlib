@@ -42,7 +42,25 @@ export declare class Repo {
     ssh?: SSH;
     npm?: NPM;
     /** Constructor validator. */
-    static validator: Scheme.Validator<object, object, "object">;
+    static validator: Scheme.Validator<Scheme.Validator.T, {
+        unknown: false;
+        throw: true;
+        scheme: {
+            source: "string";
+            git: {
+                type: "boolean";
+                default: boolean;
+            };
+            ssh: {
+                type: "boolean";
+                default: boolean;
+            };
+            npm: {
+                type: "boolean";
+                default: boolean;
+            };
+        };
+    }>;
     constructor({ source, git, // git enabled.
     ssh, // ssh enabled.
     npm, }: {

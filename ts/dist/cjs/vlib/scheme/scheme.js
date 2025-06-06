@@ -24,7 +24,12 @@ var import_entry = require("./entry.js");
 class Scheme extends Map {
   /** Initialize a scheme object. */
   constructor(scheme, parent, parent_key) {
-    super(Object.entries(scheme).map(([key, value]) => [key, value instanceof import_entry.Entry ? value : new import_entry.Entry(value)]));
+    super();
+    for (const [key, value] of Object.entries(scheme)) {
+      if (!value)
+        continue;
+      this.set(key, value instanceof import_entry.Entry ? value : new import_entry.Entry(value));
+    }
     if (parent != null && parent_key != null) {
       parent[parent_key] = this;
     }

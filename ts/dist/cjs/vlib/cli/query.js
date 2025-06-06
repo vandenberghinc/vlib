@@ -24,7 +24,7 @@ __export(stdin_exports, {
   or: () => or
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_array = require("../global/array.js");
+var import_array = require("../primitives/array.js");
 class Or extends Array {
   /** Readonly items for `InferArgs`. */
   items;

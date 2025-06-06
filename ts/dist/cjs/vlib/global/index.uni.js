@@ -1,11 +1,31 @@
-/**
- * @author Daan van den Bergh
- * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
- */
-export * from "./array.js";
-export * from "./date.js";
-export * from "./number.js";
-export * from "./object.js";
-export * from "./string.js";
-export * from "./callable.js";
-//# sourceMappingURL=index.uni.js.map
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "default"), secondTarget && __copyProps(secondTarget, mod, "default"));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var stdin_exports = {};
+module.exports = __toCommonJS(stdin_exports);
+__reExport(stdin_exports, require("./array.js"), module.exports);
+__reExport(stdin_exports, require("./date.js"), module.exports);
+__reExport(stdin_exports, require("./number.js"), module.exports);
+__reExport(stdin_exports, require("./object.js"), module.exports);
+__reExport(stdin_exports, require("./string.js"), module.exports);
+__reExport(stdin_exports, require("./callable.js"), module.exports);
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  ...require("./array.js"),
+  ...require("./date.js"),
+  ...require("./number.js"),
+  ...require("./object.js"),
+  ...require("./string.js"),
+  ...require("./callable.js")
+});

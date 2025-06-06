@@ -12,7 +12,7 @@
  *      And due to the different Arg variant / modes + queries etc, just dont.
  */
 
-import { ArrayUtils } from "../global/array.js";
+import { ArrayUtils } from "../primitives/array.js";
 
 /**
  * Type alias for `items: Arr` this is required for the `InferArgs` type to work correctly.

@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Callable } from "../global/callable.js";
+import { Callable } from "../generic/callable.js";
 import { ActiveLogLevel, Directive } from "./directives.js";
 import { Pipe } from "./pipe.js";
 import { SourceLoc } from "./source_loc.js";

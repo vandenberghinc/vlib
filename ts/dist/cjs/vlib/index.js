@@ -30,12 +30,14 @@ var stdin_exports = {};
 __export(stdin_exports, {
   CLI: () => CLI,
   Code: () => Code,
+  Crypto: () => Crypto,
   Debug: () => import_index_m_uni.Debug,
   Debugging: () => Debugging,
   Logging: () => Logging,
   Scheme: () => Scheme,
   cli: () => cli,
   code: () => code,
+  crypto: () => crypto,
   debug: () => import_index_m_uni.debug,
   debugging: () => debugging,
   error: () => error,
@@ -52,7 +54,7 @@ var CLI = __toESM(require("./cli/index.m.js"));
 var cli = __toESM(require("./cli/index.m.js"));
 __reExport(stdin_exports, require("./sockets/request.js"), module.exports);
 __reExport(stdin_exports, require("./sockets/websocket.js"), module.exports);
-__reExport(stdin_exports, require("./global/index.uni.js"), module.exports);
+__reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
 __reExport(stdin_exports, require("./generic/index.js"), module.exports);
 var Debugging = __toESM(require("./debugging/index.m.uni.js"));
 var debugging = __toESM(require("./debugging/index.m.uni.js"));
@@ -64,12 +66,14 @@ var import_logger = require("./logging/logger.js");
 var Scheme = __toESM(require("./scheme/index.m.uni.js"));
 var scheme = __toESM(require("./scheme/index.m.uni.js"));
 __reExport(stdin_exports, require("./jsonc/jsonc.js"), module.exports);
-__reExport(stdin_exports, require("./crypto/index.js"), module.exports);
+var Crypto = __toESM(require("./crypto/index.m.js"));
+var crypto = __toESM(require("./crypto/index.m.js"));
 __reExport(stdin_exports, require("./search/index.uni.js"), module.exports);
 __reExport(stdin_exports, require("./generic/utils.js"), module.exports);
 var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
+Error.stackTraceLimit = 25;
 const print = (...args) => (0, import_index_m_uni2.debug)(0, ...args);
 const { log, warn, error } = import_logger.logger.loggers();
 const version = "1.6.20";
@@ -77,12 +81,14 @@ const version = "1.6.20";
 0 && (module.exports = {
   CLI,
   Code,
+  Crypto,
   Debug,
   Debugging,
   Logging,
   Scheme,
   cli,
   code,
+  crypto,
   debug,
   debugging,
   error,
@@ -95,10 +101,9 @@ const version = "1.6.20";
   warn,
   ...require("./sockets/request.js"),
   ...require("./sockets/websocket.js"),
-  ...require("./global/index.uni.js"),
+  ...require("./primitives/index.uni.js"),
   ...require("./generic/index.js"),
   ...require("./jsonc/jsonc.js"),
-  ...require("./crypto/index.js"),
   ...require("./search/index.uni.js"),
   ...require("./generic/utils.js"),
   ...require("./clipboard/index.js")

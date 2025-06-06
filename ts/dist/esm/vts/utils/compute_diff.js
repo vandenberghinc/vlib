@@ -4,7 +4,7 @@
  */
 // External imports.
 import { diffLines } from 'diff';
-import { Color } from '../../vlib/index.js';
+import { Color } from "../../vlib/index.js";
 /**
  * Detect and log the difference between cached data and new data strings.
  *

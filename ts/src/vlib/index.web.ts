@@ -3,8 +3,11 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
+// Set stacktrace limit.
+Error.stackTraceLimit = 25;
+
 /** global/ */
-export * from "./global/index.uni.js"
+export * from "./primitives/index.uni.js"
 
 /** scheme/ */
 export * as Scheme from "./scheme/index.m.uni.js"

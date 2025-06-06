@@ -1,5 +1,8 @@
 {
     "compilerOptions": {
+        "rootDir": "./src/",
+        "outDir": "./dist/web",
+        "declarationDir": "./dist/web",
         "target": "ES2022",
         "module": "ES2022",
         "moduleResolution": "bundler",
@@ -9,9 +12,6 @@
         ],
         "sourceMap": true,
         "declaration": true,
-        "declarationDir": "./dist/web",
-        "outDir": "./dist/web",
-        "rootDir": "./src/",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,

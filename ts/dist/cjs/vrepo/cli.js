@@ -122,13 +122,16 @@ cli.command({
     { id: "--ssh", type: "boolean", description: "Only show the ssh remotes." }
   ],
   async callback({ source = null, sources = null, git = false, ssh = false }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const source2 of all_sources) {
       const repo = new import_repo.Repo({
@@ -279,13 +282,16 @@ cli.command({
     { id: ["--log-level", "-l"], type: "number", description: "The log level." }
   ],
   async callback({ source = null, sources = null, git = null, forced = false, ensure_push = false, log_level = 0 }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const src of all_sources) {
       const repo = new import_repo.Repo({ source: src, npm: false });
@@ -342,13 +348,16 @@ cli.command({
     { id: ["--forced", "-f"], type: "boolean", description: "Pull with Git in forced mode." }
   ],
   async callback({ source = null, sources = null, git = null, forced = false }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const src of all_sources) {
       const repo = new import_repo.Repo({ source: src, npm: false });
@@ -366,6 +375,8 @@ cli.command({
           message: `Pulling ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
           success: `Pulled ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`
         });
+        console.error(this.error("This feature is disabled  and should be re-activated once tested."));
+        vlib.utils.safe_exit();
         const err = await repo.git.pull({ remote: remote.remote, dest: remote.destination, branch: remote.branch, forced });
         if (err) {
           spinner.error();
@@ -390,13 +401,16 @@ cli.command({
     { id: ["--log-level", "-l"], type: "number", description: "The log level." }
   ],
   async callback({ source = null, sources = null, ssh = null, del = false, log_level = 0 }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const src of all_sources) {
       const repo = new import_repo.Repo({ source: src, npm: false });
@@ -446,13 +460,16 @@ cli.command({
     { id: ["--del", "-d"], type: "boolean", description: "Pull with SSH in delete mode." }
   ],
   async callback({ source = null, sources = null, ssh = null, del = false }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const src of all_sources) {
       const repo = new import_repo.Repo({ source: src, npm: false });
@@ -470,6 +487,8 @@ cli.command({
           message: `Pulling ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
           success: `Pulled ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`
         });
+        console.error(this.error("This feature is disabled  and should be re-activated once tested."));
+        vlib.utils.safe_exit();
         const err = await repo.ssh.pull(remote.alias, remote.destination, del);
         if (err) {
           spinner.error();
@@ -493,13 +512,16 @@ cli.command({
     { id: "--on-commits-only", type: "boolean", description: "Only when local commits have been made." }
   ],
   callback: async ({ source = null, sources = null, on_commits_only = false }) => {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const source2 of all_sources) {
       const repo = new import_repo.Repo({
@@ -543,13 +565,16 @@ cli.command({
     if (!dependencies?.length) {
       throw this.error(`The argument --dependencies is required.`, { docs: true });
     }
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const source2 of all_sources) {
       const vrepo_src = new vlib.Path(source2 + "/.vrepo");
@@ -633,13 +658,16 @@ cli.command({
     { id: ["--install", "-i"], type: "boolean", description: 'Also install the updated unlinked dependencies using "npm install".' }
   ],
   async callback({ source = null, sources = null, install = false }) {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     const unlink = async (source2) => {
       const package_json_path = new vlib.Path(source2 + "/package.json");
@@ -744,13 +772,16 @@ cli.command({
     { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." }
   ],
   callback: async ({ source = null, sources = null }) => {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const source2 of all_sources) {
       const repo = new import_repo.Repo({
@@ -784,13 +815,16 @@ cli.command({
     { id: ["--directories", "-d"], type: "boolean", description: "Also include directories." }
   ],
   callback: async ({ source = null, sources = null, exclude = [], limit = 25, gitignore = false, directories = false }) => {
-    const all_sources = [];
+    let all_sources = [];
     if (typeof source === "string") {
       all_sources.push(source);
     } else if (Array.isArray(sources)) {
       all_sources.push(...sources);
     } else {
       all_sources.push("./");
+    }
+    if (all_sources.some((p) => vlib.GlobPattern.is(p))) {
+      all_sources = await vlib.Path.glob(all_sources, { string: true });
     }
     for (const source2 of all_sources) {
       const repo = new import_repo.Repo({

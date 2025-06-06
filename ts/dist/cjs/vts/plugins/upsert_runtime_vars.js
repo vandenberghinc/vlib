@@ -48,7 +48,7 @@ class UpsertRuntimeVars extends import_plugin.Plugin {
     this.var_opts = RuntimeVarsOpts.is(vars) ? vars : Array.isArray(vars) ? { keys: vars[0], vars: vars[1] } : { keys: Object.keys(vars), vars };
     this.insert_pattern = new RegExp(`/\\*\\* ${this.identifier} \\*/.*?/\\*\\* ${this.identifier} END \\*/[\r
 ]*`, "g");
-    this.needs_insertion_pattern = new RegExp(`(${this.var_opts.keys.map((key) => key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")).join("|")})`, "g");
+    this.needs_insertion_pattern = new RegExp(`(${this.var_opts.keys.map((key) => key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")).join("|")})`, "");
     this.code = {
       before: code.before ? code.before + ";" : "",
       after: code.after ? code.after + ";" : ""
@@ -56,7 +56,7 @@ class UpsertRuntimeVars extends import_plugin.Plugin {
   }
   /** Process source callback. */
   async callback(source) {
-    if (this.debug.on(3))
+    if (this.debug.on(2))
       this.log(source, "Running plugin...");
     if (!this.needs_insertion_pattern.test(source.data)) {
       if (this.debug.on(2))

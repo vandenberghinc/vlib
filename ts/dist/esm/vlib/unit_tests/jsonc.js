@@ -7,7 +7,7 @@
 import { Module } from "../../vtest/index.js";
 import { JSONC } from '../jsonc/jsonc.js';
 // Unit tests module.
-const tests = new Module({ name: "jsonc" });
+const tests = new Module({ name: "vlib/jsonc" });
 // ==================================================================================================
 tests.add("parse:1", "success", () => JSONC.parse(`
     {

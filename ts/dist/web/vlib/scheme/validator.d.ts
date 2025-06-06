@@ -5,22 +5,7 @@
 import type { AliasPick } from "../types/types.js";
 import { Entry } from "./entry.js";
 import { Scheme } from "./scheme.js";
-import type { ExtractFlag, IfFlag, IfFlags } from "../types/flags.js";
-/**
- * Data mode flag.
- * This is required for the `tuple` attribute to be initialized from in the constructor.
- * @enum {"object"} In object mode the `scheme` attribute will be used to validate the object attributes.
- * @enum {"array"} In array mode the `tuple` attribute will be used to validate the array items.
- */
-export type Mode = "object" | "array";
-export declare namespace Mode {
-    /** Universal flag utilities after `T` is defined. */
-    type T = Mode;
-    export type Extract<F extends T> = ExtractFlag<F, T, never>;
-    export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
-    export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
-    export {};
-}
+import type { Infer } from "./infer.js";
 /**
  * Wrapper class to validate an object.
  * @note Always updates the object in place.
@@ -29,14 +14,9 @@ export declare namespace Mode {
  */
 export declare class Validator<
 /** The input type. */
-T extends object, 
-/** The output type. */
-O extends object = T, 
-/**
- * Mode, array or object.
- * This is required for the `tuple` attribute to be initialized from in the constructor.
- */
-M extends Mode = T extends any[] ? "array" : "object"> {
+T extends Validator.T, 
+/** The input options, capture as generic so we can infer from it. */
+Opts extends Validator.Opts<T> = Validator.Opts<T>> {
     /** The scheme to validate. */
     scheme?: Scheme;
     /** The value scheme for object values or array items. */
@@ -61,29 +41,9 @@ M extends Mode = T extends any[] ? "array" : "object"> {
      * Data mode.
      * Dont support "auto" so we can infer the M generic from this parameter.
      */
-    mode: M, 
+    mode: T extends any[] ? "array" : "object", 
     /** Options. */
-    opts: {
-        unknown?: boolean;
-        parent?: string;
-        error_prefix?: string;
-        err_prefix?: string | null;
-        /** Throw occurred errors, defaults to `false` */
-        throw: boolean;
-    } & AliasPick<{
-        err_prefix?: string;
-        error_prefix?: string;
-    }> & Mode.If<M, "array", AliasPick<{
-        value_scheme: Entry | Entry.Opts | undefined;
-        tuple: Entry | Entry.Opts | undefined;
-    }> & {
-        scheme?: never;
-    }, AliasPick<{
-        scheme: Scheme.Opts | Scheme;
-        value_scheme: Entry | Entry.Opts | undefined;
-    }> & {
-        tuple?: never;
-    }>);
+    opts: Opts);
     /** Throw an error or return error object. */
     private throw_error;
     /**
@@ -96,11 +56,33 @@ M extends Mode = T extends any[] ? "array" : "object"> {
     /** Perform the validation on the data. */
     private validate_data;
     /** Run the validator. */
-    validate(data: T): Validator.Info<"success" | "error", O>;
+    validate(data: T): Validator.Info<"success" | "error", AutoInferOutput<T, Opts>>;
 }
 export declare namespace Validator {
+    /** Base type options. */
+    type T = any[] | Record<string, any>;
     /** Constructor options. */
-    type Opts<T extends object, O extends object = T, M extends Mode = T extends any[] ? "array" : "object"> = ConstructorParameters<typeof Validator<T, O, M>>[1];
+    type Opts<T extends object = object> = {
+        unknown?: boolean;
+        parent?: string;
+        error_prefix?: string;
+        err_prefix?: string | null;
+        /** Throw occurred errors, defaults to `false` */
+        throw: boolean;
+    } & AliasPick<{
+        err_prefix?: string;
+        error_prefix?: string;
+    }> & (T extends any[] ? (AliasPick<{
+        value_scheme: Entry | Entry.Opts | undefined;
+        tuple: Entry | Entry.Opts | undefined;
+    }> & {
+        scheme?: never;
+    }) : (AliasPick<{
+        scheme: Scheme.Opts | Scheme;
+        value_scheme: Entry | Entry.Opts | undefined;
+    }> & {
+        tuple?: never;
+    }));
     /** Info mode response */
     type Info<M extends "error" | "success", O extends object> = M extends "error" ? {
         error: string;
@@ -121,12 +103,23 @@ export declare namespace Validator {
         constructor(msg: string);
     }
 }
+/** Helper types to extract the scheme types from validator opts. */
+type SchemeFromOpts<T extends Validator.T, O extends Validator.Opts<T>> = O extends {
+    scheme: infer S extends Scheme | Scheme.Opts;
+} ? S : never;
+type ValueSchemeFromOpts<T extends Validator.T, O extends Validator.Opts<T>> = O extends {
+    value_scheme: infer S extends Entry | Entry.Opts;
+} ? S : never;
+type TupleFromOpts<T extends Validator.T, O extends Validator.Opts<T>> = O extends {
+    tuple: infer S extends Entry | Entry.Opts;
+} ? S : never;
+type AutoInferOutput<T extends Validator.T, O extends Validator.Opts<T>, S extends SchemeFromOpts<T, O> = SchemeFromOpts<T, O>, V extends ValueSchemeFromOpts<T, O> = ValueSchemeFromOpts<T, O>, Tpl extends TupleFromOpts<T, O> = TupleFromOpts<T, O>> = S extends Infer.Scheme.T ? Infer.Scheme<S> : V extends Infer.ValueScheme.T ? Infer.ValueScheme<V> : Tpl extends Infer.Tuple.T ? Infer.Tuple<Tpl> : never;
 /**
  * Validate an object or array by scheme.
  *
  * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
  *
- * @template T The type of the object or array to validate.
+ * @template I The input type of the object or array to validate.
  * @template O The output type of the returned object or array.
  *
  * @param opts The options for the verification.
@@ -134,4 +127,9 @@ export declare namespace Validator {
  *
  * @libris
  */
-export declare function validate<T extends object, O extends object, M extends Mode = T extends any[] ? "array" : "object">(data: T, opts: Validator.Opts<T, O, M>): Validator.Info<"success" | "error", O>;
+export declare function validate<
+/** The input type. */
+T extends Validator.T, 
+/** The input options, capture as generic so we can infer from it. */
+const Opts extends Validator.Opts<T> = Validator.Opts<T>>(data: T, opts: Opts): Validator.Info<"success" | "error", AutoInferOutput<T, Opts>>;
+export {};

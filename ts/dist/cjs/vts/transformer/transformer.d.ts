@@ -5,7 +5,7 @@
 import * as vlib from "../../vlib/index.js";
 import { Path } from "../../vlib/index.js";
 import { Plugin, Source } from "../plugins/plugin.js";
-import { Enforce, Merge, TransformFor } from "../../vlib/types/index.m.js";
+import { Enforce, Merge, TransformFor } from "@vlib/types/index.m.js";
 /**
  * Transformer options.
  */
@@ -70,6 +70,11 @@ export declare namespace Transformer {
              * An in-memory record of files mapped by their path to their content.
              */
             files?: Record<string, string>;
+            /**
+             * Capture changes, defaults to `false`.
+             * When `yes` is `true`, this will always be set to `true`.
+             */
+            capture_changes?: boolean;
         }
     }
     /** The initialized config type. */

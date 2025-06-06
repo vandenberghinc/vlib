@@ -4,7 +4,7 @@
  */
 
 // Imports.
-import { Callable } from "../global/callable.js";
+import { Callable } from "../generic/callable.js";
 import { ActiveLogLevel, Directive } from "./directives.js";
 import { Args, Pipe } from "./pipe.js";
 import { SourceLoc } from "./source_loc.js";;

@@ -1,9 +1,12 @@
+/** vts-version */ const __version="1.6.20"; /** vts-version END */
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+// Set stacktrace limit.
+Error.stackTraceLimit = 25;
 /** global/ */
-export * from "./global/index.uni.js";
+export * from "./primitives/index.uni.js";
 /** scheme/ */
 export * as Scheme from "./scheme/index.m.uni.js";
 export * as scheme from "./scheme/index.m.uni.js";

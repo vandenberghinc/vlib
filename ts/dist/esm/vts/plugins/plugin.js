@@ -35,7 +35,7 @@ export function log_helper(log_path, prefix, ...args) {
         vlib.debug.raw(vlib.debugging.Directive.enforce, `    ${prefix ?? ""}`, ...args);
     }
     else {
-        vlib.debug.raw(vlib.debugging.Directive.enforce, `${vlib.Color.cyan(log_path.path.charAt(0) === "/" ? "" : ".")}${vlib.Color.cyan(log_path.path)}${plugin ? ` ${vlib.Colors.gray}(${plugin})${vlib.Colors.end}` : ""}\n    ${prefix ?? ""}`, ...args);
+        vlib.debug.raw(vlib.debugging.Directive.enforce, `${vlib.Color.cyan(log_path.path)}${plugin ? ` ${vlib.Colors.gray}(${plugin})${vlib.Colors.end}` : ""}\n    ${prefix ?? ""}`, ...args);
     }
     last_log[0] = log_path;
     last_log[1] = plugin;
@@ -66,7 +66,6 @@ export class Source {
      * Each version of the edited `data` transformation.
      */
     changes = [];
-    static log_level_for_changes = 1;
     /** Has been changed by the pipeline callbacks. */
     changed = false;
     /** Type dist for js like files and src for ts like files */
@@ -149,21 +148,28 @@ export class Source {
             return this.warn(plugin, `No changes made in source data, but marked as changed.`);
         }
         this.changes.push(old.data);
-        if (this.debug.on(Source.log_level_for_changes)) {
+        if (
+        // only in yes mode otherwise the changes will be shown when prompting write permission.
+        this.config.yes
+            && this.debug.on(2)) {
             const { status, diff } = compute_diff({
                 new: this.data,
                 old: old.data,
-                prefix: "    ",
+                prefix: "        ",
             });
             if (status === "identical") {
                 return this.warn(plugin, `No changes made in source data, but marked as changed.`);
             }
             else if (status === "diff") {
-                this.log(plugin, `Changes made in source data, computing diff...`);
+                this.log(plugin, `Changes made in source data, computing diff... [1]`);
                 if (diff) {
                     // Log the diff.
-                    this.log(plugin, diff);
+                    this.log(plugin, "    " + diff.trimStart());
                 }
+            }
+            else {
+                // @ts-expect-error
+                this.error(plugin, `Unknown diff status "${status.toString()}" for source data changes.`);
             }
         }
     }
@@ -194,10 +200,14 @@ export class Source {
              *          This because some plugins like `Header` edit source files.
              *          So we need to ensure the user is aware of the changes.
              */
-            if (yes) {
+            if (!yes) {
                 // Acquire lock and ensure it's always released
                 await this.interactive_mutex.lock();
                 try {
+                    if (this.changes.length === 0) {
+                        this.error(plugin, `No source data changes captured, but marked as changed. This should not happen. Transformer config: ${vlib.Color.object(this.config)}`);
+                        return this;
+                    }
                     const multiple = this.changes.length > 1;
                     for (let i = 0; i < this.changes.length; i++) {
                         if (multiple)
@@ -205,15 +215,15 @@ export class Source {
                         const { status, diff } = compute_diff({
                             new: this.changes[i + 1] ?? this.data,
                             old: this.changes[i],
-                            prefix: multiple ? "        " : "    ",
+                            prefix: multiple ? "            " : "        ",
                             trim_keep: 2,
                         });
                         if (status === "identical") {
                             this.warn(plugin, `No changes made in source data, but marked as changed.`);
                         }
                         else if (status === "diff") {
-                            this.log(plugin, `Changes made in source data, computing diff...`);
-                            this.log(plugin, diff);
+                            this.log(plugin, `Changes made in source data, computing diff... [2]`);
+                            this.log(plugin, multiple ? "" : "    " + diff.trimStart());
                         }
                     }
                     if (!await vlib.logging.confirm(`[${vlib.Color.green_bold("Interactive")}] Do you want to save the changes to "${this.path.path}"?`)) {
@@ -273,6 +283,32 @@ export class Plugin {
     _exact_templates;
     /** The debug instance, later added when the plugin is executed. */
     debug = vlib.debug;
+    /**
+     * A list of linked plugins what will also be initialized when this plugin is initialized.
+     * Useful for when derived plugins use internal plugins.
+     */
+    plugins = [];
+    /**
+     * Initialize the plugin
+     * This must be called before using the plugin.
+     */
+    async build(opts) {
+        if (opts?.debug) {
+            this.debug = opts.debug;
+        }
+        if (this.plugins.length > 0) {
+            for (const plugin of this.plugins) {
+                await plugin.build(opts);
+            }
+        }
+        if (this.init) {
+            const value = await this.init(opts);
+            if (typeof value === "object" && value.error) {
+                throw new Error(`Plugin "${this.id.id}" initialization failed: ${value.error}`);
+            }
+        }
+        // do not load source here, only on demand.
+    }
     /**
      * The callback to join this plugin with the same type of plugin
      * For instance when multiple UpsertRuntimeVars plugins are defined they can just as good be joined.

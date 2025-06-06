@@ -52,6 +52,7 @@ class Dirname extends import_plugin.Plugin {
       }
     });
     this.callback = (src) => upsert.callback(src);
+    this.plugins.push(upsert);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

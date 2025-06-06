@@ -7,6 +7,22 @@ import { Entry } from "./entry.js";
 import { Scheme } from "./scheme.js";
 import { Cast } from "./cast.js";
 // -------------------------------------------------------
+// Flags.
+// /**
+//  * Data mode flag.
+//  * This is required for the `tuple` attribute to be initialized from in the constructor.
+//  * @enum {"object"} In object mode the `scheme` attribute will be used to validate the object attributes.
+//  * @enum {"array"} In array mode the `tuple` attribute will be used to validate the array items.
+//  */
+// export type Mode = "object" | "array";
+// export namespace Mode {
+//     /** Universal flag utilities after `T` is defined. */
+//     type T = Mode;
+//     export type Extract<F extends T> = ExtractFlag<F, T, never>;
+//     export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
+//     export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
+// } 
+// -------------------------------------------------------
 /**
  * Wrapper class to validate an object.
  * @note Always updates the object in place.
@@ -506,13 +522,12 @@ export class Validator {
     }
     Validator.InvalidUsageError = InvalidUsageError;
 })(Validator || (Validator = {}));
-// -------------------------------------------------------
 /**
  * Validate an object or array by scheme.
  *
  * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
  *
- * @template T The type of the object or array to validate.
+ * @template I The input type of the object or array to validate.
  * @template O The output type of the returned object or array.
  *
  * @param opts The options for the verification.

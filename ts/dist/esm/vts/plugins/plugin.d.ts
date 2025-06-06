@@ -36,7 +36,6 @@ export declare class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
      * Each version of the edited `data` transformation.
      */
     changes: string[];
-    static log_level_for_changes: number;
     /** Has been changed by the pipeline callbacks. */
     changed: boolean;
     /** Type dist for js like files and src for ts like files */
@@ -97,12 +96,6 @@ export declare class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
     toString(): string;
 }
 /**
- * The response object for the plugin initialization.
- */
-type InitResponse = void | {
-    error: string;
-} | Promise<InitResponse>;
-/**
  * A plugin object.
  * @warning The derived classes of Plugin can not be extended to create new plugins, rather join them.
  * @throws A runtime error when the derived class did not define attribute `static readonly id: Plugin.Id`.
@@ -125,14 +118,23 @@ export declare abstract class Plugin<Type extends Plugin.Type = Plugin.Type> {
     readonly _templates?: Record<string, string>;
     readonly _exact_templates?: Record<string, string>;
     /** The debug instance, later added when the plugin is executed. */
-    readonly debug: vlib.Debug;
-    /**
-    * The initialize callback.
-    * This can be used to set plugin-specific data or to perform any initialization logic.
-    */
-    init?(this: Plugin, ...args: any[]): InitResponse;
+    debug: vlib.Debug;
     /** The callback function that will be called on source files. */
     callback?(this: Plugin, src: Source<"loaded">): void | Promise<void>;
+    /**
+     * A list of linked plugins what will also be initialized when this plugin is initialized.
+     * Useful for when derived plugins use internal plugins.
+     */
+    plugins: Plugin[];
+    /** On initialize callback for devired classes. */
+    init?(opts?: Plugin.InitOpts): Promise<void | {
+        error: string;
+    }>;
+    /**
+     * Initialize the plugin
+     * This must be called before using the plugin.
+     */
+    build(opts?: Plugin.InitOpts): Promise<void>;
     /**
      * The callback to join this plugin with the same type of plugin
      * For instance when multiple UpsertRuntimeVars plugins are defined they can just as good be joined.
@@ -180,7 +182,9 @@ export declare namespace Plugin {
      */
     type Opts<Type extends Plugin.Type = Plugin.Type> = {
         type: Type | Plugin.Type.Base[];
-        init?: (this: Plugin<Type>, ...args: any[]) => InitResponse;
+        init?(opts?: InitOpts): Promise<void | {
+            error: string;
+        }>;
         callback?: (this: Plugin<Type>, src: Source<"loaded">) => void | Promise<void>;
         templates?: Record<string, string>;
         exact_templates?: Record<string, string>;
@@ -199,5 +203,8 @@ export declare namespace Plugin {
         value(): string;
         toString(): string;
     }
+    /** Initialize options. */
+    type InitOpts = {
+        debug?: vlib.Debug;
+    };
 }
-export {};

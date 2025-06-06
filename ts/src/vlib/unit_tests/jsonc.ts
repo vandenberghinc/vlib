@@ -9,7 +9,7 @@ import { Module } from "@vtest";
 import { JSONC } from '../jsonc/jsonc.js';
 
 // Unit tests module.
-const tests = new Module({ name: "jsonc" });
+const tests = new Module({ name: "vlib/jsonc" });
 
 // ==================================================================================================
 

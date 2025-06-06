@@ -48,6 +48,7 @@ export class Dirname extends Plugin {
             }
         });
         this.callback = (src) => upsert.callback(src);
+        this.plugins.push(upsert);
     }
 }
 //# sourceMappingURL=dirname.js.map

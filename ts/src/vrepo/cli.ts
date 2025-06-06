@@ -153,13 +153,16 @@ cli.command({
     }) {
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -358,13 +361,16 @@ cli.command({
         log_level = 0,
     }) {
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -438,13 +444,16 @@ cli.command({
         forced = false,
     }) {
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -466,6 +475,10 @@ cli.command({
                     message: `Pulling ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
                     success: `Pulled ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
                 });
+
+                console.error(this.error("This feature is disabled  and should be re-activated once tested."))
+                vlib.utils.safe_exit();
+
                 const err = await repo.git!.pull({ remote: remote.remote, dest: remote.destination, branch: remote.branch, forced });
                 if (err) {
                     spinner.error();
@@ -503,13 +516,16 @@ cli.command({
         log_level = 0,
     }) {
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -574,13 +590,16 @@ cli.command({
         del = false,
     }) {
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -602,6 +621,10 @@ cli.command({
                     message: `Pulling ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
                     success: `Pulled ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
                 });
+                
+                console.error(this.error("This feature is disabled  and should be re-activated once tested."))
+                vlib.utils.safe_exit();
+
                 const err = await repo.ssh!.pull(remote.alias, remote.destination, del);
                 if (err) {
                     spinner.error();
@@ -635,13 +658,16 @@ cli.command({
     }) => {
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -694,13 +720,16 @@ cli.command({
         }
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -801,13 +830,16 @@ cli.command({
     }) {
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Unlink wrapper.
@@ -1027,13 +1059,16 @@ cli.command({
     }) => {
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -1082,13 +1117,16 @@ cli.command({
     }) => {
 
         // Create sources array.
-        const all_sources: string[] = [];
+        let all_sources: string[] = [];
         if (typeof source === "string") {
             all_sources.push(source);
         } else if (Array.isArray(sources)) {
             all_sources.push(...sources);
         } else {
             all_sources.push("./");
+        }
+        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+            all_sources = await vlib.Path.glob(all_sources, { string: true });
         }
 
         // Iterate sources array.
@@ -1194,238 +1232,3 @@ cli.command({
 
 // Start.
 cli.start();
-
-
-
-
-// // Push.
-// cli.command({
-//     id: "--push",
-//     description: "Push the current project to one or multiple remotes.",
-//     examples: {
-//         "Push": "vrepo --push --git origin --ssh myserver,mybackupserver --del --forced",
-//     },
-//     args: [
-//         { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the package." },
-//         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the package." },
-//         { id: "--git", type: "string[]", def: [], description: "Push to all git or a list of specific git remotes." },
-//         { id: "--ssh", type: "string[]", def: [], description: "Push to all ssh or a list of specific ssh remotes." },
-//         { id: ["--forced", "-f"], type: "boolean", description: "Push with git in forced mode." },
-//         { id: ["--del", "-d"], type: "boolean", description: "Push with ssh in delete mode." },
-//         { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a git push by editing the gitignore safely." },
-//         { id: ["--log-level", "-l"], type: "number", description: "The log level." },
-//     ],
-//     async callback({
-//         source = null,
-//         sources = null,
-//         git = null,
-//         ssh = null,
-//         forced = false,
-//         del = false,
-//         ensure_push = false,
-//         log_level = 0,
-//     }) {
-
-//         // Create sources array.
-//         const all_sources: string[] = [];
-//         if (typeof source === "string") {
-//             all_sources.push(source);
-//         } else if (Array.isArray(sources)) {
-//             all_sources.push(...sources);
-//         } else {
-//             all_sources.push("./");
-//         }
-
-//         // Iterate sources array.
-//         for (const source of all_sources) {
-//             const repo: Repo = new Repo({
-//                 source,
-//                 npm: false,
-//             });
-//             await repo.init(); repo.assert_init();
-
-//             // Build the selected git and ssh remotes.
-//             let ssh_remotes: RepoConfig['ssh']['remotes'] = [], git_remotes: RepoConfig['git']['remotes'] = [];
-
-//             // Build git remotes.
-//             if (cli.has("--git")) {
-//                 if (Array.isArray(git) && git.length > 0) {
-//                     // Add specified git remotes.
-//                     for (const remote of git) {
-//                         const found = repo.config.git.remotes.iterate((item) => {
-//                             if (item.remote === remote) {
-//                                 git_remotes.push(item);
-//                                 return true;
-//                             }
-//                         })
-//                         if (!found) {
-//                             throw this.error(`Git remote "${remote}" does not exist.`);
-//                         }
-//                     }
-//                 }
-//                 else if (Array.isArray(git) && git.length === 0) {
-//                     // Add all git remotes.
-//                     git_remotes = repo.config.git.remotes;
-//                 }
-//             }
-
-//             // Build ssh remotes.
-//             if (cli.has("--ssh")) {
-//                 if (Array.isArray(ssh) && ssh.length > 0) {
-//                     // Add specified ssh remotes.
-//                     for (const alias of ssh) {
-//                         const found = repo.config.ssh.remotes.iterate((item) => {
-//                             if (item.alias === alias) {
-//                                 ssh_remotes.push(item);
-//                                 return true;
-//                             }
-//                         })
-//                         if (!found) {
-//                             throw this.error(`SSH remote "${alias}" does not exist.`);
-//                         }
-//                     }
-//                 }
-//                 else if (Array.isArray(ssh) && ssh.length === 0) {
-//                     // Add all ssh remotes.
-//                     ssh_remotes = repo.config.ssh.remotes;
-//                 }
-//             }
-
-//             // Add all remotes when no specific remotes are defined.
-//             if (!cli.has("--git") && !cli.has("--ssh")) {
-//                 ssh_remotes = repo.config.ssh.remotes;
-//                 git_remotes = repo.config.git.remotes;
-//             }
-
-//             // Push all remotes.
-//             for (const remote of git_remotes) {
-//                 const spinner = new vlib.logging.Spinner({
-//                     message: `Pushing ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
-//                     success: `Pushed ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
-//                 });
-//                 const err = await repo.git!.push({
-//                     remote: remote.remote,
-//                     dest: remote.destination,
-//                     branch: remote.branch,
-//                     forced,
-//                     ensure_push,
-//                     log_level,
-//                 })
-//                 if (err) {
-//                     spinner.error();
-//                     throw this.error(err);
-//                 }
-//                 spinner.success();
-//             }
-//             for (const remote of ssh_remotes) {
-//                 const spinner = new vlib.logging.Spinner({
-//                     message: `Pushing ${vlib.Color.bold(repo.name)} to ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
-//                     success: `Pushed ${vlib.Color.bold(repo.name)} to ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
-//                 });
-//                 const err = await repo.ssh!.push(remote.alias, remote.destination, del)
-//                 if (err) {
-//                     spinner.error();
-//                     throw this.error(err);
-//                 }
-//                 spinner.success();
-//             }
-//         }
-//     }
-// });
-
-// // Pull.
-// cli.command({
-//     id: "--pull",
-//     description: "Pull the current project from one of the remotes.",
-//     examples: {
-//         "Pull": "vrepo --pull --ssh myserver --del",
-//     },
-//     args: [
-//         { id: "--source", type: "string", description: "The source path to the package, when undefined the current working directory will be used as the source path." },
-//         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." },
-//         { id: "--git", type: "array", required: false, description: "Pull from all git or a list of specific git remotes." },
-//         { id: "--ssh", type: "array", required: false, description: "Pull from all ssh or a list of specific ssh remotes." },
-//         { id: ["--forced", "-f"], type: "boolean", description: "Pull with git in forced mode." },
-//         { id: ["--del", "-d"], type: "boolean", description: "Pull with ssh in delete mode." },
-//     ],
-//     async callback({
-//         source = null,
-//         sources = null,
-//         git = null,
-//         ssh = null,
-//         forced = false,
-//         del = false,
-//     }) {
-
-//         // Check args.
-//         if (git == null && ssh == null || (git != null && ssh != null)) {
-//             cli.error(`Define either parameter "git" or "ssh".`, { docs: true });
-//             cli.docs(this);
-//             process.exit(1);
-//         }
-
-//         // Create sources array.
-//         const all_sources: string[] = [];
-//         if (typeof source === "string") {
-//             all_sources.push(source);
-//         } else if (Array.isArray(sources)) {
-//             all_sources.push(...sources);
-//         } else {
-//             all_sources.push("./");
-//         }
-
-//         // Iterate sources array.
-//         for (const source of all_sources) {
-//             const repo: Repo = new Repo({
-//                 source,
-//                 npm: false,
-//             });
-//             await repo.init();
-//             repo.assert_init();
-
-//             // Pull through git.
-//             if (git != null) {
-//                 if (!Array.isArray(git)) { throw this.error(`The git parameter must be an array of git remotes.`, { docs: true }); }
-//                 for (const g of git) {
-//                     const remote = repo.config.git.remotes.find(item => item.remote === g);
-//                     if (!remote) {
-//                         throw this.error(`Git remote "${git}" does not exist.`);
-//                     }
-//                     const spinner = new vlib.logging.Spinner({
-//                         message: `Pulling ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
-//                         success: `Pulled ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
-//                     });
-//                     const err = await repo.git!.pull({ remote: remote.remote, dest: remote.destination, branch: remote.branch, forced })
-//                     if (err) {
-//                         spinner.error();
-//                         throw this.error(err);
-//                     }
-//                     spinner.success();
-//                 }
-//             }
-
-//             // Pull through ssh.
-//             else if (ssh != null) {
-//                 if (!Array.isArray(ssh)) { throw this.error(`The ssh parameter must be an array of ssh remotes.`, { docs: true }); }
-//                 for (const s of ssh) {
-//                     const remote = repo.config.ssh.remotes.find(item => item.alias === s);
-//                     if (!remote) {
-//                         throw this.error(`SSH remote "${s}" does not exist.`);
-//                     }
-//                     const spinner = new vlib.logging.Spinner({
-//                         message: `Pulling ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
-//                         success: `Pulled ${vlib.Color.bold(repo.name)} from ${vlib.Color.bold(remote.alias)}:${remote.destination} (ssh).`,
-//                     });
-//                     const err = await repo.ssh!.pull(remote.alias, remote.destination, del)
-//                     if (err) {
-//                         spinner.error();
-//                         throw this.error(err);
-//                     }
-//                     spinner.success();
-//                 }
-//             } else {
-//                 throw this.error(`Define either parameter "git" or "ssh".`, { docs: true });
-//             }
-//         }
-//     }
-// });

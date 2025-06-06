@@ -78,7 +78,7 @@ export class UpsertRuntimeVars<Vars extends RuntimeVars = RuntimeVars> extends P
                 );
         this.needs_insertion_pattern = new RegExp(
             `(${this.var_opts.keys.map(key => key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")).join("|")})`,
-            "g",
+            "", // dont add any `g` flag here since we use `test()` and its not needed anyway.
         );
 
         // Ensure code opts are properly formatted.
@@ -90,7 +90,7 @@ export class UpsertRuntimeVars<Vars extends RuntimeVars = RuntimeVars> extends P
 
     /** Process source callback. */
     async callback(source: Source<"loaded">) {
-        if (this.debug.on(3)) this.log(source, "Running plugin...");
+        if (this.debug.on(2)) this.log(source, "Running plugin...");
 
         // Check if the file already contains the variables.
         if (!this.needs_insertion_pattern.test(source.data)) {

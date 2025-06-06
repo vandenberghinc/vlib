@@ -4,7 +4,7 @@
  */
 
 import { Color } from "../generic/colors.js";
-import { Date } from "../global/date.js";
+import { Date } from "../primitives/date.js";
 
 /**
  * A CLI percentage‐based progress loader.

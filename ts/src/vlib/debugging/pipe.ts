@@ -4,7 +4,7 @@
  */
 
 // Imports.
-import { Date } from "../global/date.js";
+import { Date } from "../primitives/date.js";
 import { Path } from "../generic/path.js";
 import { Color, Colors } from "../generic/colors.js";
 import { SourceLoc } from './source_loc.js';

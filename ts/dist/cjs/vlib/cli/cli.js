@@ -389,7 +389,11 @@ class CLI {
       if (error instanceof import_error.CLIError) {
         throw error;
       }
-      throw this.error(`Encountered an error while executing cli command "${command.identifier()}".`, { error, command });
+      if (import_index_m_uni.debug.on(1)) {
+        throw this.error(`Encountered an error while executing cli command "${command.identifier()}".`, { error, command });
+      }
+      Error.stackTraceLimit = 25;
+      throw error;
     }
   }
   /** Find the index of an argument / command. */

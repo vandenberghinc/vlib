@@ -8,7 +8,13 @@ export declare class SSH {
     source: Path;
     proc: Proc;
     /** Constructor validator. */
-    static validator: Scheme.Validator<object, object, "object">;
+    static validator: Scheme.Validator<Scheme.Validator.T, {
+        unknown: false;
+        throw: true;
+        scheme: {
+            source: "string";
+        };
+    }>;
     constructor({ source, }: {
         source: string;
     });

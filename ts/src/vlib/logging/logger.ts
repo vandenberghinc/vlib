@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import cluster from "cluster"
 
 // Imports.
-import { Date } from "../global/date.js";
+import { Date } from "../primitives/date.js";
 import { Path } from "../generic/path.js";
 import { Color, Colors } from "../generic/colors.js";
 import { SourceLoc } from '../debugging/source_loc.js';

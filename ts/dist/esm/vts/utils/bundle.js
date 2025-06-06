@@ -6,7 +6,7 @@
 import * as pathlib from 'path';
 import * as esbuild from 'esbuild';
 // Get the directory name of the current module
-import { Color, Colors, logger, Path, Utils } from '../../vlib/index.js';
+import { Color, Colors, logger, Path, Utils } from "../../vlib/index.js";
 ;
 /*
  * Bundles transpiled JavaScript files using esbuild.

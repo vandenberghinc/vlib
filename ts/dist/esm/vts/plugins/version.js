@@ -24,6 +24,7 @@ export class Version extends Plugin {
             vars: { __version: version ? version : load_pkg_json(pkg_json, { version: true }).version },
         });
         this.callback = (src) => upsert.callback(src);
+        this.plugins.push(upsert);
     }
 }
 //# sourceMappingURL=version.js.map
