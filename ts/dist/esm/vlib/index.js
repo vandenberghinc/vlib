@@ -15,17 +15,14 @@ export * from "./primitives/index.uni.js";
 /** generic/ */
 export * from "./generic/index.js";
 /** debugging/ */
-export * as Debugging from "./debugging/index.m.uni.js";
-export * as debugging from "./debugging/index.m.uni.js";
-export { debug, Debug } from "./debugging/index.m.uni.js";
-import { debug } from "./debugging/index.m.uni.js";
-export const print = (...args) => debug(0, ...args);
-/** logging/ */
-export * as Logging from "./logging/index.m.js";
-export * as logging from "./logging/index.m.js";
-import { logger } from "./logging/logger.js";
-export { logger };
-export const { log, warn, error } = logger.loggers();
+export * as Logging from "./logging/index.m.node.js";
+export * as logging from "./logging/index.m.node.js";
+export { debug, log, Logger, Debug } from "./logging/index.m.node.js";
+import { log } from "./logging/index.m.node.js";
+export const print = (...args) => log.raw(0, ...args);
+export const error = (...args) => log.error(...args);
+export const warn = (arg, ...args) => log.warn(arg, ...args);
+export const warning = warn;
 /** scheme/ */
 export * as Scheme from "./scheme/index.m.uni.js";
 export * as scheme from "./scheme/index.m.uni.js";

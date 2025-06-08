@@ -31,6 +31,31 @@ export var ObjectUtils;
     }
     ObjectUtils.eq = eq;
     /**
+     * Merge two objects in place.
+     * Can be useful for casting an options object to an initialization object.
+     */
+    function merge(ref, override) {
+        for (const key in Object.keys(override)) {
+            if (Object.prototype.hasOwnProperty.call(override, key)) {
+                ref[key] = override[key];
+            }
+        }
+        return ref;
+    }
+    ObjectUtils.merge = merge;
+    /**
+     * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     */
+    function merge_missing(ref, override) {
+        for (const key in Object.keys(override)) {
+            if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === undefined)) {
+                ref[key] = override[key];
+            }
+        }
+        return ref;
+    }
+    ObjectUtils.merge_missing = merge_missing;
+    /**
      * Detects changed keys between two objects.
      * @param x The original object.
      * @param y The modified object.
@@ -262,11 +287,10 @@ export var ObjectUtils;
         let indent = indent_level === false ? '' : opts._indent_str?.repeat(indent_level) ?? "";
         let next_indent = indent_level === false ? '' : opts._indent_str?.repeat(indent_level + 1) ?? "";
         let line_break_or_space = indent_level === false ? ' ' : '\n';
-        // null
+        // null / undefined
         if (value === null || (opts.json && value === undefined)) {
             return opts.colored ? `${Colors.gray}null${Colors.end}` : "null";
         }
-        // Undefined.
         if (value === undefined) {
             return opts.colored ? `${Colors.gray}undefined${Colors.end}` : "undefined";
         }

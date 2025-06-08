@@ -1,0 +1,28 @@
+{
+    "ssh": {
+    	"remotes": [
+    		{
+	            "alias": "dev.vinc", 
+	            "destination": "/Volumes/persistance/private/dev/vinc/vlib/", 
+	            "enabled": true
+	        },
+	        {
+	            "alias": "vinc", 
+	            "destination": "/vserver/storages/vinc/vlib/", 
+	            "enabled": true
+	        }
+	    ]
+    },
+    "git": {
+	    "username": "vandenberghinc",
+	    "email": "admin@vandenberghinc.com",
+	    "remotes": [
+	        {
+	            "remote": "origin",
+	            "branch": "main",
+	            "destination": "git@github.com:vandenberghinc/vlib.git",
+	            "enabled": true
+	        }
+	    ]
+	}
+}

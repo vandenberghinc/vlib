@@ -10,10 +10,13 @@ export * as scheme from "./scheme/index.m.uni.js";
 /** generic/ */
 export * from "./generic/index.web.js";
 /** debugging/ */
-export * as Debugging from "./debugging/index.m.uni.js";
-export * as debugging from "./debugging/index.m.uni.js";
-export { debug, Debug } from "./debugging/index.m.uni.js";
+export * as Debugging from "./logging/index.m.web.js";
+export * as debugging from "./logging/index.m.web.js";
+export { debug, log, Logger, Debug } from "./logging/index.m.web.js";
 export declare const print: (...args: any[]) => void;
+export declare const error: (...args: any[]) => void;
+export declare const warn: (arg: any, ...args: any[]) => void;
+export declare const warning: (arg: any, ...args: any[]) => void;
 /** search/ */
 export * from "./search/index.uni.js";
 /** code/ */

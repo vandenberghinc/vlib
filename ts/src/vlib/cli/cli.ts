@@ -10,9 +10,8 @@ import { Path } from '../generic/path.js';
 import type { Merge, StringLiteral, ArrayLiteral, IsNever } from '../types/index.m.js';
 import { CLIError } from './error.js';
 import { And, Or, and_or_str } from './query.js';
-import { debug } from '../debugging/index.m.uni.js';
 import * as InferArgs from './infer_args.js';
-import { logger } from '../logging/logger.js';
+import { log } from '../logging/index.m.node.js';
 import { ObjectUtils } from '../primitives/object.js';
 import type { CastFlag, ExtractFlag } from '../types/flags.js';
 import type { Cast } from './cast.js';
@@ -36,6 +35,7 @@ Error.stackTraceLimit = 100;
 */
 export class CLI<
     S extends Strict = Strict,
+    const Options extends readonly Arg.Command.Opts<S, "id">[] = readonly Arg.Command.Opts<S, "id">[],
 > {
 
     /** The CLI name. */
@@ -57,7 +57,7 @@ export class CLI<
      * The list of global option arguments.
      * @todo not implemented yet.
      */
-    private options: Command<S>[];
+    private option_args: Arg.Command<S, "id">[] = [];
 
     /** The notes. */
     private notes: string[];
@@ -74,6 +74,9 @@ export class CLI<
     
     /** Whether to throw an error when an unknown command is detected, defaults to false. */
     strict: Strict.Cast<S>;
+
+    /** The parsed & inferred options. */
+    options: InferArgs.InferArgs<Options>;
 
     /**
      * The constructor.
@@ -92,7 +95,7 @@ export class CLI<
             version = "1.0.0",
             argv = process.argv, // default start index is 2.
             notes = [],
-            options = [],
+            options,
             strict,
             _sys = false,
         }: {
@@ -102,7 +105,7 @@ export class CLI<
             notes?: string[];
             start_index?: number;
             argv?: string[]; 
-            options?: Command.Opts<S>[]; // global options.
+            options?: Options; // global options.
             _sys?: boolean; // is internal system cli.
         }
         & Strict.If<S, "strict",
@@ -116,13 +119,14 @@ export class CLI<
         this.version = version;
         this.notes = notes;
         this.strict = (strict ?? false) as Strict.Cast<S>;
-        this.options = options.map(o => o instanceof Command
+        this.option_args = !options ? [] : options.map(o => o instanceof Arg.Command
             ? o
-            : new Command(o, this.strict)
+            : new Arg.Command(o, this.strict)
         );
         argv = argv.slice(2);
         this.argv = argv;
         this.argv_set = new Set(argv);       
+        this.options = {} as InferArgs.InferArgs<Options>; // ensure its set in the constructor, later updated in `_init()`.
         this._init(_sys);
     }
 
@@ -140,7 +144,7 @@ export class CLI<
                 }
             }
         }
-        const add_command = (cmd: Command<S> | Main<S>) => {
+        const add_command = (cmd: BaseCommand<S>) => {
             if (cmd.id instanceof Or || cmd.id instanceof And) {
                 cmd.id.walk(id => known_id_args.add(id));
             } else {
@@ -154,7 +158,7 @@ export class CLI<
             add_command(cmd);   
         }
         this.commands.walk(add_command);
-        this.options.walk(add_command);
+        this.option_args.walk(add_arg);
         if (this._main) { add_command(this._main); }
 
         // Iterate over the argv and check for unknown args.
@@ -204,6 +208,13 @@ export class CLI<
                 })
             }
         }
+
+        // Parse options.
+        if (this.option_args.length) {
+            this.options = this.parse_args(this.option_args, 0, undefined) as InferArgs.InferArgs<Options>;
+        } else {
+            this.options = {} as InferArgs.InferArgs<Options>;
+        }
         
     }
 
@@ -222,7 +233,7 @@ export class CLI<
         input: string,
         type: Cast.Type,
         // optionally, when casting for args from a command, pass the command for more detailed error messages.
-        command: undefined | Command<S> | Main<S>,
+        command: undefined | BaseCommand<S>,
     ): Info<"success", A> | Info<"error", A> {
 
         // Type alias.
@@ -290,33 +301,36 @@ export class CLI<
                     let key_start = 0, value_start = 0;
                     let mode: "key" | "value" = "key";
                     const parsed: Record<string, string> = {};
-                    new Iterator(input, { string: ["'", '"', '`'] }, (state, it) => {
-                        const c = it.state.peek;
+                    new Iterator(
+                        { data: input },
+                        { language: { string: ["'", '"', '`'] } },
+                    ).walk(it => {
+                        const c = it.char;
                         if (
                             mode === "key"
-                            && state.is_code
+                            && it.is_code
                             && (c === ":" || c === "=")
                         ) {
-                            key = it.slice(key_start, it.state.offset);
+                            key = it.slice(key_start, it.pos);
                             mode = "value";
-                            value_start = it.state.offset + 1;
+                            value_start = it.pos + 1;
                         } else if (
                             mode === "value"
-                            && state.is_code
-                            && !state.is_excluded
+                            && it.is_code
+                            && !it.is_escaped
                             && (c === "," || c === ";")
                         ) {
                             if (key) {
-                                let end = it.state.offset;
+                                let end = it.pos;
                                 let first = input.charAt(value_start);
                                 if (
                                     // strip quotes.
                                     (first === "'" || first === '"' || first === "`")
-                                    && first === input.charAt(it.state.offset - 1)
+                                    && first === input.charAt(it.pos - 1)
                                 ) { ++value_start; --end; }
                                 parsed[key] = it.slice(value_start, end);
                             }
-                            key_start = it.state.offset + 1;
+                            key_start = it.pos + 1;
                             mode = "key";
                         }
                     });
@@ -357,7 +371,7 @@ export class CLI<
         value: string,
         type: Cast.Castable,
         // optionally, when casting for args from a command, pass the command for more detailed error messages.
-        command: undefined | Command<S> | Main<S>,
+        command: undefined | BaseCommand<S>,
     ): Info<"success", A> | Info<"error", A> {
 
         // Type alias.
@@ -389,7 +403,7 @@ export class CLI<
     private add_info<I extends Info>(
         info: I,
         // optionally, when casting for args from a command, pass the command for more detailed error messages.
-        command: undefined | Command<S> | Main<S>,
+        command: undefined | BaseCommand<S>,
     ): I {
 
         // Check query.
@@ -429,7 +443,7 @@ export class CLI<
         value: any,
         parent: Record<string, any>,
         // optionally, when casting for args from a command, pass the command for more detailed error messages.
-        command: undefined | Command<S> | Main<S>,
+        command: undefined | BaseCommand<S>,
     ): void {
         /**
          * @todo the old version inserted it as nested objects
@@ -469,68 +483,69 @@ export class CLI<
         }
     }
 
-    /** Run a command. */
-    private async run_command(
-        command: Command<S> | Main<S>,
-        args_start_index: number = 0,
-    ): Promise<void> { 
-
-        // Get arguments.
-        const cmd_args: Record<string, any> = {};
-
-        // Parse arguments.
-        if (command.args?.length) {
-            for (const arg of command.args) {
+    /** Parse an `args` object from a list of `Arg.Command` instances. */
+    private async parse_args(
+        cmd_args: Arg.Command<S>[],
+        args_start_index: number,
+        command: undefined | BaseCommand<S>,
+    ): Promise<Record<string, any>> {
+        const args: Record<string, any> = {};
+        if (cmd_args.length) {
+            for (const arg of cmd_args) {
                 try {
                     if (!arg.arg_name) { throw this.error(`Argument is not initialized: ${arg}`, { command }); }
-                    if (debug.on(2)) debug("Parsing argument ", and_or_str(arg.id));
+                    if (log.on(2)) log("Parsing argument ", and_or_str(arg.id));
 
                     // Type bool.
                     if (arg.type === "boolean") {
                         if (!arg.id) {
                             throw this.error(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`, { command });
                         }
-                        this.add_to_cmd_args(cmd_args, arg.arg_name, this.has(arg.id), cmd_args, command);
+                        this.add_to_cmd_args(args, arg.arg_name, this.has(arg.id), args, command);
                     }
                     // Get and cast.
                     else {
                         const { status, value } = this.info(arg, args_start_index, command);
-                        if (debug.on(2)) debug("Argument info ", and_or_str(arg.id) ,": ", { status, value });
+                        if (log.on(2)) log("Argument info ", and_or_str(arg.id), ": ", { status, value });
 
                         if (status === "not_found" && arg.required) {
                             throw this.error(`Required argument "${and_or_str(arg.arg_name)}" was not found`, { command });
                         }
                         else if (status === "success" || status === "default") {
-                            this.add_to_cmd_args(cmd_args, arg.arg_name, value, cmd_args, command);
+                            this.add_to_cmd_args(args, arg.arg_name, value, args, command);
                         }
                     }
                 } catch (error: any) {
                     if (error instanceof CLIError) { throw error; }
                     throw this.error(
-                        `Encountered an error while parsing argument "${arg.identifier()}" from command "${command.identifier()}".`,
+                        `Encountered an error while parsing argument "${arg.identifier()}" from command "${command?.identifier()}".`,
                         { error, command },
                     );
                 }
             }
         }
-        if (debug.on(2)) debug(`Running command: ${"id" in command ? command.id ? and_or_str(command.id) : "<unknown>" : "<main>"}`);
-        if (debug.on(3)) debug("With arguments:", cmd_args);
+        return args;
+    }
+
+    /** Run a command. */
+    private async run_command(
+        command: BaseCommand<S>,
+        args_start_index: number = 0,
+    ): Promise<void> { 
+
+        // Get arguments.
+        const cmd_args: Record<string, any> = await this.parse_args(
+            command.args ?? [],
+            args_start_index,
+            command
+        );
 
         // Call the callback.
         try {
-            // required if statement for ts `this` context complaints.
-            if (command.mode === "main") {
-                await Promise.resolve(
-                    command.callback(cmd_args as any, this)
-                );
-            } else {
-                await Promise.resolve(
-                    command.callback(cmd_args as any, this)
-                );
-            }
+            await Promise.resolve(command.callback(cmd_args, this));
         } catch (error: any) {
             if (error instanceof CLIError) { throw error; }
-            if (debug.on(1)) {
+            if (log.on(1)) {
                 throw this.error(
                     `Encountered an error while executing cli command "${command.identifier()}".`,
                     { error, command },
@@ -562,7 +577,7 @@ export class CLI<
         | { found: true, index: number }
         | { found: false, index?: never }
     ) {
-        if (debug.on(3)) debug("Finding argument ", arg);
+        if (log.on(3)) log("Finding argument ", arg);
 
         // The output indexes.
         let index: number | undefined = undefined;
@@ -612,7 +627,7 @@ export class CLI<
             }
         }
 
-        if (debug.on(3)) debug("Initially found indexes ", {index, value_index});
+        if (log.on(3)) log("Initially found indexes ", {index, value_index});
 
         // Reset index.
         if (index === -1) { index = undefined; }
@@ -688,7 +703,7 @@ export class CLI<
             | string,
         _s_index?: number, // start index when searching for arguments by index.
         // optionally, when casting for args from a command, pass the command for more detailed error messages.
-        _command?: Command<S> | Main<S>,
+        _command?: BaseCommand<S>,
     ): Info<"success", Arg.Base.FromOpts<O>> | Info<"error", Arg.Base.FromOpts<O>> {
 
         // Type alias.
@@ -836,7 +851,7 @@ export class CLI<
         docs?: true | string, // show docs (boolean) or raw docs input (string), defaults to `false`.
         id?: string, // an optional identifier for the error, only used when the error is logged to the console.
         error?: Error // an optionally nested error rethrown as a CLI error
-        command?: BaseCommand, // the command that caused the error, used for more detailed error messages.
+        command?: BaseCommand<S>, // the command that caused the error, used for more detailed error messages.
     }): CLIError {
 
         // Already an CLI error.
@@ -857,17 +872,13 @@ export class CLI<
 
     /**
      * Log the docs, optionally of an array of command or a single command.
+     * Internally the indent size is set to argument `--docs-indent-size` which defaults to 2.
+     * So this is available through the `$ mycli --help --docs-indent-size 4` help command.
      * 
-     * @libris
+     * @docs
      */
-    docs(command_or_commands?: BaseCommand | BaseCommand[], dump: boolean = true): string {
-        // Assign to commands when undefined
-        if (command_or_commands == null) {
-            command_or_commands = [];
-            if (this._main) { command_or_commands.push(this._main); }
-            command_or_commands.push(...this.commands);
-        }
-
+    docs(command?: BaseCommand<S>, dump: boolean = true): string {
+        
         // Create docs header.
         let docs = "";
         if (this.name != null) {
@@ -879,9 +890,11 @@ export class CLI<
         if (docs.length > 0) {
             docs += "\n";
         }
+        const indent_size = this.get({ id: "--docs-indent-size", def: 2 });
+        const indent = " ".repeat(indent_size);
 
-        // Add an array of keys and values to the docs with the correct whitespace indent.
-        const add_keys_and_values = (list: [string, string][]) => {
+        /** Add an array of keys and values to the docs with the correct whitespace indent. */
+        const add_align_entries = (list: [string, string][]) => {
             let max_length = 0;
             list.forEach((item) => {
                 if (item[0].length > max_length) {
@@ -889,16 +902,45 @@ export class CLI<
                 }
             });
             list.forEach((item) => {
-                while (item[0].length < max_length + 4) {
+                while (item[0].length < max_length + indent_size) {
                     item[0] += " ";
                 }
                 docs += item[0] + item[1];
             });
         }
 
-        // Show docs from an array of commands.
-        if (Array.isArray(command_or_commands)) {
-            
+        /** Wrapper func to add command arguments to a list. */
+        const add_cmd_args = (
+            list: [string, string][],
+            indent = "    ",
+            args: BaseCommand<S>['args'],
+        ) => {
+            let real_index = 0;
+            args.forEach((arg) => {
+                if (arg.ignore === true) {
+                    return;
+                }
+                const list_item: [string, string] = ["", ""];
+                if (arg.id == null) {
+                    list_item[0] = `${indent}argument ${real_index}`;
+                } else {
+                    list_item[0] = `${indent}${and_or_str(arg.id)}`;
+                }
+                if (arg.type != null && arg.type !== "boolean") {
+                    list_item[0] += ` <${arg.type}>`;
+                }
+                if (arg.required) {
+                    list_item[0] += " (required)";
+                }
+                list_item[1] = (arg.description ?? "") + "\n";
+                list.push(list_item);
+                ++real_index;
+            });
+        }
+
+        // Show the entire docs.
+        if (command == null) {
+
             // Description.
             if (this.description) {
                 docs += `\nDescription:\n    ${this.description.split("\n").join("\n    ")}\n`;
@@ -907,46 +949,40 @@ export class CLI<
             // Usage.
             docs += `Usage: $ ${this.name} [mode] [options]\n`;
 
-            // Commands.
+            // List for main+commands+options
             const list: [string, string][] = [];
-            command_or_commands.forEach((command) => {
-                const list_item: [string, string] = ["", ""];
 
-                // Add command.
-                list_item[0] = `    ${and_or_str(command.id ?? "<main>")}`;
-                list_item[1] = (command.description ?? "") + "\n";
-                list.push(list_item);
+            // Main.
+            if (this._main) {
+                list.push([`\nMain command:`, "\n"]);
+                add_cmd_args(list, indent, this._main.args);
+                list.push(["\nCommands:", "\n"]);
+            }
 
-                // Add command args.
+            // Commands.
+            this.commands.walk((command) => {
+                list.push([
+                    `${indent}${and_or_str(command.id ?? "<main>")}`,
+                    (command.description ?? "") + "\n"
+                ]);
                 if (command.args?.length) {
-                    let arg_index = 0;
-                    command.args.forEach((arg) => {
-                        if (arg.ignore === true) {
-                            return;
-                        }
-                        const list_item: [string, string] = ["", ""];
-                        if (arg.id == null) {
-                            list_item[0] = `        argument ${arg_index}`;
-                        } else {
-                            list_item[0] = `        ${and_or_str(arg.id)}`;
-                        }
-                        if (arg.type != null && arg.type !== "boolean") {
-                            list_item[0] += ` <${arg.type}>`;
-                        }
-                        if (arg.required) {
-                            list_item[0] += " (required)";
-                        }
-                        list_item[1] = (arg.description ?? "") + "\n";
-                        list.push(list_item);
-                        ++arg_index;
-                    });
+                    add_cmd_args(list, " ".repeat(indent_size * 2), command.args);
                 }
             });
             list.push([
-                "    --help, -h",
+                `${indent}--help, -h`,
                 "Show the overall documentation or when used in combination with a command, show the documentation for a certain command.\n"
             ]);
-            add_keys_and_values(list);
+
+            // Options.
+            if (this.option_args?.length) {
+                list.push([`\nOptions:`, "\n"]);
+                add_cmd_args(list, indent, this.option_args);
+            }
+            
+            // Add list.
+            add_align_entries(list);
+            list.length = 0;
 
             // Remove last newline.
             if (docs.charAt(docs.length - 1) === "\n") {
@@ -955,9 +991,9 @@ export class CLI<
 
             // Notes.
             if (this.notes && this.notes.length > 0) {
-                docs += `\nNotes:\n`;
+                docs += `\n\nNotes:\n`;
                 this.notes.forEach((note) => {
-                    docs += ` * ${note}\n`;
+                    docs += `${indent}- ${note}\n`;
                 });
             }
 
@@ -975,62 +1011,41 @@ export class CLI<
             }
 
             // Usage.
-            docs += `Usage: $ ${this.name} ${and_or_str(command_or_commands.id ?? `<main>`)} [options]\n`;
+            docs += `Usage: $ ${this.name} ${and_or_str(command.id ?? `<main>`)} [options]\n`;
 
             // Description.
-            if (command_or_commands.description) {
-                docs += `\n${command_or_commands.description}\n`;
+            if (command.description) {
+                docs += `\n${command.description}\n`;
             }
 
             // Arguments.
-            if (command_or_commands?.args?.length) {
+            if (command?.args?.length) {
                 docs += `\nOptions:\n`;
-                let arg_index = 0;
                 const list: [string, string][] = [];
-                command_or_commands.args.forEach((arg) => {
-                    if (arg.ignore === true) {
-                        return;
-                    }
-                    const list_item: [string, string] = ["", ""];
-                    if (arg.id == null) {
-                        list_item[0] = `    argument ${arg_index}`;
-                    }
-                    else {
-                        list_item[0] = `    ${and_or_str(arg.id)}`;
-                    }
-                    if (arg.type != null && arg.type !== "boolean") {
-                        list_item[0] += ` <${arg.type}>`;
-                    }
-                    if (arg.required) {
-                        list_item[0] += " (required)";
-                    }
-                    list_item[1] = (arg.description ?? "") + "\n";
-                    list.push(list_item);
-                    ++arg_index;
-                });
-                add_keys_and_values(list);
+                add_cmd_args(list, indent, command.args);
+                add_align_entries(list);
             }
 
             // Examples.
-            if (command_or_commands.examples?.length) {
+            if (command.examples?.length) {
                 docs += `\nExamples:\n`;
-                if (typeof command_or_commands.examples === "string") {
-                    docs += `    ${Colors.italic}${command_or_commands.examples.startsWith("$") ? "" : "$ "}${command_or_commands.examples}${Colors.end}\n`;
+                if (typeof command.examples === "string") {
+                    docs += `${indent}${Colors.italic}${command.examples.startsWith("$") ? "" : "$ "}${command.examples}${Colors.end}\n`;
                 }
-                else if (Array.isArray(command_or_commands.examples)) {
-                    command_or_commands.examples.forEach((item) => {
-                        docs += `    ${Colors.italic}${item.startsWith("$") ? "" : "$ "}${item}${Colors.end}\n`;
+                else if (Array.isArray(command.examples)) {
+                    command.examples.forEach((item) => {
+                        docs += `${indent}${Colors.italic}${item.startsWith("$") ? "" : "$ "}${item}${Colors.end}\n`;
                     });
                 }
                 else {
                     const list: [string, string][] = [];
-                    Object.entries(command_or_commands.examples).forEach(([desc, example]) => {
+                    Object.entries(command.examples).forEach(([desc, example]) => {
                         list.push([
-                            `    ${desc.trimEnd()}:`,
+                            `${indent}${desc.trimEnd()}:`,
                             `${Colors.italic}${example.startsWith("$") ? "" : "$ "}${example}${Colors.end}\n`
                         ]);
                     });
-                    add_keys_and_values(list);
+                    add_align_entries(list);
                 }
             }
 
@@ -1067,7 +1082,7 @@ export class CLI<
         }
         this._main = (main instanceof Main ? main : new Main<S, Main.Variant, A>(main, this.strict)) as Main<S>;
         this._main.init(this);
-        if (debug.on(3)) debug("Added main command: ", this._main);
+        if (log.on(3)) log("Added main command: ", this._main);
         return this;
     }
 
@@ -1089,7 +1104,7 @@ export class CLI<
         const c = (cmd instanceof Command ? cmd : new Command<S, Command.Variant, A>(cmd, this.strict)) as Command<S>;
         c.init(this);
         this.commands.push(c);
-        if (debug.on(2)) debug("Added command: ", c);
+        if (log.on(2)) log("Added command: ", c);
         return this;
     }
 
@@ -1106,7 +1121,7 @@ export class CLI<
             let matched = false;
 
             // Check unknown args in strict mode.
-            if (debug.on(2)) debug("Starting CLI.");
+            if (log.on(2)) log("Starting CLI.");
             if (this.strict) {
                 this._check_unknown_args();
             }
@@ -1127,10 +1142,10 @@ export class CLI<
                     }
 
                     // Check if the arg is present.
-                    if (debug.on(2)) debug("Checking command ", and_or_str(command.id));
+                    if (log.on(2)) log("Checking command ", and_or_str(command.id));
                     const found_index = this.find_arg(command).index;
                     if (found_index != null) {
-                        if (debug.on(2)) debug("Executing command ", and_or_str(command.id));
+                        if (log.on(2)) log("Executing command ", and_or_str(command.id));
                         if (help) { this.docs(command); return true; }
                         return this.run_command(command, found_index);
                     }
@@ -1150,10 +1165,10 @@ export class CLI<
             }
 
             // Run commands.
-            if (debug.on(2)) debug("Running commands.");
+            if (log.on(2)) log("Running commands.");
 
             // Show help.
-            if (debug.on(2)) debug("Matched command: ", matched);
+            if (log.on(2)) log("Matched command: ", matched);
             if (!matched && help) {
                 this.docs();
                 return;
@@ -1161,7 +1176,7 @@ export class CLI<
 
             // Show main command.
             if (!matched && this._main) {
-                if (debug.on(2)) debug("Checking main command.");
+                if (log.on(2)) log("Checking main command.");
                 if (help) { this.docs(this._main); return; }
                 if (
                     this._main.args
@@ -1172,7 +1187,7 @@ export class CLI<
                     // Ensure any of the args are found, if not then its likely not the main command.
                     throw this.error("Invalid mode, not main.", { docs: true });
                 }
-                if (debug.on(2)) debug("Executing main command.");
+                if (log.on(2)) log("Executing main command.");
                 await this.run_command(this._main);
                 matched = true;
             }
@@ -1182,13 +1197,30 @@ export class CLI<
                 throw this.error("Invalid mode.", { docs: true });
             }
 
-            if (debug.on(2)) debug("CLI run finished");
+            if (log.on(2)) log("CLI run finished");
         } catch (e: any) {
             if (e instanceof CLIError) {
                 e.dump();
                 process.exit(1);
             }
-            console.error("stack" in e ? e.stack : e);
+            if (e instanceof Error) {
+                console.error(e.stack?.replace(": ", Colors.end + ": ") ?? e);
+                for (const key of Object.keys(e)) {
+                    if (key === "stack" || key === "name" || key === "message") continue; // skip stack.
+                    console.error(
+                        `    ${Colors.cyan}${key}${Colors.end}: ` +
+                        ObjectUtils.stringify(e[key], {
+                            colored: true,
+                            max_depth: 3,
+                            start_indent: typeof e[key] === "object" && e[key]
+                                ? 1
+                                : 0
+                        })
+                    );
+                }
+            } else {
+                console.error(e);
+            }
             process.exit(1);
         }
     }

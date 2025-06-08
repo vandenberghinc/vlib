@@ -162,7 +162,7 @@ async function bundle(options) {
     const first_path = typeof output === "string" ? output : Array.isArray(output) ? output[0] : void 0;
     if (first_path != null) {
       const p = new import_vlib.Path(first_path);
-      import_vlib.logger.marker(`Bundled ${p.full_name()} (${p.str()}) [${import_vlib.Utils.format_bytes(p.size)}].`);
+      import_vlib.log.marker(`Bundled ${p.full_name()} (${p.str()}) [${import_vlib.Utils.format_bytes(p.size)}].`);
     }
   }
   return {

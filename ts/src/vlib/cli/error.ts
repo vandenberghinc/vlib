@@ -5,7 +5,7 @@
 
 // Imports.
 import * as Code from "../code/index.m.uni.js";
-import { Spinners } from "../debugging/spinners.js";
+import { Spinners } from "../logging/uni/spinners.js";
 import { Color, Colors } from "../generic/colors.js";
 
 /**

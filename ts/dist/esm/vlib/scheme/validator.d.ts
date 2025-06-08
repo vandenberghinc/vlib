@@ -2,21 +2,21 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import type { AliasPick } from "../types/types.js";
 import { Entry } from "./entry.js";
 import { Scheme } from "./scheme.js";
 import type { Infer } from "./infer.js";
 /**
  * Wrapper class to validate an object.
+ *
  * @note Always updates the object in place.
  * @note The Validate object is re-usable to validate different objects.
  * @note The Validate object should be thread safe but not tested so perhaps dont.
  */
 export declare class Validator<
 /** The input type. */
-T extends Validator.T, 
+const T extends Validator.T = Validator.T, 
 /** The input options, capture as generic so we can infer from it. */
-Opts extends Validator.Opts<T> = Validator.Opts<T>> {
+const Opts extends Validator.Opts<T> = Validator.Opts<T>> {
     /** The scheme to validate. */
     scheme?: Scheme;
     /** The value scheme for object values or array items. */
@@ -36,14 +36,7 @@ Opts extends Validator.Opts<T> = Validator.Opts<T>> {
     /** Throw occurred errors, defaults to `false` */
     throw: boolean;
     /** Constructor. */
-    constructor(
-    /**
-     * Data mode.
-     * Dont support "auto" so we can infer the M generic from this parameter.
-     */
-    mode: T extends any[] ? "array" : "object", 
-    /** Options. */
-    opts: Opts);
+    constructor(opts: Opts);
     /** Throw an error or return error object. */
     private throw_error;
     /**
@@ -55,14 +48,17 @@ Opts extends Validator.Opts<T> = Validator.Opts<T>> {
     private validate_entry;
     /** Perform the validation on the data. */
     private validate_data;
-    /** Run the validator. */
-    validate(data: T): Validator.Info<"success" | "error", AutoInferOutput<T, Opts>>;
+    /**
+     * Run the validator.
+     * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
+     */
+    validate(data: T): Validator.Response<T, Opts>;
 }
 export declare namespace Validator {
     /** Base type options. */
     type T = any[] | Record<string, any>;
     /** Constructor options. */
-    type Opts<T extends object = object> = {
+    interface Opts<T extends Validator.T = Validator.T> {
         /**
          * Allow unknown attributes
          * When `false`, errors will be thrown when unknown attributes are found.
@@ -73,23 +69,15 @@ export declare namespace Validator {
         parent?: string;
         /** The error prefix. */
         error_prefix?: string;
-        err_prefix?: string | null;
         /** Throw occurred errors, defaults to `false` */
-        throw: boolean;
-    } & AliasPick<{
-        err_prefix?: string;
-        error_prefix?: string;
-    }> & (T extends any[] ? (AliasPick<{
-        value_scheme: Entry | Entry.Opts | undefined;
-        tuple: Entry | Entry.Opts | undefined;
-    }> & {
-        scheme?: never;
-    }) : (AliasPick<{
-        scheme: Scheme.Opts | Scheme;
-        value_scheme: Entry | Entry.Opts | undefined;
-    }> & {
-        tuple?: never;
-    }));
+        throw?: boolean;
+        /** Scheme for when input data is an object. */
+        scheme?: T extends any[] ? never : Scheme.Opts | Scheme;
+        /** Value scheme for when input data is an object or array. */
+        value_scheme?: Entry.Opts | Entry;
+        /** Tuple scheme for when input data is an array. */
+        tuple?: T extends any[] ? Entry.Opts | Entry : never;
+    }
     /** Info mode response */
     type Info<M extends "error" | "success", O extends object> = M extends "error" ? {
         error: string;
@@ -100,6 +88,10 @@ export declare namespace Validator {
         invalid_fields?: never;
         data: O;
     } : never;
+    /** The response type of `Validator.validate()` */
+    type Response<T extends Validator.T, Opts extends Validator.Opts<T> = Validator.Opts<T>> = Opts extends {
+        throw: true;
+    } ? AutoInferOutput<T, Opts> : Validator.Info<"success" | "error", AutoInferOutput<T, Opts>>;
     /** A user facing error class for user-facing errors from `Validate` when `throw: true`. */
     class Error<O extends object> extends globalThis.Error {
         info: Info<"error", O>;
@@ -136,7 +128,7 @@ type AutoInferOutput<T extends Validator.T, O extends Validator.Opts<T>, S exten
  */
 export declare function validate<
 /** The input type. */
-T extends Validator.T, 
+T extends Validator.T = Validator.T, 
 /** The input options, capture as generic so we can infer from it. */
-const Opts extends Validator.Opts<T> = Validator.Opts<T>>(data: T, opts: Opts): Validator.Info<"success" | "error", AutoInferOutput<T, Opts>>;
+const Opts extends Validator.Opts<T> = Validator.Opts<T>>(data: T, opts: Opts): Validator.Response<T, Opts>;
 export {};

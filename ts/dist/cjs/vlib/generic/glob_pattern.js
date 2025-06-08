@@ -1,6 +1,8 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -14,12 +16,22 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  GlobPattern: () => GlobPattern
+  GlobPattern: () => GlobPattern,
+  GlobPatternList: () => GlobPatternList
 });
 module.exports = __toCommonJS(stdin_exports);
+var import_path = __toESM(require("path"));
 class GlobPattern {
   /** The original glob pattern. */
   pattern;
@@ -164,9 +176,66 @@ class GlobPattern {
     regex += "$";
     return new RegExp(regex);
   }
+  /** To string */
+  toString() {
+    return `GlobPattern("${this.pattern}")`;
+  }
 }
 ;
+class GlobPatternList {
+  items;
+  absolute;
+  /**
+   *
+   * @param list A single glob pattern or an array of glob patterns.
+   * @param opts Options to configure the list.
+   * @param opts.absolute When true, all string patterns are resolved to absolute paths using `path.resolve()`.
+   *                      This is useful when you want to ensure all patterns are absolute paths.
+   *                      Defaults to false.
+   */
+  constructor(list, opts) {
+    this.absolute = opts?.absolute ?? false;
+    const init_item = (item) => {
+      if (this.absolute && typeof item === "string") {
+        item = import_path.default.resolve(item);
+      }
+      return item instanceof GlobPattern || !GlobPattern.is(item) ? item : new GlobPattern(item);
+    };
+    this.items = Array.isArray(list) ? list.map(init_item) : [init_item(list)];
+  }
+  /**
+   * Test if a value matches any of the glob patterns in the list.
+   * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
+   * @param value - The string to test.
+   */
+  match(value) {
+    return this.items.some((p) => typeof p === "string" ? p === value : p.test(value));
+  }
+  test(value) {
+    return this.match(value);
+  }
+  some(value) {
+    return this.match(value);
+  }
+  /**
+   * Test if a value matches all glob patterns in the list.
+   * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
+   * @param value - The string to test.
+   */
+  every(value) {
+    return this.items.every((p) => typeof p === "string" ? p === value : p.test(value));
+  }
+  /** Check if an array contains either a string glob patern or a GlobPattern instance. */
+  static is(list) {
+    return list.some((item) => item instanceof GlobPattern || GlobPattern.is(item));
+  }
+  /** To string */
+  toString() {
+    return `GlobPatternList("${this.items.join(", ")}")`;
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  GlobPattern
+  GlobPattern,
+  GlobPatternList
 });

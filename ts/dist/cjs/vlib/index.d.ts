@@ -16,16 +16,13 @@ export * from "./primitives/index.uni.js";
 /** generic/ */
 export * from "./generic/index.js";
 /** debugging/ */
-export * as Debugging from "./debugging/index.m.uni.js";
-export * as debugging from "./debugging/index.m.uni.js";
-export { debug, Debug } from "./debugging/index.m.uni.js";
+export * as Logging from "./logging/index.m.node.js";
+export * as logging from "./logging/index.m.node.js";
+export { debug, log, Logger, Debug } from "./logging/index.m.node.js";
 export declare const print: (...args: any[]) => void;
-/** logging/ */
-export * as Logging from "./logging/index.m.js";
-export * as logging from "./logging/index.m.js";
-import { logger } from "./logging/logger.js";
-export { logger };
-export declare const log: (...args: import("./debugging/pipe.js").Args) => void, warn: (...args: import("./debugging/pipe.js").Args) => void, error: (...args: import("./debugging/pipe.js").Args) => void;
+export declare const error: (...args: any[]) => void;
+export declare const warn: (arg: any, ...args: any[]) => void;
+export declare const warning: (arg: any, ...args: any[]) => void;
 /** scheme/ */
 export * as Scheme from "./scheme/index.m.uni.js";
 export * as scheme from "./scheme/index.m.uni.js";

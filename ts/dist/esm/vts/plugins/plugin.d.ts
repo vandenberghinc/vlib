@@ -43,7 +43,7 @@ export declare class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
     is_src: boolean;
     is_dist: boolean;
     /** Forwarded Transformer.Config attributes. */
-    debug: vlib.Debug;
+    debug: vlib.Logger;
     interactive_mutex: vlib.Mutex;
     /** Methods. */
     constructor(path: string | Path, type: "dist" | "src", data: undefined | string, 
@@ -118,7 +118,7 @@ export declare abstract class Plugin<Type extends Plugin.Type = Plugin.Type> {
     readonly _templates?: Record<string, string>;
     readonly _exact_templates?: Record<string, string>;
     /** The debug instance, later added when the plugin is executed. */
-    debug: vlib.Debug;
+    debug: vlib.Logger;
     /** The callback function that will be called on source files. */
     callback?(this: Plugin, src: Source<"loaded">): void | Promise<void>;
     /**
@@ -205,6 +205,6 @@ export declare namespace Plugin {
     }
     /** Initialize options. */
     type InitOpts = {
-        debug?: vlib.Debug;
+        debug?: vlib.Logger;
     };
 }

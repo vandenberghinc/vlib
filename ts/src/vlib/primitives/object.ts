@@ -32,6 +32,31 @@ export namespace ObjectUtils {
     }
 
     /**
+     * Merge two objects in place.
+     * Can be useful for casting an options object to an initialization object.
+     */
+    export function merge<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
+        for (const key in Object.keys(override)) {
+            if (Object.prototype.hasOwnProperty.call(override, key)) {
+                (ref as any)[key] = override[key];
+            }
+        }
+        return ref as unknown as Omit<T, keyof U> & U;
+    }
+
+    /**
+     * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     */
+    export function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
+        for (const key in Object.keys(override)) {
+            if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === undefined)) {
+                (ref as any)[key] = override[key];
+            }
+        }
+        return ref as unknown as Omit<T, keyof U> & U;
+    }
+
+    /**
      * Detects changed keys between two objects.
      * @param x The original object.
      * @param y The modified object.
@@ -41,8 +66,6 @@ export namespace ObjectUtils {
     export function detect_changes(x: any, y: any, include_nested = false): string[] | null {
         return obj_eq(x, y, true, include_nested) as string[] | null;
     }
-
-   
 
     /**
      * Filter options.
@@ -355,12 +378,10 @@ export namespace ObjectUtils {
         let next_indent = indent_level === false ? '' : opts._indent_str?.repeat(indent_level + 1) ?? "";
         let line_break_or_space = indent_level === false ? ' ' : '\n';
         
-        // null
+        // null / undefined
         if (value === null || (opts.json && value === undefined)) {
             return opts.colored ? `${Colors.gray}null${Colors.end}` : "null";
         }
-
-        // Undefined.
         if (value === undefined) {
             return opts.colored ? `${Colors.gray}undefined${Colors.end}` : "undefined";
         }

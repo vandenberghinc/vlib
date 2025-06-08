@@ -51,9 +51,9 @@ function log_helper(log_path, prefix, ...args) {
     }
   }
   if (last_log[1] === plugin && last_log[0]?.path === log_path.path) {
-    vlib.debug.raw(vlib.debugging.Directive.enforce, `    ${prefix ?? ""}`, ...args);
+    vlib.debug.raw(vlib.logging.directive.enforce, `    ${prefix ?? ""}`, ...args);
   } else {
-    vlib.debug.raw(vlib.debugging.Directive.enforce, `${vlib.Color.cyan(log_path.path)}${plugin ? ` ${vlib.Colors.gray}(${plugin})${vlib.Colors.end}` : ""}
+    vlib.debug.raw(vlib.logging.directive.enforce, `${vlib.Color.cyan(log_path.path)}${plugin ? ` ${vlib.Colors.gray}(${plugin})${vlib.Colors.end}` : ""}
     ${prefix ?? ""}`, ...args);
   }
   last_log[0] = log_path;
@@ -272,7 +272,7 @@ class Plugin {
   _templates;
   _exact_templates;
   /** The debug instance, later added when the plugin is executed. */
-  debug = vlib.debug;
+  debug = vlib.log;
   /**
    * A list of linked plugins what will also be initialized when this plugin is initialized.
    * Useful for when derived plugins use internal plugins.

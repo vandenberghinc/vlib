@@ -243,7 +243,7 @@ tests.add("scheme_test:10", () => {
             x: { type: "string", default: "Hello World!" },
         },
     });
-    ({ x = "" } = response.data ?? {});
+    ({ x = "" } = response);
     return x;
 });
 // -------------------------------------------------------------------------------
@@ -476,7 +476,7 @@ tests.add("scheme_verify_default_boolean:1", () => {
             enabled: { type: "boolean", default: false },
         },
     });
-    return response.data?.enabled;
+    return response?.enabled;
 });
 // -------------------------------------------------------------------------------
 // Section: validate error scenarios beyond known tests.

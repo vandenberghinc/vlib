@@ -52,6 +52,24 @@ class ActiveLogLevel {
   toString() {
     return String(this.n);
   }
+  /**
+   * Some operations to compare the current log level with a given level.
+   */
+  eq(level) {
+    return this.n === level;
+  }
+  gt(level) {
+    return this.n > level;
+  }
+  gte(level) {
+    return this.n >= level;
+  }
+  lt(level) {
+    return this.n < level;
+  }
+  lte(level) {
+    return this.n <= level;
+  }
 }
 ;
 // Annotate the CommonJS export names for ESM import in node:

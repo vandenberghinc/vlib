@@ -6,6 +6,7 @@
  */
 import type { EntryObject } from "./entry.js";
 import type { Cast } from "./cast.js";
+import type { Scheme as _Scheme } from "./scheme.js";
 /** Process the default value and return its type.
  *  - string‐literal → string
  *  - number‐literal → number
@@ -60,7 +61,7 @@ export declare namespace Infer {
     type Scheme<T extends Scheme.T> = InferScheme<T>;
     namespace Scheme {
         /** Base for generic, could be useful for user. */
-        type T = Record<string, Cast.Castable | EntryObject>;
+        type T = _Scheme.Opts;
     }
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     type ValueScheme<T extends ValueScheme.T> = InferValueScheme<T>;

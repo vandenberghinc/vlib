@@ -73,7 +73,7 @@ export namespace Transformer {
             /**
              * The debug instance to use for logging.
              */
-            debug?: number | vlib.Debug;
+            debug?: number | vlib.Logger;
             /**
              * Automatically answer yes to all interactive prompts, defaults to `false`.
              * This should be used with caution since some plugins edit actual source files instead of dist files.
@@ -105,7 +105,7 @@ export namespace Transformer {
         >,
         {
             /** Active de debug instance. */
-            debug: vlib.Debug;
+            debug: vlib.Logger;
             /** A shared mutex for interactive prompts, in case we run in async. */
             interactive_mutex: vlib.Mutex;
             /** Input files. */
@@ -153,9 +153,9 @@ export class Transformer {
             parse_imports: config.parse_imports ?? false,
             insert_tsconfig: config.insert_tsconfig ?? false,
             check_include: config.check_include ?? true,
-            debug: config.debug instanceof vlib.Debug
+            debug: config.debug instanceof vlib.Logger
                 ? config.debug
-                : new vlib.Debug(config.debug ?? 0),
+                : new vlib.Logger({ level: config.debug ?? 0 }),
             files: config.files ? new Map(Object.entries(config.files ?? {})) : undefined,
             capture_changes: !yes || (config.capture_changes ?? false),
         };

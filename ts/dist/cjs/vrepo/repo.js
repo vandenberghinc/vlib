@@ -37,7 +37,7 @@ class Repo {
   ssh;
   npm;
   /** Constructor validator. */
-  static validator = new import_vlib.Scheme.Validator("object", {
+  static validator = new import_vlib.Scheme.Validator({
     unknown: false,
     throw: true,
     scheme: {

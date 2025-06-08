@@ -40,9 +40,9 @@ export class Transformer {
             parse_imports: config.parse_imports ?? false,
             insert_tsconfig: config.insert_tsconfig ?? false,
             check_include: config.check_include ?? true,
-            debug: config.debug instanceof vlib.Debug
+            debug: config.debug instanceof vlib.Logger
                 ? config.debug
-                : new vlib.Debug(config.debug ?? 0),
+                : new vlib.Logger({ level: config.debug ?? 0 }),
             files: config.files ? new Map(Object.entries(config.files ?? {})) : undefined,
             capture_changes: !yes || (config.capture_changes ?? false),
         };

@@ -12,19 +12,7 @@ export declare class Git {
     gitignore: Ignore;
     proc: Proc;
     /** Constructor validator. */
-    static validator: Scheme.Validator<Scheme.Validator.T, {
-        unknown: false;
-        throw: true;
-        scheme: {
-            source: "string";
-            username: "string";
-            email: "string";
-            version_path: {
-                type: "string";
-                required: false;
-            };
-        };
-    }>;
+    static validator: Scheme.Validator<object, Scheme.Validator.Opts<object>>;
     constructor({ source, username, email, version_path, }: {
         source: string;
         username: string;

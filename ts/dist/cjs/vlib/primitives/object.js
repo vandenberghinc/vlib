@@ -37,6 +37,24 @@ var ObjectUtils;
     return obj_eq(x, y);
   }
   ObjectUtils2.eq = eq;
+  function merge(ref, override) {
+    for (const key in Object.keys(override)) {
+      if (Object.prototype.hasOwnProperty.call(override, key)) {
+        ref[key] = override[key];
+      }
+    }
+    return ref;
+  }
+  ObjectUtils2.merge = merge;
+  function merge_missing(ref, override) {
+    for (const key in Object.keys(override)) {
+      if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === void 0)) {
+        ref[key] = override[key];
+      }
+    }
+    return ref;
+  }
+  ObjectUtils2.merge_missing = merge_missing;
   function detect_changes(x, y, include_nested = false) {
     return obj_eq(x, y, true, include_nested);
   }

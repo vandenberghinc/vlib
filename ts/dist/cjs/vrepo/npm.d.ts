@@ -10,17 +10,7 @@ export declare class NPM {
     version_path?: string;
     id: string;
     /** Constructor validator. */
-    static validator: Scheme.Validator<Scheme.Validator.T, {
-        unknown: false;
-        throw: true;
-        scheme: {
-            source: "string";
-            version_path: {
-                type: "string";
-                required: false;
-            };
-        };
-    }>;
+    static validator: Scheme.Validator<object, Scheme.Validator.Opts<object>>;
     constructor({ source, version_path, }: {
         source: string;
         version_path?: string;

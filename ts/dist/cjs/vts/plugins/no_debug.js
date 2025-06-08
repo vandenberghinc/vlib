@@ -50,10 +50,11 @@ class NoDebug extends import_plugin.Plugin {
     while ((match = debug_call_re.exec(data)) !== null) {
       const match_start = match.index;
       const paren_index = match_start + match[0].lastIndexOf("(");
-      const it = new vlib.code.Iterator({ data, offset: paren_index }, vlib.code.Iterator.opts.ts);
-      while (it.avail()) {
-        if (it.state.peek === ")" && it.state.depth.parenth === 1 && it.state.is_code) {
-          let end_offset = it.state.nested_offset + it.state.offset + 1;
+      const it = new vlib.code.Iterator({ data }, { language: "ts" });
+      it.jump_to(paren_index);
+      while (it.avail) {
+        if (it.char === ")" && it.depth.parenth === 1 && it.is_code) {
+          let end_offset = it.pos + 1;
           if (data[end_offset] === ";") {
             end_offset++;
           }

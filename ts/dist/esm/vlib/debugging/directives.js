@@ -42,6 +42,24 @@ export class ActiveLogLevel {
     get() { return this.n; } // better to use `.n` directly.
     on(log_level) { return this.n >= log_level; }
     toString() { return String(this.n); }
+    /**
+     * Some operations to compare the current log level with a given level.
+     */
+    eq(level) {
+        return this.n === level;
+    }
+    gt(level) {
+        return this.n > level;
+    }
+    gte(level) {
+        return this.n >= level;
+    }
+    lt(level) {
+        return this.n < level;
+    }
+    lte(level) {
+        return this.n <= level;
+    }
 }
 ;
 //# sourceMappingURL=directives.js.map

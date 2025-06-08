@@ -20,7 +20,7 @@ __export(stdin_exports, {
   CLIError: () => CLIError
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_spinners = require("../debugging/spinners.js");
+var import_spinners = require("../logging/uni/spinners.js");
 var import_colors = require("../generic/colors.js");
 class CLIError extends globalThis.Error {
   /** The error name. */

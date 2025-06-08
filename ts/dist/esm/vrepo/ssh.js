@@ -12,7 +12,7 @@ export class SSH {
     source;
     proc;
     /** Constructor validator. */
-    static validator = new Scheme.Validator("object", {
+    static validator = new Scheme.Validator({
         unknown: false,
         throw: true,
         scheme: {

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { Color, Colors } from './colors.js';
 import { Path } from './path.js';
-import { SourceLoc } from '../debugging/source_loc.js';
+import { SourceLoc } from '../logging/uni/source_loc.js';
 /*  @docs:
     @chapter: Utils
     @title: Utils

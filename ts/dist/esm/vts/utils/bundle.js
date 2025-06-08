@@ -6,7 +6,7 @@
 import * as pathlib from 'path';
 import * as esbuild from 'esbuild';
 // Get the directory name of the current module
-import { Color, Colors, logger, Path, Utils } from "../../vlib/index.js";
+import { Color, Colors, log, Path, Utils } from "../../vlib/index.js";
 ;
 /*
  * Bundles transpiled JavaScript files using esbuild.
@@ -163,7 +163,7 @@ export async function bundle(options) {
         const first_path = typeof output === "string" ? output : (Array.isArray(output) ? output[0] : undefined);
         if (first_path != null) {
             const p = new Path(first_path);
-            logger.marker(`Bundled ${p.full_name()} (${p.str()}) [${Utils.format_bytes(p.size)}].`);
+            log.marker(`Bundled ${p.full_name()} (${p.str()}) [${Utils.format_bytes(p.size)}].`);
         }
     }
     return {

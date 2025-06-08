@@ -2,6 +2,10 @@
 tests
 
 # Default excludes.
+**/vrepo.json
+**/vtest.json
+**/unit_tests
+**/.unit_tests
 /docs
 .vdocs
 .vrepo

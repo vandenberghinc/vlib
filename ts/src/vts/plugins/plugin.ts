@@ -40,9 +40,9 @@ export function log_helper(
         }
     }
     if (last_log[1] === plugin && last_log[0]?.path === log_path.path) {
-        vlib.debug.raw(vlib.debugging.Directive.enforce, `    ${prefix ?? ""}`, ...args);
+        vlib.debug.raw(vlib.logging.directive.enforce, `    ${prefix ?? ""}`, ...args);
     } else {
-        vlib.debug.raw(vlib.debugging.Directive.enforce, 
+        vlib.debug.raw(vlib.logging.directive.enforce, 
             `${
                 vlib.Color.cyan(log_path.path)
             }${
@@ -105,7 +105,7 @@ export class Source<T extends "loaded" | "empty" = "loaded" | "empty"> {
     // }
 
     /** Forwarded Transformer.Config attributes. */
-    debug: &vlib.Debug;
+    debug: &vlib.Logger;
     interactive_mutex: &vlib.Mutex;
 
     /** Methods. */
@@ -336,7 +336,7 @@ export abstract class Plugin<
     readonly _exact_templates?: Record<string, string>;
     
     /** The debug instance, later added when the plugin is executed. */
-    debug: vlib.Debug = vlib.debug;
+    debug: vlib.Logger = vlib.log;
 
     // /**
     // * The initialize callback.
@@ -501,6 +501,6 @@ export namespace Plugin {
 
     /** Initialize options. */
     export type InitOpts = {
-        debug?: vlib.Debug;
+        debug?: vlib.Logger;
     }
 }

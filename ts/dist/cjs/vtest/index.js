@@ -15,11 +15,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 module.exports = __toCommonJS(stdin_exports);
 __reExport(stdin_exports, require("./module.js"), module.exports);
-__reExport(stdin_exports, require("./perform.js"), module.exports);
+__reExport(stdin_exports, require("./package.js"), module.exports);
 __reExport(stdin_exports, require("./filter.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ...require("./module.js"),
-  ...require("./perform.js"),
+  ...require("./package.js"),
   ...require("./filter.js")
 });

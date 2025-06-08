@@ -17,11 +17,14 @@ export * as scheme from "./scheme/index.m.uni.js"
 export * from "./generic/index.web.js"
 
 /** debugging/ */
-export * as Debugging from "./debugging/index.m.uni.js"
-export * as debugging from "./debugging/index.m.uni.js"
-export { debug, Debug } from "./debugging/index.m.uni.js"
-import { debug } from "./debugging/index.m.uni.js"
-export const print = (...args: any[]) => debug(0, ...args);
+export * as Debugging from "./logging/index.m.web.js"
+export * as debugging from "./logging/index.m.web.js"
+export { debug, log, Logger, Debug } from "./logging/index.m.web.js"
+import { debug, log } from "./logging/index.m.web.js"
+export const print = (...args: any[]) => log.raw(0, ...args);
+export const error = (...args: any[]) => log.error(...args);
+export const warn = (arg: any, ...args: any[]) => log.warn(arg, ...args);
+export const warning = warn;
 
 /** search/ */
 export * from "./search/index.uni.js"

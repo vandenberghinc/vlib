@@ -1,4 +1,3 @@
-/** vts-version */ const __version="1.6.20"; /** vts-version END */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -30,44 +29,57 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Code: () => Code,
-  Debug: () => import_index_m_uni.Debug,
+  Debug: () => import_index_m_web.Debug,
   Debugging: () => Debugging,
+  Logger: () => import_index_m_web.Logger,
   Scheme: () => Scheme,
   code: () => code,
-  debug: () => import_index_m_uni.debug,
+  debug: () => import_index_m_web.debug,
   debugging: () => debugging,
+  error: () => error,
+  log: () => import_index_m_web.log,
   print: () => print,
   scheme: () => scheme,
-  version: () => version
+  version: () => version,
+  warn: () => warn,
+  warning: () => warning
 });
 module.exports = __toCommonJS(stdin_exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
 var Scheme = __toESM(require("./scheme/index.m.uni.js"));
 var scheme = __toESM(require("./scheme/index.m.uni.js"));
 __reExport(stdin_exports, require("./generic/index.web.js"), module.exports);
-var Debugging = __toESM(require("./debugging/index.m.uni.js"));
-var debugging = __toESM(require("./debugging/index.m.uni.js"));
-var import_index_m_uni = require("./debugging/index.m.uni.js");
-var import_index_m_uni2 = require("./debugging/index.m.uni.js");
+var Debugging = __toESM(require("./logging/index.m.web.js"));
+var debugging = __toESM(require("./logging/index.m.web.js"));
+var import_index_m_web = require("./logging/index.m.web.js");
+var import_index_m_web2 = require("./logging/index.m.web.js");
 __reExport(stdin_exports, require("./search/index.uni.js"), module.exports);
 var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.web.js"), module.exports);
 Error.stackTraceLimit = 25;
-const print = (...args) => (0, import_index_m_uni2.debug)(0, ...args);
-const version = __version;
+const print = (...args) => import_index_m_web2.log.raw(0, ...args);
+const error = (...args) => import_index_m_web2.log.error(...args);
+const warn = (arg, ...args) => import_index_m_web2.log.warn(arg, ...args);
+const warning = warn;
+const version = "1.6.20";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Code,
   Debug,
   Debugging,
+  Logger,
   Scheme,
   code,
   debug,
   debugging,
+  error,
+  log,
   print,
   scheme,
   version,
+  warn,
+  warning,
   ...require("./primitives/index.uni.js"),
   ...require("./generic/index.web.js"),
   ...require("./search/index.uni.js"),

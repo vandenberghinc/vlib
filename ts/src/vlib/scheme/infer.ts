@@ -5,9 +5,12 @@
  * Infer a scheme item to a type.
  */
 
-import type { Entry, EntryObject } from "./entry.js";
 import type { Cast } from "./cast.js"
-import type { Scheme } from "./scheme.js";
+import type { Entry, EntryObject } from "./entry.js";
+import type { Entries, TupleEntries, ValueEntries } from "./entries.js";
+
+/** Type alias for entry or entry object union. */
+type EntryOrEntryObj = Entry | EntryObject;
 
 /** Process the default value and return its type.
  *  - string‐literal → string
@@ -29,8 +32,8 @@ type LiteralToType<D> =
     D;
 
 /** Is scheme item optional */
-type IsOptional<E extends Cast.Castable | EntryObject> =
-    E extends EntryObject
+type IsOptional<E extends Entry.Opts> =
+    E extends EntryOrEntryObj
     ?
         // Explicit `false` ➜ optional
         [E["required"]] extends [false] ? true :
@@ -41,13 +44,13 @@ type IsOptional<E extends Cast.Castable | EntryObject> =
     : false // always required since default is required unless otherwise provided.
 
 /** Wrap maybe as optional. */
-type MaybeOptional<E extends Cast.Castable | EntryObject, T extends any> =
+type MaybeOptional<E extends Entry.Opts, T extends any> =
     IsOptional<E> extends true
         ? T | undefined
         : T
 
 /** Extract the created value type of an entry, recursing into nested schemes & tuples */
-export type InferEntry<E extends EntryObject> =
+export type InferEntry<E extends EntryOrEntryObj> =
     // explicit default or def
     E extends { default: (obj: any) => infer R } ? R : // dont do literal to type here since its the return type, so actual literal string flag-like unions must be kept.
     E extends { default: infer D } ? LiteralToType<D> :
@@ -56,17 +59,17 @@ export type InferEntry<E extends EntryObject> =
     // enum array
     E extends { enum: infer U extends readonly any[] } ? U[number] :
     // nested object‐scheme
-    E extends { scheme: infer S extends Record<string, EntryObject | Cast.Castable> } ? InferScheme<S> :
+    E extends { schema: infer S extends Entries.Opts } ? InferEntries<S> :
     // nested single value_scheme
-    E extends { value_scheme: infer V }
-        ? V extends EntryObject | Cast.Castable
-            ? InferValueScheme<V>
+    E extends { value_schema: infer V }
+        ? V extends ValueEntries.Opts
+            ? InferValueEntries<CastsToArray<E["type"], "array", "object">, V>
             : never
         :
     // nested tuple
     E extends { tuple: infer Tup }
-        ? Tup extends readonly (EntryObject | Cast.Castable)[]
-            ? InferTupleScheme<Tup>
+        ? Tup extends TupleEntries.Opts
+            ? InferTupleEntries<Tup>
             : never
         :
     // bare type
@@ -74,16 +77,32 @@ export type InferEntry<E extends EntryObject> =
         ? Cast<E["type"], "string", undefined>
         : never;
 
+/**
+ * Check if a castable type results in an array or not.
+ */
+export type CastsToArray<T extends undefined | Cast.Castable, True = true, False = false> =
+    T extends undefined ? False :
+    Cast<T> extends any[]
+    ? True
+    : False;
+
 /** Infer a value scheme */
-type InferValueScheme<V extends Infer.ValueScheme.T> =
+export type InferValueEntries<
+    ParentT extends "array" | "object",
+    V extends ValueEntries.Opts,
+> =
     V extends EntryObject
-        ? InferEntry<V>[]
+        ? ParentT extends "array"
+            ? InferEntry<V>[]
+            : Record<string, InferEntry<V>>
         : V extends Cast.Castable
-            ? Cast<V, "string", never>[]
+            ? ParentT extends "array"
+                ? Cast<V, "string", never>[]
+                : Record<string, Cast<V, "string", never>>
             : never
 
-/** Extract the value‐type for a normal (named) Scheme.Opts object */
-type InferScheme<S extends Infer.Scheme.T> = {
+/** Extract the value‐type for a normal (named) Entries.Opts object */
+export type InferEntries<S extends Entries.Opts> = {
     [K in keyof S]:
         S[K] extends EntryObject
             ? MaybeOptional<S[K], InferEntry<S[K]>>
@@ -91,92 +110,53 @@ type InferScheme<S extends Infer.Scheme.T> = {
 };
 
 /** Extract the value‐type for a tuple, preserving tuple positions */
-type InferTupleScheme<T extends Infer.Tuple.T> = {
+export type InferTupleEntries<T extends TupleEntries.Opts> = {
     [I in keyof T]:
         T[I] extends EntryObject
             ? MaybeOptional<T[I], InferEntry<T[I]>>
             : MaybeOptional<T[I], Cast<T[I], never, "string">>
 };
 
-// ---------------------------------------------------------
-
-/** Public infer module. */
-export namespace Infer {
-
-    /** Extract the created value type of an entry, recursing into nested schemes & tuples */
-    export type Entry<T extends Entry.T> = T extends Cast.Castable
-        ? Cast<T, "string", never>
-        : InferEntry<T>;
-    export namespace Entry {
-        /** Base for generic, could be useful for user. */
-        export type T = EntryObject | Cast.Castable;
+// -------------------------------------------------------------
+// INTERNAL TESTS
+function test_infer_scheme<
+    const S extends Entries.Opts
+>(s: S, callback: (i: InferEntries<S>) => void) {}
+test_infer_scheme(
+    {
+        my_str: "string",
+        my_nr: "number",
+        my_opt_nr_1: { type: "number", required: false },
+        my_opt_nr_2: { type: "number", required: () => true }, // cant resolve funcs
+        my_opt_nr_3: { type: "number", required: () => false }, // cant resolve funcs
+        my_non_opt_nr_1: { type: "number", def: 0 },
+        my_non_opt_nr_2: { type: "number", def: () => 0 },
+        my_enum_1: { enum: ["a", "b", "c"] },
+        my_tuple_1: { tuple: ["string", "number", "boolean"] },
+        my_array_1: { type: "array", value_schema: "number" },
+        my_array_2: { value_schema: "number" },
+        my_val_scheme_1: { value_schema: "number" },// err
+        my_val_scheme_2: { type: "object", value_schema: "number" },
+    },
+    (args) => {
+        const my_str: string = args.my_str;
+        const my_nr: number = args.my_nr;
+        // @ts-expect-error
+        const my_opt_nr_1: number = args.my_opt_nr_1;
+        // @ts-expect-error
+        const my_opt_nr_2: number = args.my_opt_nr_2;
+        // @ts-expect-error
+        const my_opt_nr_3: number = args.my_opt_nr_3;
+        const my_non_opt_nr_1: number = args.my_non_opt_nr_1;
+        const my_non_opt_nr_2: number = args.my_non_opt_nr_2;
+        const my_enum_1: "a" | "b" | "c" = args.my_enum_1;
+        const my_tuple_1: [string, number, boolean] = args.my_tuple_1;
+        const my_array_1: number[] = args.my_array_1;
+        const my_array_2: number[] = args.my_array_2;
+        // @ts-expect-error
+        const my_val_scheme_1: Record<string, number> = args.my_val_scheme_1;
+        const my_val_scheme_2: Record<string, number> = args.my_val_scheme_2;
     }
-
-    /** Extract the value‐type for a normal (named) Scheme.Opts object */
-    export type Scheme<T extends Scheme.T> = InferScheme<T>;
-    export namespace Scheme {
-        /** Base for generic, could be useful for user. */
-        export type T = Record<string, Cast.Castable | EntryObject>;
-    }
-
-    /** Extract the value‐type for a normal (named) Scheme.Opts object */
-    export type ValueScheme<T extends ValueScheme.T> = InferValueScheme<T>;
-    export namespace ValueScheme {
-        /** Base for generic, could be useful for user. */
-        export type T = Cast.Castable | EntryObject;
-    }
-
-    /** Extract the value‐type for a tuple, preserving tuple positions */
-    export type Tuple<T extends Tuple.T> =
-        InferTupleScheme<T>;
-    export namespace Tuple {
-        /** Base for generic, could be useful for user. */
-        export type T = readonly (Cast.Castable | EntryObject)[];
-    }
-}
-export { Infer as infer }; // snake_case compatibility
-
-
-// // -------------------------------------------------------------
-// // INTERNAL TESTS
-// function test_infer_scheme<
-//     const S extends Record<string, EntryObject | Cast.Castable>
-// >(s: S, callback: (i: InferScheme<S>) => void) {}
-// test_infer_scheme(
-//     {
-//         my_str: "string",
-//         my_nr: "number",
-//         my_opt_nr_1: { type: "number", required: false },
-//         my_opt_nr_2: { type: "number", required: () => true }, // cant resolve funcs
-//         my_opt_nr_3: { type: "number", required: () => false }, // cant resolve funcs
-//         my_non_opt_nr_1: { type: "number", def: 0 },
-//         my_non_opt_nr_2: { type: "number", def: () => 0 },
-//         my_enum_1: { enum: ["a", "b", "c"] },
-//         my_tuple_1: { tuple: ["string", "number", "boolean"] },
-//         my_array_1: { type: "array", value_scheme: "number" },
-//         my_array_2: { value_scheme: "number" },
-//         my_val_scheme_1: { value_scheme: "number" },// err
-//         my_val_scheme_2: { type: "object", value_scheme: "number" },
-//     },
-//     (args) => {
-//         const my_str: string = args.my_str;
-//         const my_nr: number = args.my_nr;
-//         // @ts-expect-error
-//         const my_opt_nr_1: number = args.my_opt_nr_1;
-//         // @ts-expect-error
-//         const my_opt_nr_2: number = args.my_opt_nr_2;
-//         // @ts-expect-error
-//         const my_opt_nr_3: number = args.my_opt_nr_3;
-//         const my_non_opt_nr_1: number = args.my_non_opt_nr_1;
-//         const my_non_opt_nr_2: number = args.my_non_opt_nr_2;
-//         const my_enum_1: "a" | "b" | "c" = args.my_enum_1;
-//         const my_tuple_1: [string, number, boolean] = args.my_tuple_1;
-//         const my_array_1: number[] = args.my_array_1;
-//         const my_array_2: number[] = args.my_array_2;
-//         // @ts-expect-error
-//         const my_val_scheme_1: Record<string, number> = args.my_val_scheme_1;
-//         const my_val_scheme_2: Record<string, number> = args.my_val_scheme_2;
-//     }
-// );
+);
 
 

@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import * as pathlib from 'path';
 import * as esbuild from 'esbuild';
-import { logger, logging, Utils, Path, Logging, Debugging, debug as _debug } from "@vlib";
+import { log, logging, Utils, Path, Logging, debug as _debug } from "@vlib";
 
 /**
  * Recursively converts all ESM files in a directory to CommonJS.

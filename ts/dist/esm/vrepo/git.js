@@ -16,7 +16,7 @@ export class Git {
     gitignore;
     proc = new Proc();
     /** Constructor validator. */
-    static validator = new Scheme.Validator("object", {
+    static validator = new Scheme.Validator({
         unknown: false,
         throw: true,
         scheme: {

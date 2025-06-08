@@ -5,6 +5,7 @@
 import { CLIError } from './error.js';
 import { And, Or } from './query.js';
 import * as InferArgs from './infer_args.js';
+import type { Cast } from './cast.js';
 import * as Arg from './arg.js';
 import { Strict } from './arg.js';
 import { Command, Main, Base as BaseCommand } from './command.js';
@@ -18,7 +19,7 @@ import { Command, Main, Base as BaseCommand } from './command.js';
  * @param commands {array[object]} Array of command objects.
  * @nav CLI
 */
-export declare class CLI<S extends Strict = Strict> {
+export declare class CLI<S extends Strict = Strict, const Options extends readonly Arg.Command.Opts<S, "id">[] = readonly Arg.Command.Opts<S, "id">[]> {
     /** The CLI name. */
     private name;
     /** The CLI description for the usage docs. */
@@ -33,7 +34,7 @@ export declare class CLI<S extends Strict = Strict> {
      * The list of global option arguments.
      * @todo not implemented yet.
      */
-    private options;
+    private option_args;
     /** The notes. */
     private notes;
     /** The argc start index. */
@@ -44,6 +45,8 @@ export declare class CLI<S extends Strict = Strict> {
     private argv_info;
     /** Whether to throw an error when an unknown command is detected, defaults to false. */
     strict: Strict.Cast<S>;
+    /** The parsed & inferred options. */
+    options: InferArgs.InferArgs<Options>;
     /**
      * The constructor.
      * @param name The CLI name.
@@ -62,7 +65,7 @@ export declare class CLI<S extends Strict = Strict> {
         notes?: string[];
         start_index?: number;
         argv?: string[];
-        options?: Command.Opts<S>[];
+        options?: Options;
         _sys?: boolean;
     } & Strict.If<S, "strict", {
         strict: S extends "strict" ? true : false;
@@ -92,6 +95,8 @@ export declare class CLI<S extends Strict = Strict> {
     /** Wrapper function to add an info object and return the info for one line returns. */
     private add_info;
     private add_to_cmd_args;
+    /** Parse an `args` object from a list of `Arg.Command` instances. */
+    private parse_args;
     /** Run a command. */
     private run_command;
     /** Find the index of an argument / command. */
@@ -111,7 +116,7 @@ export declare class CLI<S extends Strict = Strict> {
      * @libris
      */
     info<const O extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">>(q: O | And | Or | string[] | string, _s_index?: number, // start index when searching for arguments by index.
-    _command?: Command<S> | Main<S>): Info<"success", Arg.Base.FromOpts<O>> | Info<"error", Arg.Base.FromOpts<O>>;
+    _command?: BaseCommand<S>): Info<"success", Arg.Base.FromOpts<O>> | Info<"error", Arg.Base.FromOpts<O>>;
     /**
      * {Get}
      * Get an argument.
@@ -128,14 +133,16 @@ export declare class CLI<S extends Strict = Strict> {
         docs?: true | string;
         id?: string;
         error?: Error;
-        command?: BaseCommand;
+        command?: BaseCommand<S>;
     }): CLIError;
     /**
      * Log the docs, optionally of an array of command or a single command.
+     * Internally the indent size is set to argument `--docs-indent-size` which defaults to 2.
+     * So this is available through the `$ mycli --help --docs-indent-size 4` help command.
      *
-     * @libris
+     * @docs
      */
-    docs(command_or_commands?: BaseCommand | BaseCommand[], dump?: boolean): string;
+    docs(command?: BaseCommand<S>, dump?: boolean): string;
     /**
      * Add the main command.
      *
@@ -210,7 +217,7 @@ export declare namespace Info {
     /** The info mode. */
     type Mode = "error" | "success";
 }
-export declare const cli: CLI<Arg.Strict>;
+export declare const cli: CLI<Arg.Strict, readonly Arg.Base.Opts<Arg.Strict, "command", "id", Cast.Castable, readonly any[]>[]>;
 /**
  * Get an argument.
  * @param query The argument get options. See {@link Arg.Base} for option information.

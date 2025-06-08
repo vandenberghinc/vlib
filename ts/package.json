@@ -57,7 +57,7 @@
         "build:cjs": "node dist/esm/vts/cli.js --transform-esm --src dist/esm/ --dest dist/cjs/ --override --platform node --target es2023",
         "build:web": "tsc -p tsconfig.web.json && tsc-alias -p tsconfig.web.json && npm run --silent fill-version",
         "test": "node dist/esm/vtest/cli.js  -c ./vtest.json",
-        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = './dist/esm/vlib/index.js'; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; fs.writeFileSync(target, fs.readFileSync(target, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8');\" && node dist/esm/vlib/index.js",
+        "fill-version-esm": "node -e \"const package_json = './package.json'; const target = ['./dist/esm/vlib/index.js','./dist/esm/vlib/index.web.js']; const fs = require('fs'); const version = JSON.parse(fs.readFileSync(package_json, 'utf8')).version; for (const t of target) { fs.writeFileSync(t, fs.readFileSync(t, 'utf8').replace(/\\b__version\\b/g, '\\''+version+'\\''), 'utf8'); }\" && node dist/esm/vlib/index.js",
         "fill-version": "node dist/esm/vts/cli.js -y --fill-version -s 'dist/*/vlib/index*.js' -p ./package.json --allow-not-found && node dist/web/vlib/index.web.js"
     },
     "keywords": [

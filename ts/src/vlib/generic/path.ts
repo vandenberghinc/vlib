@@ -569,6 +569,12 @@ export class Path {
     is_file(): boolean {
         return this.stat.isFile();
     }
+    static is_file(path: string | Path): boolean {
+        if (path instanceof Path) {
+            return path.is_file();
+        }
+        return fs.statSync(path).isFile();
+    }
 
     /** 
      * {Is directory}
@@ -1239,7 +1245,11 @@ export class Path {
     static async glob<O extends Path.glob.Opts = Path.glob.Opts>(
         patterns: string | string[],
         opts?: O
-    ): Promise<O extends { string: true } ? string[] : Path[]> {
+    ): Promise<
+        O extends { string: true } ? string[] :
+        O extends { string?: false } ? Path[] :
+        never
+    > {
         const as_string = opts?.string ?? false;
         return (await fg(Array.isArray(patterns) ? patterns : [patterns], {
             cwd: opts?.cwd instanceof Path ? opts?.cwd.path : opts?.cwd,
@@ -1263,7 +1273,11 @@ export class Path {
     static glob_sync<O extends Path.glob.Opts = Path.glob.Opts>(
         patterns: string | string[],
         opts?: O
-    ): O extends { string: true } ? string[] : Path[] {
+    ):
+    O extends { string: true } ? string[] :
+    O extends { string?: false } ? Path[] :
+    never
+    {
         const as_string = opts?.string ?? false;
         return fg.sync(Array.isArray(patterns) ? patterns : [patterns], {
             cwd: opts?.cwd instanceof Path ? opts?.cwd.path : opts?.cwd,
@@ -1377,7 +1391,7 @@ export namespace Path {
         /**
          * Options for the `Path.glob` and `Path.glob_sync` methods.
          */
-        export type Opts<Flags extends "string" | "path" = "string" | "path"> = {
+        export type Opts = {
             exclude?: string[];
             fast?: boolean;
             cwd?: string | Path;
@@ -1387,11 +1401,14 @@ export namespace Path {
             only_directories?: boolean;
             unique?: boolean;
             stats?: boolean;
-        } & (
-            "path" extends Flags
-            ? { string: true }
-            : { string?: false }
-        )
+            string?: boolean;
+        }
+        // <Flags extends "string" | "path" = "string" | "path" > 
+        // & (
+        //     "path" extends Flags
+        //     ? { string: true }
+        //     : { string?: false }
+        // )
     }
 
 }

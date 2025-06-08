@@ -840,7 +840,7 @@ cli.command({
       });
       await repo.init();
       repo.assert_init();
-      vlib.logger.marker(repo.name, ":");
+      vlib.log.marker(repo.name, ":");
       const list = await repo.git.list_large_files({
         limit,
         exclude,
@@ -848,7 +848,7 @@ cli.command({
         directories
       });
       list.walk(({ path: path2, size }) => {
-        vlib.logger.raw(`    * ${path2}: ${vlib.Utils.format_bytes(size)}.`);
+        vlib.log.raw(`    * ${path2}: ${vlib.Utils.format_bytes(size)}.`);
       });
     }
   }

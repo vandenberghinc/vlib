@@ -19,6 +19,15 @@ export declare namespace ObjectUtils {
      */
     function eq(x: any, y: any): boolean;
     /**
+     * Merge two objects in place.
+     * Can be useful for casting an options object to an initialization object.
+     */
+    function merge<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U;
+    /**
+     * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     */
+    function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U;
+    /**
      * Detects changed keys between two objects.
      * @param x The original object.
      * @param y The modified object.

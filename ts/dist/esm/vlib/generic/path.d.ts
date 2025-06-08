@@ -173,6 +173,7 @@ export declare class Path {
      * Check if the path is a directory
      */
     is_file(): boolean;
+    static is_file(path: string | Path): boolean;
     /**
      * {Is directory}
      * Check if the path is a directory
@@ -399,13 +400,17 @@ export declare class Path {
      */
     static glob<O extends Path.glob.Opts = Path.glob.Opts>(patterns: string | string[], opts?: O): Promise<O extends {
         string: true;
-    } ? string[] : Path[]>;
+    } ? string[] : O extends {
+        string?: false;
+    } ? Path[] : never>;
     /**
      * Synchronously match file paths using glob patterns.
      */
     static glob_sync<O extends Path.glob.Opts = Path.glob.Opts>(patterns: string | string[], opts?: O): O extends {
         string: true;
-    } ? string[] : Path[];
+    } ? string[] : O extends {
+        string?: false;
+    } ? Path[] : never;
 }
 /**
  * Path types.
@@ -445,7 +450,7 @@ export declare namespace Path {
         /**
          * Options for the `Path.glob` and `Path.glob_sync` methods.
          */
-        type Opts<Flags extends "string" | "path" = "string" | "path"> = {
+        type Opts = {
             exclude?: string[];
             fast?: boolean;
             cwd?: string | Path;
@@ -455,10 +460,7 @@ export declare namespace Path {
             only_directories?: boolean;
             unique?: boolean;
             stats?: boolean;
-        } & ("path" extends Flags ? {
-            string: true;
-        } : {
-            string?: false;
-        });
+            string?: boolean;
+        };
     }
 }

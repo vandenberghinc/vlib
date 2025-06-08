@@ -59,7 +59,7 @@ export var CSS;
             const first_path = typeof output === "string" ? output : (Array.isArray(output) ? output[0] : undefined);
             if (first_path != null) {
                 const p = new vlib.Path(first_path);
-                vlib.logger.marker(`Bundled ${p.full_name()} (${p.str()}) [${vlib.Utils.format_bytes(p.size)}].`);
+                vlib.log.marker(`Bundled ${p.full_name()} (${p.str()}) [${vlib.Utils.format_bytes(p.size)}].`);
             }
         }
         // Return.

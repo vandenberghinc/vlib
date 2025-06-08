@@ -37,12 +37,14 @@ export class NoDebug extends Plugin {
             // locate the '(' within the match
             const paren_index = match_start + match[0].lastIndexOf("(");
             // use a context‐aware iterator to walk from the '('
-            const it = new vlib.code.Iterator({ data, offset: paren_index }, vlib.code.Iterator.opts.ts);
+            // @todo using state tracking could
+            const it = new vlib.code.Iterator({ data }, { language: "ts" });
+            it.jump_to(paren_index);
             // walk until the matching ')' at depth 1
-            while (it.avail()) {
-                if (it.state.peek === ")" && it.state.depth.parenth === 1 && it.state.is_code) {
+            while (it.avail) {
+                if (it.char === ")" && it.depth.parenth === 1 && it.is_code) {
                     // calculate end offset (inclusive of ')')
-                    let end_offset = it.state.nested_offset + it.state.offset + 1;
+                    let end_offset = it.pos + 1;
                     // include a trailing semicolon if present
                     if (data[end_offset] === ";") {
                         end_offset++;

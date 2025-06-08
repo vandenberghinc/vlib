@@ -3,6 +3,8 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
+import pathlib from "path";
+
 /**
  * The GlobPattern class compiles a glob‐style pattern into a regular expression
  * and allows matching and filtering of strings (typically file paths) against that pattern.
@@ -51,6 +53,9 @@
  *
  * The static method `GlobPattern.is(str)` can be used to quickly check if a string
  * contains any glob wildcard characters (`* `, ` ? `, `[`, `]`, `{ `, or ` }`).
+ * 
+ * @note This class is not meant to glob actual file paths from the filesystem.
+ *       Use `vlib.Path.glob()` for that purpose.
  */
 export class GlobPattern {
 
@@ -206,4 +211,87 @@ export class GlobPattern {
         regex += '$';
         return new RegExp(regex);
     }
+
+    /** To string */
+    toString(): string {
+        return `GlobPattern("${this.pattern}")`;
+    }
 };
+
+/**
+ * A glob pattern list that can contain multiple glob patterns.
+ * Automatically detects and converts string patterns to `GlobPattern` instances.
+ * When no glob patterns are present, it behaves like a simple string list.
+ * 
+ * @note This class is not meant to glob actual file paths from the filesystem.
+ *       Use `vlib.Path.glob()` for that purpose.
+ */
+export class GlobPatternList {
+    items: GlobPatternList.T[];
+    absolute: boolean;
+
+    /**
+     * 
+     * @param list A single glob pattern or an array of glob patterns.
+     * @param opts Options to configure the list. 
+     * @param opts.absolute When true, all string patterns are resolved to absolute paths using `path.resolve()`.
+     *                      This is useful when you want to ensure all patterns are absolute paths.
+     *                      Defaults to false.
+     */
+    constructor(list: GlobPatternList.T | GlobPatternList.T[], opts?: {
+        absolute?: boolean;
+    }) {
+        this.absolute = opts?.absolute ?? false;
+        const init_item = (item: GlobPatternList.T): GlobPatternList.T => {
+            if (this.absolute && typeof item === "string") {
+                item = pathlib.resolve(item);
+            }
+            return (
+                item instanceof GlobPattern || !GlobPattern.is(item)
+                    ? item
+                    : new GlobPattern(item)
+            );
+        }
+        this.items = Array.isArray(list) ? list.map(init_item) : [init_item(list)];
+    }
+
+    /**
+     * Test if a value matches any of the glob patterns in the list.
+     * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
+     * @param value - The string to test.
+     */
+    match(value: string): boolean {
+        return this.items.some(p => typeof p === "string" ? p === value : p.test(value));
+    }
+    test(value: string): boolean {
+        return this.match(value);
+    }
+    some(value: string): boolean {
+        return this.match(value);
+    }
+
+    /**
+     * Test if a value matches all glob patterns in the list.
+     * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
+     * @param value - The string to test.
+     */
+    every(value: string): boolean {
+        return this.items.every(p => typeof p === "string" ? p === value : p.test(value));
+    }
+
+    /** Check if an array contains either a string glob patern or a GlobPattern instance. */
+    static is(list: GlobPatternList.T[]): boolean {
+        return list.some(item => 
+            item instanceof GlobPattern
+            || GlobPattern.is(item)
+        );
+    }
+
+    /** To string */
+    toString(): string {
+        return `GlobPatternList("${this.items.join(", ")}")`;
+    }
+}
+export namespace GlobPatternList {
+    export type T = string | GlobPattern;
+}

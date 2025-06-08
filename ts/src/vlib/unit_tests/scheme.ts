@@ -7,7 +7,8 @@
 
 // Imports.
 import { Module } from "../../vtest/index.js";
-import { validate, Entry, Scheme, Validator } from "../scheme/index.m.uni.js";
+import { validate, Entry, Entries, Validator } from "../scheme/index.m.uni.js";
+import type { Cast } from "../scheme/cast.js";
 
 // Unit tests module.
 const tests = new Module({ name: "vlib/scheme" });
@@ -99,7 +100,7 @@ tests.add("scheme_test:4", create_error_unit_test({
     scheme: {
         nested: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "string",
             },
         },
@@ -123,9 +124,9 @@ tests.add("scheme_test:5", create_error_unit_test({
     scheme: {
         array: {
             type: "array",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     name: "string",
                     description: "boolean",
                 },
@@ -151,9 +152,9 @@ tests.add("scheme_test:6", create_error_unit_test({
     scheme: {
         posts: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     name: "string",
                     description: "boolean",
                 },
@@ -179,9 +180,9 @@ tests.add("scheme_test:7", create_error_unit_test({
     scheme: {
         posts: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     name: "string",
                     description: "string",
                 },
@@ -208,9 +209,9 @@ tests.add("scheme_test:8", create_error_unit_test({
     scheme: {
         documents: {
             type: "array",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     name: { type: "string", required: (obj: any) => obj.data != null },
                     data: { type: "string", required: (obj: any) => obj.stylesheets == null },
                     language: { type: "string", required: false },
@@ -258,7 +259,7 @@ tests.add("scheme_test:10", () => {
             x: { type: "string", default: "Hello World!" },
         },
     });
-    ({ x = "" } = response.data?? {});
+    ({ x = "" } = response);
     return x;
 });
 
@@ -272,17 +273,22 @@ tests.add("scheme_test:10", () => {
 tests.add("scheme_constructor:1", () => {
     const entry1 = new Entry({ type: "string" });
     const entry2 = new Entry({ type: "boolean" });
-    const schemeObj = {
-        first: entry1,
-        second: entry2,
+    const schemeObj: Entries.Opts = {
+        // first: entry1,
+        // second: entry2,
+        x: new Entry({ type: "string" }),
+        // x: { type: "string" },
     };
-    const scheme = new Scheme(schemeObj);
+    const scheme = new Entries(schemeObj);
+    // const scheme = new Entries({
+    //     x: new Entry({ type: "string" }),
+    // });
     return scheme.get("first") === entry1 && scheme.get("second") === entry2;
 });
 
 // scheme_constructor:2 - Passing plain Entry.Opts; values should be wrapped into Entry instances.
 tests.add("scheme_constructor:2", () => {
-    const scheme = new Scheme({
+    const scheme = new Entries({
         key: { type: "string", alias: ["alias_key"] },
     });
     const val = scheme.get("key");
@@ -295,7 +301,7 @@ tests.add("scheme_constructor_parent:1", () => {
     const schemeObj: Record<string, any> = {
         a: { type: "string" },
     };
-    const scheme = new Scheme(schemeObj, parent, "child");
+    const scheme = new Entries(schemeObj, parent, "child");
     return parent.child === scheme;
 });
 
@@ -305,7 +311,7 @@ tests.add("scheme_constructor_parent:2", () => {
     const schemeObj: Record<string, any> = {
         b: { type: "boolean" },
     };
-    const scheme = new Scheme(schemeObj, parent, "child");
+    const scheme = new Entries(schemeObj, parent, "child");
     return parent.child === scheme && parent.child !== "placeholder";
 });
 
@@ -314,7 +320,7 @@ tests.add("scheme_constructor_parent:2", () => {
 
 // scheme_aliases_empty:1 - Scheme has no aliases; aliases map should be empty.
 tests.add("scheme_aliases_empty:1", () => {
-    const scheme = new Scheme({
+    const scheme = new Entries({
         only: { type: "string", alias: [] },
     });
     const aliases = scheme.aliases;
@@ -324,7 +330,7 @@ tests.add("scheme_aliases_empty:1", () => {
 // scheme_aliases_population:1 - Single alias should map correctly.
 tests.add("scheme_aliases_population:1", () => {
     const entryOpts: Entry.Opts = { type: "string", alias: ["alias1", "alias2"] };
-    const scheme = new Scheme({ key: entryOpts });
+    const scheme = new Entries({ key: entryOpts });
     const aliases = scheme.aliases;
     const entryInstance = scheme.get("key");
     return aliases.get("alias1") === entryInstance && aliases.get("alias2") === entryInstance;
@@ -333,7 +339,7 @@ tests.add("scheme_aliases_population:1", () => {
 // scheme_aliases_cached:1 - Repeated access returns the same Map reference.
 tests.add("scheme_aliases_cached:1", () => {
     const entryOpts: Entry.Opts = { type: "string", alias: ["aliasA"] };
-    const scheme = new Scheme({ k: entryOpts });
+    const scheme = new Entries({ k: entryOpts });
     const firstMap = scheme.aliases;
     const secondMap = scheme.aliases;
     return firstMap === secondMap;
@@ -420,7 +426,7 @@ tests.add("scheme_verify_nested_object_valid:1", create_success_unit_test({
     scheme: {
         nested: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "string",
             },
         },
@@ -438,7 +444,7 @@ tests.add("scheme_verify_array_of_strings_valid:1", create_success_unit_test({
     scheme: {
         tags: {
             type: "array",
-            value_scheme: {
+            value_schema: {
                 type: "string",
             },
         },
@@ -459,9 +465,9 @@ tests.add("scheme_verify_object_of_objects_valid:1", create_success_unit_test({
     scheme: {
         posts: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     title: "string",
                     published: "boolean",
                 },
@@ -513,7 +519,7 @@ tests.add("scheme_verify_default_boolean:1", () => {
             enabled: { type: "boolean", default: false },
         },
     });
-    return response.data?.enabled;
+    return response?.enabled;
 });
 
 // -------------------------------------------------------------------------------
@@ -553,7 +559,7 @@ tests.add("scheme_verify_type_mismatch_array:1", create_error_unit_test({
     scheme: {
         arr: {
             type: "array",
-            value_scheme: { type: "string" },
+            value_schema: { type: "string" },
         },
     },
     // Expected error: array expected but got object
@@ -569,7 +575,7 @@ tests.add("scheme_verify_array_element_type_error:1", create_error_unit_test({
     scheme: {
         arr: {
             type: "array",
-            value_scheme: { type: "string" },
+            value_schema: { type: "string" },
         },
     },
     // Expected error: array element type mismatch (number in string array)
@@ -653,13 +659,13 @@ tests.add("scheme_verify_deeply_nested_valid:1", create_success_unit_test({
     scheme: {
         level1: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                value_scheme: {
+                value_schema: {
                     type: "object",
-                    value_scheme: {
+                    value_schema: {
                         type: "object",
-                        scheme: {
+                        schema: {
                             value: "string",
                         },
                     },
@@ -686,13 +692,13 @@ tests.add("scheme_verify_deeply_nested_error:1", create_error_unit_test({
     scheme: {
         level1: {
             type: "object",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                value_scheme: {
+                value_schema: {
                     type: "object",
-                    value_scheme: {
+                    value_schema: {
                         type: "object",
-                        scheme: {
+                        schema: {
                             value: "string",
                         },
                     },
@@ -716,12 +722,12 @@ tests.add("scheme_verify_array_of_object_of_arrays:1", create_success_unit_test(
     scheme: {
         items: {
             type: "array",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     flags: {
                         type: "array",
-                        value_scheme: { type: "boolean" },
+                        value_schema: { type: "boolean" },
                     },
                 },
             },
@@ -742,12 +748,12 @@ tests.add("scheme_verify_array_of_object_of_arrays_error:1", create_error_unit_t
     scheme: {
         items: {
             type: "array",
-            value_scheme: {
+            value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                     flags: {
                         type: "array",
-                        value_scheme: { type: "boolean" },
+                        value_schema: { type: "boolean" },
                     },
                 },
             },

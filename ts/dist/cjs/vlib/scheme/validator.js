@@ -45,10 +45,13 @@ class Validator {
   /** Throw occurred errors, defaults to `false` */
   throw;
   /** Constructor. */
-  constructor(mode, opts) {
+  constructor(opts) {
+    if (!opts.scheme && !opts.value_scheme && !opts.tuple) {
+      throw new Validator.InvalidUsageError(`No scheme or value_scheme or tuple provided, at least one of these must be provided.`);
+    }
     this.unknown = opts.unknown ?? true;
     this.parent = opts.parent ?? "";
-    this.error_prefix = opts.error_prefix ?? opts.err_prefix ?? "";
+    this.error_prefix = opts.error_prefix ?? "";
     if (opts.scheme)
       this.scheme = opts.scheme instanceof import_scheme.Scheme ? opts.scheme : new import_scheme.Scheme(opts.scheme);
     if (opts.value_scheme)
@@ -58,7 +61,7 @@ class Validator {
       this.parent += ".";
     }
     this.is_tuple = false;
-    if (mode === "array" && Array.isArray(opts.tuple)) {
+    if (Array.isArray(opts.tuple)) {
       this.is_tuple = true;
       const scheme = {};
       for (let i = 0; i < opts.tuple.length; i++) {
@@ -100,7 +103,7 @@ class Validator {
           return false;
         }
         if (entry.scheme || entry.value_scheme) {
-          const validator = new Validator("array", {
+          const validator = new Validator({
             // scheme: scheme_item.scheme,
             value_scheme: entry.value_scheme,
             tuple: entry.tuple,
@@ -131,7 +134,7 @@ class Validator {
           return false;
         }
         if (entry.scheme || entry.value_scheme) {
-          const validator = new Validator("object", {
+          const validator = new Validator({
             scheme: entry.scheme,
             value_scheme: entry.value_scheme,
             tuple: entry.tuple,
@@ -388,7 +391,10 @@ class Validator {
     }
     return { data };
   }
-  /** Run the validator. */
+  /**
+   * Run the validator.
+   * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
+   */
   validate(data) {
     if (this.is_tuple && Array.isArray(data)) {
       const new_data = {};
@@ -416,6 +422,9 @@ class Validator {
       }
       res.data = new_data;
     }
+    if (this.throw) {
+      return res.data;
+    }
     return res;
   }
 }
@@ -440,7 +449,7 @@ class Validator {
   Validator2.InvalidUsageError = InvalidUsageError;
 })(Validator || (Validator = {}));
 function validate(data, opts) {
-  return new Validator(Array.isArray(data) ? "array" : "object", opts).validate(data);
+  return new Validator(opts).validate(data);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

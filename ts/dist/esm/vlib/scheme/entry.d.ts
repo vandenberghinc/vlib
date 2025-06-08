@@ -149,6 +149,8 @@ export declare namespace Entry {
      * So different from EntryObject since
      * We also support direct Cast.Castable casts in the constructor.
      */
-    type Opts = ConstructorParameters<typeof Entry>[0];
+    type Opts<T extends Cast.Castable = Cast.Castable, // type of entry
+    V extends Cast.Value = Cast.Value, // value of entry
+    P extends ObjOrArr = ObjOrArr> = ConstructorParameters<typeof Entry<T, V, P>>[0];
 }
 export {};

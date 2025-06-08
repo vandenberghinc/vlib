@@ -48,6 +48,14 @@ export declare class ActiveLogLevel {
     get(): number;
     on(log_level: number): boolean;
     toString(): string;
+    /**
+     * Some operations to compare the current log level with a given level.
+     */
+    eq(level: number): boolean;
+    gt(level: number): boolean;
+    gte(level: number): boolean;
+    lt(level: number): boolean;
+    lte(level: number): boolean;
 }
 /**
  * Union type for all directives.

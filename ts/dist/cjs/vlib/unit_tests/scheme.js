@@ -213,7 +213,7 @@ tests.add("scheme_test:10", () => {
       x: { type: "string", default: "Hello World!" }
     }
   });
-  ({ x = "" } = response.data ?? {});
+  ({ x = "" } = response);
   return x;
 });
 tests.add("scheme_constructor:1", () => {
@@ -420,7 +420,7 @@ tests.add("scheme_verify_default_boolean:1", () => {
       enabled: { type: "boolean", default: false }
     }
   });
-  return response.data?.enabled;
+  return response?.enabled;
 });
 tests.add("scheme_verify_required_missing:1", create_error_unit_test({
   throw: true,

@@ -9,7 +9,7 @@
  */
 export * from "./cast.js"
 export * from "./entry.js"
-export * from "./infer.js"
-export * from "./scheme.js"
+// export * from "./infer.js" // is already exported as `Scheme.Infer<...>` like types.
+export * from "./entries.js"
 export * from "./throw.js"
 export * from "./validator.js";

@@ -1,0 +1,7 @@
+// Unit tests for @vandenberghinc/vlib.
+{
+    "output": "./.unit_tests",
+    "include": [
+        "dist/esm/**/unit_tests/**/*.js"
+    ]
+}

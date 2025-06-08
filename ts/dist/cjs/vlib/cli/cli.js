@@ -38,7 +38,8 @@ var Scheme = __toESM(require("../scheme/index.m.uni.js"));
 var import_colors = require("../generic/colors.js");
 var import_error = require("./error.js");
 var import_query = require("./query.js");
-var import_index_m_uni = require("../debugging/index.m.uni.js");
+var import_index_m_node = require("../logging/index.m.node.js");
+var import_object = require("../primitives/object.js");
 var Arg = __toESM(require("./arg.js"));
 var import_command = require("./command.js");
 Error.stackTraceLimit = 100;
@@ -57,7 +58,7 @@ class CLI {
    * The list of global option arguments.
    * @todo not implemented yet.
    */
-  options;
+  option_args = [];
   /** The notes. */
   notes;
   /** The argc start index. */
@@ -69,6 +70,8 @@ class CLI {
   argv_info = /* @__PURE__ */ new Map();
   /** Whether to throw an error when an unknown command is detected, defaults to false. */
   strict;
+  /** The parsed & inferred options. */
+  options;
   /**
    * The constructor.
    * @param name The CLI name.
@@ -86,7 +89,7 @@ class CLI {
     argv = process.argv,
     // default start index is 2.
     notes = [],
-    options = [],
+    options,
     strict,
     _sys = false
   }) {
@@ -95,10 +98,11 @@ class CLI {
     this.version = version;
     this.notes = notes;
     this.strict = strict ?? false;
-    this.options = options.map((o) => o instanceof import_command.Command ? o : new import_command.Command(o, this.strict));
+    this.option_args = !options ? [] : options.map((o) => o instanceof Arg.Command ? o : new Arg.Command(o, this.strict));
     argv = argv.slice(2);
     this.argv = argv;
     this.argv_set = new Set(argv);
+    this.options = {};
     this._init(_sys);
   }
   /** Check unknown arguments. */
@@ -127,7 +131,7 @@ class CLI {
       add_command(cmd);
     }
     this.commands.walk(add_command);
-    this.options.walk(add_command);
+    this.option_args.walk(add_arg);
     if (this._main) {
       add_command(this._main);
     }
@@ -163,6 +167,11 @@ class CLI {
           callback: (args) => console.log(`${this.name} v${this.version}`)
         });
       }
+    }
+    if (this.option_args.length) {
+      this.options = this.parse_args(this.option_args, 0, void 0);
+    } else {
+      this.options = {};
     }
   }
   /** Throw a cast single error. */
@@ -229,26 +238,26 @@ class CLI {
         let key_start = 0, value_start = 0;
         let mode = "key";
         const parsed = {};
-        new import_iterator.Iterator(input, { string: ["'", '"', "`"] }, (state, it) => {
-          const c = it.state.peek;
-          if (mode === "key" && state.is_code && (c === ":" || c === "=")) {
-            key = it.slice(key_start, it.state.offset);
+        new import_iterator.Iterator({ data: input }, { language: { string: ["'", '"', "`"] } }).walk((it) => {
+          const c = it.char;
+          if (mode === "key" && it.is_code && (c === ":" || c === "=")) {
+            key = it.slice(key_start, it.pos);
             mode = "value";
-            value_start = it.state.offset + 1;
-          } else if (mode === "value" && state.is_code && !state.is_excluded && (c === "," || c === ";")) {
+            value_start = it.pos + 1;
+          } else if (mode === "value" && it.is_code && !it.is_escaped && (c === "," || c === ";")) {
             if (key) {
-              let end = it.state.offset;
+              let end = it.pos;
               let first = input.charAt(value_start);
               if (
                 // strip quotes.
-                (first === "'" || first === '"' || first === "`") && first === input.charAt(it.state.offset - 1)
+                (first === "'" || first === '"' || first === "`") && first === input.charAt(it.pos - 1)
               ) {
                 ++value_start;
                 --end;
               }
               parsed[key] = it.slice(value_start, end);
             }
-            key_start = it.state.offset + 1;
+            key_start = it.pos + 1;
             mode = "key";
           }
         });
@@ -341,55 +350,52 @@ class CLI {
       parent[name.replace(/^-+/, "")] = value;
     }
   }
-  /** Run a command. */
-  async run_command(command, args_start_index = 0) {
-    const cmd_args = {};
-    if (command.args?.length) {
-      for (const arg of command.args) {
+  /** Parse an `args` object from a list of `Arg.Command` instances. */
+  async parse_args(cmd_args, args_start_index, command) {
+    const args = {};
+    if (cmd_args.length) {
+      for (const arg of cmd_args) {
         try {
           if (!arg.arg_name) {
             throw this.error(`Argument is not initialized: ${arg}`, { command });
           }
-          if (import_index_m_uni.debug.on(2))
-            (0, import_index_m_uni.debug)("Parsing argument ", (0, import_query.and_or_str)(arg.id));
+          if (import_index_m_node.log.on(2))
+            (0, import_index_m_node.log)("Parsing argument ", (0, import_query.and_or_str)(arg.id));
           if (arg.type === "boolean") {
             if (!arg.id) {
               throw this.error(`Argument "${arg.arg_name}" is not initialized with an id, this is required for boolean types.`, { command });
             }
-            this.add_to_cmd_args(cmd_args, arg.arg_name, this.has(arg.id), cmd_args, command);
+            this.add_to_cmd_args(args, arg.arg_name, this.has(arg.id), args, command);
           } else {
             const { status, value } = this.info(arg, args_start_index, command);
-            if (import_index_m_uni.debug.on(2))
-              (0, import_index_m_uni.debug)("Argument info ", (0, import_query.and_or_str)(arg.id), ": ", { status, value });
+            if (import_index_m_node.log.on(2))
+              (0, import_index_m_node.log)("Argument info ", (0, import_query.and_or_str)(arg.id), ": ", { status, value });
             if (status === "not_found" && arg.required) {
               throw this.error(`Required argument "${(0, import_query.and_or_str)(arg.arg_name)}" was not found`, { command });
             } else if (status === "success" || status === "default") {
-              this.add_to_cmd_args(cmd_args, arg.arg_name, value, cmd_args, command);
+              this.add_to_cmd_args(args, arg.arg_name, value, args, command);
             }
           }
         } catch (error) {
           if (error instanceof import_error.CLIError) {
             throw error;
           }
-          throw this.error(`Encountered an error while parsing argument "${arg.identifier()}" from command "${command.identifier()}".`, { error, command });
+          throw this.error(`Encountered an error while parsing argument "${arg.identifier()}" from command "${command?.identifier()}".`, { error, command });
         }
       }
     }
-    if (import_index_m_uni.debug.on(2))
-      (0, import_index_m_uni.debug)(`Running command: ${"id" in command ? command.id ? (0, import_query.and_or_str)(command.id) : "<unknown>" : "<main>"}`);
-    if (import_index_m_uni.debug.on(3))
-      (0, import_index_m_uni.debug)("With arguments:", cmd_args);
+    return args;
+  }
+  /** Run a command. */
+  async run_command(command, args_start_index = 0) {
+    const cmd_args = await this.parse_args(command.args ?? [], args_start_index, command);
     try {
-      if (command.mode === "main") {
-        await Promise.resolve(command.callback(cmd_args, this));
-      } else {
-        await Promise.resolve(command.callback(cmd_args, this));
-      }
+      await Promise.resolve(command.callback(cmd_args, this));
     } catch (error) {
       if (error instanceof import_error.CLIError) {
         throw error;
       }
-      if (import_index_m_uni.debug.on(1)) {
+      if (import_index_m_node.log.on(1)) {
         throw this.error(`Encountered an error while executing cli command "${command.identifier()}".`, { error, command });
       }
       Error.stackTraceLimit = 25;
@@ -398,8 +404,8 @@ class CLI {
   }
   /** Find the index of an argument / command. */
   find_arg(arg, start_index = 0) {
-    if (import_index_m_uni.debug.on(3))
-      (0, import_index_m_uni.debug)("Finding argument ", arg);
+    if (import_index_m_node.log.on(3))
+      (0, import_index_m_node.log)("Finding argument ", arg);
     let index = void 0;
     let value_index = void 0;
     const is_boolean = arg instanceof Arg.Base ? arg.type === "boolean" : false;
@@ -425,8 +431,8 @@ class CLI {
         value_index = index + 1;
       }
     }
-    if (import_index_m_uni.debug.on(3))
-      (0, import_index_m_uni.debug)("Initially found indexes ", { index, value_index });
+    if (import_index_m_node.log.on(3))
+      (0, import_index_m_node.log)("Initially found indexes ", { index, value_index });
     if (index === -1) {
       index = void 0;
     }
@@ -566,17 +572,12 @@ class CLI {
   }
   /**
    * Log the docs, optionally of an array of command or a single command.
+   * Internally the indent size is set to argument `--docs-indent-size` which defaults to 2.
+   * So this is available through the `$ mycli --help --docs-indent-size 4` help command.
    *
-   * @libris
+   * @docs
    */
-  docs(command_or_commands, dump = true) {
-    if (command_or_commands == null) {
-      command_or_commands = [];
-      if (this._main) {
-        command_or_commands.push(this._main);
-      }
-      command_or_commands.push(...this.commands);
-    }
+  docs(command, dump = true) {
     let docs = "";
     if (this.name != null) {
       docs += this.name;
@@ -587,7 +588,9 @@ class CLI {
     if (docs.length > 0) {
       docs += "\n";
     }
-    const add_keys_and_values = (list) => {
+    const indent_size = this.get({ id: "--docs-indent-size", def: 2 });
+    const indent = " ".repeat(indent_size);
+    const add_align_entries = (list) => {
       let max_length = 0;
       list.forEach((item) => {
         if (item[0].length > max_length) {
@@ -595,13 +598,36 @@ class CLI {
         }
       });
       list.forEach((item) => {
-        while (item[0].length < max_length + 4) {
+        while (item[0].length < max_length + indent_size) {
           item[0] += " ";
         }
         docs += item[0] + item[1];
       });
     };
-    if (Array.isArray(command_or_commands)) {
+    const add_cmd_args = (list, indent2 = "    ", args) => {
+      let real_index = 0;
+      args.forEach((arg) => {
+        if (arg.ignore === true) {
+          return;
+        }
+        const list_item = ["", ""];
+        if (arg.id == null) {
+          list_item[0] = `${indent2}argument ${real_index}`;
+        } else {
+          list_item[0] = `${indent2}${(0, import_query.and_or_str)(arg.id)}`;
+        }
+        if (arg.type != null && arg.type !== "boolean") {
+          list_item[0] += ` <${arg.type}>`;
+        }
+        if (arg.required) {
+          list_item[0] += " (required)";
+        }
+        list_item[1] = (arg.description ?? "") + "\n";
+        list.push(list_item);
+        ++real_index;
+      });
+    };
+    if (command == null) {
       if (this.description) {
         docs += `
 Description:
@@ -611,49 +637,42 @@ Description:
       docs += `Usage: $ ${this.name} [mode] [options]
 `;
       const list = [];
-      command_or_commands.forEach((command) => {
-        const list_item = ["", ""];
-        list_item[0] = `    ${(0, import_query.and_or_str)(command.id ?? "<main>")}`;
-        list_item[1] = (command.description ?? "") + "\n";
-        list.push(list_item);
-        if (command.args?.length) {
-          let arg_index = 0;
-          command.args.forEach((arg) => {
-            if (arg.ignore === true) {
-              return;
-            }
-            const list_item2 = ["", ""];
-            if (arg.id == null) {
-              list_item2[0] = `        argument ${arg_index}`;
-            } else {
-              list_item2[0] = `        ${(0, import_query.and_or_str)(arg.id)}`;
-            }
-            if (arg.type != null && arg.type !== "boolean") {
-              list_item2[0] += ` <${arg.type}>`;
-            }
-            if (arg.required) {
-              list_item2[0] += " (required)";
-            }
-            list_item2[1] = (arg.description ?? "") + "\n";
-            list.push(list_item2);
-            ++arg_index;
-          });
+      if (this._main) {
+        list.push([`
+Main command:`, "\n"]);
+        add_cmd_args(list, indent, this._main.args);
+        list.push(["\nCommands:", "\n"]);
+      }
+      this.commands.walk((command2) => {
+        list.push([
+          `${indent}${(0, import_query.and_or_str)(command2.id ?? "<main>")}`,
+          (command2.description ?? "") + "\n"
+        ]);
+        if (command2.args?.length) {
+          add_cmd_args(list, " ".repeat(indent_size * 2), command2.args);
         }
       });
       list.push([
-        "    --help, -h",
+        `${indent}--help, -h`,
         "Show the overall documentation or when used in combination with a command, show the documentation for a certain command.\n"
       ]);
-      add_keys_and_values(list);
+      if (this.option_args?.length) {
+        list.push([`
+Options:`, "\n"]);
+        add_cmd_args(list, indent, this.option_args);
+      }
+      add_align_entries(list);
+      list.length = 0;
       if (docs.charAt(docs.length - 1) === "\n") {
         docs = docs.slice(0, -1);
       }
       if (this.notes && this.notes.length > 0) {
         docs += `
+
 Notes:
 `;
         this.notes.forEach((note) => {
-          docs += ` * ${note}
+          docs += `${indent}- ${note}
 `;
         });
       }
@@ -664,63 +683,43 @@ Notes:
       if (this.description) {
         docs += this.description + "\n";
       }
-      docs += `Usage: $ ${this.name} ${(0, import_query.and_or_str)(command_or_commands.id ?? `<main>`)} [options]
+      docs += `Usage: $ ${this.name} ${(0, import_query.and_or_str)(command.id ?? `<main>`)} [options]
 `;
-      if (command_or_commands.description) {
+      if (command.description) {
         docs += `
-${command_or_commands.description}
+${command.description}
 `;
       }
-      if (command_or_commands?.args?.length) {
+      if (command?.args?.length) {
         docs += `
 Options:
 `;
-        let arg_index = 0;
         const list = [];
-        command_or_commands.args.forEach((arg) => {
-          if (arg.ignore === true) {
-            return;
-          }
-          const list_item = ["", ""];
-          if (arg.id == null) {
-            list_item[0] = `    argument ${arg_index}`;
-          } else {
-            list_item[0] = `    ${(0, import_query.and_or_str)(arg.id)}`;
-          }
-          if (arg.type != null && arg.type !== "boolean") {
-            list_item[0] += ` <${arg.type}>`;
-          }
-          if (arg.required) {
-            list_item[0] += " (required)";
-          }
-          list_item[1] = (arg.description ?? "") + "\n";
-          list.push(list_item);
-          ++arg_index;
-        });
-        add_keys_and_values(list);
+        add_cmd_args(list, indent, command.args);
+        add_align_entries(list);
       }
-      if (command_or_commands.examples?.length) {
+      if (command.examples?.length) {
         docs += `
 Examples:
 `;
-        if (typeof command_or_commands.examples === "string") {
-          docs += `    ${import_colors.Colors.italic}${command_or_commands.examples.startsWith("$") ? "" : "$ "}${command_or_commands.examples}${import_colors.Colors.end}
+        if (typeof command.examples === "string") {
+          docs += `${indent}${import_colors.Colors.italic}${command.examples.startsWith("$") ? "" : "$ "}${command.examples}${import_colors.Colors.end}
 `;
-        } else if (Array.isArray(command_or_commands.examples)) {
-          command_or_commands.examples.forEach((item) => {
-            docs += `    ${import_colors.Colors.italic}${item.startsWith("$") ? "" : "$ "}${item}${import_colors.Colors.end}
+        } else if (Array.isArray(command.examples)) {
+          command.examples.forEach((item) => {
+            docs += `${indent}${import_colors.Colors.italic}${item.startsWith("$") ? "" : "$ "}${item}${import_colors.Colors.end}
 `;
           });
         } else {
           const list = [];
-          Object.entries(command_or_commands.examples).forEach(([desc, example]) => {
+          Object.entries(command.examples).forEach(([desc, example]) => {
             list.push([
-              `    ${desc.trimEnd()}:`,
+              `${indent}${desc.trimEnd()}:`,
               `${import_colors.Colors.italic}${example.startsWith("$") ? "" : "$ "}${example}${import_colors.Colors.end}
 `
             ]);
           });
-          add_keys_and_values(list);
+          add_align_entries(list);
         }
       }
       if (docs.charAt(docs.length - 1) === "\n") {
@@ -750,8 +749,8 @@ Examples:
     }
     this._main = main instanceof import_command.Main ? main : new import_command.Main(main, this.strict);
     this._main.init(this);
-    if (import_index_m_uni.debug.on(3))
-      (0, import_index_m_uni.debug)("Added main command: ", this._main);
+    if (import_index_m_node.log.on(3))
+      (0, import_index_m_node.log)("Added main command: ", this._main);
     return this;
   }
   /**
@@ -770,8 +769,8 @@ Examples:
     const c = cmd instanceof import_command.Command ? cmd : new import_command.Command(cmd, this.strict);
     c.init(this);
     this.commands.push(c);
-    if (import_index_m_uni.debug.on(2))
-      (0, import_index_m_uni.debug)("Added command: ", c);
+    if (import_index_m_node.log.on(2))
+      (0, import_index_m_node.log)("Added command: ", c);
     return this;
   }
   /**
@@ -783,8 +782,8 @@ Examples:
     try {
       const help = this.has(["-h", "--help"]);
       let matched = false;
-      if (import_index_m_uni.debug.on(2))
-        (0, import_index_m_uni.debug)("Starting CLI.");
+      if (import_index_m_node.log.on(2))
+        (0, import_index_m_node.log)("Starting CLI.");
       if (this.strict) {
         this._check_unknown_args();
       }
@@ -794,12 +793,12 @@ Examples:
           if (visit === 0 && command.id instanceof import_query.And === false) {
             continue;
           }
-          if (import_index_m_uni.debug.on(2))
-            (0, import_index_m_uni.debug)("Checking command ", (0, import_query.and_or_str)(command.id));
+          if (import_index_m_node.log.on(2))
+            (0, import_index_m_node.log)("Checking command ", (0, import_query.and_or_str)(command.id));
           const found_index = this.find_arg(command).index;
           if (found_index != null) {
-            if (import_index_m_uni.debug.on(2))
-              (0, import_index_m_uni.debug)("Executing command ", (0, import_query.and_or_str)(command.id));
+            if (import_index_m_node.log.on(2))
+              (0, import_index_m_node.log)("Executing command ", (0, import_query.and_or_str)(command.id));
             if (help) {
               this.docs(command);
               return true;
@@ -819,17 +818,17 @@ Examples:
           break;
         }
       }
-      if (import_index_m_uni.debug.on(2))
-        (0, import_index_m_uni.debug)("Running commands.");
-      if (import_index_m_uni.debug.on(2))
-        (0, import_index_m_uni.debug)("Matched command: ", matched);
+      if (import_index_m_node.log.on(2))
+        (0, import_index_m_node.log)("Running commands.");
+      if (import_index_m_node.log.on(2))
+        (0, import_index_m_node.log)("Matched command: ", matched);
       if (!matched && help) {
         this.docs();
         return;
       }
       if (!matched && this._main) {
-        if (import_index_m_uni.debug.on(2))
-          (0, import_index_m_uni.debug)("Checking main command.");
+        if (import_index_m_node.log.on(2))
+          (0, import_index_m_node.log)("Checking main command.");
         if (help) {
           this.docs(this._main);
           return;
@@ -837,22 +836,35 @@ Examples:
         if (this._main.args && !this._main.args.every((x) => !x.required) && !this._main.args.some((x) => x.variant === "id" && x.id && this.has(x.id))) {
           throw this.error("Invalid mode, not main.", { docs: true });
         }
-        if (import_index_m_uni.debug.on(2))
-          (0, import_index_m_uni.debug)("Executing main command.");
+        if (import_index_m_node.log.on(2))
+          (0, import_index_m_node.log)("Executing main command.");
         await this.run_command(this._main);
         matched = true;
       }
       if (!matched) {
         throw this.error("Invalid mode.", { docs: true });
       }
-      if (import_index_m_uni.debug.on(2))
-        (0, import_index_m_uni.debug)("CLI run finished");
+      if (import_index_m_node.log.on(2))
+        (0, import_index_m_node.log)("CLI run finished");
     } catch (e) {
       if (e instanceof import_error.CLIError) {
         e.dump();
         process.exit(1);
       }
-      console.error("stack" in e ? e.stack : e);
+      if (e instanceof Error) {
+        console.error(e.stack?.replace(": ", import_colors.Colors.end + ": ") ?? e);
+        for (const key of Object.keys(e)) {
+          if (key === "stack" || key === "name" || key === "message")
+            continue;
+          console.error(`    ${import_colors.Colors.cyan}${key}${import_colors.Colors.end}: ` + import_object.ObjectUtils.stringify(e[key], {
+            colored: true,
+            max_depth: 3,
+            start_indent: typeof e[key] === "object" && e[key] ? 1 : 0
+          }));
+        }
+      } else {
+        console.error(e);
+      }
       process.exit(1);
     }
   }

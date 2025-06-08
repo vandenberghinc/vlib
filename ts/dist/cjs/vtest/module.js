@@ -28,14 +28,14 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Module: () => Module,
-  modules: () => modules
+  Modules: () => Modules
 });
 module.exports = __toCommonJS(stdin_exports);
 var zlib = __toESM(require("zlib"));
 var ts = __toESM(require("typescript"));
 var import_js_beautify = __toESM(require("js-beautify"));
 var import_vlib = require("../vlib/index.js");
-var import_source_loc = require("../vlib/debugging/source_loc.js");
+var import_source_loc = require("../vlib/logging/uni/source_loc.js");
 var import_compute_diff = require("../vts/utils/compute_diff.js");
 const { js: beautify } = import_js_beautify.default;
 class Module {
@@ -45,31 +45,54 @@ class Module {
   unit_tests = {};
   // Mod cache.
   mod_cache;
+  /** The path to the `output` directory from the active package. */
+  output;
   /**
    * Create a unit test module.
    * @param name The name of the module.
    */
   constructor({ name }) {
-    if (modules.find((i) => i.name === name)) {
+    if (Modules.find((i) => i.name === name)) {
       throw new Error(`Unit test module "${name}" already exists.`);
     }
     this.name = name;
-    modules.push(this);
+    Modules.push(this);
   }
-  add() {
-    let id, expect, callback, refresh;
+  /**
+   * Try load the mod cache
+   */
+  async init_mod_cache(cache) {
+    if (this.mod_cache)
+      return;
+    this.output = cache;
+    const path = cache.join(this.name.replaceAll("/", "_") + ".json");
+    if (path.exists()) {
+      this.mod_cache = await path.load({ type: "json" });
+    } else {
+      this.mod_cache ??= {};
+    }
+  }
+  /**
+   * Save the module cache to the given path.
+   */
+  async save_mod_cache() {
+    if (!this.mod_cache || !this.output) {
+      throw new Error(`Module cache is not defined, please call add() before save_mod_cache().`);
+    }
+    await this.output.join(this.name.replace(/[\\\/]/g, "_") + ".json").save(JSON.stringify(this.mod_cache));
+  }
+  add(a1, a2, a3) {
+    let id, expect, callback;
     if (arguments.length === 1) {
-      ({ id, expect, callback, refresh = false } = arguments[0]);
+      ({ id, expect, callback } = arguments[0]);
     } else if (arguments.length === 2) {
       id = arguments[0];
       expect = "success";
       callback = arguments[1];
-      refresh = false;
     } else if (arguments.length >= 3) {
       id = arguments[0];
       expect = arguments[1];
       callback = arguments[2];
-      refresh = arguments[3] ?? false;
     } else {
       throw new Error(`Invalid number of arguments, expected 1 or 3, got ${arguments.length}.`);
     }
@@ -81,36 +104,13 @@ class Module {
       throw new Error(`Invalid unit test id "${id}", this should only contain alphanumeric characters, dashes, underscores, slashes and asterisks.`);
     }
     const loc = new import_source_loc.SourceLoc(1);
-    const override_refresh = refresh;
-    this.unit_tests[id] = async ({ log_level, interactive, cache, index, yes = false, no_changes = false, refresh: refresh2 = false }) => {
-      const use_refresh = override_refresh || (typeof refresh2 === "string" && refresh2 === id || refresh2 === true);
-      const logs = [];
-      const debug = (level, ...args) => {
-        logs.push({
-          active: typeof log_level === "number" && level <= log_level || typeof log_level === "string" && log_level === id,
-          items: args
-        });
-      };
-      const dump_active_logs = () => {
-        for (const log of logs) {
-          if (log.active) {
-            console.log(...log.items);
-          }
-        }
-        logs.length = 0;
-      };
-      const dump_all_logs = () => {
-        for (const log of logs) {
-          console.log(...log.items);
-        }
-        logs.length = 0;
-      };
+    this.unit_tests[id] = async ({ interactive, index, no_changes = false }) => {
       const extract_input = async (id2, source_file2) => {
         if (source_file2 == null)
           return void 0;
         const file = new import_vlib.Path(source_file2);
         if (!file.exists()) {
-          debug(0, import_vlib.Color.red(`Source file "${source_file2}" does not exist.`));
+          import_vlib.debug.raw(import_vlib.Color.red(`Source file "${source_file2}" does not exist.`));
           return void 0;
         }
         const source = await file.load();
@@ -184,21 +184,21 @@ class Module {
       const enter_interactive_on_failure = async (new_hash, response) => {
         const cached = this.mod_cache[id];
         const cached_data = !cached?.data ? void 0 : zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString();
-        debug(0, `${import_vlib.Color.bold("Unit test " + import_vlib.Color.blue(id))} ${import_vlib.Color.red_bold("failed")}`, `[${index + 1}/${Object.keys(this.unit_tests).length}]`);
-        debug(0, `The unit test has failed, the ${import_vlib.Color.bold(expect)} output hash is different from the cached hash.`);
-        debug(0, import_vlib.Color.magenta_bold("Entering interactive mode."));
-        debug(0, ` * Press Ctrl+C to abort.`);
+        import_vlib.debug.raw(`${import_vlib.Color.bold("Unit test " + import_vlib.Color.blue(id))} ${import_vlib.Color.red_bold("failed")} `, `[${index + 1}/${Object.keys(this.unit_tests).length}]`);
+        import_vlib.debug.raw(`The unit test has failed, the ${import_vlib.Color.bold(expect)} output hash is different from the cached hash.`);
+        import_vlib.debug.raw(import_vlib.Color.magenta_bold("Entering interactive mode."));
+        import_vlib.debug.raw(` * Press Ctrl+C to abort.`);
         if (source_location) {
-          debug(0, ` * Source file: ${import_vlib.Color.gray(source_location)}`);
+          import_vlib.debug.raw(` * Source file: ${import_vlib.Color.gray(source_location)}`);
         }
-        debug(0, ` * Expected result type: ${import_vlib.Color.gray(expect)}`);
-        debug(0, ` * Unit test output hash: ${import_vlib.Color.gray(new_hash)}`);
+        import_vlib.debug.raw(` * Expected result type: ${import_vlib.Color.gray(expect)}`);
+        import_vlib.debug.raw(` * Unit test output hash: ${import_vlib.Color.gray(new_hash)}`);
         const input = await extract_input(id, source_file);
         if (input) {
-          debug(0, ` * Input callback: 
+          import_vlib.debug.raw(` * Input callback: 
 ${input.split("\n").map((l) => `   | ${import_vlib.Color.gray(l)}`).join("\n")}`);
         }
-        debug(0, ` * Unit test output: 
+        import_vlib.debug.raw(` * Unit test output: 
 ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
         if (cached_data && !no_changes) {
           const { status, diff } = (0, import_compute_diff.compute_diff)({
@@ -207,36 +207,34 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
             prefix: " * "
           });
           if (status === "identical") {
-            debug(0, " * Old and new data are identical. This should not happen.");
+            import_vlib.debug.raw(" * Old and new data are identical. This should not happen.");
           } else {
-            debug(0, ` * Detected changes between old and new data:`);
-            debug(0, diff);
+            import_vlib.debug.raw(` * Detected changes between old and new data:`);
+            import_vlib.debug.raw(diff);
           }
         }
-        dump_all_logs();
-        let answer = yes ? "y" : void 0;
-        if (!answer) {
+        let permission = false;
+        if (!permission) {
           try {
-            answer = await import_vlib.logging.prompt(`${import_vlib.Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed? [y/n]: `);
+            permission = await import_vlib.logging.confirm(`${import_vlib.Color.magenta_bold("[Interactive mode]")} Did this unit test actually succeed?`);
           } catch (e) {
-            debug(0, import_vlib.Color.yellow("\nAborted."));
-            dump_all_logs();
+            import_vlib.debug.raw(import_vlib.Color.yellow("\nAborted."));
             process.exit(1);
           }
         }
-        if (answer.toLowerCase() === "y" || answer.toLowerCase() === "yes") {
+        if (permission) {
           this.mod_cache[id] = {
             hash: new_hash,
             data: zlib.gzipSync(response, { level: 9 }).toString("base64"),
             expect
           };
-          await this.save_mod_cache(cache);
+          await this.save_mod_cache();
           return { success: true, hash: new_hash, output: response, expect };
         } else {
           return { success: false, hash: new_hash, output: response, expect };
         }
       };
-      debug(1, "\n" + import_vlib.logging.terminal_divider() + import_vlib.Color.bold("Commencing unit test " + import_vlib.Color.blue(id)));
+      import_vlib.debug.raw(1, "\n", import_vlib.logging.terminal_divider(), import_vlib.Color.bold("Commencing unit test " + import_vlib.Color.blue(id)));
       let source_location, source_file;
       if (loc.file.startsWith("file://")) {
         let ts_file = loc.file;
@@ -265,47 +263,42 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
         let res = callback({
           id,
           hash: import_vlib.Utils.hash,
-          debug,
-          log_level,
+          debug: import_vlib.debug,
           expect
         });
         if (res instanceof Promise) {
           res = await res;
         }
         if (expect === "error") {
-          debug(0, import_vlib.Color.red_bold("Encountered success while expecting an error."));
-          dump_all_logs();
+          import_vlib.debug.raw(import_vlib.Color.red_bold("Encountered success while expecting an error."));
           return { success: false, hash: void 0, output: void 0, expect };
         }
-        let res_str = typeof res === "object" && res !== null ? import_vlib.Color.json(res) : typeof res === "string" ? res : JSON.stringify(res);
-        let cached = use_refresh ? void 0 : this.mod_cache[id];
+        let res_str = typeof res === "object" && res !== null ? import_vlib.Color.object(res) : typeof res === "string" ? res : JSON.stringify(res);
+        let cached = this.mod_cache[id];
         if (cached && cached.expect !== expect) {
-          debug(0, import_vlib.Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
+          import_vlib.debug.raw(import_vlib.Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
           cached = void 0;
         }
         const h = import_vlib.Utils.hash(res_str, "sha256", "hex");
         const success = cached?.hash === h;
         if (success || !interactive) {
-          debug(1, `Unit test output: 
+          import_vlib.debug.raw(1, `Unit test output: 
 ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
-          debug(1, `Unit test output hash: ${import_vlib.Color.gray(h)}`);
+          import_vlib.debug.raw(1, `Unit test output hash: ${import_vlib.Color.gray(h)}`);
         }
         if (success) {
-          dump_active_logs();
           return { success: true, hash: h, output: res_str, expect };
         }
         if (interactive) {
           return enter_interactive_on_failure(h, res_str);
         }
-        dump_all_logs();
         return { success: false, hash: h, output: res_str, expect };
       } catch (e) {
         if (expect !== "error") {
-          debug(0, import_vlib.Color.red_bold("Encountered an error while expecting success."));
-          dump_all_logs();
+          import_vlib.debug.raw(import_vlib.Color.red_bold("Encountered an error while expecting success."));
           throw e;
         }
-        let cached = use_refresh ? void 0 : this.mod_cache[id];
+        let cached = this.mod_cache[id];
         if (cached?.expect !== expect) {
           cached = void 0;
         }
@@ -313,53 +306,26 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
         const h = import_vlib.Utils.hash(res_str, "sha256", "hex");
         const success = cached?.hash === h;
         if (success || !interactive) {
-          debug(1, "Unit test error output:", e);
-          debug(1, "Unit test hash:", import_vlib.Color.gray(h));
+          import_vlib.debug.raw(1, "Unit test error output: ", e);
+          import_vlib.debug.raw(1, "Unit test hash: ", import_vlib.Color.gray(h));
         }
         if (success) {
-          dump_active_logs();
           return { success: true, hash: h, output: res_str, expect };
         }
         if (interactive) {
           return enter_interactive_on_failure(h, res_str);
         }
-        dump_all_logs();
         return { success: false, hash: h, output: res_str, expect };
       }
     };
-  }
-  /**
-   * Save the module cache to the given path.
-   */
-  async save_mod_cache(cache) {
-    if (!this.mod_cache) {
-      throw new Error(`Module cache is not defined, please call add() before save_mod_cache().`);
-    }
-    await cache.join(this.name.replaceAll("/", "_") + ".json").save(JSON.stringify(this.mod_cache));
-  }
-  /**
-   * Try load the mod cache
-   */
-  async init_mod_cache(cache) {
-    if (this.mod_cache)
-      return;
-    const path = cache.join(this.name.replaceAll("/", "_") + ".json");
-    if (path.exists()) {
-      this.mod_cache = await path.load({ type: "json" });
-    } else {
-      this.mod_cache ??= {};
-    }
+    return this;
   }
   /**
    * Run the unit tests of the module
-   * @private
    */
-  async _run({ target, stop_on_failure = false, stop_after, debug = 0, interactive = true, cache, yes = false, repeat = 0, no_changes = false, refresh = false }) {
-    console.log(import_vlib.Color.cyan_bold(`
+  async _run({ output, target, stop_on_failure = false, stop_after, interactive = true, repeat = 0, no_changes = false }) {
+    import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
-    if (repeat > 0 && yes) {
-      throw new Error(`The --yes option is not compatible with the --repeat option.`);
-    }
     let failed = 0, succeeded = 0;
     let unit_tests = this.unit_tests;
     if (target != null) {
@@ -374,11 +340,11 @@ Commencing ${this.name} unit tests.`));
         unit_tests = { [target]: unit_test };
       }
     }
-    await this.init_mod_cache(cache);
+    await this.init_mod_cache(output);
     const all_yes_insertions = [];
     for (let i = 0; i <= repeat; ++i) {
       if (repeat !== 0) {
-        console.log(import_vlib.Color.cyan_bold(`
+        import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing repetition ${i + 1} of unit test ${this.name}.`));
       }
       failed = 0, succeeded = 0;
@@ -389,87 +355,83 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
         let res;
         try {
           res = await unit_tests[id]({
-            log_level: debug,
-            cache,
-            interactive: yes ? false : interactive,
+            interactive,
             index: id_index,
-            yes: false,
-            no_changes,
-            refresh
+            no_changes
           });
         } catch (e) {
-          console.log(`${import_vlib.Colors.red}${import_vlib.Colors.bold}Error${import_vlib.Colors.end}: Encountered an error during unit test "${id}".`);
+          import_vlib.debug.raw(`${import_vlib.Colors.red}${import_vlib.Colors.bold}Error${import_vlib.Colors.end}: Encountered an error during unit test "${id}".`);
           throw e;
         }
-        const prefix2 = typeof debug === "string" || debug > 0 ? import_vlib.Color.bold("Unit test " + import_vlib.Color.blue(id)) : import_vlib.Color.blue_bold(id);
+        const prefix2 = typeof import_vlib.debug === "string" || import_vlib.debug.on(1) ? import_vlib.Color.blue_bold(id) : import_vlib.Color.bold("Unit test " + import_vlib.Color.blue(id));
         if (res.success === true) {
-          console.log(`${debug === 0 && (last_success === void 0 || last_success) ? " * " : ""}${prefix2} ${import_vlib.Colors.green}${import_vlib.Colors.bold}succeeded${import_vlib.Colors.end}`);
+          import_vlib.debug.raw(`${import_vlib.debug.level.eq(0) && (last_success === void 0 || last_success) ? " * " : ""}${prefix2} ${import_vlib.Colors.green}${import_vlib.Colors.bold}succeeded${import_vlib.Colors.end}`);
           ++succeeded;
         } else {
-          if (yes) {
-            if (res.hash && res.output) {
-              all_yes_insertions.push({ id, hash: res.hash, output: res.output, expect: res.expect });
-            } else {
-              console.log(`${import_vlib.Color.red_bold(`Unable assign a "success" status for unit test "${id}" because the hash and output are not defined.`)}`);
-            }
-          }
-          console.log(`${prefix2} ${import_vlib.Colors.red}${import_vlib.Colors.bold}failed${import_vlib.Colors.end}`);
+          import_vlib.debug.raw(`${prefix2} ${import_vlib.Colors.red}${import_vlib.Colors.bold}failed${import_vlib.Colors.end}`);
           ++failed;
           if (stop_on_failure || res.hash == null && interactive) {
-            console.log(`Stopping unit tests on failure.`);
+            import_vlib.debug.raw(`Stopping unit tests on failure.`);
             break;
           }
         }
         if (stop_after === id) {
-          console.log(`Stopping unit tests after "${id}".`);
+          import_vlib.debug.raw(`Stopping unit tests after "${id}".`);
           return { status: false, failed, succeeded };
         }
         last_success = res.success;
       }
     }
-    if (yes && all_yes_insertions.length > 0) {
-      if (!interactive) {
-        throw new Error(`The --yes option is only available when interactive mode is enabled.`);
-      }
-      console.log(`${import_vlib.Color.red_bold(`
-Warning: you enabled the --yes option in interactive mode.`)}`);
-      console.log(`${import_vlib.Color.yellow(`This will automatically assign a "success" status for the following failed unit tests:`)}`);
-      for (const item of all_yes_insertions) {
-        console.log(` * ${import_vlib.Color.gray(item.id)}`);
-      }
-      try {
-        const answer = await import_vlib.logging.prompt(`${import_vlib.Color.bold("Do you want to continue?")} [y/n]: `);
-        if (answer.toLowerCase() !== "y" && answer.toLowerCase() !== "yes") {
-          console.log(import_vlib.Color.yellow("Aborted."));
-          return { status: false, failed, succeeded };
-        }
-      } catch (e) {
-        console.log(import_vlib.Color.yellow("Aborted."));
-        return { status: false, failed, succeeded };
-      }
-      for (const item of all_yes_insertions) {
-        this.mod_cache[item.id] = {
-          hash: item.hash,
-          data: zlib.gzipSync(item.output, { level: 9 }).toString("base64"),
-          expect: item.expect
-        };
-      }
-      await this.save_mod_cache(cache);
-      console.log(`Saved ${all_yes_insertions.length} unit test hashes to the cache.`);
-      return { status: true, failed, succeeded };
-    }
-    const prefix = debug === 0 ? " * " : "";
+    const prefix = import_vlib.debug.level.eq(0) ? " * " : "";
     if (failed === 0) {
-      console.log(`${prefix}All ${failed + succeeded} unit tests ${import_vlib.Colors.green}${import_vlib.Colors.bold}passed${import_vlib.Colors.end} successfully.`);
+      import_vlib.debug.raw(`${prefix}All ${failed + succeeded} unit tests ${import_vlib.Colors.green}${import_vlib.Colors.bold}passed${import_vlib.Colors.end} successfully.`);
     } else {
-      console.log(`${prefix}Encountered ${failed === 0 ? import_vlib.Colors.green : import_vlib.Colors.red}${import_vlib.Colors.bold}${failed}${import_vlib.Colors.end} failed unit tests.`);
+      import_vlib.debug.raw(`${prefix}Encountered ${failed === 0 ? import_vlib.Colors.green : import_vlib.Colors.red}${import_vlib.Colors.bold}${failed}${import_vlib.Colors.end} failed unit tests.`);
     }
     return { status: true, failed, succeeded };
   }
+  /**
+   * Reset certain unit test results.
+   * @param opts.results The path to the module's results file.
+   * @param opts.ids The id or ids to reset, supports glob patterns.
+   * @param opts.yes Whether to skip the confirmation prompt.
+   */
+  async reset_unit_tests(opts) {
+    if (typeof opts.results === "string") {
+      opts.results = new import_vlib.Path(opts.results);
+    }
+    if (!Array.isArray(opts.target)) {
+      opts.target = [opts.target];
+    }
+    await this.init_mod_cache(opts.results);
+    const id_list = new import_vlib.GlobPatternList(opts.target);
+    const deletions = [];
+    for (const key of Object.keys(this.mod_cache)) {
+      if (id_list.match(key)) {
+        deletions.push(key);
+      }
+    }
+    if (deletions.length === 0) {
+      throw new Error(`No unit tests matched the provided ids: ${opts.target.join(", ")}`);
+    }
+    if (!opts.yes) {
+      import_vlib.debug.raw(`The following unit tests will be reset upon confirmation:${deletions.map((d) => `
+ - ${d}`).join("")}`);
+      const answer = await import_vlib.logging.confirm(`Do you wish to reset the unit tests listed above?`);
+      if (!answer) {
+        throw new Error(`Write permission denied, not resetting unit tests.`);
+      }
+    }
+    for (const id of deletions) {
+      delete this.mod_cache[id];
+    }
+    await this.save_mod_cache();
+    import_vlib.debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
+  }
 }
-const modules = [];
+const Modules = [];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Module,
-  modules
+  Modules
 });

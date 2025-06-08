@@ -31,23 +31,22 @@ __export(stdin_exports, {
   CLI: () => CLI,
   Code: () => Code,
   Crypto: () => Crypto,
-  Debug: () => import_index_m_uni.Debug,
-  Debugging: () => Debugging,
+  Debug: () => import_index_m_node.Debug,
+  Logger: () => import_index_m_node.Logger,
   Logging: () => Logging,
   Scheme: () => Scheme,
   cli: () => cli,
   code: () => code,
   crypto: () => crypto,
-  debug: () => import_index_m_uni.debug,
-  debugging: () => debugging,
+  debug: () => import_index_m_node.debug,
   error: () => error,
-  log: () => log,
-  logger: () => import_logger.logger,
+  log: () => import_index_m_node.log,
   logging: () => logging,
   print: () => print,
   scheme: () => scheme,
   version: () => version,
-  warn: () => warn
+  warn: () => warn,
+  warning: () => warning
 });
 module.exports = __toCommonJS(stdin_exports);
 var CLI = __toESM(require("./cli/index.m.js"));
@@ -56,13 +55,10 @@ __reExport(stdin_exports, require("./sockets/request.js"), module.exports);
 __reExport(stdin_exports, require("./sockets/websocket.js"), module.exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
 __reExport(stdin_exports, require("./generic/index.js"), module.exports);
-var Debugging = __toESM(require("./debugging/index.m.uni.js"));
-var debugging = __toESM(require("./debugging/index.m.uni.js"));
-var import_index_m_uni = require("./debugging/index.m.uni.js");
-var import_index_m_uni2 = require("./debugging/index.m.uni.js");
-var Logging = __toESM(require("./logging/index.m.js"));
-var logging = __toESM(require("./logging/index.m.js"));
-var import_logger = require("./logging/logger.js");
+var Logging = __toESM(require("./logging/index.m.node.js"));
+var logging = __toESM(require("./logging/index.m.node.js"));
+var import_index_m_node = require("./logging/index.m.node.js");
+var import_index_m_node2 = require("./logging/index.m.node.js");
 var Scheme = __toESM(require("./scheme/index.m.uni.js"));
 var scheme = __toESM(require("./scheme/index.m.uni.js"));
 __reExport(stdin_exports, require("./jsonc/jsonc.js"), module.exports);
@@ -74,8 +70,10 @@ var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
 Error.stackTraceLimit = 25;
-const print = (...args) => (0, import_index_m_uni2.debug)(0, ...args);
-const { log, warn, error } = import_logger.logger.loggers();
+const print = (...args) => import_index_m_node2.log.raw(0, ...args);
+const error = (...args) => import_index_m_node2.log.error(...args);
+const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);
+const warning = warn;
 const version = "1.6.20";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -83,22 +81,21 @@ const version = "1.6.20";
   Code,
   Crypto,
   Debug,
-  Debugging,
+  Logger,
   Logging,
   Scheme,
   cli,
   code,
   crypto,
   debug,
-  debugging,
   error,
   log,
-  logger,
   logging,
   print,
   scheme,
   version,
   warn,
+  warning,
   ...require("./sockets/request.js"),
   ...require("./sockets/websocket.js"),
   ...require("./primitives/index.uni.js"),

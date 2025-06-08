@@ -4,13 +4,13 @@
  */
 
 import { Cast } from "./cast.js";
-import { Scheme } from "./scheme.js";
+import { Entries, TupleEntries, ValueEntries } from "./entries.js";
 
 /** Base object or array. */
-type ObjOrArr<T = any> = T[] | Record<string, T>
+type ObjOrArr = any[] | Record<string, any>
 
 /** Get index/key type of array/obj */
-type IndexOrKey<T extends ObjOrArr<any>> =
+type IndexOrKey<T extends ObjOrArr> =
     T extends any[] ? number :
     T extends Record<string, any> ? string :
     never;
@@ -19,126 +19,71 @@ type IndexOrKey<T extends ObjOrArr<any>> =
  * Entry object
  * Requires a container because inside a constructor with ConstructorParemeters
  * See {@link Entry} for more information about attributes.
+ * 
+ * @warning This class is supported by the `infer.ts` file.
+ *          Therefore ensure that the attributes are kept in sync with the `EntryObject` type.
+ *          And when changing the attributes, ensure that the `infer.ts` file is updated accordingly.
  */
-export type EntryObject<
+export interface EntryObject<
     T extends Cast.Castable = Cast.Castable, // type of entry
     V extends Cast.Value = Cast.Value, // value of entry
-    P extends ObjOrArr = ObjOrArr, // parent
-> = {
-    type?: T;
-    default?: V | ((obj: any) => V);
-    required?: boolean | ((parent: P) => boolean);
-    allow_empty?: boolean;
-    min?: number;
-    max?: number;
-    scheme?: Record<string, EntryObject | Cast.Castable>;
-    value_scheme?: EntryObject | Cast.Castable;
-    tuple?: (EntryObject | Cast.Castable)[];
-    enum?: any[];
-    alias?: string | string[];
-    verify?: (
-        attr: V,
-        parent: P,
-        key?: IndexOrKey<P>
-    ) => string | void | null | undefined;
-    preprocess?: (
-        attr: V,
-        parent: P,
-        key: IndexOrKey<P>
-    ) => any;
-    postprocess?: (
-        attr: V,
-        parent: P,
-        key: IndexOrKey<P>
-    ) => any;
-    /** Alias for `default`. */
-    def?: V | ((obj: any) => V);
-} & (
-    "boolean" extends Cast<T> ? { cast?: boolean | Cast.boolean.Opts<"preserve"> } :
-    "number" extends Cast<T> ? { cast?: boolean | Cast.number.Opts<"preserve"> } :
-    { cast?: never }
-) & (
-    "string" extends Cast<T>
-    ? { charset?: RegExp }
-    : { charset?: never }
-)
-
-/**
- * Scheme entry.
- * The actual options for validating a value.
- */
-export class Entry<
-    T extends Cast.Castable = Cast.Castable, // type of entry
-    V extends Cast.Value = Cast.Value, // value of entry
-    P extends ObjOrArr = ObjOrArr, // parent
+    P extends ObjOrArr = ObjOrArr, // parent object for callbacks.
 > {
-    
     /**
      * The value type.
      * @note When the type is `any`, then all filters such as `allow_empty`, `max` etc are disabled.
      */
     type?: T;
-    
     /**
      * The default value or callback to create default value
      * When defined this attribute will be considered as optional.
      */
     default?: V | ((parent: P) => V);
-    
     /**
      * Is required, when `true` the attribute must be or an error will be thrown.
      */
     required?: boolean | ((parent: P) => boolean);
-    
     /**
      * Allow empty strings, arrays or objects.
      * By default `true`.
      */
     allow_empty?: boolean;
-    
     /**
      * Set a minimum length for strings or arrays, and min `x >= min` value of number.
      */
     min?: number;
-    
     /**
      * Set a maximum length for strings or arrays, and max `x <= max` value of number.
      */
     max?: number;
-    
     /**
-     * A nested scheme for when the attribute is an object.
+     * A nested schema for when the attribute is an object.
      */
-    scheme?: Scheme;
-    
+    schema?: Entries.Opts;
     /**
-     * A nested scheme for the array items for when the attribute is an array.
-     * Or a scheme for the value's of an object.
+     * A nested schema for the array items for when the attribute is an array.
+     * Or a schema for the value's of an object.
      */
-    value_scheme?: Entry;
-    
+    value_schema?: ValueEntries.Opts;
     /**
-     * Tuple scheme for when the input object is an array.
+     * Tuple schema for when the input object is an array.
      * This can be used to verify each item in an array specifically with a predefined length.
      * 
-     * Each index of the scheme option corresponds to the index of the input array.
+     * Each index of the schema option corresponds to the index of the input array.
      * 
      * @note this attribute is ignored when the input object is not an array.
      */
-    tuple?: Entry[];
-    
+    tuple?: TupleEntries.Opts;
     /**
      * A list of valid values for the attribute.
      */
     enum?: any[];
-    
     /**
      * Aliases for this atttribute.
      * When any of these alias attributes is encountered the attribute will be renamed to the current attribute name.
      * Therefore this will edit the input object.
      */
     alias?: string | string[];
-    
     /**
      * Verify the attribute, optionally return an error string.
      */
@@ -147,7 +92,6 @@ export class Entry<
         parent: P,
         key?: IndexOrKey<P>
     ) => string | void | null | undefined;
-    
     /**
      * Pre process the attribute.
      * The callback should return the updated value.
@@ -157,7 +101,6 @@ export class Entry<
         parent: P,
         key: IndexOrKey<P>
     ) => any;
-    
     /**
      * Post process the attribute.
      * The callback should return the updated value.
@@ -167,60 +110,138 @@ export class Entry<
         parent: P,
         key: IndexOrKey<P>
     ) => any;
-
-    /** Alias for `default`. */
-    def?: any | ((obj: any) => any);
-
-    /** Cast string to boolean/number. */
-    cast: 
-        | undefined
-        | { type: "boolean", opts: Cast.boolean.Opts<"preserve"> }
-        | { type: "number", opts: Cast.number.Opts<"preserve"> }
-
+        /** Cast string to boolean/number. */
+    cast?: "boolean" extends Cast<T>
+        ? boolean | Cast.boolean.Opts<"preserve">
+        : "number" extends Cast<T>
+            ? boolean | Cast.number.Opts<"preserve">
+            : never
     /**
      * The allowed charset for string typed entries.
      * This should be some `^...$` formatted regex.
      * For instance `^[\w+]+$` will only allow alphanumeric and _ characters.
      */
-    charset?: RegExp;
+    charset?: "string" extends Cast<T>
+        ? RegExp
+        : never;
+    /** Alias for `default`. */
+    def?: V | ((obj: any) => V);
+}
+
+/**
+ * Scheme entry.
+ * The actual options for validating a value.
+ * @warning This class is supported by the `infer.ts` file.
+ *          Therefore ensure that the attributes are kept in sync with the `EntryObject` type.
+ *          And when changing the attributes, ensure that the `infer.ts` file is updated accordingly.
+ */
+export class Entry<
+    T extends Cast.Castable = Cast.Castable, // type of entry
+    V extends Cast<T> = Cast<T>, // value of entry
+    P extends ObjOrArr = ObjOrArr, // parent
+> implements Omit<
+    EntryObject<T, V, P>,
+    | "schema" | "value_schema" | "tuple"
+> {
+    
+    // ------------------------------------------------------------------
+    // Attributes with the same type as the EntryObject type.
+    // Ensure we dont change the name between EntryObject, so we keep it universal for `infer.ts`.
+
+    type?: T;
+    default?: EntryObject<T, V, P>["default"];
+    required?: EntryObject<T, V, P>["required"];
+    allow_empty?: EntryObject<T, V, P>["allow_empty"];
+    min?: EntryObject<T, V, P>["min"];
+    max?: EntryObject<T, V, P>["max"];
+    enum?: EntryObject<T, V, P>["enum"];
+    alias?: EntryObject<T, V, P>["alias"];
+    verify?: EntryObject<T, V, P>["verify"];
+    preprocess?: EntryObject<T, V, P>["preprocess"];
+    postprocess?: EntryObject<T, V, P>["postprocess"];
+    cast?: EntryObject<T, V, P>["cast"];
+    charset?: EntryObject<T, V, P>["charset"];
+    // def: EntryObject<T, V, P>["def"]; // ignore the alias.
+
+    // ------------------------------------------------------------------
+    // Attributes with a different type from the EntryObject type.
+    // Ensure these types are also inferred by the `infer.ts` file.
+    // Also ensure we dont change the name between EntryObject, so we keep it universal for `infer.ts`.
+
+    /**
+     * A nested schema for when the attribute is an object.
+     */
+    schema?: Entries;
+    
+    /**
+     * A nested schema for the array items for when the attribute is an array.
+     * Or a schema for the value's of an object.
+     */
+    value_schema?: Entry;
+    
+    /**
+     * Tuple schema for when the input object is an array.
+     * This can be used to verify each item in an array specifically with a predefined length.
+     * 
+     * Each index of the schema option corresponds to the index of the input array.
+     * 
+     * @note this attribute is ignored when the input object is not an array.
+     */
+    tuple?: Entry[];
 
     /** Constructor options. */
-    constructor(opts: T | EntryObject<T, V, P>) {
-        if (typeof opts === "string" || typeof opts === "function" || Array.isArray(opts)) {
-            opts = { type: opts as T };
-        }
-        this.type = opts.type;
-        this.default = opts.default ?? opts.def;
-        this.required = opts.required;
-        this.allow_empty = opts.allow_empty ?? true;
-        this.min = opts.min;
-        this.max = opts.max;
-        if (opts.scheme) this.scheme = new Scheme(opts.scheme);
-        if (opts.value_scheme) this.value_scheme = new Entry(opts.value_scheme);
-        if (opts.tuple) this.tuple = opts.tuple.map(e => new Entry(e));
-        this.enum = opts.enum;
-        this.alias = opts.alias;
-        this.verify = opts.verify;
-        this.preprocess = opts.preprocess;
-        this.postprocess = opts.postprocess;
-        if (opts.cast != null && opts.cast !== false) {
-            if (this.type === "boolean") {
-                this.cast = {
-                    type: "boolean",
-                    opts: typeof opts.cast === "object" ? { ...(opts.cast as Cast.boolean.Opts<"preserve">), preserve: true } : { preserve: true },
-                };
-            } else if (this.type === "number") {
-                this.cast = {
-                    type: "number",
-                    opts: typeof opts.cast === "object" ? { ...opts.cast, preserve: true } : { preserve: true, strict: true },
-                };
-            } else {
-                throw new TypeError(`Cannot cast type "${this.type}" with cast options.`);
-            }
+    constructor(opts: T | EntryObject<T, V, P> | Entry<T, V, P>) {
+        if (opts instanceof Entry) {
+            this.type = opts.type;
+            this.default = opts.default;
+            this.required = opts.required;
+            this.allow_empty = opts.allow_empty;
+            this.min = opts.min;
+            this.max = opts.max;
+            this.schema = opts.schema;
+            this.value_schema = opts.value_schema;
+            this.tuple = opts.tuple;
+            this.enum = opts.enum;
+            this.alias = opts.alias;
+            this.verify = opts.verify;
+            this.preprocess = opts.preprocess;
+            this.postprocess = opts.postprocess;
+            this.cast = opts.cast;
+            this.charset = opts.charset;
         } else {
-            this.cast = undefined as never;
+            if (typeof opts === "string" || typeof opts === "function" || Array.isArray(opts)) {
+                opts = { type: opts as T };
+            }
+            this.type = opts.type;
+            this.default = opts.default ?? opts.def;
+            this.required = opts.required;
+            this.allow_empty = opts.allow_empty ?? true;
+            this.min = opts.min;
+            this.max = opts.max;
+            if (opts.schema) this.schema = new Entries(opts.schema);
+            if (opts.value_schema) this.value_schema = new Entry(opts.value_schema);
+            if (opts.tuple) this.tuple = opts.tuple.map(e => new Entry(e));
+            this.enum = opts.enum;
+            this.alias = opts.alias;
+            this.verify = opts.verify;
+            this.preprocess = opts.preprocess;
+            this.postprocess = opts.postprocess;
+            if (opts.cast != null && opts.cast !== false) {
+                if (this.type === "boolean" || this.type === "number") {
+                    const cast: Cast.number.Opts | Cast.boolean.Opts =
+                        typeof opts.cast === "object"
+                            ? opts.cast
+                            : { strict: true }
+                    cast.preserve = true;
+                    this.cast = { type: this.type, opts: cast, } as unknown as Entry<T, V, P>["cast"];
+                } else {
+                    throw new TypeError(`Cannot cast type "${this.type}" with cast options.`);
+                }
+            } else {
+                this.cast = undefined as never;
+            }
+            this.charset = opts.charset;
         }
-        this.charset = opts.charset;
     }
 
     /**
@@ -253,27 +274,27 @@ export class Entry<
         return type_error_str;
     }
 }
+
+/** Entry types. */
 export namespace Entry {
+    
     /**
-     * Constructor options for Entry.
-     * So different from EntryObject since
-     * We also support direct Cast.Castable casts in the constructor.
+     * Inferrable input options.
+     * @warning When adding types to this, ensure the `infer.ts` file is updated accordingly.
+     * @note This type is used as the base type for ANY entry while inferring, therefore dont use ConstructorParameters here.
      */
-    export type Opts = ConstructorParameters<typeof Entry>[0]
-
-    // /** Types for scheme validation */
-    // export type SingleType = Cast.Castable.Base;
-    // export type Type = Cast.Castable;
-
+    export type Opts<
+        T extends Cast.Castable = Cast.Castable, // type of entry
+        V extends Cast<T> = Cast<T>, // value of entry
+        P extends ObjOrArr = ObjOrArr, // parent
+    > = T | EntryObject<T, V, P> | Entry<T, V, P>;
+    // export type Opts = Cast.Castable | EntryObject | Entry;
 }
 
-
-
-
-// Cast test.
-const _cast_test_boolean: Entry.Opts = {
-    type: "boolean",
-    required: false,
-    cast: true,
-    // preprocess: v => vlib.scheme.cast.boolean(v, { preserve: true }),
-}
+// // Cast test.
+// const _cast_test_boolean: Entry.Opts = {
+//     type: "boolean",
+//     required: false,
+//     cast: true,
+//     // preprocess: v => vlib.scheme.cast.boolean(v, { preserve: true }),
+// }

@@ -51,10 +51,10 @@ export class Repo {
     npm?: NPM;
 
     /** Constructor validator. */
-    static validator = new Scheme.Validator("object", {
+    static validator = new Scheme.Validator<object>({
         unknown: false,
         throw: true,
-        scheme: {
+        schema: {
             source: "string",
             git: { type: "boolean", default: true },
             ssh: { type: "boolean", default: true },
@@ -164,13 +164,13 @@ export class Repo {
                 ssh: !this.ssh_enabled ? "any" : {
 					type: "object",
 					required: this.ssh_enabled,
-					scheme: {
+					schema: {
 						remotes: {
 							type: "array",
 							default: [],
-							value_scheme: {
+							value_schema: {
                                 type: "object",
-                                scheme: {
+                                schema: {
                                     alias: "string",
                                     destination: "string",
                                     enabled: {type: "boolean", default: true},
@@ -182,15 +182,15 @@ export class Repo {
                 git: !this.git_enabled ? "any" : {
 					type: "object",
 					required: this.git_enabled,
-					scheme: {
+					schema: {
 						username: "string",
 						email: "string",
 						remotes: {
 							type: "array",
 							default: [],
-							value_scheme: {
+							value_schema: {
                                 type: "object",
-                                scheme: {
+                                schema: {
                                     remote: "string",
                                     branch: "string",
                                     destination: "string",
@@ -203,7 +203,7 @@ export class Repo {
                 npm: {
                     type: 'object',
                     required: false,
-                    scheme: {
+                    schema: {
                         links: {
                             type: 'object',
                             required: false,

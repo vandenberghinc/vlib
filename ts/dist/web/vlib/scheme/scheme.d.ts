@@ -28,5 +28,13 @@ export declare class Scheme extends Map<string, Entry> {
     private _aliases?;
 }
 export declare namespace Scheme {
-    type Opts = ConstructorParameters<typeof Scheme>[0];
+    /**
+     * Type options.
+     * Dont add `Entry` to this, even though it is a valid type.
+     * We do this to keep the `Scheme.Opts` type inferrable.
+     * @warning Never change this.
+     *          If the user really needs the `Entry` type, they can use the
+     *          constructor type or just invoke the constructor on that opts object.
+     */
+    type Opts = Record<string, Entry.Opts>;
 }

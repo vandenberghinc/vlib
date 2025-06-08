@@ -7,24 +7,9 @@ import { Entry } from "./entry.js";
 import { Scheme } from "./scheme.js";
 import { Cast } from "./cast.js";
 // -------------------------------------------------------
-// Flags.
-// /**
-//  * Data mode flag.
-//  * This is required for the `tuple` attribute to be initialized from in the constructor.
-//  * @enum {"object"} In object mode the `scheme` attribute will be used to validate the object attributes.
-//  * @enum {"array"} In array mode the `tuple` attribute will be used to validate the array items.
-//  */
-// export type Mode = "object" | "array";
-// export namespace Mode {
-//     /** Universal flag utilities after `T` is defined. */
-//     type T = Mode;
-//     export type Extract<F extends T> = ExtractFlag<F, T, never>;
-//     export type If<F extends T, K extends T, Then, Else = never> = IfFlag<F, K, Then, Else>;
-//     export type IfOne<F extends T, K extends T, Then, Else = never> = IfFlags<F, K, Then, Else>;
-// } 
-// -------------------------------------------------------
 /**
  * Wrapper class to validate an object.
+ *
  * @note Always updates the object in place.
  * @note The Validate object is re-usable to validate different objects.
  * @note The Validate object should be thread safe but not tested so perhaps dont.
@@ -49,18 +34,15 @@ export class Validator {
     /** Throw occurred errors, defaults to `false` */
     throw;
     /** Constructor. */
-    constructor(
-    /**
-     * Data mode.
-     * Dont support "auto" so we can infer the M generic from this parameter.
-     */
-    mode, 
-    /** Options. */
-    opts) {
+    constructor(opts) {
+        // Check if a scheme is provided.
+        if (!opts.scheme && !opts.value_scheme && !opts.tuple) {
+            throw new Validator.InvalidUsageError(`No scheme or value_scheme or tuple provided, at least one of these must be provided.`);
+        }
         // Attributes.
         this.unknown = opts.unknown ?? true;
         this.parent = opts.parent ?? "";
-        this.error_prefix = opts.error_prefix ?? opts.err_prefix ?? "";
+        this.error_prefix = opts.error_prefix ?? "";
         if (opts.scheme)
             this.scheme = opts.scheme instanceof Scheme ? opts.scheme : new Scheme(opts.scheme);
         if (opts.value_scheme)
@@ -73,7 +55,7 @@ export class Validator {
         // Initialize scheme from a tuple scheme.
         // Create a scheme object and transform the source object into an object with `argument_0`, `argument_1`, etc. keys.
         this.is_tuple = false;
-        if (mode === "array" && Array.isArray(opts.tuple)) {
+        if (Array.isArray(opts.tuple)) {
             this.is_tuple = true;
             const scheme = {};
             for (let i = 0; i < opts.tuple.length; i++) {
@@ -118,7 +100,7 @@ export class Validator {
                     return false;
                 }
                 if (entry.scheme || entry.value_scheme) {
-                    const validator = new Validator("array", {
+                    const validator = new Validator({
                         // scheme: scheme_item.scheme,
                         value_scheme: entry.value_scheme,
                         tuple: entry.tuple,
@@ -150,7 +132,7 @@ export class Validator {
                     return false;
                 }
                 if (entry.scheme || entry.value_scheme) {
-                    const validator = new Validator("object", {
+                    const validator = new Validator({
                         scheme: entry.scheme,
                         value_scheme: entry.value_scheme,
                         tuple: entry.tuple,
@@ -461,7 +443,10 @@ export class Validator {
         // Return when no throw err.
         return { data: data };
     }
-    /** Run the validator. */
+    /**
+     * Run the validator.
+     * @returns The verified object or array, while throwing errors upon verification failure. Or a response object when `throw` is `false`.
+     */
     validate(data) {
         // Convert the data into an object if we are in tuple mode.
         if (this.is_tuple && Array.isArray(data)) {
@@ -497,6 +482,10 @@ export class Validator {
             res.data = new_data;
         }
         // Response.
+        if (this.throw) {
+            // Return the object as a response if we are in `throw` mode.
+            return res.data;
+        }
         return res;
     }
 }
@@ -537,6 +526,6 @@ export class Validator {
  */
 export function validate(data, opts) {
     /** @todo also support non array/obj by wrapping inside a container and then validating. */
-    return new Validator((Array.isArray(data) ? "array" : "object"), opts).validate(data);
+    return new Validator(opts).validate(data);
 }
 //# sourceMappingURL=validator.js.map

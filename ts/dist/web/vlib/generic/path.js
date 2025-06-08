@@ -506,6 +506,12 @@ export class Path {
     is_file() {
         return this.stat.isFile();
     }
+    static is_file(path) {
+        if (path instanceof Path) {
+            return path.is_file();
+        }
+        return fs.statSync(path).isFile();
+    }
     /**
      * {Is directory}
      * Check if the path is a directory
