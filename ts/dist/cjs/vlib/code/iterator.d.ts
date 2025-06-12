@@ -13,26 +13,30 @@ export interface Source {
 /**
  * Iterator location interface.
  */
-export interface Location {
+export type Location<WithSource extends boolean = boolean, Src extends Source = Source> = {
     /** Line number (1 based). */
     line: number;
     /** Column number (1 based). */
     col: number;
     /** Absolute position in the absolute source data. */
     pos: number;
-}
+} & (WithSource extends true ? {
+    source: Src;
+} : WithSource extends false ? {
+    source?: never;
+} : never);
 /** Location types. */
 export declare namespace Location {
     /**
      * Advance a captures location, does not edit the state.
      * @returns An advanced copy of the current location.
      */
-    function advance<S extends Source = Source>(source: S, loc: Location, num?: number): Location;
+    function advance(loc: Location<true>, num?: number): Location<true>;
     /**
      * Retreat a captured location by `num` characters, does not edit the state.
      * @returns A new Location moved backwards by `num` chars.
      */
-    function retreat<S extends Source = Source>(source: S, loc: Location, num?: number): Location;
+    function retreat(loc: Location<true>, num?: number): Location<true>;
 }
 /**
  * The iterator language options.
@@ -177,7 +181,7 @@ export declare class Iterator<Src extends Source = Source> {
         /**
          * Exclude all comments from visitations.
          * When enabled, internally the iterator automatically advances comments. Therefore, the user will never visit a comment.
-         * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator.
+         * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator, or when slicing data.
          */
         exclude_comments?: boolean;
     });
@@ -217,7 +221,10 @@ export declare class Iterator<Src extends Source = Source> {
     switch_language(language: Language | Language.Opts | DefaultLanguageName): Language | undefined | string;
     /**
      * Scan opening language patterns.
-     * @warning Should only be called when `this.lang && this.is_not_escaped && this.is_code`
+     * The following state attributes must be set for the current position:
+     * - `pos`
+     * - `char`
+     * - `at_sol` - whether the current position is at the start of a line.
      */
     private scan_opening_lang_patterns;
     /**
@@ -251,6 +258,8 @@ export declare class Iterator<Src extends Source = Source> {
      *      While init() needs to assign for the exact current pos.
      */
     advance(): void;
+    /** Get debug info about the (minimized) cursor position. */
+    debug_cursor(): object;
     /** Peek characters at the current position + adjust. */
     peek(adjust: number): string;
     /** Get a char at at a specific position, does not check indexes. */
@@ -261,7 +270,8 @@ export declare class Iterator<Src extends Source = Source> {
      */
     char_code_at(pos: number): number;
     /** Capture the current location. */
-    loc(): Location;
+    loc(): Location<false>;
+    src_loc(): Location<true, Src>;
     /** Advance a number of positions. */
     advance_n(n: number): void;
     /**
@@ -366,6 +376,13 @@ export declare class Iterator<Src extends Source = Source> {
      * @param c The character or index of the character to check.
      */
     is_numeric(c?: string | number): boolean;
+    /**
+     * Check whether a character is a JavaScript “word boundary”:
+     * i.e. anything _other_ than [A-Za-z0-9_$].
+     * Avoids regex for maximum performance.
+     * @param c A single-character string or the index of the character.
+     */
+    is_word_boundary(c?: string | number): boolean;
     /** Starts with check at current position */
     match_prefix(s: string, start?: number): boolean;
     /** cache of “sticky” regexes so we only compile them once */

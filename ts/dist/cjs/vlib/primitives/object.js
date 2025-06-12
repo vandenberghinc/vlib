@@ -59,8 +59,22 @@ var ObjectUtils;
     return obj_eq(x, y, true, include_nested);
   }
   ObjectUtils2.detect_changes = detect_changes;
-  function filter(obj, callback, opts) {
-    return typeof callback === "function" ? filter_helper(obj, callback, opts, []) : filter_helper(obj, callback.callback, callback, []);
+  function filter(...args) {
+    const obj = args[0];
+    if (typeof args[1] === "function") {
+      return filter_helper(obj, args[1], void 0, []);
+    } else if (args.length === 2) {
+      if (typeof args[1] === "object" && args[1] != null && "callback" in args[1]) {
+        return filter_helper(obj, args[1].callback, args[1], []);
+      }
+      throw new TypeError(`ObjectUtils.filter: Invalid second argument, expected FilterCallback or FilterOpts with callback, received ${typeof args[1]}.`);
+    } else if (args.length === 3) {
+      if (typeof args[1] === "object" && args[1] != null) {
+        return filter_helper(obj, args[2], args[1], []);
+      }
+      throw new TypeError(`ObjectUtils.filter: Invalid second argument, expected FilterOpts or FilterCallback, received ${typeof args[1]}.`);
+    }
+    throw new TypeError(`ObjectUtils.filter: Invalid arguments, received ${args.length} arguments, expected 2 or 3.`);
   }
   ObjectUtils2.filter = filter;
   function filter_helper(obj, callback, opts, _parents) {
@@ -129,24 +143,24 @@ var ObjectUtils;
     return out;
   }
   ObjectUtils2.partial_copy = partial_copy;
-  ObjectUtils2.is_record = (val) => val !== null && typeof val === "object" && !Array.isArray(val) && Object.getPrototypeOf(val) === Object.prototype;
+  ObjectUtils2.is_plain = (val) => val !== null && typeof val === "object" && !Array.isArray(val) && Object.getPrototypeOf(val) === Object.prototype;
   function shallow_copy(input) {
     const visit = (value) => {
       if (Array.isArray(value)) {
         return value.map((item) => {
-          if (Array.isArray(item) || ObjectUtils2.is_record(item)) {
+          if (Array.isArray(item) || ObjectUtils2.is_plain(item)) {
             return visit(item);
           }
           return item;
         });
       }
-      if (ObjectUtils2.is_record(value)) {
+      if (ObjectUtils2.is_plain(value)) {
         const copy = {};
         for (const key in value) {
           if (!Object.prototype.hasOwnProperty.call(value, key))
             continue;
           const val = value[key];
-          if (Array.isArray(val) || ObjectUtils2.is_record(val)) {
+          if (Array.isArray(val) || ObjectUtils2.is_plain(val)) {
             copy[key] = visit(val);
           } else {
             copy[key] = val;
@@ -163,6 +177,17 @@ var ObjectUtils;
     return deep_copy_internal(obj);
   }
   ObjectUtils2.deep_copy = deep_copy;
+  function deep_freeze(obj) {
+    Object.freeze(obj);
+    Object.getOwnPropertyNames(obj).forEach((prop) => {
+      const value = obj[prop];
+      if (value && (typeof value === "object" || typeof value === "function") && !Object.isFrozen(value)) {
+        deep_freeze(value);
+      }
+    });
+    return obj;
+  }
+  ObjectUtils2.deep_freeze = deep_freeze;
   function obj_eq(x, y, detect_keys = false, detect_keys_nested = false) {
     if (typeof x !== typeof y) {
       return false;

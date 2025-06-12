@@ -8,8 +8,8 @@ Error.stackTraceLimit = 25;
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** scheme/ */
-export * as Scheme from "./scheme/index.m.uni.js";
-export * as scheme from "./scheme/index.m.uni.js";
+export * as Schema from "./schema/index.m.uni.js";
+export * as schema from "./schema/index.m.uni.js";
 /** generic/ */
 export * from "./generic/index.web.js";
 /** debugging/ */

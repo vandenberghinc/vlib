@@ -7,7 +7,7 @@
 // ---------------------------------------------------------
 // Imports.
 
-import { Path, Scheme, Proc, object } from "@vlib"
+import { Path, Schema, Proc, object } from "@vlib"
 
 // ---------------------------------------------------------
 // The ssh class.
@@ -18,7 +18,7 @@ export class SSH {
     proc: Proc;
 
     /** Constructor validator. */
-    static validator = new Scheme.Validator<object>({
+    static validator = new Schema.Validator<object>({
         unknown: false,
         throw: true,
         schema: {

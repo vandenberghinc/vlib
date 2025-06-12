@@ -92,23 +92,27 @@ export namespace ObjectUtils {
     /**
      * Filter an object by a callback.
      */
-    export function filter(
-        obj: Record<string, any>,
-        opts: FilterCallback | (FilterOpts & { callback: FilterCallback })
-    ): Record<string, any>;
-    export function filter(
-        obj: Record<string, any>,
-        callback: FilterCallback,
-        opts?: FilterOpts,
-    ): Record<string, any>;
-    export function filter(
-        obj: Record<string, any>,
-        callback: FilterCallback | (FilterOpts & { callback: FilterCallback }),
-        opts?: FilterOpts,
+    export function filter(...args: 
+        | [Record<string, any>, FilterCallback | (FilterOpts & { callback: FilterCallback })]
+        | [Record<string, any>, FilterOpts, FilterCallback]
     ): Record<string, any> {
-        return typeof callback === "function"
-            ? filter_helper(obj, callback, opts, [])
-            : filter_helper(obj, callback.callback, callback, [])
+        const obj = args[0]; 
+        if (typeof args[1] === "function") {
+            return filter_helper(obj, args[1], undefined, [])
+        }
+        else if (args.length === 2) {
+            if (typeof args[1] === "object" && args[1] != null && "callback" in args[1]) {
+                return filter_helper(obj, args[1].callback, args[1], [])
+            }
+            throw new TypeError(`ObjectUtils.filter: Invalid second argument, expected FilterCallback or FilterOpts with callback, received ${typeof args[1]}.`);
+        } else if (args.length === 3) {
+            if (typeof args[1] === "object" && args[1] != null) {
+                return filter_helper(obj, args[2], args[1], []);
+            }
+            throw new TypeError(`ObjectUtils.filter: Invalid second argument, expected FilterOpts or FilterCallback, received ${typeof args[1]}.`);
+        }
+        // @ts-expect-error
+        throw new TypeError(`ObjectUtils.filter: Invalid arguments, received ${args.length} arguments, expected 2 or 3.`);
     }
     function filter_helper(
         obj: Record<string, any>,
@@ -166,6 +170,34 @@ export namespace ObjectUtils {
         return added;
     }
 
+    // /**
+    //  * Filter an object by a callback.
+    //  */
+    // export function filter(...args: 
+    //     | [obj: Record<string, any>, opts: FilterOpts & { callback: FilterCallback }]
+    //     | [obj: Record<string, any>, callback: FilterCallback]
+    //     | [obj: Record<string, any>, opts: FilterOpts, callback: FilterCallback]
+    // ): Record<string, any> {
+    //     const arg1 = args[1];
+    //     if (args.length === 2) {
+    //         if (typeof arg1 === "function") {
+    //             return filter_helper(args[0], arg1, undefined, []);
+    //         } else if (arg1 && typeof arg1 === "object" && "callback" in arg1) {
+    //             return filter_helper(args[0], arg1.callback, arg1, []);
+    //         }
+    //         // @ts-expect-error
+    //         else throw new TypeError(`ObjectUtils.filter: Invalid arguments, unexpected first argument ${arg1.toString()}.`);
+    //     }
+    //     else if (args.length === 3) {
+    //         return filter_helper(args[0], args[2], args[1], []);
+    //     }
+    //     // @ts-expect-error
+    //     else throw new TypeError(`ObjectUtils.filter: Invalid arguments, received ${args.length} arguments, expected 2 or 3.`);
+    // }
+    
+
+    
+
 
     /**
     * Deletes keys from an object recursively, including nested objects and arrays.
@@ -206,8 +238,8 @@ export namespace ObjectUtils {
         return out as Pick<T, K>;
     }
 
-    /** Check if an object is a raw record `object` so with the prototype of Object. */
-    export const is_record = (val: any): val is Record<string, any> =>
+    /** Check if an object is a raw plain `object` so with the prototype of Object. */
+    export const is_plain = (val: any): val is Record<string, any> =>
         val !== null && typeof val === 'object' && !Array.isArray(val)
         && Object.getPrototypeOf(val) === Object.prototype;
 
@@ -221,20 +253,20 @@ export namespace ObjectUtils {
             if (Array.isArray(value)) {
                 // Shallow copy the array and visit each element
                 return value.map(item => {
-                    if (Array.isArray(item) || is_record(item)) {
+                    if (Array.isArray(item) || is_plain(item)) {
                         return visit(item);
                     }
                     return item;
                 });
             }
 
-            if (is_record(value)) {
+            if (is_plain(value)) {
                 // Shallow copy object and visit its properties
                 const copy: Record<string, any> = {};
                 for (const key in value) {
                     if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
                     const val = value[key];
-                    if (Array.isArray(val) || is_record(val)) {
+                    if (Array.isArray(val) || is_plain(val)) {
                         copy[key] = visit(val);
                     } else {
                         copy[key] = val;
@@ -259,6 +291,19 @@ export namespace ObjectUtils {
         return deep_copy_internal(obj);
     }
 
+    /**
+     * Deeply freezes an object recursively.
+     */
+    export function deep_freeze<T>(obj: T): T {
+        Object.freeze(obj);
+        Object.getOwnPropertyNames(obj).forEach((prop) => {
+            const value: any = (obj as any)[prop];
+            if (value && (typeof value === "object" || typeof value === "function") && !Object.isFrozen(value)) {
+                deep_freeze(value);
+            }
+        });
+        return obj;
+    }
 
     // Internal helper: deep equality / change detection
     function obj_eq(

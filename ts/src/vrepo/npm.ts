@@ -6,7 +6,7 @@
 // Imports.
 import { execSync } from 'child_process';
 import crypto from 'crypto';
-import { Path, Scheme, Proc } from "@vlib"
+import { Path, Schema, Proc } from "@vlib"
 
 // ---------------------------------------------------------
 // The npm class.
@@ -20,7 +20,7 @@ export class NPM {
     id: string;
 
     /** Constructor validator. */
-    static validator = new Scheme.Validator<object>({
+    static validator = new Schema.Validator<object>({
         unknown: false,
         throw: true,
         schema: {

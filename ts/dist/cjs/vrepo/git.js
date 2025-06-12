@@ -39,10 +39,10 @@ class Git {
   gitignore;
   proc = new import_vlib.Proc();
   /** Constructor validator. */
-  static validator = new import_vlib.Scheme.Validator({
+  static validator = new import_vlib.Schema.Validator({
     unknown: false,
     throw: true,
-    scheme: {
+    schema: {
       source: "string",
       username: "string",
       email: "string",

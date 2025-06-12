@@ -37,28 +37,28 @@ var import_module = require("./module.js");
 var Config;
 (function(Config2) {
   ;
-  Config2.SchemeOpts = {
+  Config2.SchemaOpts = {
     output: {
       type: "string",
       required: true
     },
     include: {
       type: "array",
-      value_scheme: { type: "string" },
+      value_schema: { type: "string" },
       required: true,
       preprocess: (v) => typeof v === "string" ? [v] : v
     },
     exclude: {
       type: "array",
       default: ["**/node_modules/**"],
-      value_scheme: { type: "string" },
+      value_schema: { type: "string" },
       preprocess: (v) => typeof v === "string" ? [v] : v
     },
     env: {
       type: "array",
       required: false,
       default: [],
-      value_scheme: { type: "string" },
+      value_schema: { type: "string" },
       preprocess: (v) => typeof v === "string" ? [v] : v
     },
     base: {
@@ -66,7 +66,7 @@ var Config;
       required: false
     }
   };
-  Config2.Scheme = new vlib.Scheme.Scheme(Config2.SchemeOpts);
+  Config2.Schema = new vlib.Schema.ValidatorEntries(Config2.SchemaOpts);
 })(Config || (Config = {}));
 class Package {
   /**
@@ -114,16 +114,16 @@ class Package {
       if (!base_data) {
         throw new Error(`No valid data found at config file: ${found.path}`);
       }
-      this.config = vlib.scheme.validate(base_data, {
-        scheme: Config.Scheme,
+      this.config = vlib.schema.validate(base_data, {
+        schema: Config.Schema,
         unknown: false,
         throw: true,
         error_prefix: `Invalid base configuration file "${found.path}": `
       });
       this.merge(config);
     } else {
-      this.config = vlib.scheme.validate(config, {
-        scheme: Config.Scheme,
+      this.config = vlib.schema.validate(config, {
+        schema: Config.Schema,
         unknown: false,
         throw: true,
         error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `
@@ -341,11 +341,21 @@ Executed ${import_module.Modules.length} test modules.`));
       return;
     const config = this.config;
     const included = await this.parse_includes();
+    const imported_paths = /* @__PURE__ */ new Set();
     for (const p of included) {
+      const abs = new import_vlib.Path(p).abs().str();
+      if (imported_paths.has(abs)) {
+        import_vlib.log.marker(`Skipping already imported unit test module: ${p}`);
+        if (typeof config.debug === "number" && config.debug >= 1) {
+          import_vlib.log.marker(`Skipping already imported unit test module: ${p}`);
+        }
+        continue;
+      }
+      imported_paths.add(abs);
       if (typeof config.debug === "number" && config.debug >= 1) {
         import_vlib.log.marker(`Importing unit test module: ${p}`);
       }
-      await import(new import_vlib.Path(p).abs().str());
+      await import(abs);
     }
     if (import_module.Modules.length === 0) {
       throw new Error("No unit tests defined, add unit tests using the 'vtest.Module.add()` function.");

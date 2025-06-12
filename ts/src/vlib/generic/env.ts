@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { config } from 'dotenv';
-import * as Scheme from '../scheme/index.m.uni.js';
+import * as Scheme from '../schema/index.m.uni.js';
 
 /**
  * Manages loading, caching, and syncing of environment variables.

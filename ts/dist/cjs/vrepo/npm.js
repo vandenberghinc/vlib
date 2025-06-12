@@ -40,10 +40,10 @@ class NPM {
   version_path;
   id;
   /** Constructor validator. */
-  static validator = new import_vlib.Scheme.Validator({
+  static validator = new import_vlib.Schema.Validator({
     unknown: false,
     throw: true,
-    scheme: {
+    schema: {
       source: "string",
       version_path: { type: "string", required: false }
     }

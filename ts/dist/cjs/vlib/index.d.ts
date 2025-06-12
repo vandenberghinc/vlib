@@ -24,8 +24,8 @@ export declare const error: (...args: any[]) => void;
 export declare const warn: (arg: any, ...args: any[]) => void;
 export declare const warning: (arg: any, ...args: any[]) => void;
 /** scheme/ */
-export * as Scheme from "./scheme/index.m.uni.js";
-export * as scheme from "./scheme/index.m.uni.js";
+export * as Schema from "./schema/index.m.uni.js";
+export * as schema from "./schema/index.m.uni.js";
 /** jsonc/ */
 export * from "./jsonc/jsonc.js";
 /** crypto/ */

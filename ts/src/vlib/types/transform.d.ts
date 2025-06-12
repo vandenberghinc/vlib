@@ -34,10 +34,11 @@
 export type Neverify<
     T,
     K extends keyof T
-> = [K] extends [never] ? T : Transform<T, never, never, K, {}, never>;
-// > = T extends any
-//     ? Omit<T, K> & { [P in K]: never }
-//     : never;
+> =
+    T extends any
+        ? Omit<T, K> & Partial<{ [P in K]: never }>
+        : never;
+    // [K] extends [never] ? T : Transform<T, never, never, K, {}, never>;
 
 /**
  * Neverify keys K (set to never) in each object type in T.
@@ -310,3 +311,35 @@ export type TransformFor<
     Override,
     Extract<EnfrcOne, keyof T>
 >>;
+
+/**
+ * Create an alias union of object type T.
+ * Where a variant of T is created for each key K in T where
+ * the value of K has the same type as T[K] and all others `other?: never`.
+ * So in essence, creating a union of variants where only one attribute may be defined.
+ */
+export type AliasPick<T extends object> = {
+    [K in keyof T]:
+    Pick<T, K> &
+    Partial<Record<Exclude<keyof T, K>, never>>
+}[keyof T];
+
+/** 
+ * Convert a snake_case (e.g. `hello_world`) type string to a PascalCase type string (e.g. `HelloWorld`).
+ */
+export type SnakeToPascalCase<S extends string> =
+    S extends `${infer Head}_${infer Tail}`
+? `${Capitalize<Head>}${SnakeToPascalCase<Tail>}`
+    : Capitalize<S>;
+
+/**
+ * Utility type to ensure that only the keys of `T` may be defined.
+ * All other keys are set to `never?`.
+ * This is useful to ensure that no other keys than those in `T` are allowed.
+ */
+export type NoOtherKeys<T extends object> =
+    T & { [K in Exclude<keyof any, keyof T>]?: never };
+
+
+/** Make all fields non readonly in an object type. */
+export type MutableObject<T> = { -readonly [P in keyof T]: T[P] }

@@ -32,22 +32,22 @@ __export(stdin_exports, {
   Debug: () => import_index_m_web.Debug,
   Debugging: () => Debugging,
   Logger: () => import_index_m_web.Logger,
-  Scheme: () => Scheme,
+  Schema: () => Schema,
   code: () => code,
   debug: () => import_index_m_web.debug,
   debugging: () => debugging,
   error: () => error,
   log: () => import_index_m_web.log,
   print: () => print,
-  scheme: () => scheme,
+  schema: () => schema,
   version: () => version,
   warn: () => warn,
   warning: () => warning
 });
 module.exports = __toCommonJS(stdin_exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
-var Scheme = __toESM(require("./scheme/index.m.uni.js"));
-var scheme = __toESM(require("./scheme/index.m.uni.js"));
+var Schema = __toESM(require("./schema/index.m.uni.js"));
+var schema = __toESM(require("./schema/index.m.uni.js"));
 __reExport(stdin_exports, require("./generic/index.web.js"), module.exports);
 var Debugging = __toESM(require("./logging/index.m.web.js"));
 var debugging = __toESM(require("./logging/index.m.web.js"));
@@ -69,14 +69,14 @@ const version = "1.6.20";
   Debug,
   Debugging,
   Logger,
-  Scheme,
+  Schema,
   code,
   debug,
   debugging,
   error,
   log,
   print,
-  scheme,
+  schema,
   version,
   warn,
   warning,

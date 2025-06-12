@@ -5,7 +5,7 @@
  */
 // ---------------------------------------------------------
 // Imports.
-import { Path, Scheme, Proc } from "../vlib/index.js";
+import { Path, Schema, Proc } from "../vlib/index.js";
 import ignore from 'ignore';
 // ---------------------------------------------------------
 // The git class.
@@ -16,10 +16,10 @@ export class Git {
     gitignore;
     proc = new Proc();
     /** Constructor validator. */
-    static validator = new Scheme.Validator({
+    static validator = new Schema.Validator({
         unknown: false,
         throw: true,
-        scheme: {
+        schema: {
             source: "string",
             username: "string",
             email: "string",

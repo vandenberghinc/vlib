@@ -37,10 +37,10 @@ class Repo {
   ssh;
   npm;
   /** Constructor validator. */
-  static validator = new import_vlib.Scheme.Validator({
+  static validator = new import_vlib.Schema.Validator({
     unknown: false,
     throw: true,
-    scheme: {
+    schema: {
       source: "string",
       git: { type: "boolean", default: true },
       ssh: { type: "boolean", default: true },
@@ -117,11 +117,11 @@ class Repo {
       }
     }
     this.assert_init();
-    import_vlib.Scheme.validate(this.config, {
+    import_vlib.Schema.validate(this.config, {
       error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
       unknown: false,
       throw: true,
-      scheme: {
+      schema: {
         version_path: {
           type: "string",
           required: false,
@@ -138,13 +138,13 @@ class Repo {
         ssh: !this.ssh_enabled ? "any" : {
           type: "object",
           required: this.ssh_enabled,
-          scheme: {
+          schema: {
             remotes: {
               type: "array",
               default: [],
-              value_scheme: {
+              value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                   alias: "string",
                   destination: "string",
                   enabled: { type: "boolean", default: true }
@@ -156,15 +156,15 @@ class Repo {
         git: !this.git_enabled ? "any" : {
           type: "object",
           required: this.git_enabled,
-          scheme: {
+          schema: {
             username: "string",
             email: "string",
             remotes: {
               type: "array",
               default: [],
-              value_scheme: {
+              value_schema: {
                 type: "object",
-                scheme: {
+                schema: {
                   remote: "string",
                   branch: "string",
                   destination: "string",
@@ -177,7 +177,7 @@ class Repo {
         npm: {
           type: "object",
           required: false,
-          scheme: {
+          schema: {
             links: {
               type: "object",
               required: false,

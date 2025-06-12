@@ -3,12 +3,12 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * Filter (output) data based on a simple scheme, then sort object key's by defined scheme order.
+ * Filter (output) data based on a simple schema, then sort object key's by defined schema order.
  * This can be useful for producing a consistent output format.
  * @param data {Record<string, any> | any[]} The input data.
- * @param include Include only a list of keys, all other keys will be excluded, formatted as an object with boolean values or nested include schemes.
- * @param exclude Exclude a list of keys, all other keys will still be included, formatted as an object with boolean values or nested exclude schemes.
- * @param visit Allows for defining postprocess visit functions for each key, formatted as an object with function values or nested visit schemes.
+ * @param include Include only a list of keys, all other keys will be excluded, formatted as an object with boolean values or nested include schemas.
+ * @param exclude Exclude a list of keys, all other keys will still be included, formatted as an object with boolean values or nested exclude schemas.
+ * @param visit Allows for defining postprocess visit functions for each key, formatted as an object with function values or nested visit schemas.
  * @param opts.drop_empty Drop all empty values from objects and arrays - such as null, undefined, empty strings, empty arrays and empty objects.
  * @param opts.drop_undef Drop all null and undefined values from objects and arrays.
  * @example

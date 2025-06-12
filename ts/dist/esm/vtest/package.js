@@ -10,29 +10,29 @@ import { Modules } from './module.js';
 export var Config;
 (function (Config) {
     ;
-    /** Configuration scheme. */
-    Config.SchemeOpts = {
+    /** Configuration schema. */
+    Config.SchemaOpts = {
         output: {
             type: "string",
             required: true,
         },
         include: {
             type: "array",
-            value_scheme: { type: "string" },
+            value_schema: { type: "string" },
             required: true,
             preprocess: (v) => typeof v === "string" ? [v] : v,
         },
         exclude: {
             type: "array",
             default: ["**/node_modules/**"],
-            value_scheme: { type: "string" },
+            value_schema: { type: "string" },
             preprocess: (v) => typeof v === "string" ? [v] : v,
         },
         env: {
             type: "array",
             required: false,
             default: [],
-            value_scheme: { type: "string" },
+            value_schema: { type: "string" },
             preprocess: (v) => typeof v === "string" ? [v] : v,
         },
         base: {
@@ -40,8 +40,8 @@ export var Config;
             required: false,
         },
     };
-    /** Initialize the scheme. */
-    Config.Scheme = new vlib.Scheme.Scheme(Config.SchemeOpts);
+    /** Initialize the schema validator. */
+    Config.Schema = new vlib.Schema.ValidatorEntries(Config.SchemaOpts);
 })(Config || (Config = {}));
 // -----------------------------------------------------------------
 /**
@@ -100,8 +100,8 @@ export class Package {
             }
             // @todo not resolving the base's extends attribute here.
             // Validate the loaded config.
-            this.config = vlib.scheme.validate(base_data, {
-                scheme: Config.Scheme,
+            this.config = vlib.schema.validate(base_data, {
+                schema: Config.Schema,
                 unknown: false,
                 throw: true,
                 error_prefix: `Invalid base configuration file "${found.path}": `,
@@ -111,8 +111,8 @@ export class Package {
         }
         // Parse config from object.
         else {
-            this.config = vlib.scheme.validate(config, {
-                scheme: Config.Scheme,
+            this.config = vlib.schema.validate(config, {
+                schema: Config.Schema,
                 unknown: false,
                 throw: true,
                 error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `,
@@ -344,11 +344,21 @@ export class Package {
         // List imports paths.
         const included = await this.parse_includes();
         // Import the included unit test modules.
+        const imported_paths = new Set();
         for (const p of included) {
+            const abs = new Path(p).abs().str();
+            if (imported_paths.has(abs)) {
+                log.marker(`Skipping already imported unit test module: ${p}`);
+                if (typeof config.debug === "number" && config.debug >= 1) {
+                    log.marker(`Skipping already imported unit test module: ${p}`);
+                }
+                continue;
+            }
+            imported_paths.add(abs);
             if (typeof config.debug === "number" && config.debug >= 1) {
                 log.marker(`Importing unit test module: ${p}`);
             }
-            await import(new Path(p).abs().str());
+            await import(abs);
         }
         // Error when no unit tests are defined.
         if (Modules.length === 0) {

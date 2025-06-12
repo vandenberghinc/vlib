@@ -7,7 +7,7 @@
 // ---------------------------------------------------------
 // Imports.
 
-import { Path, Scheme, Proc } from "@vlib"
+import { Path, Schema, Proc } from "@vlib"
 import ignore, {Ignore} from 'ignore'
 
 // ---------------------------------------------------------
@@ -22,7 +22,7 @@ export class Git {
     proc: Proc = new Proc();
 
     /** Constructor validator. */
-    static validator = new Scheme.Validator<object>({
+    static validator = new Schema.Validator<object>({
         unknown: false,
         throw: true,
         schema: {

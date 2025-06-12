@@ -12,7 +12,7 @@ import { Module, Modules } from './module.js';
 /**
  * Initialized configuration options.
  */
-export type Config = vlib.Scheme.Entries.Infer<typeof Config.SchemeOpts>;
+export type Config = vlib.Schema.Entries.Infer<typeof Config.SchemaOpts>;
 
 /** Configuration options. */
 export namespace Config {
@@ -44,8 +44,8 @@ export namespace Config {
         extends?: string | string[];
     };
 
-    /** Configuration scheme. */
-    export const SchemeOpts: vlib.Scheme.Entries.Opts = {
+    /** Configuration schema. */
+    export const SchemaOpts: vlib.Schema.Entries.Opts = {
         output: {
             type: "string",
             required: true,
@@ -75,8 +75,8 @@ export namespace Config {
         },
     };
 
-    /** Initialize the scheme. */
-    export const Scheme = new vlib.Scheme.Entries(SchemeOpts);
+    /** Initialize the schema validator. */
+    export const Schema = new vlib.Schema.ValidatorEntries(SchemaOpts);
 }
 
 // -----------------------------------------------------------------
@@ -146,8 +146,8 @@ export class Package {
             // @todo not resolving the base's extends attribute here.
 
             // Validate the loaded config.
-            this.config = vlib.scheme.validate(base_data, {
-                scheme: Config.Scheme,
+            this.config = vlib.schema.validate(base_data, {
+                schema: Config.Schema,
                 unknown: false,
                 throw: true,
                 error_prefix: `Invalid base configuration file "${found.path}": `,
@@ -159,8 +159,8 @@ export class Package {
 
         // Parse config from object.
         else {
-            this.config = vlib.scheme.validate(config, {
-                scheme: Config.Scheme,
+            this.config = vlib.schema.validate(config, {
+                schema: Config.Schema,
                 unknown: false,
                 throw: true,
                 error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `,
@@ -420,11 +420,21 @@ export class Package {
         const included = await this.parse_includes();
 
         // Import the included unit test modules.
+        const imported_paths = new Set<string>();
         for (const p of included) {
+            const abs = new Path(p).abs().str();
+            if (imported_paths.has(abs)) {
+                log.marker(`Skipping already imported unit test module: ${p}`);
+                if (typeof config.debug === "number" && config.debug >= 1) {
+                    log.marker(`Skipping already imported unit test module: ${p}`);
+                }
+                continue;
+            }
+            imported_paths.add(abs);
             if (typeof config.debug === "number" && config.debug >= 1) {
                 log.marker(`Importing unit test module: ${p}`);
             }
-            await import(new Path(p).abs().str());
+            await import(abs);
         }
 
         // Error when no unit tests are defined.

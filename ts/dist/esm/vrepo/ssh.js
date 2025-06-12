@@ -5,17 +5,17 @@
  */
 // ---------------------------------------------------------
 // Imports.
-import { Path, Scheme, Proc } from "../vlib/index.js";
+import { Path, Schema, Proc } from "../vlib/index.js";
 // ---------------------------------------------------------
 // The ssh class.
 export class SSH {
     source;
     proc;
     /** Constructor validator. */
-    static validator = new Scheme.Validator({
+    static validator = new Schema.Validator({
         unknown: false,
         throw: true,
-        scheme: {
+        schema: {
             source: "string",
         },
     });

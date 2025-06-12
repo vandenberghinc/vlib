@@ -5,7 +5,7 @@
 
 
 // Imports.
-import { Path, Scheme, CLI } from "@vlib"
+import { Path, Schema, CLI } from "@vlib"
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
@@ -51,7 +51,7 @@ export class Repo {
     npm?: NPM;
 
     /** Constructor validator. */
-    static validator = new Scheme.Validator<object>({
+    static validator = new Schema.Validator<object>({
         unknown: false,
         throw: true,
         schema: {
@@ -143,11 +143,11 @@ export class Repo {
 			}
 		}
         this.assert_init();
-        Scheme.validate(this.config, {
+        Schema.validate(this.config, {
 			error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
             unknown: false,
             throw: true,
-			scheme: {
+			schema: {
                 version_path: {
                     type: 'string',
                     required: false,

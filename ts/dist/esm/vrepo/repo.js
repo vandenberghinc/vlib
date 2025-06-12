@@ -3,7 +3,7 @@
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Path, Scheme, CLI } from "../vlib/index.js";
+import { Path, Schema, CLI } from "../vlib/index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
@@ -21,10 +21,10 @@ export class Repo {
     ssh;
     npm;
     /** Constructor validator. */
-    static validator = new Scheme.Validator({
+    static validator = new Schema.Validator({
         unknown: false,
         throw: true,
-        scheme: {
+        schema: {
             source: "string",
             git: { type: "boolean", default: true },
             ssh: { type: "boolean", default: true },
@@ -103,11 +103,11 @@ export class Repo {
             }
         }
         this.assert_init();
-        Scheme.validate(this.config, {
+        Schema.validate(this.config, {
             error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
             unknown: false,
             throw: true,
-            scheme: {
+            schema: {
                 version_path: {
                     type: 'string',
                     required: false,
@@ -124,13 +124,13 @@ export class Repo {
                 ssh: !this.ssh_enabled ? "any" : {
                     type: "object",
                     required: this.ssh_enabled,
-                    scheme: {
+                    schema: {
                         remotes: {
                             type: "array",
                             default: [],
-                            value_scheme: {
+                            value_schema: {
                                 type: "object",
-                                scheme: {
+                                schema: {
                                     alias: "string",
                                     destination: "string",
                                     enabled: { type: "boolean", default: true },
@@ -142,15 +142,15 @@ export class Repo {
                 git: !this.git_enabled ? "any" : {
                     type: "object",
                     required: this.git_enabled,
-                    scheme: {
+                    schema: {
                         username: "string",
                         email: "string",
                         remotes: {
                             type: "array",
                             default: [],
-                            value_scheme: {
+                            value_schema: {
                                 type: "object",
-                                scheme: {
+                                schema: {
                                     remote: "string",
                                     branch: "string",
                                     destination: "string",
@@ -163,7 +163,7 @@ export class Repo {
                 npm: {
                     type: 'object',
                     required: false,
-                    scheme: {
+                    schema: {
                         links: {
                             type: 'object',
                             required: false,

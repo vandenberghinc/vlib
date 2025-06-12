@@ -5,7 +5,7 @@
 import { Color } from "../generic/colors.js";
 import { CLIError } from "./error.js";
 import { And, and_or_str, Or } from "./query.js";
-import * as Scheme from "../scheme/index.m.uni.js";
+import * as Scheme from "../schema/index.m.uni.js";
 import * as Arg from "./arg.js";
 // ------------------------------------------------------------------------
 /**

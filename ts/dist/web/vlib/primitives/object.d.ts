@@ -58,10 +58,9 @@ export declare namespace ObjectUtils {
     /**
      * Filter an object by a callback.
      */
-    function filter(obj: Record<string, any>, opts: FilterCallback | (FilterOpts & {
+    function filter(...args: [Record<string, any>, FilterCallback | (FilterOpts & {
         callback: FilterCallback;
-    })): Record<string, any>;
-    function filter(obj: Record<string, any>, callback: FilterCallback, opts?: FilterOpts): Record<string, any>;
+    })] | [Record<string, any>, FilterOpts, FilterCallback]): Record<string, any>;
     /**
     * Deletes keys from an object recursively, including nested objects and arrays.
     * @param obj The object to modify.
@@ -73,8 +72,8 @@ export declare namespace ObjectUtils {
      * Create a partial copy of an object with only the specified keys.
      */
     function partial_copy<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
-    /** Check if an object is a raw record `object` so with the prototype of Object. */
-    const is_record: (val: any) => val is Record<string, any>;
+    /** Check if an object is a raw plain `object` so with the prototype of Object. */
+    const is_plain: (val: any) => val is Record<string, any>;
     /**
      * Perform a shallow copy of an object.
      * Recursively copies all nested arrays and `raw` objects, not functions, classes or other non-primitive types.
@@ -87,6 +86,10 @@ export declare namespace ObjectUtils {
      * @returns A deep copy of the object.
      */
     function deep_copy<T>(obj: T): T;
+    /**
+     * Deeply freezes an object recursively.
+     */
+    function deep_freeze<T>(obj: T): T;
     /** Stringify options. */
     interface StringifyOpts {
         /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */

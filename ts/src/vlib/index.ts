@@ -35,8 +35,8 @@ export const warn = (arg: any, ...args: any[]) => log.warn(arg, ...args);
 export const warning = warn;
 
 /** scheme/ */
-export * as Scheme from "./scheme/index.m.uni.js"
-export * as scheme from "./scheme/index.m.uni.js"
+export * as Schema from "./schema/index.m.uni.js"
+export * as schema from "./schema/index.m.uni.js"
 
 /** jsonc/ */
 export * from "./jsonc/jsonc.js"

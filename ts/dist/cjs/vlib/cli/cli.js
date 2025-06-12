@@ -34,7 +34,7 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_iterator = require("../code/iterator.js");
-var Scheme = __toESM(require("../scheme/index.m.uni.js"));
+var Scheme = __toESM(require("../schema/index.m.uni.js"));
 var import_colors = require("../generic/colors.js");
 var import_error = require("./error.js");
 var import_query = require("./query.js");
@@ -188,7 +188,7 @@ class CLI {
         return { status: "success", value: input, query };
       // return i;
       case "number": {
-        const value2 = Scheme.cast.number(input, { strict: true, preserve: true });
+        const value2 = Scheme.cast.number(input, { preserve: true });
         if (typeof value2 === "string") {
           return { status: "invalid_value", error: this._cast_single_error(input, type), query };
         }

@@ -25,20 +25,21 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../generic/colors.js");
-var import_index_m_uni = require("../scheme/index.m.uni.js");
+var import_index_m_uni = require("../schema/index.m.uni.js");
 var Location;
 (function(Location2) {
-  function advance(source, loc, num = 1) {
+  function advance(loc, num = 1) {
     if (num < 1)
       throw new Error(`Cannot advance location by ${num}, must be at least 1.`);
     const clone = {
       line: loc.line,
       col: loc.col,
-      pos: loc.pos
+      pos: loc.pos,
+      source: loc.source
     };
     while (num--) {
-      const c = source.data[clone.pos];
-      if (c === "\n" && source.data[clone.pos + 1] !== "\\") {
+      const c = clone.source.data[clone.pos];
+      if (c === "\n" && clone.source.data[clone.pos + 1] !== "\\") {
         clone.line++;
         clone.col = 1;
       } else {
@@ -49,21 +50,22 @@ var Location;
     return clone;
   }
   Location2.advance = advance;
-  function retreat(source, loc, num = 1) {
+  function retreat(loc, num = 1) {
     if (num < 1) {
       throw new Error(`Cannot retreat location by ${num}, must be at least 1.`);
     }
     const clone = {
       line: loc.line,
       col: loc.col,
-      pos: loc.pos
+      pos: loc.pos,
+      source: loc.source
     };
     while (num--) {
       clone.pos--;
-      const c = source.data[clone.pos];
-      if (c === "\n" && (clone.pos === 0 || source.data[clone.pos - 1] !== "\\")) {
+      const c = clone.source.data[clone.pos];
+      if (c === "\n" && (clone.pos === 0 || clone.source.data[clone.pos - 1] !== "\\")) {
         clone.line--;
-        const prevNl = source.data.lastIndexOf("\n", clone.pos - 1);
+        const prevNl = clone.source.data.lastIndexOf("\n", clone.pos - 1);
         clone.col = prevNl >= 0 ? clone.pos - prevNl : clone.pos + 1;
       } else {
         clone.col--;
@@ -369,12 +371,15 @@ class Iterator {
   // So we can keep this organized and separate from the other methods.
   /**
    * Scan opening language patterns.
-   * @warning Should only be called when `this.lang && this.is_not_escaped && this.is_code`
+   * The following state attributes must be set for the current position:
+   * - `pos`
+   * - `char`
+   * - `at_sol` - whether the current position is at the start of a line.
    */
-  scan_opening_lang_patterns(old_state) {
+  scan_opening_lang_patterns() {
     if (this.lang.string?.has(this.char)) {
       this.is_str = { open: this.char, pos: this.pos };
-    } else if (old_state.at_sol && this.lang.comment?.line && this.source.data.startsWith(this.lang.comment.line, this.pos)) {
+    } else if (this.at_sol && this.lang.comment?.line && this.source.data.startsWith(this.lang.comment.line, this.pos)) {
       this.is_comment = { type: "line", open: this.lang.comment?.line, pos: 0 };
       console.log(import_colors.Color.orange(`Detected line comment at ${this.pos}`));
     } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
@@ -540,7 +545,11 @@ class Iterator {
     this.sol_index = sol_index;
     this.set_defaults();
     if (this.lang && this.is_not_escaped && this.is_code) {
-      this.scan_opening_lang_patterns(this);
+      this.scan_opening_lang_patterns();
+    }
+    if (this.exclude_comments && this.is_comment && this.avail) {
+      console.log(import_colors.Color.yellow(`Excluding inside comment at ${this.pos}`));
+      this.advance();
     }
   }
   /**
@@ -558,34 +567,49 @@ class Iterator {
       throw new Error("Iterator state is locked, cannot advance.");
     }
     const old_state = {
-      at_sol: this.at_sol,
-      sol_index: this.sol_index,
+      // at_sol: this.at_sol,
+      // sol_index: this.sol_index,
       is_inline_whitespace: this.is_inline_whitespace,
       is_eol: this.is_eol
     };
     if (this.lang && this.is_not_escaped && !this.is_code) {
       this.scan_closing_lang_patterns();
     }
-    if (this.is_eol) {
+    if (old_state.is_eol) {
       this.pos++;
       this.line++;
       this.col = 1;
       this.sol_index = this.pos;
+      this.at_sol = true;
     } else {
       this.pos++;
       this.col++;
-    }
-    if (this.at_sol && !old_state.is_inline_whitespace) {
-      this.at_sol = false;
+      if (this.at_sol && !old_state.is_inline_whitespace) {
+        this.at_sol = false;
+      }
     }
     this.set_defaults();
     if (this.lang && this.is_not_escaped && this.is_code) {
-      this.scan_opening_lang_patterns(old_state);
+      this.scan_opening_lang_patterns();
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
-      console.log(import_colors.Color.orange(`Excluding inside comment at ${this.pos}`));
+      console.log(import_colors.Color.yellow(`Excluding inside comment at ${this.pos}`));
       this.advance();
     }
+    console.log("Visiting char ", this.debug_cursor());
+  }
+  /** Get debug info about the (minimized) cursor position. */
+  debug_cursor() {
+    return {
+      ch: this.char,
+      pos: this.pos,
+      loc: `${this.line}$:${this.col}`,
+      ...this.at_sol ? { at_sol: this.at_sol } : {},
+      ...this.is_eol ? { is_eol: this.is_eol } : {},
+      ...this.is_comment ? { is_comment: this.is_comment } : {},
+      ...this.is_str ? { is_str: this.is_str } : {},
+      ...this.is_regex ? { is_regex: this.is_regex } : {}
+    };
   }
   // --------------------------------------------------------
   // Retrieving characters.
@@ -612,6 +636,14 @@ class Iterator {
       line: this.line,
       col: this.col,
       pos: this.pos
+    };
+  }
+  src_loc() {
+    return {
+      line: this.line,
+      col: this.col,
+      pos: this.pos,
+      source: this.source
     };
   }
   // --------------------------------------------------------
@@ -766,9 +798,8 @@ class Iterator {
    * @note Use `this.is_linebreak` to check the char at the current position, instead of this method.
    */
   is_linebreak(c) {
-    if (typeof c === "number") {
-      return this.is_linebreak(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case "\n":
       case "\r":
@@ -783,9 +814,8 @@ class Iterator {
    * @note Use `this.is_whitespace` to check the char at the current position, instead of this method.
    */
   is_whitespace_at(c) {
-    if (typeof c === "number") {
-      return this.is_whitespace_at(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case " ":
       case "	":
@@ -802,9 +832,8 @@ class Iterator {
    * @note Use `this.is_inline_whitespace` to check the char at the current position, instead of this method.
    */
   is_inline_whitespace_at(c) {
-    if (typeof c === "number") {
-      return this.is_inline_whitespace_at(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case " ":
       case "	":
@@ -818,9 +847,8 @@ class Iterator {
    * @param c The character or index of the character to check.
    */
   is_alphanumeric(c = this.char) {
-    if (typeof c === "number") {
-      return this.is_alphanumeric(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case "a":
       case "b":
@@ -894,9 +922,8 @@ class Iterator {
    * @param c The character or index of the character to check.
    */
   is_lowercase(c = this.char) {
-    if (typeof c === "number") {
-      return this.is_lowercase(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case "a":
       case "b":
@@ -934,9 +961,8 @@ class Iterator {
    * @param c The character or index of the character to check.
    */
   is_uppercase(c = this.char) {
-    if (typeof c === "number") {
-      return this.is_uppercase(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case "A":
       case "B":
@@ -974,9 +1000,8 @@ class Iterator {
    * @param c The character or index of the character to check.
    */
   is_numeric(c = this.char) {
-    if (typeof c === "number") {
-      return this.is_numeric(this.source.data[c]);
-    }
+    if (typeof c === "number")
+      c = this.source.data[c];
     switch (c) {
       case "0":
       case "1":
@@ -992,6 +1017,28 @@ class Iterator {
       default:
         return false;
     }
+  }
+  /**
+   * Check whether a character is a JavaScript “word boundary”:
+   * i.e. anything _other_ than [A-Za-z0-9_$].
+   * Avoids regex for maximum performance.
+   * @param c A single-character string or the index of the character.
+   */
+  is_word_boundary(c = this.char) {
+    if (typeof c === "number")
+      c = this.source.data[c];
+    if (c.length !== 1)
+      return true;
+    const code = c.charCodeAt(0);
+    if (code >= 48 && code <= 57)
+      return false;
+    if (code >= 65 && code <= 90)
+      return false;
+    if (code === 95 || code === 36)
+      return false;
+    if (code >= 97 && code <= 122)
+      return false;
+    return true;
   }
   // --------------------------------------------------------
   // Substring and regex matching methods.

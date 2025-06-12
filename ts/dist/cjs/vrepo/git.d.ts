@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  © 2024 - 2024 Daan van den Bergh.
  */
-import { Path, Scheme, Proc } from "../vlib/index.js";
+import { Path, Schema, Proc } from "../vlib/index.js";
 import { Ignore } from 'ignore';
 export declare class Git {
     source: Path;
@@ -12,7 +12,7 @@ export declare class Git {
     gitignore: Ignore;
     proc: Proc;
     /** Constructor validator. */
-    static validator: Scheme.Validator<object, Scheme.Validator.Opts<object>>;
+    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
     constructor({ source, username, email, version_path, }: {
         source: string;
         username: string;

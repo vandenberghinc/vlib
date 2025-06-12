@@ -4,7 +4,7 @@
  */
 
 import { Iterator } from '../code/iterator.js';
-import * as Scheme from '../scheme/index.m.uni.js';
+import * as Scheme from '../schema/index.m.uni.js';
 import { Color, Colors } from '../generic/colors.js';
 import { Path } from '../generic/path.js';
 import type { Merge, StringLiteral, ArrayLiteral, IsNever } from '../types/index.m.js';
@@ -246,7 +246,7 @@ export class CLI<
                 return { status: "success", value: input as Casted, query };
                 // return i;
             case "number": {
-                const value = Scheme.cast.number(input, { strict: true, preserve: true });
+                const value = Scheme.cast.number(input, { preserve: true });
                 if (typeof value === "string") {
                     return { status: "invalid_value", error: this._cast_single_error(input, type), query };
                 }

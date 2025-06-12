@@ -25,10 +25,10 @@ class SSH {
   source;
   proc;
   /** Constructor validator. */
-  static validator = new import_vlib.Scheme.Validator({
+  static validator = new import_vlib.Schema.Validator({
     unknown: false,
     throw: true,
-    scheme: {
+    schema: {
       source: "string"
     }
   });

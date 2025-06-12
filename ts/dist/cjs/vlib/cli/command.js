@@ -35,7 +35,7 @@ module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../generic/colors.js");
 var import_error = require("./error.js");
 var import_query = require("./query.js");
-var Scheme = __toESM(require("../scheme/index.m.uni.js"));
+var Scheme = __toESM(require("../schema/index.m.uni.js"));
 var Arg = __toESM(require("./arg.js"));
 class Base {
   /** The command mode. */

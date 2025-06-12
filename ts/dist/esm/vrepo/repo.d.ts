@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path, Scheme } from "../vlib/index.js";
+import { Path, Schema } from "../vlib/index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
@@ -42,7 +42,7 @@ export declare class Repo {
     ssh?: SSH;
     npm?: NPM;
     /** Constructor validator. */
-    static validator: Scheme.Validator<object, Scheme.Validator.Opts<object>>;
+    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
     static find_config_path(cwd?: string): Path | undefined;
     constructor({ source, git, // git enabled.
     ssh, // ssh enabled.

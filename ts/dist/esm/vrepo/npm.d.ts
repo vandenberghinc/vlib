@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path, Scheme } from "../vlib/index.js";
+import { Path, Schema } from "../vlib/index.js";
 export declare class NPM {
     source: Path;
     config_path: Path;
@@ -10,7 +10,7 @@ export declare class NPM {
     version_path?: string;
     id: string;
     /** Constructor validator. */
-    static validator: Scheme.Validator<object, Scheme.Validator.Opts<object>>;
+    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
     constructor({ source, version_path, }: {
         source: string;
         version_path?: string;

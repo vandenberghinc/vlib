@@ -7,7 +7,7 @@ import * as vlib from "../vlib/index.js";
 /**
  * Initialized configuration options.
  */
-export type Config = vlib.Scheme.Infer.Scheme<typeof Config.SchemeOpts>;
+export type Config = vlib.Schema.Entries.Infer<typeof Config.SchemaOpts>;
 /** Configuration options. */
 export declare namespace Config {
     /**
@@ -36,10 +36,10 @@ export declare namespace Config {
          */
         extends?: string | string[];
     }
-    /** Configuration scheme. */
-    const SchemeOpts: vlib.Scheme.Infer.Scheme.T;
-    /** Initialize the scheme. */
-    const Scheme: vlib.Scheme.Scheme;
+    /** Configuration schema. */
+    const SchemaOpts: vlib.Schema.Entries.Opts;
+    /** Initialize the schema validator. */
+    const Schema: vlib.Schema.ValidatorEntries;
 }
 /**
  * The unit test package class.

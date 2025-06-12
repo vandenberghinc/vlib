@@ -6,7 +6,7 @@
 import { Color } from "../generic/colors.js";
 import { Path } from "../generic/path.js";
 import { Enforce, Merge } from "../types/transform.js"
-import { value_type } from "../scheme/index.m.uni.js";
+import { value_type } from "../schema/index.m.uni.js";
 
 /**
  * We use a source file for the iterator state so we can perform shallow copies of states.
@@ -20,14 +20,23 @@ export interface Source {
 /**
  * Iterator location interface.
  */
-export interface Location {
+export type Location<
+    WithSource extends boolean = boolean, 
+    Src extends Source = Source
+> = {
     /** Line number (1 based). */
     line: number;
     /** Column number (1 based). */
     col: number;
     /** Absolute position in the absolute source data. */
     pos: number;
-}
+} & (
+    WithSource extends true
+    ? { source: Src; }
+    : WithSource extends false 
+        ? { source?: never; }
+        : never
+)
 
 /** Location types. */
 export namespace Location {
@@ -36,20 +45,20 @@ export namespace Location {
      * Advance a captures location, does not edit the state.
      * @returns An advanced copy of the current location.
      */
-    export function advance<S extends Source = Source>(
-        source: S,
-        loc: Location,
+    export function advance(
+        loc: Location<true>,
         num: number = 1,
-    ): Location {
+    ): Location<true> {
         if (num < 1) throw new Error(`Cannot advance location by ${num}, must be at least 1.`);
-        const clone = {
+        const clone: Location<true> = {
             line: loc.line,
             col: loc.col,
             pos: loc.pos,
+            source: loc.source,
         };
         while (num--) {
-            const c = source.data[clone.pos];
-            if (c === "\n" && source.data[clone.pos + 1] !== "\\") {
+            const c = clone.source.data[clone.pos];
+            if (c === "\n" && clone.source.data[clone.pos + 1] !== "\\") {
                 clone.line++;
                 clone.col = 1;
             } else {
@@ -64,28 +73,28 @@ export namespace Location {
      * Retreat a captured location by `num` characters, does not edit the state.
      * @returns A new Location moved backwards by `num` chars.
      */
-    export function retreat<S extends Source = Source>(
-        source: S,
-        loc: Location,
+    export function retreat(
+        loc: Location<true>,
         num: number = 1,
-    ): Location {
+    ): Location<true> {
         if (num < 1) {
             throw new Error(`Cannot retreat location by ${num}, must be at least 1.`);
         }
-        const clone: Location = {
+        const clone: Location<true> = {
             line: loc.line,
             col: loc.col,
             pos: loc.pos,
+            source: loc.source,
         };
         while (num--) {
             // step pos back first
             clone.pos--;
-            const c = source.data[clone.pos];
+            const c = clone.source.data[clone.pos];
             // if we just crossed a real newline (not an escaped "\n"), move up a line
-            if (c === "\n" && (clone.pos === 0 || source.data[clone.pos - 1] !== "\\")) {
+            if (c === "\n" && (clone.pos === 0 || clone.source.data[clone.pos - 1] !== "\\")) {
                 clone.line--;
                 // recalculate col as distance from previous NL (or start of file)
-                const prevNl = source.data.lastIndexOf("\n", clone.pos - 1);
+                const prevNl = clone.source.data.lastIndexOf("\n", clone.pos - 1);
                 clone.col = prevNl >= 0
                     ? clone.pos - prevNl
                     : clone.pos + 1;
@@ -320,7 +329,7 @@ export class Iterator<Src extends Source = Source> {
             /**
              * Exclude all comments from visitations.
              * When enabled, internally the iterator automatically advances comments. Therefore, the user will never visit a comment.
-             * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator.
+             * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator, or when slicing data.
              */
             exclude_comments?: boolean,
         },
@@ -535,14 +544,12 @@ export class Iterator<Src extends Source = Source> {
 
     /**
      * Scan opening language patterns.
-     * @warning Should only be called when `this.lang && this.is_not_escaped && this.is_code`
+     * The following state attributes must be set for the current position:
+     * - `pos`
+     * - `char`
+     * - `at_sol` - whether the current position is at the start of a line.
      */
-    private scan_opening_lang_patterns(old_state: {
-        at_sol: boolean,
-        sol_index: number,
-        is_inline_whitespace: boolean,
-        is_eol: boolean,
-    }): void {
+    private scan_opening_lang_patterns(): void {
 
         // console.log("Is comment?", {
         //     at_sol: old_at_sol,
@@ -561,7 +568,7 @@ export class Iterator<Src extends Source = Source> {
 
         // detect line comment
         else if (
-            old_state.at_sol
+            this.at_sol
             && this.lang!.comment?.line
             && this.source.data.startsWith(this.lang!.comment.line, this.pos)
         ) {
@@ -747,13 +754,6 @@ export class Iterator<Src extends Source = Source> {
                 break;
             }
         }
-        // let is_inline_whitespace = false;
-        // switch (this.source.data[this.pos]) {
-        //     case " ": case "\t": case "\r": case "\n":
-        //         is_inline_whitespace = true;
-        //         break;
-        //     default: break;
-        // }
 
         // Detect end of language patterns before advancing.
         // Ensure we check agains `was_code` to preven opening the string again.
@@ -769,8 +769,15 @@ export class Iterator<Src extends Source = Source> {
         this.set_defaults();
 
         // Detect opening language patterns.
+        // Ensure `at_sol` is assigned before calling this.
         if (this.lang && this.is_not_escaped && this.is_code) {
-            this.scan_opening_lang_patterns(this);
+            this.scan_opening_lang_patterns();
+        }
+
+        // Forward on comment when exclude is requested.
+        if (this.exclude_comments && this.is_comment && this.avail) {
+            console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
+            this.advance();
         }
 
         // return;
@@ -795,8 +802,8 @@ export class Iterator<Src extends Source = Source> {
         
         // Create a minimum copy of the old state that is required as info for advancing.
         const old_state = {
-            at_sol: this.at_sol,
-            sol_index: this.sol_index,
+            // at_sol: this.at_sol,
+            // sol_index: this.sol_index,
             is_inline_whitespace: this.is_inline_whitespace,
             is_eol: this.is_eol,
         }
@@ -808,40 +815,58 @@ export class Iterator<Src extends Source = Source> {
         }
 
         // Advance the state position.
-        if (this.is_eol) {
+        if (old_state.is_eol) {
             // At end of line before incrementing the pos.
             this.pos++;
             this.line++;
             this.col = 1;
             this.sol_index = this.pos;
+            this.at_sol = true;
         }
         else {
             // Increment the pos and column.
             this.pos++;
             this.col++;
-        }
 
-        // Set at start of file.
-        // @warning Do this after the `sol_index` has been updated by the increment pos section
-        if (this.at_sol && !old_state.is_inline_whitespace) {
-            this.at_sol = false;
+            // Set at start of file.
+            // @warning Do this after the `sol_index` has been updated by the increment pos section
+            if (this.at_sol && !old_state.is_inline_whitespace) {
+                this.at_sol = false;
+            }
         }
 
         // Set defaults for pos.
         this.set_defaults();
 
         // Detect opening language patterns.
+        // Ensure `at_sol` is assigned before calling this.
         if (this.lang && this.is_not_escaped && this.is_code) {
-            this.scan_opening_lang_patterns(old_state);
+            this.scan_opening_lang_patterns();
         }
 
         // Forward on comment when exclude is requested.
         if (this.exclude_comments && this.is_comment && this.avail) {
-            console.log(Color.orange(`Excluding inside comment at ${this.pos}`));
+            console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
             this.advance();
         }
 
+        console.log("Visiting char ", this.debug_cursor());
+
         // return ; // search query
+    }
+
+    /** Get debug info about the (minimized) cursor position. */
+    debug_cursor(): object {
+        return {
+            ch: this.char,
+            pos: this.pos,
+            loc: `${this.line}$:${this.col}`,
+            ...(this.at_sol ? { at_sol: this.at_sol } : {}),
+            ...(this.is_eol ? { is_eol: this.is_eol } : {}),
+            ...(this.is_comment ? { is_comment: this.is_comment } : {}),
+            ...(this.is_str ? { is_str: this.is_str } : {}),
+            ...(this.is_regex ? { is_regex: this.is_regex } : {}),
+        }
     }
 
     // --------------------------------------------------------
@@ -867,11 +892,19 @@ export class Iterator<Src extends Source = Source> {
     // Retrieving locations.
 
     /** Capture the current location. */
-    loc(): Location {
+    loc(): Location<false> {
         return {
             line: this.line,
             col: this.col,
             pos: this.pos,
+        };
+    }
+    src_loc(): Location<true, Src> {
+        return {
+            line: this.line,
+            col: this.col,
+            pos: this.pos,
+            source: this.source,
         };
     }
 
@@ -1035,7 +1068,7 @@ export class Iterator<Src extends Source = Source> {
      * @note Use `this.is_linebreak` to check the char at the current position, instead of this method.
      */
     is_linebreak(c: string | number): boolean {
-        if (typeof c === "number") { return this.is_linebreak(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case "\n": case "\r":
                 return true;
@@ -1050,7 +1083,7 @@ export class Iterator<Src extends Source = Source> {
      * @note Use `this.is_whitespace` to check the char at the current position, instead of this method.
      */
     is_whitespace_at(c: string | number): boolean {
-        if (typeof c === "number") { return this.is_whitespace_at(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case " ": case "\t": case "\n": case "\r":
                 return true;
@@ -1065,7 +1098,7 @@ export class Iterator<Src extends Source = Source> {
      * @note Use `this.is_inline_whitespace` to check the char at the current position, instead of this method.
      */
     is_inline_whitespace_at(c: number | string): boolean {
-        if (typeof c === "number") { return this.is_inline_whitespace_at(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case " ": case "\t":
                 return true;
@@ -1079,7 +1112,7 @@ export class Iterator<Src extends Source = Source> {
      * @param c The character or index of the character to check.
      */
     is_alphanumeric(c: string | number = this.char): boolean {
-        if (typeof c === "number") { return this.is_alphanumeric(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case "a": case "b": case "c": case "d": case "e": case "f": case "g":
             case "h": case "i": case "j": case "k": case "l": case "m": case "n":
@@ -1102,7 +1135,7 @@ export class Iterator<Src extends Source = Source> {
      * @param c The character or index of the character to check.
      */
     is_lowercase(c: string | number = this.char): boolean {
-        if (typeof c === "number") { return this.is_lowercase(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case "a": case "b": case "c": case "d": case "e": case "f": case "g":
             case "h": case "i": case "j": case "k": case "l": case "m": case "n":
@@ -1119,7 +1152,7 @@ export class Iterator<Src extends Source = Source> {
      * @param c The character or index of the character to check.
      */
     is_uppercase(c: string | number = this.char): boolean {
-        if (typeof c === "number") { return this.is_uppercase(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case "A": case "B": case "C": case "D": case "E": case "F": case "G":
             case "H": case "I": case "J": case "K": case "L": case "M": case "N":
@@ -1136,7 +1169,7 @@ export class Iterator<Src extends Source = Source> {
      * @param c The character or index of the character to check.
      */
     is_numeric(c: string | number = this.char): boolean {
-        if (typeof c === "number") { return this.is_numeric(this.source.data[c]) }
+        if (typeof c === "number") c = this.source.data[c];
         switch (c) {
             case "0": case "1": case "2": case "3": case "4": case "5": case "6":
             case "7": case "8": case "9":
@@ -1144,6 +1177,28 @@ export class Iterator<Src extends Source = Source> {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Check whether a character is a JavaScript “word boundary”:
+     * i.e. anything _other_ than [A-Za-z0-9_$].
+     * Avoids regex for maximum performance.
+     * @param c A single-character string or the index of the character.
+     */
+    is_word_boundary(c: string | number = this.char): boolean {
+        if (typeof c === "number") c = this.source.data[c];
+        if (c.length !== 1) return true;
+        const code = c.charCodeAt(0);
+        // '0'–'9'
+        if (code >= 0x30 && code <= 0x39) return false;
+        // 'A'–'Z'
+        if (code >= 0x41 && code <= 0x5A) return false;
+        // '_' (0x5F) or '$' (0x24)
+        if (code === 0x5F || code === 0x24) return false;
+        // 'a'–'z'
+        if (code >= 0x61 && code <= 0x7A) return false;
+        // Anything else is a boundary
+        return true;
     }
 
     // --------------------------------------------------------

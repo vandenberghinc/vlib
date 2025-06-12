@@ -34,7 +34,7 @@ __export(stdin_exports, {
   Debug: () => import_index_m_node.Debug,
   Logger: () => import_index_m_node.Logger,
   Logging: () => Logging,
-  Scheme: () => Scheme,
+  Schema: () => Schema,
   cli: () => cli,
   code: () => code,
   crypto: () => crypto,
@@ -43,7 +43,7 @@ __export(stdin_exports, {
   log: () => import_index_m_node.log,
   logging: () => logging,
   print: () => print,
-  scheme: () => scheme,
+  schema: () => schema,
   version: () => version,
   warn: () => warn,
   warning: () => warning
@@ -59,8 +59,8 @@ var Logging = __toESM(require("./logging/index.m.node.js"));
 var logging = __toESM(require("./logging/index.m.node.js"));
 var import_index_m_node = require("./logging/index.m.node.js");
 var import_index_m_node2 = require("./logging/index.m.node.js");
-var Scheme = __toESM(require("./scheme/index.m.uni.js"));
-var scheme = __toESM(require("./scheme/index.m.uni.js"));
+var Schema = __toESM(require("./schema/index.m.uni.js"));
+var schema = __toESM(require("./schema/index.m.uni.js"));
 __reExport(stdin_exports, require("./jsonc/jsonc.js"), module.exports);
 var Crypto = __toESM(require("./crypto/index.m.js"));
 var crypto = __toESM(require("./crypto/index.m.js"));
@@ -83,7 +83,7 @@ const version = "1.6.20";
   Debug,
   Logger,
   Logging,
-  Scheme,
+  Schema,
   cli,
   code,
   crypto,
@@ -92,7 +92,7 @@ const version = "1.6.20";
   log,
   logging,
   print,
-  scheme,
+  schema,
   version,
   warn,
   warning,

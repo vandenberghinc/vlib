@@ -2,11 +2,14 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+/** types/ */
+export type * as Types from "./types/index.m.js";
+export type * as types from "./types/index.m.js";
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** scheme/ */
-export * as Scheme from "./scheme/index.m.uni.js";
-export * as scheme from "./scheme/index.m.uni.js";
+export * as Schema from "./schema/index.m.uni.js";
+export * as schema from "./schema/index.m.uni.js";
 /** generic/ */
 export * from "./generic/index.web.js";
 /** debugging/ */

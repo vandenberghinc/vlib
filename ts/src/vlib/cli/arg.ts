@@ -6,7 +6,7 @@
 import type { ExtractFlag, IfFlag, IfFlags } from "../types/flags.js";
 import { ObjectUtils } from "../primitives/object.js";
 import { Color } from "../generic/colors.js";
-import { value_type } from "../scheme/throw.js";
+import { value_type } from "../schema/throw.js";
 import { Or, And, and_or_str } from "./query.js";
 import { Cast } from "./cast.js";
 

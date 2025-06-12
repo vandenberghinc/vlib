@@ -24,8 +24,8 @@ export const error = (...args) => log.error(...args);
 export const warn = (arg, ...args) => log.warn(arg, ...args);
 export const warning = warn;
 /** scheme/ */
-export * as Scheme from "./scheme/index.m.uni.js";
-export * as scheme from "./scheme/index.m.uni.js";
+export * as Schema from "./schema/index.m.uni.js";
+export * as schema from "./schema/index.m.uni.js";
 /** jsonc/ */
 export * from "./jsonc/jsonc.js";
 /** crypto/ */

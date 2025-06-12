@@ -58,21 +58,3 @@ export type ObjectOrArray<T extends any | ObjectOrArrayType> = T extends any[] ?
  * Equal to `[T] extends [never]`
  */
 export type IsNever<T> = [T] extends [never] ? true : false;
-
-/**
- * Create an alias union of object type T.
- * Where a variant of T is created for each key K in T where
- * the value of K has the same type as T[K] and all others `other?: never`.
- * So in essence, creating a union of variants where only one attribute may be defined.
- */
-export type AliasPick<T extends object> = {
-    [K in keyof T]:
-        Pick<T, K> &
-        Partial<Record<Exclude<keyof T, K>, never>>
-}[keyof T];
-
-// /**
-//  * If `T` already includes `undefined`, return `T` itself.
-//  * Otherwise, return `F` (defaults to `never`, or you can pick `unknown`).
-//  */
-// export type EnsureMaybe<T, F = never> = undefined extends T ? T : F;
