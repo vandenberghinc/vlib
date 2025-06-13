@@ -5,7 +5,7 @@
  * @todo still execute these tests.
  */
 // Imports.
-import { ValidatorEntries } from "../schema/validator_entries.js";
+import { ValidatorEntries } from "../schema/validate/validator_entries.js";
 import { Module } from "../../vtest/index.js";
 import { validate } from "../schema/index.m.uni.js";
 // Unit tests module.
@@ -653,5 +653,22 @@ tests.add("scheme_verify_array_of_object_of_arrays_error:1", create_error_unit_t
         },
     },
     // Expected error: nested array element type mismatch ("not boolean" in boolean array)
+}));
+// -------------------------------------------------------------------------------
+// Aliases
+tests.add("aliases:1", create_success_unit_test({
+    throw: true,
+    unknown: false,
+    object: {
+        name_alias: "Daan van den Bergh",
+    },
+    schema: {
+        name: {
+            type: "string",
+            required: true,
+            alias: ["name_alias"],
+        },
+    },
+    // Expected error: missing required key "name"
 }));
 //# sourceMappingURL=schema.js.map

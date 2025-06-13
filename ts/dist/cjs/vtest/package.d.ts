@@ -7,7 +7,9 @@ import * as vlib from "../vlib/index.js";
 /**
  * Initialized configuration options.
  */
-export type Config = vlib.Schema.Entries.Infer<typeof Config.SchemaOpts>;
+export type Config = typeof Config.Schema.validated & {
+    debug?: number | string;
+};
 /** Configuration options. */
 export declare namespace Config {
     /**
@@ -36,10 +38,42 @@ export declare namespace Config {
          */
         extends?: string | string[];
     }
-    /** Configuration schema. */
-    const SchemaOpts: vlib.Schema.Entries.Opts;
     /** Initialize the schema validator. */
-    const Schema: vlib.Schema.ValidatorEntries;
+    const Schema: vlib.Schema.Validator<any[] | Record<string, any>, true, {
+        readonly output: {
+            readonly type: "string";
+            readonly required: true;
+        };
+        readonly include: {
+            readonly type: "array";
+            readonly value_schema: {
+                readonly type: "string";
+            };
+            readonly required: true;
+            readonly preprocess: (v: any) => any;
+        };
+        readonly exclude: {
+            readonly type: "array";
+            readonly default: readonly [string];
+            readonly value_schema: {
+                readonly type: "string";
+            };
+            readonly preprocess: (v: any) => any;
+        };
+        readonly env: {
+            readonly type: "array";
+            readonly required: false;
+            readonly default: string[];
+            readonly value_schema: {
+                readonly type: "string";
+            };
+            readonly preprocess: (v: any) => any;
+        };
+        readonly base: {
+            readonly type: readonly ["string", "array"];
+            readonly required: false;
+        };
+    }, any, any[]>;
 }
 /**
  * The unit test package class.

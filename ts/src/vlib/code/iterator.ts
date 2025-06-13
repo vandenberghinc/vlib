@@ -860,7 +860,7 @@ export class Iterator<Src extends Source = Source> {
         return {
             ch: this.char,
             pos: this.pos,
-            loc: `${this.line}$:${this.col}`,
+            loc: `${this.line}:${this.col}`,
             ...(this.at_sol ? { at_sol: this.at_sol } : {}),
             ...(this.is_eol ? { is_eol: this.is_eol } : {}),
             ...(this.is_comment ? { is_comment: this.is_comment } : {}),
@@ -892,14 +892,7 @@ export class Iterator<Src extends Source = Source> {
     // Retrieving locations.
 
     /** Capture the current location. */
-    loc(): Location<false> {
-        return {
-            line: this.line,
-            col: this.col,
-            pos: this.pos,
-        };
-    }
-    src_loc(): Location<true, Src> {
+    loc(): Location<true, Src> {
         return {
             line: this.line,
             col: this.col,

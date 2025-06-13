@@ -49,14 +49,17 @@ export class Logger<
      * @param opts.level The log level to set for this debug instance, defaults to 0.
      *                   Any provided `ActiveLogLevel` will not be copied but used as a reference instead.
      * @param opts.debug If `true`, the debug instance show trace locations for log messages, not for errors and warnings.
+     * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
+     *                  This attribute is required when a custom `P` generic is provided.
      */
     constructor(opts: {
         level?: number | ActiveLogLevel,
         debug?: D,
+        pipe?: P
     }) {
         super();
         this._debug_flag = opts.debug ? Directive.debug : Directive.log;
-        this.pipe = new Pipe<boolean, true>({
+        this.pipe = opts.pipe ?? new Pipe<boolean, true>({
             log_level: 0,
             out: console.log,
             err: console.error,

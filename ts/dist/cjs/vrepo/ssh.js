@@ -26,8 +26,8 @@ class SSH {
   proc;
   /** Constructor validator. */
   static validator = new import_vlib.Schema.Validator({
-    unknown: false,
     throw: true,
+    unknown: false,
     schema: {
       source: "string"
     }

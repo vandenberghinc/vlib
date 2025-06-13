@@ -1,4 +1,4 @@
-var import_validator_entries = require("../schema/validator_entries.js");
+var import_validator_entries = require("../schema/validate/validator_entries.js");
 var import_vtest = require("../../vtest/index.js");
 var import_index_m_uni = require("../schema/index.m.uni.js");
 const tests = new import_vtest.Module({ name: "vlib/schema" });
@@ -589,4 +589,19 @@ tests.add("scheme_verify_array_of_object_of_arrays_error:1", create_error_unit_t
     }
   }
   // Expected error: nested array element type mismatch ("not boolean" in boolean array)
+}));
+tests.add("aliases:1", create_success_unit_test({
+  throw: true,
+  unknown: false,
+  object: {
+    name_alias: "Daan van den Bergh"
+  },
+  schema: {
+    name: {
+      type: "string",
+      required: true,
+      alias: ["name_alias"]
+    }
+  }
+  // Expected error: missing required key "name"
 }));

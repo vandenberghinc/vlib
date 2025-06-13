@@ -57,6 +57,14 @@ export namespace ArrayUtils {
     }
 
     /**
+     * Is any array, mutable or readonly.
+     * Since Array.isArray only supports mutable arrays.
+     */
+    export function is_any<T>(x: any): x is T[] | readonly T[] {
+        return Array.isArray(x);
+    }
+
+    /**
      * Asynchronous iteration function for arrays.
      */
     // export function iterate_async<T>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<any>): Promise<any>[] {

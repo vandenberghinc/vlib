@@ -13,8 +13,8 @@ export class SSH {
     proc;
     /** Constructor validator. */
     static validator = new Schema.Validator({
-        unknown: false,
         throw: true,
+        unknown: false,
         schema: {
             source: "string",
         },

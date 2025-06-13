@@ -33,7 +33,7 @@ export function value_type(value) {
         const key_type = primitive_array_type(Object.keys(value));
         const value_type = primitive_array_type(Object.values(value));
         if (key_type && value_type) {
-            return `{ ${key_type}: ${value_type} }`;
+            return `{ [key: ${key_type}]: ${value_type} }`;
         }
         return "object";
     }
@@ -57,21 +57,21 @@ function primitive_array_type(arr) {
 */
 function throw_type_helper(type = [], prefix = "") {
     if (typeof type === "string") {
-        return `${prefix}"${type}"`;
+        return `${prefix}'${type}'`;
     }
     if (Array.isArray(type) && type.length > 0) {
         let str = prefix;
         for (let i = 0; i < type.length; i++) {
             if (typeof type[i] === "function") {
                 try {
-                    str += `"${type[i].name}"`;
+                    str += `'${type[i].name}'`;
                 }
                 catch (e) {
-                    str += `"${type[i]}"`;
+                    str += `'${type[i]}'`;
                 }
             }
             else {
-                str += `"${type[i]}"`;
+                str += `'${type[i]}'`;
             }
             if (i === type.length - 2) {
                 str += " or ";
@@ -98,7 +98,7 @@ export function throw_undefined() {
             throw: arguments[2] !== false,
         };
     }
-    const err = `Argument "${opts.name}" should be a defined value${throw_type_helper(opts.type, " of type ")}.`;
+    const err = `Argument '${opts.name}' should be a defined value${throw_type_helper(opts.type, " of type ")}.`;
     if (opts.throw !== false) {
         throw new Error(err);
     }
@@ -118,7 +118,7 @@ export function throw_invalid_type() {
             throw: arguments[3] !== false,
         };
     }
-    const err = `Invalid type "${value_type(opts.value)}" for argument "${opts.name}"${throw_type_helper(opts.type, ", the valid type is ")}.`;
+    const err = `Invalid type '${value_type(opts.value)}' for argument '${opts.name}'${throw_type_helper(opts.type, ", the valid type is ")}.`;
     if (opts.throw) {
         throw new Error(err);
     }

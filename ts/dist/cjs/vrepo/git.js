@@ -40,8 +40,8 @@ class Git {
   proc = new import_vlib.Proc();
   /** Constructor validator. */
   static validator = new import_vlib.Schema.Validator({
-    unknown: false,
     throw: true,
+    unknown: false,
     schema: {
       source: "string",
       username: "string",

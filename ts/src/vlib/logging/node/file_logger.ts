@@ -26,10 +26,14 @@ export class FileLogger extends Logger<false, FilePipe> {
         /** The error file path. */
         error_path?: string;
     }) {
-        super({ level: opts.level, debug: false });
-        if (opts.log_path || opts.error_path) {
-            this.pipe.assign_paths(opts.log_path, opts.error_path);
-        }
+        super({
+            level: opts.level,
+            debug: false,
+            pipe: new FilePipe({
+                log_path: opts.log_path,
+                error_path: opts.error_path
+            })
+        });
     }
     
     /**

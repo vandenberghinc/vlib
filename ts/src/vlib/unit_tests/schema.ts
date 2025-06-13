@@ -6,7 +6,7 @@
  */
 
 // Imports.
-import { ValidatorEntries } from "@vlib/schema/validator_entries.js";
+import { ValidatorEntries } from "@vlib/schema/validate/validator_entries.js";
 import { Module } from "../../vtest/index.js";
 import { validate, Entries, Validator } from "../schema/index.m.uni.js";
 
@@ -19,7 +19,7 @@ const tests = new Module({ name: "vlib/schema" });
 // Wrapper to test for error conditions in validate.
 // Returns a callback that invokes validate with the given options.
 // If an error is thrown, the callback returns the error message.
-function create_error_unit_test(opts: Validator.Opts & { object: any }) {
+function create_error_unit_test(opts: Validator.Opts<any> & { object: any }) {
     return () => {
         try {
             validate(opts.object, opts);
@@ -34,7 +34,7 @@ function create_error_unit_test(opts: Validator.Opts & { object: any }) {
 // Wrapper to test for successful conditions in validate.
 // Returns a callback that invokes validate with the given options.
 // The callback returns the JSON-stringified result of the verification.
-function create_success_unit_test(opts: Validator.Opts & { object: any }) {
+function create_success_unit_test(opts: Validator.Opts<any> & { object: any }) {
     return () => {
         const result = validate(opts.object, opts);
         return JSON.stringify(result);
@@ -250,15 +250,18 @@ tests.add("scheme_test:9", create_error_unit_test({
 // scheme_test:10 - Default value for "x" should be applied.
 tests.add("scheme_test:10", () => {
     let x: any = undefined;
-    const response = validate({
-        // x: undefined,
-    }, {
-        throw: true,
-        unknown: false,
-        schema: {
-            x: { type: "string", default: "Hello World!" },
+    const response = validate(
+        {
+            // x: undefined,
         },
-    });
+        {
+            throw: true,
+            unknown: false,
+            schema: {
+                x: { type: "string", default: "Hello World!" },
+            },
+        },
+    );
     ({ x = "" } = response);
     return x;
 });
@@ -699,4 +702,21 @@ tests.add("scheme_verify_array_of_object_of_arrays_error:1", create_error_unit_t
     // Expected error: nested array element type mismatch ("not boolean" in boolean array)
 }));
 
-export { };
+// -------------------------------------------------------------------------------
+
+// Aliases
+tests.add("aliases:1", create_success_unit_test({
+    throw: true,
+    unknown: false,
+    object: {
+        name_alias: "Daan van den Bergh",
+    },
+    schema: {
+        name: {
+            type: "string",
+            required: true,
+            alias: ["name_alias"],
+        },
+    },
+    // Expected error: missing required key "name"
+}));

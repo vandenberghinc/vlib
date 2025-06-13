@@ -8,7 +8,7 @@
  */
 
 import { ObjectUtils } from "@vlib/index.web.js";
-import { Merge } from "../types/transform.js";
+import { Merge } from "../../types/transform.js";
 
 // -------------------------------------------------------
 // Utility functions.
@@ -29,7 +29,7 @@ export function value_type(value: any): string {
     } else if (typeof value === "object" && ObjectUtils.is_plain(value)) {
         const key_type = primitive_array_type(Object.keys(value));
         const value_type = primitive_array_type(Object.values(value));
-        if (key_type && value_type) { return `{ ${key_type}: ${value_type} }`; }
+        if (key_type && value_type) { return `{ [key: ${key_type}]: ${value_type} }`; }
         return "object";
     }
     else { return typeof value; }
@@ -64,19 +64,19 @@ export interface ThrowType {
 */
 function throw_type_helper(type: ThrowType["type"] = [], prefix: string = ""): string {
     if (typeof type === "string") {
-        return `${prefix}"${type}"`;
+        return `${prefix}'${type}'`;
     }
     if (Array.isArray(type) && type.length > 0) {
         let str = prefix;
         for (let i = 0; i < type.length; i++) {
             if (typeof type[i] === "function") {
                 try {
-                    str += `"${(type[i] as unknown as Function).name}"`
+                    str += `'${(type[i] as unknown as Function).name}'`
                 } catch (e) {
-                    str += `"${type[i]}"`
+                    str += `'${type[i]}'`
                 }
             } else {
-                str += `"${type[i]}"`
+                str += `'${type[i]}'`
             }
             if (i === type.length - 2) {
                 str += " or "
@@ -110,7 +110,7 @@ export function throw_undefined(): never | string {
             throw: arguments[2] !== false,
         }
     }
-    const err = `Argument "${opts.name as string}" should be a defined value${throw_type_helper(opts.type, " of type ")}.`
+    const err = `Argument '${opts.name as string}' should be a defined value${throw_type_helper(opts.type, " of type ")}.`
     if (opts.throw !== false) {
         throw new Error(err);
     }
@@ -139,7 +139,7 @@ export function throw_invalid_type(): string {
             throw: arguments[3] !== false,
         }
     }
-    const err = `Invalid type "${value_type(opts.value)}" for argument "${opts.name as string}"${throw_type_helper(opts.type, ", the valid type is ")}.`
+    const err = `Invalid type '${value_type(opts.value)}' for argument '${opts.name as string}'${throw_type_helper(opts.type, ", the valid type is ")}.`
     if (opts.throw) {
         throw new Error(err);
     }

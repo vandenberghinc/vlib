@@ -58,6 +58,10 @@ var ArrayUtils;
     return null;
   }
   ArrayUtils2.iterate = iterate;
+  function is_any(x) {
+    return Array.isArray(x);
+  }
+  ArrayUtils2.is_any = is_any;
   function iterate_reversed(arr, start, end, handler) {
     if (handler == null && start != null) {
       handler = start;

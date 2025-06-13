@@ -38,10 +38,13 @@ export declare class Logger<D extends boolean = false, P extends Pipe<boolean, t
      * @param opts.level The log level to set for this debug instance, defaults to 0.
      *                   Any provided `ActiveLogLevel` will not be copied but used as a reference instead.
      * @param opts.debug If `true`, the debug instance show trace locations for log messages, not for errors and warnings.
+     * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
+     *                  This attribute is required when a custom `P` generic is provided.
      */
     constructor(opts: {
         level?: number | ActiveLogLevel;
         debug?: D;
+        pipe?: P;
     });
     /**
      * {Log}

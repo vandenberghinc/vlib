@@ -270,8 +270,7 @@ export declare class Iterator<Src extends Source = Source> {
      */
     char_code_at(pos: number): number;
     /** Capture the current location. */
-    loc(): Location<false>;
-    src_loc(): Location<true, Src>;
+    loc(): Location<true, Src>;
     /** Advance a number of positions. */
     advance_n(n: number): void;
     /**

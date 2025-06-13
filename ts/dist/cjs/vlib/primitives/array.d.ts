@@ -29,6 +29,11 @@ export declare namespace ArrayUtils {
      */
     function iterate<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => R): R | null;
     /**
+     * Is any array, mutable or readonly.
+     * Since Array.isArray only supports mutable arrays.
+     */
+    function is_any<T>(x: any): x is T[] | readonly T[];
+    /**
      * Asynchronous iteration function for arrays.
      */
     /**

@@ -12,7 +12,9 @@ import { Module, Modules } from './module.js';
 /**
  * Initialized configuration options.
  */
-export type Config = vlib.Schema.Entries.Infer<typeof Config.SchemaOpts>;
+export type Config = typeof Config.Schema.validated & {
+    debug?: number | string; // The debug level or unit test id to show logs for.
+};
 
 /** Configuration options. */
 export namespace Config {
@@ -44,39 +46,40 @@ export namespace Config {
         extends?: string | string[];
     };
 
-    /** Configuration schema. */
-    export const SchemaOpts: vlib.Schema.Entries.Opts = {
-        output: {
-            type: "string",
-            required: true,
-        },
-        include: {
-            type: "array",
-            value_schema: { type: "string" },
-            required: true,
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        exclude: {
-            type: "array",
-            default: ["**/node_modules/**"],
-            value_schema: { type: "string" },
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        env: {
-            type: "array",
-            required: false,
-            default: [],
-            value_schema: { type: "string" },
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        base: {
-            type: ["string", "array"],
-            required: false,
-        },
-    };
-
     /** Initialize the schema validator. */
-    export const Schema = new vlib.Schema.ValidatorEntries(SchemaOpts);
+    export const Schema = new vlib.Schema.Validator({
+        throw: true,
+        unknown: false,
+        schema: {
+            output: {
+                type: "string",
+                required: true,
+            },
+            include: {
+                type: "array",
+                value_schema: { type: "string" },
+                required: true,
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            exclude: {
+                type: "array",
+                default: ["**/node_modules/**" as string],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            env: {
+                type: "array",
+                required: false,
+                default: [] as string[],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            base: {
+                type: ["string", "array"],
+                required: false,
+            },
+        },
+    });
 }
 
 // -----------------------------------------------------------------
@@ -146,10 +149,7 @@ export class Package {
             // @todo not resolving the base's extends attribute here.
 
             // Validate the loaded config.
-            this.config = vlib.schema.validate(base_data, {
-                schema: Config.Schema,
-                unknown: false,
-                throw: true,
+            this.config = Config.Schema.validate(base_data, {
                 error_prefix: `Invalid base configuration file "${found.path}": `,
             })
 
@@ -159,10 +159,7 @@ export class Package {
 
         // Parse config from object.
         else {
-            this.config = vlib.schema.validate(config, {
-                schema: Config.Schema,
-                unknown: false,
-                throw: true,
+            this.config = Config.Schema.validate(config, {
                 error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `,
             });
         }
@@ -248,10 +245,10 @@ export class Package {
                 case "exclude":
                 case "env":
                     if (!this.config[key]) {
-                        this.config[key] = [];
+                        this.config[key] = [] as string[];
                     }
                     if (typeof config[key] === "string") {
-                        this.config[key] = [...this.config[key], config[key]];
+                        this.config[key] = [...this.config[key], config[key]] as string[];
                     } else if (Array.isArray(config[key])) {
                         this.config[key] = [...this.config[key], ...(config[key] as string[])];
                     } else {

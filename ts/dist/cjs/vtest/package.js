@@ -37,36 +37,39 @@ var import_module = require("./module.js");
 var Config;
 (function(Config2) {
   ;
-  Config2.SchemaOpts = {
-    output: {
-      type: "string",
-      required: true
-    },
-    include: {
-      type: "array",
-      value_schema: { type: "string" },
-      required: true,
-      preprocess: (v) => typeof v === "string" ? [v] : v
-    },
-    exclude: {
-      type: "array",
-      default: ["**/node_modules/**"],
-      value_schema: { type: "string" },
-      preprocess: (v) => typeof v === "string" ? [v] : v
-    },
-    env: {
-      type: "array",
-      required: false,
-      default: [],
-      value_schema: { type: "string" },
-      preprocess: (v) => typeof v === "string" ? [v] : v
-    },
-    base: {
-      type: ["string", "array"],
-      required: false
+  Config2.Schema = new vlib.Schema.Validator({
+    throw: true,
+    unknown: false,
+    schema: {
+      output: {
+        type: "string",
+        required: true
+      },
+      include: {
+        type: "array",
+        value_schema: { type: "string" },
+        required: true,
+        preprocess: (v) => typeof v === "string" ? [v] : v
+      },
+      exclude: {
+        type: "array",
+        default: ["**/node_modules/**"],
+        value_schema: { type: "string" },
+        preprocess: (v) => typeof v === "string" ? [v] : v
+      },
+      env: {
+        type: "array",
+        required: false,
+        default: [],
+        value_schema: { type: "string" },
+        preprocess: (v) => typeof v === "string" ? [v] : v
+      },
+      base: {
+        type: ["string", "array"],
+        required: false
+      }
     }
-  };
-  Config2.Schema = new vlib.Schema.ValidatorEntries(Config2.SchemaOpts);
+  });
 })(Config || (Config = {}));
 class Package {
   /**
@@ -114,18 +117,12 @@ class Package {
       if (!base_data) {
         throw new Error(`No valid data found at config file: ${found.path}`);
       }
-      this.config = vlib.schema.validate(base_data, {
-        schema: Config.Schema,
-        unknown: false,
-        throw: true,
+      this.config = Config.Schema.validate(base_data, {
         error_prefix: `Invalid base configuration file "${found.path}": `
       });
       this.merge(config);
     } else {
-      this.config = vlib.schema.validate(config, {
-        schema: Config.Schema,
-        unknown: false,
-        throw: true,
+      this.config = Config.Schema.validate(config, {
         error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `
       });
     }

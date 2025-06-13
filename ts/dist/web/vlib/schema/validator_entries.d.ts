@@ -20,22 +20,30 @@ export declare class ValidatorEntry<const T extends Entry.Type.Castable<"mutable
 V extends Entry.Type.Cast<T> = Entry.Type.Cast<T>, // value of entry
 P extends ObjOrArr = ObjOrArr> {
     readonly type?: T;
-    required: Entry.Plain<T, V, P>["required"];
-    allow_empty: Entry.Plain<T, V, P>["allow_empty"];
-    min: Entry.Plain<T, V, P>["min"];
-    max: Entry.Plain<T, V, P>["max"];
-    enum: Entry.Plain<T, V, P>["enum"];
-    alias: Entry.Plain<T, V, P>["alias"];
-    verify: Entry.Plain<T, V, P>["verify"];
-    preprocess: Entry.Plain<T, V, P>["preprocess"];
-    postprocess: Entry.Plain<T, V, P>["postprocess"];
-    charset: Entry.Plain<T, V, P>["charset"];
+    required: Entry<T, V, P>["required"];
+    allow_empty: Entry<T, V, P>["allow_empty"];
+    min: Entry<T, V, P>["min"];
+    max: Entry<T, V, P>["max"];
+    enum: Entry<T, V, P>["enum"];
+    alias: Entry<T, V, P>["alias"];
+    verify: Entry<T, V, P>["verify"];
+    preprocess: Entry<T, V, P>["preprocess"];
+    postprocess: Entry<T, V, P>["postprocess"];
+    charset: Entry<T, V, P>["charset"];
+    /**
+     * The field type, e.g. "attribute", "query", "body", etc.
+     * Ensure the chosen word fits in sentences like: `Attribte X is ...`, etc.
+     * The word is automatically capitalized where needed.
+     * @dev_note Keep this `?` and cast to `attribute` in the calls.
+     *           So we can use a `this.field_type || state.field_type || 'attributes'` strategy in the validator.
+     */
+    field_type?: string;
     /**
      * The default value for the entry.
      * `NoDefault` will be used to indicate that no default value was provided.
      * This way we can also support `undefined` and `null` as a default value.
      */
-    default: NoDefault | Entry.Plain<T, V, P>["default"];
+    default: NoDefault | Entry<T, V, P>["default"];
     /**
      * A nested schema for when the attribute is an object.
      */
@@ -51,9 +59,13 @@ P extends ObjOrArr = ObjOrArr> {
      *
      * Each index of the schema option corresponds to the index of the input array.
      *
+     * It is inputted as an array of entries,
+     * However, its stored as `tuple_1: Entry, tuple_2: Entry, ...` etc.
+     * This is how it needs to be validated.
+     *
      * @note this attribute is ignored when the input object is not an array.
      */
-    tuple?: readonly ValidatorEntry[];
+    tuple_schema?: ValidatorEntry[];
     /**
      * Cast string to boolean/number.
      * Only allowed when type is exactly `boolean` or `number`.
@@ -65,6 +77,12 @@ P extends ObjOrArr = ObjOrArr> {
         type: "number";
         opts: Cast.number.Opts<"preserve">;
     } : never;
+    /**
+     * A boolean flag indicating if the `array` or `object` type requires validation.
+     * For instance, nested arrays and objects without any schema do not require validation.
+     * Note that this is a readonly attribute, hence it is changed, also not once validated.
+     */
+    readonly requires_validation: boolean;
     /** Constructor options. */
     constructor(opts: Entry.Opts<T, V, P>);
     /**
@@ -77,17 +95,36 @@ P extends ObjOrArr = ObjOrArr> {
 }
 /**
  * A record of entries, a.k.a a schema.
+ *
+ * For optimal performance, this class should be initialized
+ * and re-used as an argument for the `validate()` fuction.
+ *
  * @note Keep this under a separate name then the public type util `Entries`.
  */
-export declare class ValidatorEntries extends Map<string, ValidatorEntry> {
+export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opts> extends Map<string, ValidatorEntry> {
+    /**
+     * A map of all aliases from the direct entries.
+     * The alias name is used as key, pointing to the original entry.
+     */
+    aliases: Map<string, ValidatorEntry<Entry.Type.Castable.Base | Entry.Type.Castable.Base[], any, ObjOrArr>>;
+    /**
+     * An attribute with the inferred type of the entries.
+     * Note that this value is undefined at runtime.
+     * @example
+     * ```
+     * const validated_data: typeof val_entries.validated ...
+     * ```
+     */
+    validated: Entries.Infer<S>;
     /** Initialize a scheme object. */
     constructor(
-    /** The scheme to initialize. */
-    schema: Entries.Opts);
     /**
-     * A map of aliases. Is initialized be initialized on demand.
+     * The scheme to initialize.
+     * Note that we only support inferrable entries here.
+     * This is because the entire tree of nested entries will be initialized.
+     * Therefore we dont need to accept any validator instances,
+     * allowing us to infer the entries type.
      */
-    get aliases(): Map<string, ValidatorEntry>;
-    private _aliases?;
+    schema: S);
 }
 export {};

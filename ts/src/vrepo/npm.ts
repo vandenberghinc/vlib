@@ -20,9 +20,9 @@ export class NPM {
     id: string;
 
     /** Constructor validator. */
-    static validator = new Schema.Validator<object>({
-        unknown: false,
+    static validator = new Schema.Validator({
         throw: true,
+        unknown: false,
         schema: {
             source: "string",
             version_path: { type: "string", required: false },

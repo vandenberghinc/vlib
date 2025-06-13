@@ -12,7 +12,15 @@ export declare class Git {
     gitignore: Ignore;
     proc: Proc;
     /** Constructor validator. */
-    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
+    static validator: Schema.Validator<any[] | Record<string, any>, true, {
+        readonly source: "string";
+        readonly username: "string";
+        readonly email: "string";
+        readonly version_path: {
+            readonly type: "string";
+            readonly required: false;
+        };
+    }, any, any[]>;
     constructor({ source, username, email, version_path, }: {
         source: string;
         username: string;

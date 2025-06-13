@@ -7,9 +7,26 @@
  * @note Should support browser and node.js environments.
  *       As indicated by the `.uni` extension.
  */
-export * from "./cast.js"
-export * from "./entry.js"
-// export * from "./infer.js" // is already exported as `Scheme.Infer<...>` like types.
-export { ValidatorEntries } from "./validator_entries.js" 
-export * from "./throw.js"
-export * from "./validator.js";
+
+// infer/
+export {
+    Entry,
+    Entries,
+    ValueEntries,
+    TupleEntries,
+    Opts,
+    Infer,
+} from "./infer/entry.js"
+// no need to export from `./infer.js` that is already embedded unfer `Entry.Infer<>` etc.
+
+// validate/
+export * from "./validate/cast.js"
+export * from "./validate/throw.js"
+// export {} from "./validator_entries.js" // dont export from this file, let users use `Validator` instead.
+export {
+    validate,
+    Validator,
+    InvalidUsageError,
+    ValidateError,
+    ValidateResponse,
+} from "./validate/validate.js"

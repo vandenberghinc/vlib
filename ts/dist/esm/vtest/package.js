@@ -10,38 +10,40 @@ import { Modules } from './module.js';
 export var Config;
 (function (Config) {
     ;
-    /** Configuration schema. */
-    Config.SchemaOpts = {
-        output: {
-            type: "string",
-            required: true,
-        },
-        include: {
-            type: "array",
-            value_schema: { type: "string" },
-            required: true,
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        exclude: {
-            type: "array",
-            default: ["**/node_modules/**"],
-            value_schema: { type: "string" },
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        env: {
-            type: "array",
-            required: false,
-            default: [],
-            value_schema: { type: "string" },
-            preprocess: (v) => typeof v === "string" ? [v] : v,
-        },
-        base: {
-            type: ["string", "array"],
-            required: false,
-        },
-    };
     /** Initialize the schema validator. */
-    Config.Schema = new vlib.Schema.ValidatorEntries(Config.SchemaOpts);
+    Config.Schema = new vlib.Schema.Validator({
+        throw: true,
+        unknown: false,
+        schema: {
+            output: {
+                type: "string",
+                required: true,
+            },
+            include: {
+                type: "array",
+                value_schema: { type: "string" },
+                required: true,
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            exclude: {
+                type: "array",
+                default: ["**/node_modules/**"],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            env: {
+                type: "array",
+                required: false,
+                default: [],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            base: {
+                type: ["string", "array"],
+                required: false,
+            },
+        },
+    });
 })(Config || (Config = {}));
 // -----------------------------------------------------------------
 /**
@@ -100,10 +102,7 @@ export class Package {
             }
             // @todo not resolving the base's extends attribute here.
             // Validate the loaded config.
-            this.config = vlib.schema.validate(base_data, {
-                schema: Config.Schema,
-                unknown: false,
-                throw: true,
+            this.config = Config.Schema.validate(base_data, {
                 error_prefix: `Invalid base configuration file "${found.path}": `,
             });
             // Merge the new options.
@@ -111,10 +110,7 @@ export class Package {
         }
         // Parse config from object.
         else {
-            this.config = vlib.schema.validate(config, {
-                schema: Config.Schema,
-                unknown: false,
-                throw: true,
+            this.config = Config.Schema.validate(config, {
                 error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `,
             });
         }

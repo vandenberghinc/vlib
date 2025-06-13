@@ -17,8 +17,8 @@ export class Git {
     proc = new Proc();
     /** Constructor validator. */
     static validator = new Schema.Validator({
-        unknown: false,
         throw: true,
+        unknown: false,
         schema: {
             source: "string",
             username: "string",

@@ -59,6 +59,14 @@ export var ArrayUtils;
     }
     ArrayUtils.iterate = iterate;
     /**
+     * Is any array, mutable or readonly.
+     * Since Array.isArray only supports mutable arrays.
+     */
+    function is_any(x) {
+        return Array.isArray(x);
+    }
+    ArrayUtils.is_any = is_any;
+    /**
      * Asynchronous iteration function for arrays.
      */
     // export function iterate_async<T>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<any>): Promise<any>[] {

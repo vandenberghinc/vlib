@@ -2,17 +2,6 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-// // export type InferEntries<S extends Entries.Opts> = {
-// export type InferEntries<S extends Record<string, CastableType | Entry.Plain>> = {
-//     [K in keyof S]:
-//     S[K] extends Entry.Plain ? MaybeOptional<S[K], InferEntry<S[K]>> :
-//     // [S[K]] extends [Entry] ? MaybeOptional<S[K], InferEntry<S[K]>> :
-//     S[K] extends CastableType ? MaybeOptional<S[K], Entry.Type.Cast<S[K]>> :
-//     unknown
-// // S[K] extends Entry.Opts
-// //         ? MaybeOptional<Sd[K], InferEntry<S[K]>>
-// //         : MaybeOptional<S[K], Entry.Type.Cast<S[K]>>
-//     };
 // -------------------------------------------------------------
 // INTERNAL TESTS
 function test_infer_scheme(s, callback) { }

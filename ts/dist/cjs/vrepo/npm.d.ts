@@ -10,7 +10,13 @@ export declare class NPM {
     version_path?: string;
     id: string;
     /** Constructor validator. */
-    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
+    static validator: Schema.Validator<any[] | Record<string, any>, true, {
+        readonly source: "string";
+        readonly version_path: {
+            readonly type: "string";
+            readonly required: false;
+        };
+    }, any, any[]>;
     constructor({ source, version_path, }: {
         source: string;
         version_path?: string;

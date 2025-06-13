@@ -3,6 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Logger } from "../uni/logger.js";
+import { FilePipe } from "./file_pipe.js";
 /**
  * Extension of the Logger class providing file logging capabilities,
  * while still printing to the console.
@@ -13,10 +14,14 @@ export class FileLogger extends Logger {
      * See ${@link Logger} for more info about the constructor options.
      */
     constructor(opts) {
-        super({ level: opts.level, debug: false });
-        if (opts.log_path || opts.error_path) {
-            this.pipe.assign_paths(opts.log_path, opts.error_path);
-        }
+        super({
+            level: opts.level,
+            debug: false,
+            pipe: new FilePipe({
+                log_path: opts.log_path,
+                error_path: opts.error_path
+            })
+        });
     }
     /**
      * Stop the logger and close the file streams.

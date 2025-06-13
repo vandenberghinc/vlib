@@ -22,8 +22,8 @@ export class Repo {
     npm;
     /** Constructor validator. */
     static validator = new Schema.Validator({
-        unknown: false,
         throw: true,
+        unknown: false,
         schema: {
             source: "string",
             git: { type: "boolean", default: true },

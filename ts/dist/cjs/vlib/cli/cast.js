@@ -20,7 +20,7 @@ __export(stdin_exports, {
   Cast: () => Cast
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_throw = require("../schema/throw.js");
+var import_throw = require("../schema/validate/throw.js");
 var Cast;
 (function(Cast2) {
   Cast2.RuntimeTypes = {

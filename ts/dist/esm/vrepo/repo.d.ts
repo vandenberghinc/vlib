@@ -42,7 +42,21 @@ export declare class Repo {
     ssh?: SSH;
     npm?: NPM;
     /** Constructor validator. */
-    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
+    static validator: Schema.Validator<any[] | Record<string, any>, true, {
+        readonly source: "string";
+        readonly git: {
+            readonly type: "boolean";
+            readonly default: true;
+        };
+        readonly ssh: {
+            readonly type: "boolean";
+            readonly default: true;
+        };
+        readonly npm: {
+            readonly type: "boolean";
+            readonly default: true;
+        };
+    }, any, any[]>;
     static find_config_path(cwd?: string): Path | undefined;
     constructor({ source, git, // git enabled.
     ssh, // ssh enabled.

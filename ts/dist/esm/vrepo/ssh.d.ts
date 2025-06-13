@@ -8,7 +8,9 @@ export declare class SSH {
     source: Path;
     proc: Proc;
     /** Constructor validator. */
-    static validator: Schema.Validator<object, boolean, Record<string, any>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>, Schema.Entry.Opts<Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[], any, any[] | Record<string, any>, {}>[]>;
+    static validator: Schema.Validator<any[] | Record<string, any>, true, {
+        readonly source: "string";
+    }, any, any[]>;
     constructor({ source, }: {
         source: string;
     });

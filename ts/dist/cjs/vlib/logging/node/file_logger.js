@@ -21,16 +21,21 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_logger = require("../uni/logger.js");
+var import_file_pipe = require("./file_pipe.js");
 class FileLogger extends import_logger.Logger {
   /**
    * Construct a file logger instance.
    * See ${@link Logger} for more info about the constructor options.
    */
   constructor(opts) {
-    super({ level: opts.level, debug: false });
-    if (opts.log_path || opts.error_path) {
-      this.pipe.assign_paths(opts.log_path, opts.error_path);
-    }
+    super({
+      level: opts.level,
+      debug: false,
+      pipe: new import_file_pipe.FilePipe({
+        log_path: opts.log_path,
+        error_path: opts.error_path
+      })
+    });
   }
   /**
    * Stop the logger and close the file streams.

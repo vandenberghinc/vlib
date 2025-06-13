@@ -5,7 +5,7 @@
  * Casting types CLI argument types to their corresponding value types.
  */
 
-import { value_type } from "../schema/throw.js";
+import { value_type } from "../schema/validate/throw.js";
 
 /** Cast types. */
 export namespace Cast {

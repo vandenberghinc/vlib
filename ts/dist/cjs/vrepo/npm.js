@@ -41,8 +41,8 @@ class NPM {
   id;
   /** Constructor validator. */
   static validator = new import_vlib.Schema.Validator({
-    unknown: false,
     throw: true,
+    unknown: false,
     schema: {
       source: "string",
       version_path: { type: "string", required: false }

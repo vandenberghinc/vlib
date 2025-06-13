@@ -721,7 +721,7 @@ export class Iterator {
         return {
             ch: this.char,
             pos: this.pos,
-            loc: `${this.line}$:${this.col}`,
+            loc: `${this.line}:${this.col}`,
             ...(this.at_sol ? { at_sol: this.at_sol } : {}),
             ...(this.is_eol ? { is_eol: this.is_eol } : {}),
             ...(this.is_comment ? { is_comment: this.is_comment } : {}),
@@ -748,13 +748,6 @@ export class Iterator {
     // Retrieving locations.
     /** Capture the current location. */
     loc() {
-        return {
-            line: this.line,
-            col: this.col,
-            pos: this.pos,
-        };
-    }
-    src_loc() {
         return {
             line: this.line,
             col: this.col,
