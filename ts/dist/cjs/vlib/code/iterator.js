@@ -381,7 +381,6 @@ class Iterator {
       this.is_str = { open: this.char, pos: this.pos };
     } else if (this.at_sol && this.lang.comment?.line && this.source.data.startsWith(this.lang.comment.line, this.pos)) {
       this.is_comment = { type: "line", open: this.lang.comment?.line, pos: 0 };
-      console.log(import_colors.Color.orange(`Detected line comment at ${this.pos}`));
     } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
       for (const [open, close] of this.lang.comment.block) {
         if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
@@ -548,7 +547,6 @@ class Iterator {
       this.scan_opening_lang_patterns();
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
-      console.log(import_colors.Color.yellow(`Excluding inside comment at ${this.pos}`));
       this.advance();
     }
   }
@@ -593,10 +591,8 @@ class Iterator {
       this.scan_opening_lang_patterns();
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
-      console.log(import_colors.Color.yellow(`Excluding inside comment at ${this.pos}`));
       this.advance();
     }
-    console.log("Visiting char ", this.debug_cursor());
   }
   /** Get debug info about the (minimized) cursor position. */
   debug_cursor() {

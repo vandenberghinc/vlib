@@ -453,7 +453,7 @@ export class Iterator {
             && this.lang.comment?.line
             && this.source.data.startsWith(this.lang.comment.line, this.pos)) {
             this.is_comment = { type: 'line', open: this.lang.comment?.line, pos: 0 };
-            console.log(Color.orange(`Detected line comment at ${this.pos}`));
+            // console.log(Color.orange(`Detected line comment at ${this.pos}`));
         }
         // detect block comment
         else if (this.lang.comment?.block
@@ -650,7 +650,7 @@ export class Iterator {
         }
         // Forward on comment when exclude is requested.
         if (this.exclude_comments && this.is_comment && this.avail) {
-            console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
+            // console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
             this.advance();
         }
         // return;
@@ -710,10 +710,10 @@ export class Iterator {
         }
         // Forward on comment when exclude is requested.
         if (this.exclude_comments && this.is_comment && this.avail) {
-            console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
+            // console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
             this.advance();
         }
-        console.log("Visiting char ", this.debug_cursor());
+        // console.log("Visiting char ", this.debug_cursor());
         // return ; // search query
     }
     /** Get debug info about the (minimized) cursor position. */
