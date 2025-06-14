@@ -4,6 +4,7 @@
  */
 import { GlobPatternList } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
+import { Module } from './module.js';
 /**
  * Initialized configuration options.
  */
@@ -71,6 +72,10 @@ export declare namespace Config {
         };
         readonly base: {
             readonly type: readonly ["string", "array"];
+            readonly required: false;
+        };
+        readonly strip_colors: {
+            readonly type: readonly ["boolean"];
             readonly required: false;
         };
     }, any, any[]>;
@@ -150,23 +155,11 @@ export declare class Package {
 export declare namespace Package {
     namespace run {
         /** Argument options of `Package.run()` */
-        interface Opts {
+        interface Opts extends Omit<Module.Context.Opts, "output"> {
             /** The module name to run. If not defined all modules will be run. */
             module?: string;
-            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
-            target?: string;
-            /** Whether to enter interactive mode on failure. */
-            interactive?: boolean;
             /** Automatically answer yes to all prompts. */
             yes?: boolean;
-            /** Do not show the diff from cached and new data. */
-            no_changes?: boolean;
-            /** Whether to stop on a failed unit test. */
-            stop_on_failure?: boolean;
-            /** The unit test id to stop after. */
-            stop_after?: string;
-            /** The number of times to repeat the tests. Defaults to 1. */
-            repeat?: number;
             /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
             debug?: string | number;
         }

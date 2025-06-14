@@ -67,6 +67,10 @@ var Config;
       base: {
         type: ["string", "array"],
         required: false
+      },
+      strip_colors: {
+        type: ["boolean"],
+        required: false
       }
     }
   });
@@ -218,15 +222,7 @@ class Package {
       if (!mod) {
         throw new Error(`Module "${opts.module}" was not found, the available modules are: [${import_module.Modules.map((i) => i.name).join(", ")}]`);
       }
-      const res = await mod._run({
-        target: opts.target,
-        stop_on_failure: opts.stop_on_failure,
-        stop_after: opts.stop_after,
-        interactive: opts.interactive,
-        output: output_dir,
-        repeat: opts.repeat,
-        no_changes: opts.no_changes
-      });
+      const res = await mod.run(import_module.Module.Context.create({ output: output_dir, ...opts }));
       return res.status;
     }
     let succeeded = 0, failed = 0;
@@ -234,15 +230,7 @@ class Package {
       if (opts.yes) {
         throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
       }
-      const res = await mod._run({
-        target: opts.target,
-        stop_on_failure: opts.stop_on_failure,
-        stop_after: opts.stop_after,
-        interactive: opts.interactive,
-        output: output_dir,
-        repeat: opts.repeat,
-        no_changes: opts.no_changes
-      });
+      const res = await mod.run(import_module.Module.Context.create({ output: output_dir, ...opts }));
       if (!res.status) {
         return false;
       }

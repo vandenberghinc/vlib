@@ -5,8 +5,8 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+  for (var name2 in all)
+    __defProp(target, name2, { get: all[name2], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -51,11 +51,11 @@ class Module {
    * Create a unit test module.
    * @param name The name of the module.
    */
-  constructor({ name }) {
-    if (Modules.find((i) => i.name === name)) {
+  constructor(opts) {
+    if (Modules.find((i) => i.name === opts.name)) {
       throw new Error(`Unit test module "${name}" already exists.`);
     }
-    this.name = name;
+    this.name = opts.name;
     Modules.push(this);
   }
   /**
@@ -104,7 +104,7 @@ class Module {
       throw new Error(`Invalid unit test id "${id}", this should only contain alphanumeric characters, dashes, underscores, slashes and asterisks.`);
     }
     const loc = new import_source_loc.SourceLoc(1);
-    this.unit_tests[id] = async ({ interactive, index, no_changes = false }) => {
+    this.unit_tests[id] = async (index, ctx) => {
       const extract_input = async (id2, source_file2) => {
         if (source_file2 == null)
           return void 0;
@@ -141,8 +141,8 @@ class Module {
               for (const prop of args[0].properties) {
                 if (!ts.isPropertyAssignment(prop))
                   continue;
-                const name = prop.name;
-                const key = ts.isIdentifier(name) ? name.text : ts.isStringLiteral(name) ? name.text : "";
+                const name2 = prop.name;
+                const key = ts.isIdentifier(name2) ? name2.text : ts.isStringLiteral(name2) ? name2.text : "";
                 if (key === "id" && ts.isStringLiteral(prop.initializer) && prop.initializer.text === id2) {
                   foundId = true;
                 }
@@ -200,7 +200,7 @@ ${input.split("\n").map((l) => `   | ${import_vlib.Color.gray(l)}`).join("\n")}`
         }
         import_vlib.debug.raw(` * Unit test output: 
 ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
-        if (cached_data && !no_changes) {
+        if (cached_data && !ctx.no_changes) {
           const { status, diff } = (0, import_compute_diff.compute_diff)({
             new: response,
             old: cached_data,
@@ -262,7 +262,6 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
       try {
         let res = callback({
           id,
-          hash: import_vlib.Utils.hash,
           debug: import_vlib.debug,
           expect
         });
@@ -279,20 +278,23 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
           import_vlib.debug.raw(import_vlib.Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
           cached = void 0;
         }
-        const h = import_vlib.Utils.hash(res_str, "sha256", "hex");
-        const success = cached?.hash === h;
-        if (success || !interactive) {
+        const og_hash = import_vlib.Utils.hash(res_str, "sha256", "hex");
+        const success = cached?.hash === og_hash;
+        if (success || !ctx.interactive) {
           import_vlib.debug.raw(1, `Unit test output: 
 ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
-          import_vlib.debug.raw(1, `Unit test output hash: ${import_vlib.Color.gray(h)}`);
+          import_vlib.debug.raw(1, `Unit test output hash: ${import_vlib.Color.gray(og_hash)}`);
         }
         if (success) {
-          return { success: true, hash: h, output: res_str, expect };
+          return { success: true, hash: og_hash, output: res_str, expect };
         }
-        if (interactive) {
-          return enter_interactive_on_failure(h, res_str);
+        if (ctx.strip_colors && cached && import_vlib.Utils.hash(import_vlib.Color.strip(res_str), "sha256", "hex") === import_vlib.Utils.hash(import_vlib.Color.strip(cached.data), "sha256", "hex")) {
+          return { success: true, hash: og_hash, output: res_str, expect };
         }
-        return { success: false, hash: h, output: res_str, expect };
+        if (ctx.interactive) {
+          return enter_interactive_on_failure(og_hash, res_str);
+        }
+        return { success: false, hash: og_hash, output: res_str, expect };
       } catch (e) {
         if (expect !== "error") {
           import_vlib.debug.raw(import_vlib.Color.red_bold("Encountered an error while expecting success."));
@@ -305,14 +307,14 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
         const res_str = String(e?.message ?? e);
         const h = import_vlib.Utils.hash(res_str, "sha256", "hex");
         const success = cached?.hash === h;
-        if (success || !interactive) {
+        if (success || !ctx.interactive) {
           import_vlib.debug.raw(1, "Unit test error output: ", e);
           import_vlib.debug.raw(1, "Unit test hash: ", import_vlib.Color.gray(h));
         }
         if (success) {
           return { success: true, hash: h, output: res_str, expect };
         }
-        if (interactive) {
+        if (ctx.interactive) {
           return enter_interactive_on_failure(h, res_str);
         }
         return { success: false, hash: h, output: res_str, expect };
@@ -323,27 +325,26 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
   /**
    * Run the unit tests of the module
    */
-  async _run({ output, target, stop_on_failure = false, stop_after, interactive = true, repeat = 0, no_changes = false }) {
+  async run(ctx) {
     import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
     let failed = 0, succeeded = 0;
     let unit_tests = this.unit_tests;
-    if (target != null) {
-      if (target.includes("*")) {
-        const regex = new RegExp(target.replaceAll("*", ".*?"));
+    if (ctx.target != null) {
+      if (ctx.target.includes("*")) {
+        const regex = new RegExp(ctx.target.replaceAll("*", ".*?"));
         unit_tests = Object.fromEntries(Object.entries(this.unit_tests).filter(([id]) => regex.test(id)));
       } else {
-        if (unit_tests[target] === void 0) {
-          throw new Error(`Unit test "${target}" was not found`);
+        if (unit_tests[ctx.target] === void 0) {
+          throw new Error(`Unit test "${ctx.target}" was not found`);
         }
-        const unit_test = unit_tests[target];
-        unit_tests = { [target]: unit_test };
+        const unit_test = unit_tests[ctx.target];
+        unit_tests = { [ctx.target]: unit_test };
       }
     }
-    await this.init_mod_cache(output);
-    const all_yes_insertions = [];
-    for (let i = 0; i <= repeat; ++i) {
-      if (repeat !== 0) {
+    await this.init_mod_cache(ctx.output);
+    for (let i = 0; i <= ctx.repeat; ++i) {
+      if (ctx.repeat !== 0) {
         import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing repetition ${i + 1} of unit test ${this.name}.`));
       }
@@ -354,11 +355,7 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
         const id = ids[id_index];
         let res;
         try {
-          res = await unit_tests[id]({
-            interactive,
-            index: id_index,
-            no_changes
-          });
+          res = await unit_tests[id](id_index, ctx);
         } catch (e) {
           import_vlib.debug.raw(`${import_vlib.Colors.red}${import_vlib.Colors.bold}Error${import_vlib.Colors.end}: Encountered an error during unit test "${id}".`);
           throw e;
@@ -370,12 +367,12 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
         } else {
           import_vlib.debug.raw(`${prefix2} ${import_vlib.Colors.red}${import_vlib.Colors.bold}failed${import_vlib.Colors.end}`);
           ++failed;
-          if (stop_on_failure || res.hash == null && interactive) {
+          if (ctx.stop_on_failure || res.hash == null && ctx.interactive) {
             import_vlib.debug.raw(`Stopping unit tests on failure.`);
             break;
           }
         }
-        if (stop_after === id) {
+        if (ctx.stop_after === id) {
           import_vlib.debug.raw(`Stopping unit tests after "${id}".`);
           return { status: false, failed, succeeded };
         }
@@ -429,6 +426,26 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
     import_vlib.debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
   }
 }
+(function(Module2) {
+  let Context;
+  (function(Context2) {
+    ;
+    function create(opts) {
+      return {
+        target: opts.target,
+        interactive: opts.interactive ?? true,
+        no_changes: opts.no_changes ?? false,
+        stop_on_failure: opts.stop_on_failure ?? false,
+        stop_after: opts.stop_after,
+        repeat: opts.repeat ?? 0,
+        strip_colors: opts.strip_colors ?? false,
+        output: opts.output
+        // ?? new Path("./.unit_tests"),
+      };
+    }
+    Context2.create = create;
+  })(Context = Module2.Context || (Module2.Context = {}));
+})(Module || (Module = {}));
 const Modules = [];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

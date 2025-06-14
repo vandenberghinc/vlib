@@ -239,7 +239,7 @@ export class FilePipe extends Pipe<false, true> {
     public log(...args: (Directive | Error | any)[]): void {
         let {
             local_level, active_log_level,
-            is_raw, mode, loc, local_level_arg_index
+            is_raw, log_mode: mode, loc, local_level_arg_index
         } = this.parse_directives(args);
 
         // Dont show location by default.

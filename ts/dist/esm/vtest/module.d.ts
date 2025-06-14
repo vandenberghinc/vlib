@@ -9,8 +9,7 @@ type Expect = "error" | "success";
 export type Callback = (args: {
     id: string;
     expect: Expect;
-    hash: (data: string) => string;
-    debug: Logger;
+    debug: Logger<any, any>;
 }) => Promise<any> | any;
 /**
  * Unit test module.
@@ -26,7 +25,8 @@ export declare class Module {
      * Create a unit test module.
      * @param name The name of the module.
      */
-    constructor({ name }: {
+    constructor(opts: {
+        /** The name of the module. */
         name: string;
     });
     /**
@@ -54,15 +54,7 @@ export declare class Module {
     /**
      * Run the unit tests of the module
      */
-    _run({ output, target, stop_on_failure, stop_after, interactive, repeat, no_changes, }: {
-        output: Path;
-        target?: string;
-        stop_on_failure?: boolean;
-        stop_after?: string;
-        interactive?: boolean;
-        repeat?: number;
-        no_changes?: boolean;
-    }): Promise<{
+    run(ctx: Module.Context): Promise<{
         status: boolean;
         failed: number;
         succeeded: number;
@@ -78,6 +70,34 @@ export declare class Module {
         target: GlobPatternList.T | GlobPatternList.T[];
         yes?: boolean;
     }): Promise<void>;
+}
+export declare namespace Module {
+    /** The initialized module context. */
+    type Context = Required<Omit<Context.Opts, "output" | "target" | "stop_after">> & Pick<Context.Opts, "output" | "target" | "stop_after">;
+    /** Types for the context type. */
+    namespace Context {
+        /** The context input options. */
+        interface Opts {
+            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
+            target?: string;
+            /** Whether to enter interactive mode on failure. */
+            interactive?: boolean;
+            /** Do not show the diff from cached and new data. */
+            no_changes?: boolean;
+            /** Whether to stop on a failed unit test. */
+            stop_on_failure?: boolean;
+            /** The unit test id to stop after. */
+            stop_after?: string;
+            /** The number of times to repeat the tests. Defaults to 1. */
+            repeat?: number;
+            /** Whether to strip colors from the output. */
+            strip_colors?: boolean;
+            /** The path to the output directory. */
+            output: Path;
+        }
+        /** Create a context object from an options object. */
+        function create(opts: Opts): Context;
+    }
 }
 /**
  * The unit tests module cache.

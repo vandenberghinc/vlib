@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { ActiveLogLevel, Directive, ModeType, DirectivesOpts } from './directives.js';
+import { ActiveLogLevel, Directive, LogMode, ParsedDirectives } from './directives.js';
 /**
  * Wrapper type for supported pipe arguments.
  * Purely for denoting types that are handled differently such as directives and `Error` instances.
@@ -16,11 +16,11 @@ export declare namespace Pipe {
     type Info = {
         data?: never;
         ignored: true;
-        mode: ModeType;
+        log_mode: LogMode;
     } | {
         data: any[];
         ignored?: false;
-        mode: ModeType;
+        log_mode: LogMode;
     };
 }
 /**
@@ -65,7 +65,7 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
      * It should return any type that can be joined by `.join()` as a child of the `msg` array.
      * If the transform function returns `Ignore`, the argument will be ignored.
      */
-    protected _transform?: (input: any) => typeof Directive.ignore | any;
+    protected _transform?: (input: any) => Directive.ignore | any;
     /**
      * Constructor
      * @param log_level
@@ -91,7 +91,7 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
     constructor({ log_level, out, err, transform, accumulate }: {
         out?: (msg: string) => void;
         err?: (msg: string) => void;
-        transform?: (input: any) => typeof Directive.ignore | any;
+        transform?: (input: any) => Directive.ignore | any;
     } & (Logged extends true ? {
         log_level: ActiveLogLevel | number;
     } : {
@@ -112,13 +112,13 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
     /** Wrapper to push an arg to two arrays. */
     protected push_arg(msg: any[], file_msg: undefined | any[], item: any): void;
     /** Add args. */
-    protected add_args(msg: any[], file_msg: undefined | any[], args: Args, mode: ModeType, level: number, active_log_level: number, local_level_arg_index: number | undefined): void;
+    protected add_args(msg: any[], file_msg: undefined | any[], args: Args, log_mode: LogMode, level: number, active_log_level: number, local_level_arg_index: number | undefined): void;
     /**
      * Parse the directives and log levels.
      * @param args the args to extract the directives from.
      * @param directives optional directives to override with parse.
      */
-    protected parse_directives(args: Args, directives?: Partial<DirectivesOpts>, out?: Partial<DirectivesOpts>): DirectivesOpts;
+    protected parse_directives(args: Args, directives?: Partial<ParsedDirectives>, out?: Partial<ParsedDirectives>): ParsedDirectives;
     /**
      * Trim trailing spaces from the message array.
      */
@@ -163,7 +163,7 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
      *      The first number is treated as the local log level. However, only when the `log_level` was defined upon Pipe construction.
      *      Any other directives are allowed before the first non-directive / local log level argument.
      */
-    pipe(args: (Directive | Error | any)[], directives?: Partial<DirectivesOpts>): Pipe.Info;
+    pipe(args: (Directive | Error | any)[], directives?: Partial<ParsedDirectives>): Pipe.Info;
     /**
      * Join data and return the result as a string.
      * This ignores the current log level.

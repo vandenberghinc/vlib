@@ -558,9 +558,23 @@ export class Path {
         }
         return undefined;
     }
-    /** Convert to a unix based path. */
-    unix() {
+    /** Convert to a POSIX-style Path. */
+    posix() {
         return new Path(this.path.split(pathlib.sep).join('/'), false);
+    }
+    /** Static: convert `path` to a POSIX-style Path. */
+    static posix(path) {
+        if (path instanceof Path) {
+            return new Path(path.path.split(pathlib.sep).join('/'), false);
+        }
+        return new Path(path.split(pathlib.sep).join('/'), false);
+    }
+    /** Static: return `path` as a POSIX-style string. */
+    static posix_str(path) {
+        if (path instanceof Path) {
+            return path.path.split(pathlib.sep).join('/');
+        }
+        return path.split(pathlib.sep).join('/');
     }
     /**
      * Get the full name of the path, including the file extension.

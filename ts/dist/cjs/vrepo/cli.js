@@ -27,12 +27,7 @@ var import_path = __toESM(require("path"));
 var import_node_child_process = require("node:child_process");
 var vlib = __toESM(require("../vlib/index.js"));
 var import_repo = require("./repo.js");
-const find_config_path = () => vlib.cli.find_config_path({
-  name: ["vrepo", ".vrepo"],
-  extension: ["", ".json", ".jsonc"],
-  up: 1,
-  cwd: process.cwd()
-})?.path;
+const find_config_path = () => import_repo.Repo.find_config_path()?.path;
 const cli = new vlib.cli.CLI({ name: "vrepo", version: "1.0.2", strict: true });
 cli.command({
   id: "--add-remote",

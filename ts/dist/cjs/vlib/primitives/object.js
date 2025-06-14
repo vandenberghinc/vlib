@@ -320,8 +320,8 @@ var ObjectUtils;
       const items = [];
       let total_len = 0;
       for (const key of keys) {
-        const formatted_key = opts.json || !/^[\w]+$/.test(key) ? JSON.stringify(key) : key;
-        const colored_key = opts.colored ? `${import_colors.Colors.cyan}${formatted_key}${import_colors.Colors.end}` : `${formatted_key}`;
+        const formatted_key = opts.json ? JSON.stringify(key) : key;
+        const colored_key = opts.colored && opts.json ? `${import_colors.Colors.cyan}${formatted_key}${import_colors.Colors.end}` : `${formatted_key}`;
         const colored_val = _stringify_helper(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
         const item = `${next_indent}${colored_key}${opts.colored ? import_colors.Colors.light_gray : ""}: ${opts.colored ? import_colors.Colors.end : ""}${colored_val}`;
         if (opts.max_length != null && item.length + total_len > opts.max_length) {
@@ -374,7 +374,7 @@ var ObjectUtils;
     }
     opts.start_indent ??= 0;
     if (opts.indent !== false) {
-      opts._indent_str ??= "    ";
+      opts._indent_str ??= " ".repeat(opts.indent);
     }
     return _stringify_helper(value, opts.indent === false ? false : opts.start_indent, 0, opts, circular_cache);
   }

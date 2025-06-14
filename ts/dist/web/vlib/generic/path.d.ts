@@ -190,8 +190,12 @@ export declare class Path {
      * @returns The parent Path instance, or undefined if at root.
      */
     base(back?: number): Path | undefined;
-    /** Convert to a unix based path. */
-    unix(): Path;
+    /** Convert to a POSIX-style Path. */
+    posix(): Path;
+    /** Static: convert `path` to a POSIX-style Path. */
+    static posix(path: string | Path): Path;
+    /** Static: return `path` as a POSIX-style string. */
+    static posix_str(path: string | Path): string;
     /**
      * Get the full name of the path, including the file extension.
      * @param with_ext - Whether to include the file extension in the returned name (default: true).

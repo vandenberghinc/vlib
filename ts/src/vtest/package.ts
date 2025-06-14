@@ -78,6 +78,10 @@ export namespace Config {
                 type: ["string", "array"],
                 required: false,
             },
+            strip_colors: {
+                type: ["boolean"],
+                required: false,
+            },
         },
     });
 }
@@ -283,15 +287,7 @@ export class Package {
             if (!mod) {
                 throw new Error(`Module "${opts.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`,);
             }
-            const res = await mod._run({
-                target: opts.target,
-                stop_on_failure: opts.stop_on_failure,
-                stop_after: opts.stop_after,
-                interactive: opts.interactive,
-                output: output_dir,
-                repeat: opts.repeat,
-                no_changes: opts.no_changes,
-            })
+            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }))
             return res.status;
         }
 
@@ -301,15 +297,7 @@ export class Package {
             if (opts.yes) {
                 throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
             }
-            const res = await mod._run({
-                target: opts.target,
-                stop_on_failure: opts.stop_on_failure,
-                stop_after: opts.stop_after,
-                interactive: opts.interactive,
-                output: output_dir,
-                repeat: opts.repeat,
-                no_changes: opts.no_changes,
-            });
+            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }));
             if (!res.status) { return false; }
             succeeded += res.succeeded || 0;
             failed += res.failed || 0;
@@ -450,23 +438,11 @@ export class Package {
 export namespace Package {
     export namespace run {
         /** Argument options of `Package.run()` */
-        export interface Opts {
+        export interface Opts extends Omit<Module.Context.Opts, "output"> {
             /** The module name to run. If not defined all modules will be run. */
             module?: string;
-            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
-            target?: string;
-            /** Whether to enter interactive mode on failure. */
-            interactive?: boolean;
             /** Automatically answer yes to all prompts. */
             yes?: boolean;
-            /** Do not show the diff from cached and new data. */
-            no_changes?: boolean;
-            /** Whether to stop on a failed unit test. */
-            stop_on_failure?: boolean;
-            /** The unit test id to stop after. */
-            stop_after?: string;
-            /** The number of times to repeat the tests. Defaults to 1. */
-            repeat?: number;
             /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
             debug?: string | number;
         }

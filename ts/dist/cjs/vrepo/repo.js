@@ -50,7 +50,7 @@ class Repo {
   // Wrapper function to locate the configuration file.
   static find_config_path(cwd = process.cwd()) {
     return import_vlib.CLI.find_config_path({
-      name: ["vtest", ".vtest"],
+      name: ["vrepo", ".vrepo"],
       extension: ["", ".json", ".jsonc"],
       up: 1,
       cwd

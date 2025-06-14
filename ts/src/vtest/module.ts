@@ -24,8 +24,7 @@ type Expect = "error" | "success";
 export type Callback = (args: {
     id: string;
     expect: Expect,
-    hash: (data: string) => string;
-    debug: Logger;
+    debug: Logger<any, any>;
 }) => Promise<any> | any;
 
 /** Cache for all unit test responses mapped per module per unit test */
@@ -50,11 +49,10 @@ export class Module {
     // Added unit tests.
     private unit_tests: Record<
         string,
-        (args: {
-            interactive: boolean,
+        (
             index: number, // index of the unit test in the module.
-            no_changes: boolean,
-        }) => Promise<{ success: boolean, hash?: string, output?: string, expect: Expect }>
+            ctx: Module.Context,
+        ) => Promise<{ success: boolean, hash?: string, output?: string, expect: Expect }>
     > = {};
 
     // Mod cache.
@@ -67,17 +65,18 @@ export class Module {
      * Create a unit test module.
      * @param name The name of the module.
      */
-    constructor({ name }: {
+    constructor(opts: {
+        /** The name of the module. */
         name: string,
     }) {
 
         // Check errors.
-        if (Modules.find(i => i.name === name)) {
+        if (Modules.find(i => i.name === opts.name)) {
             throw new Error(`Unit test module "${name}" already exists.`);
         }
 
         // Attributes.
-        this.name = name;
+        this.name = opts.name;
 
         // Add to unit test modules.
         Modules.push(this);
@@ -149,11 +148,7 @@ export class Module {
         const loc = new SourceLoc(1);
 
         // Add unit test.
-        this.unit_tests[id] = async ({
-            interactive,
-            index,
-            no_changes = false,
-        }) => {
+        this.unit_tests[id] = async (index: number, ctx: Module.Context) => {
 
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
@@ -310,7 +305,7 @@ export class Module {
 
 
                 // Provide additional info show what has changed based on previous data.
-                if (cached_data && !no_changes) {
+                if (cached_data && !ctx.no_changes) {
                     const { status, diff } = compute_diff({
                         new: response,
                         old: cached_data,
@@ -384,7 +379,6 @@ export class Module {
             try {
                 let res = callback({
                     id,
-                    hash: Utils.hash,
                     debug,
                     expect,
                 });
@@ -404,23 +398,33 @@ export class Module {
                 }
 
                 // Check hash,
-                const h = Utils.hash(res_str, "sha256", "hex");
-                const success = cached?.hash === h;
-                if (success || !interactive) {
+                const og_hash = Utils.hash(res_str, "sha256", "hex");
+                const success = cached?.hash === og_hash;
+                if (success || !ctx.interactive) {
                     debug.raw(1, `Unit test output: \n${res_str.split("\n").map(l => ` | ${l}`).join("\n")}`);
-                    debug.raw(1, `Unit test output hash: ${Color.gray(h)}`);
+                    debug.raw(1, `Unit test output hash: ${Color.gray(og_hash)}`);
                 }
                 if (success) {
-                    return { success: true, hash: h, output: res_str, expect };
+                    return { success: true, hash: og_hash, output: res_str, expect };
+                }
+
+                // Check the hash while removing colors.
+                if (
+                    ctx.strip_colors
+                    && cached
+                    && Utils.hash(Color.strip(res_str), "sha256", "hex") ===
+                       Utils.hash(Color.strip(cached.data), "sha256", "hex")
+                ) {
+                    return { success: true, hash: og_hash, output: res_str, expect };
                 }
 
                 // Interactive mode.
-                if (interactive) {
-                    return enter_interactive_on_failure(h, res_str);
+                if (ctx.interactive) {
+                    return enter_interactive_on_failure(og_hash, res_str);
                 }
 
                 // Response.
-                return { success: false, hash: h, output: res_str, expect };
+                return { success: false, hash: og_hash, output: res_str, expect };
 
                 // Handle error, could be expected or not expected.
             } catch (e: any) {
@@ -441,7 +445,7 @@ export class Module {
                 const success = cached?.hash === h;
 
                 // Logs.
-                if (success || !interactive) {
+                if (success || !ctx.interactive) {
                     debug.raw(1, "Unit test error output: ", e)
                     debug.raw(1, "Unit test hash: ", Color.gray(h))
                 }
@@ -452,7 +456,7 @@ export class Module {
                 }
 
                 // Interactive mode.
-                if (interactive) {
+                if (ctx.interactive) {
                     return enter_interactive_on_failure(h, res_str);
                 }
 
@@ -466,23 +470,7 @@ export class Module {
     /**
      * Run the unit tests of the module
      */
-    async _run({
-        output,
-        target,
-        stop_on_failure = false,
-        stop_after,
-        interactive = true,
-        repeat = 0,
-        no_changes = false,
-    }: {
-        output: Path;
-        target?: string;
-        stop_on_failure?: boolean;
-        stop_after?: string;
-        interactive?: boolean;
-        repeat?: number;
-        no_changes?: boolean;
-    }): Promise<{ status: boolean, failed: number, succeeded: number }> {
+    async run(ctx: Module.Context): Promise<{ status: boolean, failed: number, succeeded: number }> {
 
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
@@ -492,30 +480,30 @@ export class Module {
         let unit_tests = this.unit_tests;
 
         // Extract target.
-        if (target != null) {
-            if (target.includes("*")) {
-                const regex = new RegExp(target.replaceAll("*", ".*?"));
+        if (ctx.target != null) {
+            if (ctx.target.includes("*")) {
+                const regex = new RegExp(ctx.target.replaceAll("*", ".*?"));
                 unit_tests = Object.fromEntries(
                     Object.entries(this.unit_tests).filter(([id]) => regex.test(id))
                 );
             } else {
-                if (unit_tests[target] === undefined) {
-                    throw new Error(`Unit test "${target}" was not found`);
+                if (unit_tests[ctx.target] === undefined) {
+                    throw new Error(`Unit test "${ctx.target}" was not found`);
                 }
-                const unit_test = unit_tests[target];
-                unit_tests = { [target]: unit_test };
+                const unit_test = unit_tests[ctx.target];
+                unit_tests = { [ctx.target]: unit_test };
             }
         }
 
         // Initialize cache.
-        await this.init_mod_cache(output);
+        await this.init_mod_cache(ctx.output);
 
         // Cached all yes insertions.
-        const all_yes_insertions: { id: string, hash: string, output: string, expect: Expect }[] = [];
+        // const all_yes_insertions: { id: string, hash: string, output: string, expect: Expect }[] = [];
 
         // For every repeat.
-        for (let i = 0; i <= repeat; ++i) {
-            if (repeat !== 0) {
+        for (let i = 0; i <= ctx.repeat; ++i) {
+            if (ctx.repeat !== 0) {
                 debug.raw(Color.cyan_bold(`\nCommencing repetition ${i + 1} of unit test ${this.name}.`));
             }
             failed = 0, succeeded = 0;
@@ -529,11 +517,7 @@ export class Module {
                 // Execute unit test.
                 let res: { success: boolean, hash?: string, output?: string, expect: Expect };
                 try {
-                    res = await unit_tests[id]({
-                        interactive,
-                        index: id_index,
-                        no_changes,
-                    });
+                    res = await unit_tests[id](id_index, ctx);
                 }
                 catch (e: any) {
                     debug.raw(`${Colors.red}${Colors.bold}Error${Colors.end}: Encountered an error during unit test "${id}".`);
@@ -553,14 +537,14 @@ export class Module {
                     debug.raw(`${prefix} ${Colors.red}${Colors.bold}failed${Colors.end}`);
                     ++failed;
                     if (
-                        stop_on_failure
-                        || (res.hash == null && interactive) // also stop when interactive is enabled and false is returned because that means that we could not assign a success status.
+                        ctx.stop_on_failure
+                        || (res.hash == null && ctx.interactive) // also stop when interactive is enabled and false is returned because that means that we could not assign a success status.
                     ) {
                         debug.raw(`Stopping unit tests on failure.`);
                         break;
                     }
                 }
-                if (stop_after === id) {
+                if (ctx.stop_after === id) {
                     debug.raw(`Stopping unit tests after "${id}".`);
                     return { status: false, failed, succeeded };
                 }
@@ -661,6 +645,51 @@ export class Module {
         }
         await this.save_mod_cache();
         debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
+    }
+}
+export namespace Module {
+
+    /** The initialized module context. */
+    export type Context =
+        Required<Omit<Context.Opts, "output" | "target" | "stop_after">>
+        & Pick<Context.Opts, "output" | "target" | "stop_after">;
+
+    /** Types for the context type. */
+    export namespace Context {
+        
+        /** The context input options. */
+        export interface Opts {
+            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
+            target?: string;
+            /** Whether to enter interactive mode on failure. */
+            interactive?: boolean;
+            /** Do not show the diff from cached and new data. */
+            no_changes?: boolean;
+            /** Whether to stop on a failed unit test. */
+            stop_on_failure?: boolean;
+            /** The unit test id to stop after. */
+            stop_after?: string;
+            /** The number of times to repeat the tests. Defaults to 1. */
+            repeat?: number;
+            /** Whether to strip colors from the output. */
+            strip_colors?: boolean;
+            /** The path to the output directory. */
+            output: Path;
+        };
+
+        /** Create a context object from an options object. */
+        export function create(opts: Opts): Context {
+            return {
+                target: opts.target,
+                interactive: opts.interactive ?? true,
+                no_changes: opts.no_changes ?? false,
+                stop_on_failure: opts.stop_on_failure ?? false,
+                stop_after: opts.stop_after,
+                repeat: opts.repeat ?? 0,
+                strip_colors: opts.strip_colors ?? false,
+                output: opts.output// ?? new Path("./.unit_tests"),
+            };
+        }
     }
 }
 

@@ -31,5 +31,5 @@ export * from "./clipboard/index.web.js";
  * Version number
  * Inserted by vts after compilation
  * @ts-expect-error */
-export const version = '1.6.20';
+export const version = '1.6.21';
 //# sourceMappingURL=index.web.js.map

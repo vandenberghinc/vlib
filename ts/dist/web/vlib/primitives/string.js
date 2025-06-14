@@ -185,18 +185,33 @@ var StringUtils;
      * Returns true if all characters are uppercase (digits optional).
      */
     function is_uppercase(data, allow_digits = false) {
-        let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        if (allow_digits)
-            allowed += "0123456789";
-        return [...data].every(c => allowed.includes(c));
+        const set = allow_digits ? is_uppercase_plus_num_set : StringUtils.charset.uppercase_set;
+        for (let i = 0; i < data.length; i++) {
+            if (!set.has(data.charAt(i)))
+                return false;
+        }
+        return true;
     }
     StringUtils.is_uppercase = is_uppercase;
+    const is_uppercase_plus_num_set = new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(''));
+    /** Charsets. */
+    StringUtils.charset = {
+        /** All uppercase alphabetical characters. */
+        uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        uppercase_set: new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('')),
+        /** All lowercase alphabetical characters. */
+        lowercase: "abcdefghijklmnopqrstuvwxyz",
+        lowercase_set: new Set("abcdefghijklmnopqrstuvwxyz".split('')),
+        /** All digits. */
+        digits: "0123456789",
+        digits_set: new Set("0123456789".split('')),
+    };
     /**
      * Capitalizes only the first letter of the string.
      */
     function capitalize_word(data) {
         const s = data;
-        if (/[a-z]/.test(s.charAt(0)))
+        if (StringUtils.charset.lowercase_set.has(s.charAt(0)))
             return s.charAt(0).toUpperCase() + s.slice(1);
         return s;
     }
@@ -225,15 +240,26 @@ var StringUtils;
     StringUtils.reverse = reverse;
     /**
      * Generates a random alphanumeric string of the given length.
-     */
-    function random(length = 32) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+     * @param length The length of the random string, default is 32.
+     * @param charset Optional custom character set to use, default is alphanumeric.
+     *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
+    */
+    function random(length = 32, charset) {
         let result = '';
-        for (let i = 0; i < length; i++)
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        if (charset) {
+            for (let i = 0; i < length; i++)
+                result += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        else {
+            for (let i = 0; i < length; i++)
+                result += default_random_charset.charAt(Math.floor(Math.random() * default_random_charset.length));
+        }
         return result;
     }
     StringUtils.random = random;
+    const default_random_charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    /*
+
     /**
      * Returns true if the string contains only digits.
      */

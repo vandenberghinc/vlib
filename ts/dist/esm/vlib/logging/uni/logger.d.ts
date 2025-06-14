@@ -11,10 +11,11 @@ import { SourceLoc } from "./source_loc.js";
  * Used for logging or debugging purposes.
  * Takes a generic input pipe, to support other pipes such as a `FilePipe`.
  *
- * @template D The debug mode flag, defaults to `false`.
+ * @template D The 'debug' mode flag, defaults to `false`.
+ * @template R The 'raw' mode flag, defaults to `false`.
  * @template P The pipe type, defaults to `Pipe<boolean, true>`.
  */
-export declare class Logger<D extends boolean = false, P extends Pipe<boolean, true> = Pipe<boolean, true>> extends Callable<Args, void> {
+export declare class Logger<D extends boolean = boolean, R extends boolean = boolean, P extends Pipe<boolean, true> = Pipe<boolean, true>> extends Callable<Args, void> {
     /** The active log level. */
     readonly level: ActiveLogLevel;
     /** The pipe instance. */
@@ -25,7 +26,9 @@ export declare class Logger<D extends boolean = false, P extends Pipe<boolean, t
      * When debug mode is enabled, trace locations are shown for log messages.
      * Not for errors and warnings, since they often contain their own source locations.
      */
-    private _debug_flag;
+    private debug_flag;
+    /** The raw flag, when `true` everything will be logged in raw mode. */
+    private raw_flag;
     /**
      * @dev_note Dont allow any other options than object, so we can infer D
      *           Otherwise it causes issues for the default value of `debug`.
@@ -38,12 +41,14 @@ export declare class Logger<D extends boolean = false, P extends Pipe<boolean, t
      * @param opts.level The log level to set for this debug instance, defaults to 0.
      *                   Any provided `ActiveLogLevel` will not be copied but used as a reference instead.
      * @param opts.debug If `true`, the debug instance show trace locations for log messages, not for errors and warnings.
+     * @param opts.raw When `true`, timestamps will not be shown on log messages.
      * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
      *                  This attribute is required when a custom `P` generic is provided.
      */
     constructor(opts: {
         level?: number | ActiveLogLevel;
         debug?: D;
+        raw?: R;
         pipe?: P;
     });
     /**

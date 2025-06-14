@@ -38,7 +38,9 @@ class Logger extends import_callable.Callable {
    * When debug mode is enabled, trace locations are shown for log messages.
    * Not for errors and warnings, since they often contain their own source locations.
    */
-  _debug_flag;
+  debug_flag;
+  /** The raw flag, when `true` everything will be logged in raw mode. */
+  raw_flag;
   /**
    * @dev_note Dont allow any other options than object, so we can infer D
    *           Otherwise it causes issues for the default value of `debug`.
@@ -51,12 +53,14 @@ class Logger extends import_callable.Callable {
    * @param opts.level The log level to set for this debug instance, defaults to 0.
    *                   Any provided `ActiveLogLevel` will not be copied but used as a reference instead.
    * @param opts.debug If `true`, the debug instance show trace locations for log messages, not for errors and warnings.
+   * @param opts.raw When `true`, timestamps will not be shown on log messages.
    * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
    *                  This attribute is required when a custom `P` generic is provided.
    */
   constructor(opts) {
     super();
-    this._debug_flag = opts.debug ? import_directives.Directive.debug : import_directives.Directive.log;
+    this.debug_flag = opts.debug ? import_directives.Directive.debug : import_directives.Directive.not_a_directive;
+    this.raw_flag = opts.raw ? import_directives.Directive.raw : import_directives.Directive.not_a_directive;
     this.pipe = opts.pipe ?? new import_pipe.Pipe({
       log_level: 0,
       out: console.log,
@@ -75,7 +79,7 @@ class Logger extends import_callable.Callable {
    * @funcs 2
    */
   call(log_level, ...args) {
-    this.pipe.log(this.level, this._debug_flag, new import_source_loc.SourceLoc(2), log_level, ...args);
+    this.pipe.log(this.level, this.debug_flag, this.raw_flag, new import_source_loc.SourceLoc(2), log_level, ...args);
   }
   /**
    * Check if the local log level is active.
@@ -91,10 +95,10 @@ class Logger extends import_callable.Callable {
    * @param args Log arguments to pass to the pipe.
    */
   raw(level, ...args) {
-    this.pipe.raw(this.level, this._debug_flag, import_directives.Directive.raw, new import_source_loc.SourceLoc(1), level, ...args);
+    this.pipe.log(this.debug_flag, this.raw_flag, new import_source_loc.SourceLoc(1), level, ...args);
   }
   dump(level, ...args) {
-    this.pipe.raw(this.level, this._debug_flag, import_directives.Directive.raw, new import_source_loc.SourceLoc(1), level, ...args);
+    this.pipe.log(this.debug_flag, this.raw_flag, new import_source_loc.SourceLoc(1), level, ...args);
   }
   /**
    * {Errors}
@@ -103,7 +107,7 @@ class Logger extends import_callable.Callable {
    * @param args The data to log.
    */
   error(...args) {
-    this.call(-1, import_directives.Directive.raw, import_directives.Directive.error, new import_source_loc.SourceLoc(1), ...args);
+    this.pipe.log(-1, this.raw_flag, import_directives.Directive.error, new import_source_loc.SourceLoc(1), ...args);
   }
   /**
    * {Warn}
@@ -114,10 +118,10 @@ class Logger extends import_callable.Callable {
    * @funcs 2
    */
   warn(level, ...args) {
-    this.call(import_directives.Directive.raw, import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...args);
+    this.pipe.log(this.raw_flag, import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...args);
   }
   warning(level, ...args) {
-    this.call(import_directives.Directive.raw, import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...args);
+    this.pipe.log(this.raw_flag, import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...args);
   }
   /**
    * Update the log level of this debug instance.
@@ -153,9 +157,9 @@ class Logger extends import_callable.Callable {
   /** Create a marker log message. */
   marker(level, ...args) {
     if (typeof level === "number") {
-      this.call(level, this._debug_flag, new import_source_loc.SourceLoc(1), import_colors.Color.blue(">>> "), ...args);
+      this.pipe.log(level, this.debug_flag, this.raw_flag, new import_source_loc.SourceLoc(1), import_colors.Color.blue(">>> "), ...args);
     } else {
-      this.call(this._debug_flag, new import_source_loc.SourceLoc(1), import_colors.Color.blue(">>> "), level, ...args);
+      this.pipe.log(this.debug_flag, this.raw_flag, new import_source_loc.SourceLoc(1), import_colors.Color.blue(">>> "), level, ...args);
     }
   }
 }

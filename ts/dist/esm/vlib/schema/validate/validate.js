@@ -411,6 +411,7 @@ state) {
                     // console.log("Validating unknown attr:", object_keys[x]);
                     if (!entry.schema.has(object_keys[x])
                         && !aliases.has(object_keys[x])) {
+                        console.log("Known fields:", Array.from(entry.schema.keys()));
                         const field = `${state.parent}${object_keys[x]}`;
                         return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is not allowed.`);
                     }

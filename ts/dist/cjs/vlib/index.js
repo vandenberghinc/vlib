@@ -74,7 +74,7 @@ const print = (...args) => import_index_m_node2.log.raw(0, ...args);
 const error = (...args) => import_index_m_node2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);
 const warning = warn;
-const version = "1.6.20";
+const version = "1.6.21";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CLI,

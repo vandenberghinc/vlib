@@ -5,13 +5,11 @@
 
 // Imports.
 import { Date } from "../../primitives/date.js";
-import { Path } from "../../generic/path.js";
 import { Color, Colors } from "../../generic/colors.js";
 import { SourceLoc } from './source_loc.js';
-import { Utils } from '../../generic/utils.js';
-import { ActiveLogLevel, Directive, ModeType, DirectivesOpts } from './directives.js';
-import { Transform } from "../../types/transform.js";
+import { ActiveLogLevel, Directive, LogMode, ParsedDirectives } from './directives.js';
 import { Spinners } from "./spinners.js";
+import { ObjectUtils } from "../../primitives/object.js";
 
 /**
  * Wrapper type for supported pipe arguments.
@@ -27,11 +25,11 @@ export namespace Pipe {
     export type Info = {
         data?: never;
         ignored: true;
-        mode: ModeType;
+        log_mode: LogMode;
     } | {
         data: any[];
         ignored?: false;
-        mode: ModeType;
+        log_mode: LogMode;
     };
 }
 /** 
@@ -84,7 +82,7 @@ export class Pipe<
      * It should return any type that can be joined by `.join()` as a child of the `msg` array.
      * If the transform function returns `Ignore`, the argument will be ignored.
      */
-    protected _transform?: (input: any) => typeof Directive.ignore | any;
+    protected _transform?: (input: any) => Directive.ignore | any;
 
     /**
      * Constructor
@@ -112,7 +110,7 @@ export class Pipe<
         {
             out?: (msg: string) => void,
             err?: (msg: string) => void,
-            transform?: (input: any) => typeof Directive.ignore | any;
+            transform?: (input: any) => Directive.ignore | any;
         }
         & (Logged extends true ? { log_level: ActiveLogLevel | number } : { log_level?: never })
         & (Accumulated extends true ? { accumulate: true } : { accumulate?: never })
@@ -155,7 +153,7 @@ export class Pipe<
         msg: any[],
         file_msg: undefined | any[],
         args: Args,
-        mode: ModeType,
+        log_mode: LogMode,
         level: number,
         active_log_level: number,
         local_level_arg_index: number | undefined,
@@ -165,15 +163,7 @@ export class Pipe<
             let item = args[i];
             let transformed = false;
             if (
-                item instanceof SourceLoc
-                || item instanceof ActiveLogLevel
-                || item === Directive.log
-                || item === Directive.debug
-                || item === Directive.warn
-                || item === Directive.error
-                || item === Directive.raw
-                || item === Directive.enforce
-                || item === Directive.ignore
+                Directive.is(item)
                 || (local_level_arg_index != null && i === local_level_arg_index)
             ) {
                 // skip before adding colored objects.
@@ -194,10 +184,10 @@ export class Pipe<
             else if (item instanceof Error) {
                 // convert errors.
                 let add = (item.stack ?? item.message);
-                if (mode === Directive.warn && add.startsWith("Error: ")) {
+                if (log_mode === Directive.warn && add.startsWith("Error: ")) {
                     add = "Warning: " + add.slice(7);
                 }
-                if (mode === Directive.warn) {
+                if (log_mode === Directive.warn) {
                     this.push_arg(msg, file_msg, add.replace(/^Warning: /gm, `${Color.yellow("Warning")}: `));
                 } else {
                     this.push_arg(msg, file_msg, add.replace(/^Error: /gm, `${Color.red("Error")}: `));
@@ -215,7 +205,9 @@ export class Pipe<
                 }
 
                 // Dump objects in color in debug mode.
-                if (mode === Directive.debug && item && typeof item === "object") {
+                if (typeof item === "object" && ObjectUtils.is_plain(item)
+                    // && (log_mode === Directive.debug || log_mode === Directive.error || log_mode === Directive.warn)
+                ) {
                     if (this._transform) {
                         if ((item = this._transform(item)) === Directive.ignore) { continue; }
                         transformed = true;
@@ -223,7 +215,7 @@ export class Pipe<
                     if (item && typeof item === "object") {
                         // dump objects in color.
                         if (level <= active_log_level) {
-                            this.push_arg(msg, file_msg, Color.object(item, { max_depth: 3 }));
+                            this.push_arg(msg, file_msg, Color.object(item, { max_depth: 3, max_length: 25000 }));
                         } else {
                             this.push_arg(msg, file_msg, "[object Object]");
                         }
@@ -233,8 +225,8 @@ export class Pipe<
                 }
                 
                 // Default handling.
-                if (msg.length === start_msg_len && (mode === Directive.error || mode === Directive.warn)) {
-                    this.push_arg(msg, file_msg, mode === Directive.error ? `${Color.red("Error")}: ` : `${Color.yellow("Warning")}: `);
+                if (msg.length === start_msg_len && (log_mode === Directive.error || log_mode === Directive.warn)) {
+                    this.push_arg(msg, file_msg, log_mode === Directive.error ? `${Color.red("Error")}: ` : `${Color.yellow("Warning")}: `);
                 }
                 if (this._transform) {
                     const transformed = this._transform(item);
@@ -252,12 +244,12 @@ export class Pipe<
      */
     protected parse_directives(
         args: Args,
-        directives?: Partial<DirectivesOpts>,
-        out: Partial<DirectivesOpts> = {}
-    ): DirectivesOpts {
+        directives?: Partial<ParsedDirectives>,
+        out: Partial<ParsedDirectives> = {}
+    ): ParsedDirectives {
         out.local_level ??= 0;
         out.active_log_level ??= this.log_level.n ?? 0;
-        out.mode ??= Directive.log;
+        out.log_mode ??= Directive.log;
         out.is_raw ??= false;
         out.enforce ??= false;
         for (let index = 0; index < args.length; index++) {
@@ -266,7 +258,7 @@ export class Pipe<
                 out.loc = item;
             } else if (item === Directive.error || item === Directive.warn || item === Directive.debug) {
                 /** @warning ensure that the last detected mode is used, otherwise it will cause issues with at least `Logger` since it uses a fake `log` directive for non debug mode. */
-                out.mode = item;
+                out.log_mode = item;
             } else if (item === Directive.raw) {
                 out.is_raw = true;
             } else if (item === Directive.enforce) {
@@ -277,7 +269,7 @@ export class Pipe<
             } else if (this.log_level != null && out.local_level_arg_index == null && typeof item === "number") {
                 out.local_level_arg_index = index;
                 out.local_level = item;
-            } else {
+            } else if (item !== Directive.not_a_directive) {
                 break;
             }
         };
@@ -286,7 +278,7 @@ export class Pipe<
                 out[key] = directives[key];
             }
         }
-        return out as DirectivesOpts;
+        return out as ParsedDirectives;
     }
 
     /**
@@ -361,12 +353,12 @@ export class Pipe<
      *      The first number is treated as the local log level. However, only when the `log_level` was defined upon Pipe construction.
      *      Any other directives are allowed before the first non-directive / local log level argument.
      */
-    pipe(args: (Directive | Error | any)[], directives?: Partial<DirectivesOpts>): Pipe.Info {
+    pipe(args: (Directive | Error | any)[], directives?: Partial<ParsedDirectives>): Pipe.Info {
 
         // Check directives.
         let {
             local_level, active_log_level,
-            is_raw, mode, loc, local_level_arg_index,
+            is_raw, log_mode: mode, loc, local_level_arg_index,
             enforce,
         } = this.parse_directives(args, directives);
 
@@ -374,7 +366,7 @@ export class Pipe<
         const msg: any[] = [];
 
         // Skip by log level.
-        if (!enforce && local_level > active_log_level) { return this.add({ ignored: true, mode }); }
+        if (!enforce && local_level > active_log_level) { return this.add({ ignored: true, log_mode: mode }); }
 
         // On raw mode we only add args.
         if (!is_raw) {
@@ -415,7 +407,7 @@ export class Pipe<
         );
 
         // Response.
-        return this.add({ data: msg, mode, ignored: false });
+        return this.add({ data: msg, log_mode: mode, ignored: false });
     }
     
     /**
@@ -464,7 +456,7 @@ export class Pipe<
         ) {
             Spinners.clear_current_line();
         }
-        if (r.mode === Directive.error || r.mode === Directive.warn) { this._err(r.data.join("")) }
+        if (r.log_mode === Directive.error || r.log_mode === Directive.warn) { this._err(r.data.join("")) }
         else { this._out(r.data.join("")) }
     }
 
@@ -481,7 +473,7 @@ export class Pipe<
      * @param args The data to log.
      */
     error(...errs: Args): void {
-        this.log(-1, Directive.error, new SourceLoc(1), ...errs);
+        this.log(Directive.error, new SourceLoc(1), -1, ...errs);
     }
 
     /**

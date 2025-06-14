@@ -333,7 +333,10 @@ export var ObjectUtils;
         }
     }
     /** Helper to stringify any input value. */
-    function _stringify_helper(value, indent_level, // -1 is not supported, that should be converted by stringify().
+    function _stringify_helper(value, 
+    /** The active indent level, or false for no indentation, -1 is not supported. */
+    indent_level, 
+    /** The nested depth for tracking nested limits */
     nested_depth, opts, // attribute `_indent_str` should be assigned by stringify().
     circular_cache) {
         /**
@@ -432,8 +435,8 @@ export var ObjectUtils;
             const items = [];
             let total_len = 0;
             for (const key of keys) {
-                const formatted_key = opts.json || !/^[\w]+$/.test(key) ? JSON.stringify(key) : key;
-                const colored_key = opts.colored
+                const formatted_key = opts.json /* || !/^[\w]+$/.test(key)*/ ? JSON.stringify(key) : key;
+                const colored_key = opts.colored && opts.json // only color keys in JSON mode
                     ? `${Colors.cyan}${formatted_key}${Colors.end}`
                     : `${formatted_key}`;
                 const colored_val = _stringify_helper(value[key], indent_level === false ? indent_level : indent_level + 1, nested_depth + 1, opts, circular_cache);
@@ -494,7 +497,7 @@ export var ObjectUtils;
                     || value instanceof RegExp) {
                     value = value.toString();
                 }
-                // symbols, bigints, etc.
+                // classes, symbols, bigints, etc.
                 if (opts.json) {
                     return opts.colored
                         ? `"${Colors.magenta}${String(value)}${Colors.end}"`
@@ -524,7 +527,7 @@ export var ObjectUtils;
         }
         opts.start_indent ??= 0;
         if (opts.indent !== false) {
-            opts._indent_str ??= "    ";
+            opts._indent_str ??= " ".repeat(opts.indent);
         }
         return _stringify_helper(value, opts.indent === false ? false : opts.start_indent, 0, opts, circular_cache);
     }

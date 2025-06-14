@@ -15,11 +15,13 @@ import { Color } from "../../generic/colors.js";
  * Used for logging or debugging purposes.
  * Takes a generic input pipe, to support other pipes such as a `FilePipe`.
  * 
- * @template D The debug mode flag, defaults to `false`.
+ * @template D The 'debug' mode flag, defaults to `false`.
+ * @template R The 'raw' mode flag, defaults to `false`.
  * @template P The pipe type, defaults to `Pipe<boolean, true>`.
  */
 export class Logger<
-    D extends boolean = false,
+    D extends boolean = boolean,
+    R extends boolean = boolean,
     P extends Pipe<boolean, true> = Pipe<boolean, true>,
 > extends Callable<Args, void> {
 
@@ -35,7 +37,10 @@ export class Logger<
      * When debug mode is enabled, trace locations are shown for log messages.
      * Not for errors and warnings, since they often contain their own source locations.
      */
-    private _debug_flag: D extends true ? typeof Directive.debug : typeof Directive.log;
+    private debug_flag: D extends true ? Directive.debug : Directive.not_a_directive;
+
+    /** The raw flag, when `true` everything will be logged in raw mode. */
+    private raw_flag: R extends true ? Directive.raw : Directive.not_a_directive;
 
     /**
      * @dev_note Dont allow any other options than object, so we can infer D
@@ -49,16 +54,19 @@ export class Logger<
      * @param opts.level The log level to set for this debug instance, defaults to 0.
      *                   Any provided `ActiveLogLevel` will not be copied but used as a reference instead.
      * @param opts.debug If `true`, the debug instance show trace locations for log messages, not for errors and warnings.
+     * @param opts.raw When `true`, timestamps will not be shown on log messages.
      * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
      *                  This attribute is required when a custom `P` generic is provided.
      */
     constructor(opts: {
         level?: number | ActiveLogLevel,
         debug?: D,
+        raw?: R,
         pipe?: P
     }) {
         super();
-        this._debug_flag = opts.debug ? Directive.debug : Directive.log;
+        this.debug_flag = (opts.debug ? Directive.debug : Directive.not_a_directive)// as Logger<D, R, P>["debug_flag"]
+        this.raw_flag = (opts.raw ? Directive.raw : Directive.not_a_directive)// as Logger<D, R, P>["raw_flag"]
         this.pipe = opts.pipe ?? new Pipe<boolean, true>({
             log_level: 0,
             out: console.log,
@@ -78,7 +86,7 @@ export class Logger<
      * @funcs 2
      */
     call(log_level: number | Args[0], ...args: Args): void {
-        this.pipe.log(this.level, this._debug_flag, new SourceLoc(2), log_level, ...args);
+        this.pipe.log(this.level, this.debug_flag, this.raw_flag, new SourceLoc(2), log_level, ...args);
     }
 
     /**
@@ -96,10 +104,10 @@ export class Logger<
      * @param args Log arguments to pass to the pipe.
      */
     raw(level: number | any, ...args: Args): void {
-        this.pipe.raw(this.level, this._debug_flag, Directive.raw, new SourceLoc(1), level, ...args); // do not use console.log here since we join args without a space unlike console.log.
+        this.pipe.log(this.debug_flag, this.raw_flag, new SourceLoc(1), level, ...args); // do not use console.log here since we join args without a space unlike console.log.
     }
     dump(level: number | any, ...args: Args): void {
-        this.pipe.raw(this.level, this._debug_flag, Directive.raw, new SourceLoc(1), level, ...args); // do not use console.log here since we join args without a space unlike console.log.
+        this.pipe.log(this.debug_flag, this.raw_flag, new SourceLoc(1), level, ...args); // do not use console.log here since we join args without a space unlike console.log.
     }
 
     /**
@@ -109,7 +117,7 @@ export class Logger<
      * @param args The data to log.
      */
     error(...args: Args): void {
-        this.call(-1, Directive.raw, Directive.error, new SourceLoc(1), ...args);
+        this.pipe.log(-1, this.raw_flag, Directive.error, new SourceLoc(1), ...args);
     }
 
     /**
@@ -121,10 +129,10 @@ export class Logger<
      * @funcs 2
      */
     warn(level: number | any, ...args: Args): void {
-        this.call(Directive.raw, Directive.warn, new SourceLoc(1), level, ...args);
+        this.pipe.log(this.raw_flag, Directive.warn, new SourceLoc(1), level, ...args);
     }
     warning(level: number | any, ...args: Args): void {
-        this.call(Directive.raw, Directive.warn, new SourceLoc(1), level, ...args);
+        this.pipe.log(this.raw_flag, Directive.warn, new SourceLoc(1), level, ...args);
     }
 
     /**
@@ -164,9 +172,9 @@ export class Logger<
     /** Create a marker log message. */
     marker(level: number | any, ...args: Args): void {
         if (typeof level === "number") {
-            this.call(level, this._debug_flag, new SourceLoc(1), Color.blue(">>> "), ...args);
+            this.pipe.log(level, this.debug_flag, this.raw_flag, new SourceLoc(1), Color.blue(">>> "), ...args);
         } else {
-            this.call(this._debug_flag, new SourceLoc(1), Color.blue(">>> "), level, ...args);
+            this.pipe.log(this.debug_flag, this.raw_flag, new SourceLoc(1), Color.blue(">>> "), level, ...args);
         }
     }
 

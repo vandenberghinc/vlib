@@ -19,18 +19,39 @@ var stdin_exports = {};
 __export(stdin_exports, {
   ActiveLogLevel: () => ActiveLogLevel,
   Directive: () => Directive,
+  LogMode: () => LogMode,
   directive: () => Directive
 });
 module.exports = __toCommonJS(stdin_exports);
-const Directive = {
+var import_source_loc = require("./source_loc.js");
+const SymbolMap = {
   log: Symbol("vlib/debugging/pipe/Log"),
   debug: Symbol("vlib/debugging/pipe/Debug"),
   warn: Symbol("vlib/debugging/pipe/Warn"),
   error: Symbol("vlib/debugging/pipe/Error"),
   raw: Symbol("vlib/debugging/pipe/Raw"),
   enforce: Symbol("vlib/debugging/pipe/Enforce"),
-  ignore: Symbol("vlib/debugging/pipe/Ignore")
+  ignore: Symbol("vlib/debugging/pipe/Ignore"),
+  not_a_directive: Symbol("vlib/debugging/pipe/NotADirective")
 };
+var Directive;
+(function(Directive2) {
+  Directive2.log = SymbolMap.log;
+  Directive2.debug = SymbolMap.debug;
+  Directive2.warn = SymbolMap.warn;
+  Directive2.error = SymbolMap.error;
+  Directive2.raw = SymbolMap.raw;
+  Directive2.enforce = SymbolMap.enforce;
+  Directive2.ignore = SymbolMap.ignore;
+  Directive2.not_a_directive = SymbolMap.not_a_directive;
+  Directive2.set = new Set(Object.values(Directive2));
+  Directive2.is = (value) => value instanceof ActiveLogLevel || value instanceof import_source_loc.SourceLoc || typeof value === "symbol" && Directive2.set.has(value);
+})(Directive || (Directive = {}));
+var LogMode;
+(function(LogMode2) {
+  LogMode2.is = (value) => typeof value === "symbol" && (value === Directive.warn || value === Directive.error || value === Directive.debug);
+})(LogMode || (LogMode = {}));
+;
 class ActiveLogLevel {
   n;
   constructor(n) {
@@ -71,10 +92,10 @@ class ActiveLogLevel {
     return this.n <= level;
   }
 }
-;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ActiveLogLevel,
   Directive,
+  LogMode,
   directive
 });

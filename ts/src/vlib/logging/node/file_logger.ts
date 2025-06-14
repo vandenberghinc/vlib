@@ -12,7 +12,7 @@ import { FilePipe } from "./file_pipe.js";
  * Extension of the Logger class providing file logging capabilities, 
  * while still printing to the console.
  */
-export class FileLogger extends Logger<false, FilePipe> {
+export class FileLogger extends Logger<false, false, FilePipe> {
     
     /**
      * Construct a file logger instance.

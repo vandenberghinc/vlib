@@ -69,6 +69,18 @@ declare namespace StringUtils {
      * Returns true if all characters are uppercase (digits optional).
      */
     function is_uppercase(data: string | String, allow_digits?: boolean): boolean;
+    /** Charsets. */
+    const charset: {
+        /** All uppercase alphabetical characters. */
+        uppercase: string;
+        uppercase_set: Set<string>;
+        /** All lowercase alphabetical characters. */
+        lowercase: string;
+        lowercase_set: Set<string>;
+        /** All digits. */
+        digits: string;
+        digits_set: Set<string>;
+    };
     /**
      * Capitalizes only the first letter of the string.
      */
@@ -87,11 +99,11 @@ declare namespace StringUtils {
     function reverse(data: string | String): string;
     /**
      * Generates a random alphanumeric string of the given length.
-     */
-    function random(length?: number): string;
-    /**
-     * Returns true if the string contains only digits.
-     */
+     * @param length The length of the random string, default is 32.
+     * @param charset Optional custom character set to use, default is alphanumeric.
+     *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
+    */
+    function random(length?: number, charset?: string): string;
     function is_integer_string(data: string | String): boolean;
     /**
      * Returns true if the string is a valid floating-point representation.

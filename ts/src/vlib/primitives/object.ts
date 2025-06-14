@@ -409,7 +409,9 @@ export namespace ObjectUtils {
     /** Helper to stringify any input value. */
     function _stringify_helper(
         value: any,
-        indent_level: false | number, // -1 is not supported, that should be converted by stringify().
+        /** The active indent level, or false for no indentation, -1 is not supported. */
+        indent_level: false | number,
+        /** The nested depth for tracking nested limits */
         nested_depth: number,
         opts: Omit<StringifyOpts, "filter">, // attribute `_indent_str` should be assigned by stringify().
         circular_cache: Set<any>
@@ -525,8 +527,8 @@ export namespace ObjectUtils {
             const items: string[] = []
             let total_len = 0;
             for (const key of keys) {
-                const formatted_key = opts.json || !/^[\w]+$/.test(key) ? JSON.stringify(key) : key;
-                const colored_key = opts.colored
+                const formatted_key = opts.json/* || !/^[\w]+$/.test(key)*/ ? JSON.stringify(key) : key;
+                const colored_key = opts.colored && opts.json // only color keys in JSON mode
                     ? `${Colors.cyan}${formatted_key}${Colors.end}`
                     : `${formatted_key}`;
                 const colored_val = _stringify_helper(
@@ -605,7 +607,7 @@ export namespace ObjectUtils {
                 ) {
                     value = value.toString();
                 }
-                // symbols, bigints, etc.
+                // classes, symbols, bigints, etc.
                 if (opts.json) {
                     return opts.colored
                         ? `"${Colors.magenta}${String(value)}${Colors.end}"`
@@ -636,7 +638,7 @@ export namespace ObjectUtils {
         }
         opts.start_indent ??= 0;
         if (opts.indent !== false) {
-            opts._indent_str ??= "    ";
+            opts._indent_str ??= " ".repeat(opts.indent);
         }
         return _stringify_helper(
             value,

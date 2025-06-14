@@ -3,7 +3,7 @@
 
 
 
-**VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks. While the repository includes a comprehensive C++ codebase, this README focuses on the TypeScript library.
+**VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks.
 
 ## Documentation.
 Full documentation at [Github Pages](https://vandenberghinc.github.io/vlib).
@@ -37,13 +37,18 @@ After installation, you can import and use VLib in your TypeScript or Node.js pr
 import * as vlib from '@vandenberghinc/vlib';
 
 // Example: Validating an object with a Scheme (schema)
-const userSchema = {
-  name: { type: 'string', required: true },
-  age:  { type: 'number', default: 18 }
-};
-const userData = { name: "Alice" };
-const validated = vlib.Scheme.verify({ object: userData, scheme: userSchema });
+const data = { name: "Alice" };
+const validated = vlib.Scheme.validate(data, {
+    throw: true,
+    schema: {
+        name: { type: 'string' },
+        age:  { type: 'number', default: 18 }
+    }
+});
 // validated is now { name: "Alice", age: 18 } with defaults applied
+// also the type of `validated` is inferred from the schema
+// so attribute `validated.age` has type `number`.
+const num: number = validated.age;
 ```
 
 In Node.js, the library's global type extensions are loaded when you import the main module. **Always import `@vandenberghinc/vlib`** before using extended methods on built-ins to avoid runtime errors.

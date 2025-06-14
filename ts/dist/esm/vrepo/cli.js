@@ -11,12 +11,7 @@ import * as vlib from "../vlib/index.js";
 // Imports.
 import { Repo } from "./repo.js";
 // Wrapper function to locate the configuration file.
-const find_config_path = () => vlib.cli.find_config_path({
-    name: ["vrepo", ".vrepo"],
-    extension: ["", ".json", ".jsonc"],
-    up: 1,
-    cwd: process.cwd(),
-})?.path;
+const find_config_path = () => Repo.find_config_path()?.path;
 // CLI.
 const cli = new vlib.cli.CLI({ name: "vrepo", version: "1.0.2", strict: true });
 // ---------------------------------------------------------------

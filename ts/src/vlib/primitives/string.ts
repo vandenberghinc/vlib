@@ -181,17 +181,36 @@ namespace StringUtils {
      * Returns true if all characters are uppercase (digits optional).
      */
     export function is_uppercase(data: string | String, allow_digits = false): boolean {
-        let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        if (allow_digits) allowed += "0123456789";
-        return [...(data as string)].every(c => allowed.includes(c));
+        const set = allow_digits ? is_uppercase_plus_num_set : charset.uppercase_set;
+        for (let i = 0; i < data.length; i++) {
+            if (!set.has(data.charAt(i))) return false;
+        }
+        return true;
     }
+    const is_uppercase_plus_num_set = new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(''));
+
+    /** Charsets. */
+    export const charset = {
+
+        /** All uppercase alphabetical characters. */
+        uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        uppercase_set: new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('')),
+
+        /** All lowercase alphabetical characters. */
+        lowercase: "abcdefghijklmnopqrstuvwxyz",
+        lowercase_set: new Set("abcdefghijklmnopqrstuvwxyz".split('')),
+
+        /** All digits. */
+        digits: "0123456789",
+        digits_set: new Set("0123456789".split('')),
+    };
 
     /**
      * Capitalizes only the first letter of the string.
      */
     export function capitalize_word(data: string | String): string {
         const s = data as string;
-        if (/[a-z]/.test(s.charAt(0))) return s.charAt(0).toUpperCase() + s.slice(1);
+        if (charset.lowercase_set.has(s.charAt(0))) return s.charAt(0).toUpperCase() + s.slice(1);
         return s;
     }
 
@@ -219,13 +238,22 @@ namespace StringUtils {
 
     /**
      * Generates a random alphanumeric string of the given length.
-     */
-    export function random(length = 32): string {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        let result = '';
-        for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+     * @param length The length of the random string, default is 32.
+     * @param charset Optional custom character set to use, default is alphanumeric.
+     *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
+    */
+   export function random(length = 32, charset?: string): string {
+       let result = '';
+       if (charset) {
+           for (let i = 0; i < length; i++) result += charset.charAt(Math.floor(Math.random() * charset.length));
+        } else {
+            for (let i = 0; i < length; i++) result += default_random_charset.charAt(Math.floor(Math.random() * default_random_charset.length));
+        }
         return result;
     }
+    const default_random_charset: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    /*
 
     /**
      * Returns true if the string contains only digits.

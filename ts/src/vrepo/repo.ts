@@ -65,7 +65,7 @@ export class Repo {
     // Wrapper function to locate the configuration file.
     static find_config_path(cwd: string = process.cwd()): Path | undefined {
         return CLI.find_config_path({
-            name: [ "vtest", ".vtest" ],
+            name: ["vrepo", ".vrepo"],
             extension: [ "", ".json", ".jsonc" ],
             up: 1,
             cwd,

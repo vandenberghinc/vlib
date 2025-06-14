@@ -30,13 +30,13 @@ export class Module {
      * Create a unit test module.
      * @param name The name of the module.
      */
-    constructor({ name }) {
+    constructor(opts) {
         // Check errors.
-        if (Modules.find(i => i.name === name)) {
+        if (Modules.find(i => i.name === opts.name)) {
             throw new Error(`Unit test module "${name}" already exists.`);
         }
         // Attributes.
-        this.name = name;
+        this.name = opts.name;
         // Add to unit test modules.
         Modules.push(this);
     }
@@ -97,7 +97,7 @@ export class Module {
         // Get source location.
         const loc = new SourceLoc(1);
         // Add unit test.
-        this.unit_tests[id] = async ({ interactive, index, no_changes = false, }) => {
+        this.unit_tests[id] = async (index, ctx) => {
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
              * where a call like `tests.add("…id…", …, <inputFn>)` occurs.
@@ -229,7 +229,7 @@ export class Module {
                 // Since the diff can be a bit confusing when its largely edited.
                 debug.raw(` * Unit test output: \n${response.split("\n").map(l => `   | ${l}`).join("\n")}`);
                 // Provide additional info show what has changed based on previous data.
-                if (cached_data && !no_changes) {
+                if (cached_data && !ctx.no_changes) {
                     const { status, diff } = compute_diff({
                         new: response,
                         old: cached_data,
@@ -299,7 +299,6 @@ export class Module {
             try {
                 let res = callback({
                     id,
-                    hash: Utils.hash,
                     debug,
                     expect,
                 });
@@ -319,21 +318,28 @@ export class Module {
                     cached = undefined;
                 }
                 // Check hash,
-                const h = Utils.hash(res_str, "sha256", "hex");
-                const success = cached?.hash === h;
-                if (success || !interactive) {
+                const og_hash = Utils.hash(res_str, "sha256", "hex");
+                const success = cached?.hash === og_hash;
+                if (success || !ctx.interactive) {
                     debug.raw(1, `Unit test output: \n${res_str.split("\n").map(l => ` | ${l}`).join("\n")}`);
-                    debug.raw(1, `Unit test output hash: ${Color.gray(h)}`);
+                    debug.raw(1, `Unit test output hash: ${Color.gray(og_hash)}`);
                 }
                 if (success) {
-                    return { success: true, hash: h, output: res_str, expect };
+                    return { success: true, hash: og_hash, output: res_str, expect };
+                }
+                // Check the hash while removing colors.
+                if (ctx.strip_colors
+                    && cached
+                    && Utils.hash(Color.strip(res_str), "sha256", "hex") ===
+                        Utils.hash(Color.strip(cached.data), "sha256", "hex")) {
+                    return { success: true, hash: og_hash, output: res_str, expect };
                 }
                 // Interactive mode.
-                if (interactive) {
-                    return enter_interactive_on_failure(h, res_str);
+                if (ctx.interactive) {
+                    return enter_interactive_on_failure(og_hash, res_str);
                 }
                 // Response.
-                return { success: false, hash: h, output: res_str, expect };
+                return { success: false, hash: og_hash, output: res_str, expect };
                 // Handle error, could be expected or not expected.
             }
             catch (e) {
@@ -351,7 +357,7 @@ export class Module {
                 const h = Utils.hash(res_str, "sha256", "hex");
                 const success = cached?.hash === h;
                 // Logs.
-                if (success || !interactive) {
+                if (success || !ctx.interactive) {
                     debug.raw(1, "Unit test error output: ", e);
                     debug.raw(1, "Unit test hash: ", Color.gray(h));
                 }
@@ -360,7 +366,7 @@ export class Module {
                     return { success: true, hash: h, output: res_str, expect };
                 }
                 // Interactive mode.
-                if (interactive) {
+                if (ctx.interactive) {
                     return enter_interactive_on_failure(h, res_str);
                 }
                 // Response.
@@ -372,33 +378,33 @@ export class Module {
     /**
      * Run the unit tests of the module
      */
-    async _run({ output, target, stop_on_failure = false, stop_after, interactive = true, repeat = 0, no_changes = false, }) {
+    async run(ctx) {
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Variables.
         let failed = 0, succeeded = 0;
         let unit_tests = this.unit_tests;
         // Extract target.
-        if (target != null) {
-            if (target.includes("*")) {
-                const regex = new RegExp(target.replaceAll("*", ".*?"));
+        if (ctx.target != null) {
+            if (ctx.target.includes("*")) {
+                const regex = new RegExp(ctx.target.replaceAll("*", ".*?"));
                 unit_tests = Object.fromEntries(Object.entries(this.unit_tests).filter(([id]) => regex.test(id)));
             }
             else {
-                if (unit_tests[target] === undefined) {
-                    throw new Error(`Unit test "${target}" was not found`);
+                if (unit_tests[ctx.target] === undefined) {
+                    throw new Error(`Unit test "${ctx.target}" was not found`);
                 }
-                const unit_test = unit_tests[target];
-                unit_tests = { [target]: unit_test };
+                const unit_test = unit_tests[ctx.target];
+                unit_tests = { [ctx.target]: unit_test };
             }
         }
         // Initialize cache.
-        await this.init_mod_cache(output);
+        await this.init_mod_cache(ctx.output);
         // Cached all yes insertions.
-        const all_yes_insertions = [];
+        // const all_yes_insertions: { id: string, hash: string, output: string, expect: Expect }[] = [];
         // For every repeat.
-        for (let i = 0; i <= repeat; ++i) {
-            if (repeat !== 0) {
+        for (let i = 0; i <= ctx.repeat; ++i) {
+            if (ctx.repeat !== 0) {
                 debug.raw(Color.cyan_bold(`\nCommencing repetition ${i + 1} of unit test ${this.name}.`));
             }
             failed = 0, succeeded = 0;
@@ -410,11 +416,7 @@ export class Module {
                 // Execute unit test.
                 let res;
                 try {
-                    res = await unit_tests[id]({
-                        interactive,
-                        index: id_index,
-                        no_changes,
-                    });
+                    res = await unit_tests[id](id_index, ctx);
                 }
                 catch (e) {
                     debug.raw(`${Colors.red}${Colors.bold}Error${Colors.end}: Encountered an error during unit test "${id}".`);
@@ -431,14 +433,14 @@ export class Module {
                 else {
                     debug.raw(`${prefix} ${Colors.red}${Colors.bold}failed${Colors.end}`);
                     ++failed;
-                    if (stop_on_failure
-                        || (res.hash == null && interactive) // also stop when interactive is enabled and false is returned because that means that we could not assign a success status.
+                    if (ctx.stop_on_failure
+                        || (res.hash == null && ctx.interactive) // also stop when interactive is enabled and false is returned because that means that we could not assign a success status.
                     ) {
                         debug.raw(`Stopping unit tests on failure.`);
                         break;
                     }
                 }
-                if (stop_after === id) {
+                if (ctx.stop_after === id) {
                     debug.raw(`Stopping unit tests after "${id}".`);
                     return { status: false, failed, succeeded };
                 }
@@ -528,6 +530,27 @@ export class Module {
         debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
     }
 }
+(function (Module) {
+    /** Types for the context type. */
+    let Context;
+    (function (Context) {
+        ;
+        /** Create a context object from an options object. */
+        function create(opts) {
+            return {
+                target: opts.target,
+                interactive: opts.interactive ?? true,
+                no_changes: opts.no_changes ?? false,
+                stop_on_failure: opts.stop_on_failure ?? false,
+                stop_after: opts.stop_after,
+                repeat: opts.repeat ?? 0,
+                strip_colors: opts.strip_colors ?? false,
+                output: opts.output // ?? new Path("./.unit_tests"),
+            };
+        }
+        Context.create = create;
+    })(Context = Module.Context || (Module.Context = {}));
+})(Module || (Module = {}));
 /**
  * The unit tests module cache.
  * @warning Keep this semi-private to enforce the use of the add() function.

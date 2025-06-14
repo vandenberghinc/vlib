@@ -199,13 +199,13 @@ export class Transformer {
                 throw new Error(`Included path "${include}" does not exist.`);
             }
             if (path.is_dir()) {
-                include_patterns.push(`${path.unix().path}/**/*.{js,jsx,ts,tsx}`);
+                include_patterns.push(`${path.posix().path}/**/*.{js,jsx,ts,tsx}`);
                 if (this.on(2))
                     this.log(`Adding included directory "${include}".`);
                 return;
             }
             if (!this.config.parse_imports) {
-                include_patterns.push(path.unix().path);
+                include_patterns.push(path.posix().path);
                 if (this.on(2))
                     this.log(`Adding included file "${include}".`);
                 return;

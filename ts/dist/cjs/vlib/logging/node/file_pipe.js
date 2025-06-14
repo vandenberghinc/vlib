@@ -211,7 +211,7 @@ class FilePipe extends import_pipe.Pipe {
    *      Any other directives are allowed before the first non-directive / local log level argument.
    */
   log(...args) {
-    let { local_level, active_log_level, is_raw, mode, loc, local_level_arg_index } = this.parse_directives(args);
+    let { local_level, active_log_level, is_raw, log_mode: mode, loc, local_level_arg_index } = this.parse_directives(args);
     const msg = [import_colors.Colors.gray], file_msg = [];
     const stream = mode === import_directives.Directive.debug ? void 0 : mode === import_directives.Directive.error ? this.err_stream : this.log_stream;
     const stream_path = mode === import_directives.Directive.debug ? void 0 : mode === import_directives.Directive.error ? this.error_path : this.log_path;

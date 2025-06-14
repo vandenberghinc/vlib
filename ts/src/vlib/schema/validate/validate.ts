@@ -605,6 +605,7 @@ export function validate_object<const T extends ObjOrArr>(
                         !entry.schema.has(object_keys[x])
                         && !aliases.has(object_keys[x])
                     ) {
+                        console.log("Known fields:", Array.from(entry.schema.keys()));
                         const field = `${state.parent}${object_keys[x]}`;
                         return create_error(state, 
                             field,

@@ -143,15 +143,29 @@ var StringUtils;
   }
   StringUtils2.ensure_last = ensure_last;
   function is_uppercase(data, allow_digits = false) {
-    let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    if (allow_digits)
-      allowed += "0123456789";
-    return [...data].every((c) => allowed.includes(c));
+    const set = allow_digits ? is_uppercase_plus_num_set : StringUtils2.charset.uppercase_set;
+    for (let i = 0; i < data.length; i++) {
+      if (!set.has(data.charAt(i)))
+        return false;
+    }
+    return true;
   }
   StringUtils2.is_uppercase = is_uppercase;
+  const is_uppercase_plus_num_set = new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(""));
+  StringUtils2.charset = {
+    /** All uppercase alphabetical characters. */
+    uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    uppercase_set: new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")),
+    /** All lowercase alphabetical characters. */
+    lowercase: "abcdefghijklmnopqrstuvwxyz",
+    lowercase_set: new Set("abcdefghijklmnopqrstuvwxyz".split("")),
+    /** All digits. */
+    digits: "0123456789",
+    digits_set: new Set("0123456789".split(""))
+  };
   function capitalize_word(data) {
     const s = data;
-    if (/[a-z]/.test(s.charAt(0)))
+    if (StringUtils2.charset.lowercase_set.has(s.charAt(0)))
       return s.charAt(0).toUpperCase() + s.slice(1);
     return s;
   }
@@ -169,14 +183,19 @@ var StringUtils;
     return data.split("").reverse().join("");
   }
   StringUtils2.reverse = reverse;
-  function random(length = 32) {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  function random(length = 32, charset) {
     let result = "";
-    for (let i = 0; i < length; i++)
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    if (charset) {
+      for (let i = 0; i < length; i++)
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
+    } else {
+      for (let i = 0; i < length; i++)
+        result += default_random_charset.charAt(Math.floor(Math.random() * default_random_charset.length));
+    }
     return result;
   }
   StringUtils2.random = random;
+  const default_random_charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   function is_integer_string(data) {
     return /^[0-9]+$/.test(data);
   }

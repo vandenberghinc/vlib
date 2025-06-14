@@ -5,7 +5,7 @@
 // Imports.
 import { Color, Colors, log, Path } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
-import { Modules } from './module.js';
+import { Module, Modules } from './module.js';
 /** Configuration options. */
 export var Config;
 (function (Config) {
@@ -40,6 +40,10 @@ export var Config;
             },
             base: {
                 type: ["string", "array"],
+                required: false,
+            },
+            strip_colors: {
+                type: ["boolean"],
                 required: false,
             },
         },
@@ -220,15 +224,7 @@ export class Package {
             if (!mod) {
                 throw new Error(`Module "${opts.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`);
             }
-            const res = await mod._run({
-                target: opts.target,
-                stop_on_failure: opts.stop_on_failure,
-                stop_after: opts.stop_after,
-                interactive: opts.interactive,
-                output: output_dir,
-                repeat: opts.repeat,
-                no_changes: opts.no_changes,
-            });
+            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }));
             return res.status;
         }
         // Test all modules.
@@ -237,15 +233,7 @@ export class Package {
             if (opts.yes) {
                 throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
             }
-            const res = await mod._run({
-                target: opts.target,
-                stop_on_failure: opts.stop_on_failure,
-                stop_after: opts.stop_after,
-                interactive: opts.interactive,
-                output: output_dir,
-                repeat: opts.repeat,
-                no_changes: opts.no_changes,
-            });
+            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }));
             if (!res.status) {
                 return false;
             }
