@@ -192,7 +192,9 @@ export function create_json_schema_sync<const S extends Entries.Opts = Entries.O
     const entries = new ValidatorEntries(opts.schema);
 
     // Collect properties and required fields.
-    const properties: Record<string, unknown> = {};
+    const properties: Record<string, unknown> = {
+        "$schema": { type: "string" },
+    };
     const required: string[] = [];
     for (const [key, entry] of entries) {
         properties[key] = entry_to_json_schema(entry, {

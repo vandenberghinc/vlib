@@ -102,7 +102,9 @@ function create_json_schema_sync(opts) {
     throw new import_index_m_uni.InvalidUsageError("Validator.create_json_schema() requires the `schema` option.");
   }
   const entries = new import_validator_entries.ValidatorEntries(opts.schema);
-  const properties = {};
+  const properties = {
+    "$schema": { type: "string" }
+  };
   const required = [];
   for (const [key, entry] of entries) {
     properties[key] = entry_to_json_schema(entry, {

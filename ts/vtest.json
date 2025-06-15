@@ -1,5 +1,6 @@
 // Unit tests for @vandenberghinc/vlib.
 {
+    "$schema": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/ts/assets/schemas/vtest.json",
     "output": "./.unit_tests",
     "include": [
         "dist/esm/**/unit_tests/**/*.js"
