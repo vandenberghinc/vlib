@@ -11,6 +11,7 @@ const { js: beautify } = pkg;
 import { Color, Colors, Utils, Path, logging, GlobPatternList, debug } from "../vlib/index.js";
 import { SourceLoc } from '../vlib/logging/uni/source_loc.js';
 import { compute_diff } from '../vts/utils/compute_diff.js';
+import { Package } from './package.js';
 // -----------------------------------------------------------------
 // Module class.
 /**
@@ -27,6 +28,11 @@ export class Module {
     /** The path to the `output` directory from the active package. */
     output;
     /**
+     * The context options that are always used for the unit tests.
+     * Keep as opts so we can detect present keys.
+     */
+    override_ctx;
+    /**
      * Create a unit test module.
      * @param name The name of the module.
      */
@@ -37,6 +43,11 @@ export class Module {
         }
         // Attributes.
         this.name = opts.name;
+        this.override_ctx = {
+            // dont assign to defaults, keep undefined when not set.
+            // this way we can correctly override the package context.
+            strip_colors: opts.strip_colors,
+        };
         // Add to unit test modules.
         Modules.push(this);
     }
@@ -98,6 +109,7 @@ export class Module {
         const loc = new SourceLoc(1);
         // Add unit test.
         this.unit_tests[id] = async (index, ctx) => {
+            console.log(`Running unit test with context: ${Color.object(ctx, { max_depth: 2 })}`);
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
              * where a call like `tests.add("…id…", …, <inputFn>)` occurs.
@@ -328,10 +340,21 @@ export class Module {
                     return { success: true, hash: og_hash, output: res_str, expect };
                 }
                 // Check the hash while removing colors.
+                // if (ctx.strip_colors) {
+                //     console.log('STOP!', ctx.strip_colors, )
+                //     process.exit(1)
+                // }
+                // console.log('STOP!', ctx.strip_colors);
+                // (() => process.exit(1))();
+                if (cached) {
+                    const d = zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString();
+                    console.log("PRE COLOR STRIP:\n" + d);
+                    console.log("POST COLOR STRIP:\n" + Color.strip(d));
+                }
                 if (ctx.strip_colors
                     && cached
                     && Utils.hash(Color.strip(res_str), "sha256", "hex") ===
-                        Utils.hash(Color.strip(cached.data), "sha256", "hex")) {
+                        Utils.hash(Color.strip(zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString()), "sha256", "hex")) {
                     return { success: true, hash: og_hash, output: res_str, expect };
                 }
                 // Interactive mode.
@@ -379,6 +402,12 @@ export class Module {
      * Run the unit tests of the module
      */
     async run(ctx) {
+        // Override the context with the module's override context.
+        // Ensure we copy the context so we do not modify the original package context.
+        if (this.override_ctx) {
+            ctx = Package.Context.merge(ctx, this.override_ctx, true);
+        }
+        // console.log(`Running unit test module with context: ${Color.object(ctx, { max_depth: 2 })}`);
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Variables.
@@ -530,27 +559,6 @@ export class Module {
         debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
     }
 }
-(function (Module) {
-    /** Types for the context type. */
-    let Context;
-    (function (Context) {
-        ;
-        /** Create a context object from an options object. */
-        function create(opts) {
-            return {
-                target: opts.target,
-                interactive: opts.interactive ?? true,
-                no_changes: opts.no_changes ?? false,
-                stop_on_failure: opts.stop_on_failure ?? false,
-                stop_after: opts.stop_after,
-                repeat: opts.repeat ?? 0,
-                strip_colors: opts.strip_colors ?? false,
-                output: opts.output // ?? new Path("./.unit_tests"),
-            };
-        }
-        Context.create = create;
-    })(Context = Module.Context || (Module.Context = {}));
-})(Module || (Module = {}));
 /**
  * The unit tests module cache.
  * @warning Keep this semi-private to enforce the use of the add() function.

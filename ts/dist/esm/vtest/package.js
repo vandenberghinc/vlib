@@ -5,50 +5,9 @@
 // Imports.
 import { Color, Colors, log, Path } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
-import { Module, Modules } from './module.js';
-/** Configuration options. */
-export var Config;
-(function (Config) {
-    ;
-    /** Initialize the schema validator. */
-    Config.Schema = new vlib.Schema.Validator({
-        throw: true,
-        unknown: false,
-        schema: {
-            output: {
-                type: "string",
-                required: true,
-            },
-            include: {
-                type: "array",
-                value_schema: { type: "string" },
-                required: true,
-                preprocess: (v) => typeof v === "string" ? [v] : v,
-            },
-            exclude: {
-                type: "array",
-                default: ["**/node_modules/**"],
-                value_schema: { type: "string" },
-                preprocess: (v) => typeof v === "string" ? [v] : v,
-            },
-            env: {
-                type: "array",
-                required: false,
-                default: [],
-                value_schema: { type: "string" },
-                preprocess: (v) => typeof v === "string" ? [v] : v,
-            },
-            base: {
-                type: ["string", "array"],
-                required: false,
-            },
-            strip_colors: {
-                type: ["boolean"],
-                required: false,
-            },
-        },
-    });
-})(Config || (Config = {}));
+import { Modules } from './module.js';
+/** The root path to `vlib/ts`, not yet checked if it exists. */
+const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
 // -----------------------------------------------------------------
 /**
  * The unit test package class.
@@ -58,7 +17,6 @@ export class Package {
     /**
      * The initialized configuration object.
      */
-    // config: ReturnType<typeof this.validator.validate>;
     config;
     /** Flag to indicate if the modules are already initialized by `init_modules()` */
     modules_initialized = false;
@@ -84,163 +42,51 @@ export class Package {
         }
         return paths.find(p => p.exists() && p.is_file());
     }
-    /**
-     * Construct a unit test package.
-     * Loads the configuration from the provided file path or object.
-     */
+    /** Construct a unit test package. */
     constructor(config) {
-        // Parse config from file path.
-        let config_path;
-        if (typeof config.extends === "string") {
-            config.extends = [config.extends];
-        }
-        if (Array.isArray(config.extends)) {
-            // Load the base file.
-            const found = Package.resolve_path_search(config.extends);
-            if (!found) {
-                throw new Error(`No valid configuration file found in the provided paths: ${config.extends.join(", ")}`);
-            }
-            const base_data = found.load_sync({ type: "jsonc" });
-            if (!base_data) {
-                throw new Error(`No valid data found at config file: ${found.path}`);
-            }
-            // @todo not resolving the base's extends attribute here.
-            // Validate the loaded config.
-            this.config = Config.Schema.validate(base_data, {
-                error_prefix: `Invalid base configuration file "${found.path}": `,
-            });
-            // Merge the new options.
-            this.merge(config);
-        }
-        // Parse config from object.
-        else {
-            this.config = Config.Schema.validate(config, {
-                error_prefix: `Invalid vtest configuration file "${config_path ?? "[object]"}": `,
-            });
-        }
-        // Check output dir.
-        const output_dir = new Path(config.output);
-        if (!output_dir.exists()) {
-            throw new Error(`Output directory "${config.output}" does not exist.`);
-        }
-        else if (!output_dir.is_dir()) {
-            throw new Error(`Output path "${config.output}" is not a directory.`);
-        }
+        this.config = config;
     }
+    // --------------------------------------------------------------------
+    // Executing the package unit tests.
     /**
-     *
+     * Run the unit tests.
+     * @param opts Optional context options to override the current configuration options with.
+     * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
      */
-    /**
-     * Try to load a package by input file or if omitted by searching for a default configuration file.
-     * If no input paths are provided, this function will search for a configuration file
-     * like 'vtest.json', '.vtest.json' etc. in the current working directory or 1 level above.
-     * @throw An error when no configuration file is found.
-     * @param inputs The input file path(s) to load the configuration from.
-     *               If not provided, the function will search for a default configuration file.
-     * @param override An optional object to override the loaded configuration.
-     */
-    static async from_file(inputs, override = {}) {
-        let data;
-        // Load from input paths.
-        if (inputs) {
-            const found = Package.resolve_path_search(inputs);
-            if (!found) {
-                throw new Error(`No valid configuration file found in the provided paths: ${Array.isArray(inputs) ? inputs.join(", ") : inputs}`);
-            }
-            data = found.load_sync({ type: "jsonc" });
-            if (!data) {
-                throw new Error(`Invalid configuration file data at ${found.path}`);
-            }
-        }
-        // Load the default configuration file.
-        else {
-            const found = vlib.cli.find_config_path({
-                name: ["vtest", ".vtest"],
-                extension: ["", ".json", ".jsonc"],
-                up: 1,
-                cwd: process.cwd(),
-            });
-            if (!found) {
-                throw new Error(`No default configuration file found, please provide a configuration file or use the 'extends' option to load a base configuration.`);
-            }
-            // Try to load the config from the provided paths.
-            data = await found.load({ type: "jsonc" });
-            if (!data) {
-                throw new Error(`No valid config file found in the current working directory "${process.cwd()}" or 1 level above.`);
-            }
-        }
-        // Response.
-        if (!data) {
-            throw new Error(`Unable to load configuration data from the provided paths or default configuration file.`);
-        }
-        return new Package({
-            ...data,
-            ...override,
-        });
-    }
-    /**
-     * Merge an additional configuration object into the current configuration.
-     * The new attributes override the existing ones.
-     * @param config The configuration object to merge.
-     */
-    merge(config) {
-        for (const key of Object.keys(config)) {
-            switch (key) {
-                case "include":
-                case "exclude":
-                case "env":
-                    if (!this.config[key]) {
-                        this.config[key] = [];
-                    }
-                    if (typeof config[key] === "string") {
-                        this.config[key] = [...this.config[key], config[key]];
-                    }
-                    else if (Array.isArray(config[key])) {
-                        this.config[key] = [...this.config[key], ...config[key]];
-                    }
-                    else {
-                        throw new TypeError(`Invalid type for "${key}", expected a string or an array of strings.`);
-                    }
-                    break;
-                default:
-                    this.config[key] = config[key];
-            }
-        }
-    }
-    /** Run the unit tests. */
     async run(opts) {
         const config = this.config;
+        // Optionally override the context.
+        const ctx = opts
+            ? Package.Context.merge(config.ctx, opts, true)
+            : config.ctx;
+        console.log(`Running unit test package with context: ${Color.object(ctx, { max_depth: 2 })}`);
         // Import environment files.
         this.init_env();
-        // List imports paths, before initializing the modules.
-        const included = await this.parse_includes();
         // Initialize the modules.
         await this.init_modules();
-        // Check output dir, checked in the constructor.
-        const output_dir = new Path(config.output);
         // Test target module or only a single module defined.
-        if (opts.module != null || Modules.length === 1) {
-            const mod = Modules.find(m => opts.module == null || m.name === opts.module);
+        if (ctx.module != null || Modules.length === 1) {
+            const mod = Modules.find(m => ctx.module == null || m.name === ctx.module);
             if (!mod) {
-                throw new Error(`Module "${opts.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`);
+                throw new Error(`Module "${ctx.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`);
             }
-            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }));
+            const res = await mod.run(ctx);
             return res.status;
         }
         // Test all modules.
         let succeeded = 0, failed = 0;
         for (const mod of Modules) {
-            if (opts.yes) {
+            if (ctx.yes) {
                 throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
             }
-            const res = await mod.run(Module.Context.create({ output: output_dir, ...opts }));
+            const res = await mod.run(ctx);
             if (!res.status) {
                 return false;
             }
             succeeded += res.succeeded || 0;
             failed += res.failed || 0;
         }
-        const prefix = opts.debug === 0 ? " * " : "";
+        const prefix = ctx.debug === 0 ? " * " : "";
         if (failed === 0) {
             if (succeeded === 0) {
                 console.log(`${Color.red("Error")}: No unit tests are defined.`);
@@ -256,9 +102,8 @@ export class Package {
             return false;
         }
     }
-    /**
-     * Reset unit tests.
-     */
+    // --------------------------------------------------------------------
+    // Other public methods.
     /**
      * List all included files to the console.
      */
@@ -305,11 +150,15 @@ export class Package {
     // Private methods.
     /** Parse the included files. */
     async parse_includes() {
+        if (this.parsed_includes != null)
+            return this.parsed_includes;
         if (!this.config.include?.length) {
             throw new Error(`No include patterns defined, please define at least one include pattern in the configuration.`);
         }
-        return Path.glob(this.config.include, { exclude: this.config.exclude, string: true });
+        this.parsed_includes = await Path.glob(this.config.include, { exclude: this.config.exclude, string: true });
+        return this.parsed_includes;
     }
+    parsed_includes = undefined;
     /** Initialize the environment files. */
     init_env() {
         if (this.config.env?.length) {
@@ -324,7 +173,6 @@ export class Package {
     async init_modules() {
         if (this.modules_initialized)
             return;
-        const config = this.config;
         // List imports paths.
         const included = await this.parse_includes();
         // Import the included unit test modules.
@@ -333,13 +181,13 @@ export class Package {
             const abs = new Path(p).abs().str();
             if (imported_paths.has(abs)) {
                 log.marker(`Skipping already imported unit test module: ${p}`);
-                if (typeof config.debug === "number" && config.debug >= 1) {
+                if (typeof this.config.ctx.debug === "number" && this.config.ctx.debug >= 1) {
                     log.marker(`Skipping already imported unit test module: ${p}`);
                 }
                 continue;
             }
             imported_paths.add(abs);
-            if (typeof config.debug === "number" && config.debug >= 1) {
+            if (typeof this.config.ctx.debug === "number" && this.config.ctx.debug >= 1) {
                 log.marker(`Importing unit test module: ${p}`);
             }
             await import(abs);
@@ -352,4 +200,275 @@ export class Package {
         this.modules_initialized = true;
     }
 }
+/** Package types. */
+(function (Package) {
+    /** Types for the context type. */
+    let Context;
+    (function (Context) {
+        /** A validator schema for the context options. */
+        Context.Schema = {
+            module: { type: "string", required: false },
+            target: { type: "string", required: false },
+            debug: { type: ["string", "number"], required: false },
+            yes: { type: "boolean", required: false },
+            interactive: { type: "boolean", required: false },
+            no_changes: { type: "boolean", required: false },
+            stop_on_failure: { type: "boolean", required: false },
+            stop_after: { type: "string", required: false },
+            repeat: { type: "number", required: false },
+            strip_colors: { type: "boolean", required: false },
+            /**
+             * @warning Keep this not required since this field
+             * is often ignored and added more in terms of consistency.
+             * Otherwise the `Config.create()` function will need to be updated
+             * since that does not expect the `output` field to be required
+             * in the `Config.options` field.
+             */
+            output: { type: "string", required: false },
+        };
+        /** Create a context object from its input options. */
+        function create(opts) {
+            const output = new Path(opts.output).abs();
+            if (!output.exists() || !output.is_dir()) {
+                throw new Error(`Output directory "${opts.output}" does not exist or is not a directory.`);
+            }
+            return {
+                output,
+                module: opts.module,
+                target: opts.target,
+                debug: opts.debug ?? 0,
+                yes: opts.yes ?? false,
+                interactive: opts.interactive ?? true,
+                no_changes: opts.no_changes ?? false,
+                stop_on_failure: opts.stop_on_failure ?? false,
+                stop_after: opts.stop_after,
+                repeat: opts.repeat ?? 0,
+                strip_colors: opts.strip_colors ?? false,
+            };
+        }
+        Context.create = create;
+        /**
+         * Merge an additional context object into a current context object.
+         * The new context attributes will override the existing ones.
+         * @param base The base context object.
+         * @param override The context object that will override the base context.
+         * @param copy Whether to copy the base context object (true) or update it in place (false).
+         * @returns The updated base context object.
+         */
+        function merge(base, override, copy = true) {
+            if (copy)
+                base = { ...base };
+            for (const key of Object.keys(override)) {
+                if (override[key] === undefined)
+                    continue; // skip undefined values.
+                base[key] = override[key];
+            }
+            return base;
+        }
+        Context.merge = merge;
+    })(Context = Package.Context || (Package.Context = {}));
+})(Package || (Package = {}));
+/** Configuration options. */
+export var Config;
+(function (Config) {
+    ;
+    /** Initialize the schema validator. */
+    Config.Schema = new vlib.Schema.Validator({
+        throw: false,
+        unknown: false,
+        schema: {
+            output: { type: "string", required: true },
+            include: {
+                type: "array",
+                value_schema: { type: "string" },
+                required: true,
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            exclude: {
+                type: "array",
+                default: ["**/node_modules/**"],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            env: {
+                type: "array",
+                required: false,
+                default: [],
+                value_schema: { type: "string" },
+                preprocess: (v) => typeof v === "string" ? [v] : v,
+            },
+            extends: {
+                type: ["string", "array"],
+                required: false,
+            },
+            options: {
+                type: "object",
+                schema: Package.Context.Schema,
+                required: false,
+            },
+        },
+    });
+    if (process.argv.includes("--vlib-generate-schemas")) {
+        Config.Schema.create_json_schema_sync({
+            unknown: false,
+            output: `${__root}assets/schemas/vtest.json`,
+        });
+        log(`Generated JSON schema 'vtest.json' at '${__root}assets/schemas/vtest.json'`);
+    }
+    /**
+     * Load or initialize a new configuration object.
+     * @param opts
+     *      The configuration options to initialize the configuration object with.
+     *      1) The string "__default__" to search & load the default configuration file.
+     *      2) A single path or an array with path options to load the configuration from,
+     *         note that a path string supports glob patterns.
+     *      3) An object type with the configuration options.
+     * @param override
+     *      An optional object which will be used to override the loaded configuration.
+     * @param _exclude
+     *      A system exclude set to ignore already included base paths to prevent infinite recursion.
+     *      Do not manually pass this parameter, as it is a system parameter
+     * @returns The initialized configuration object, or an object with an `error` field.
+     */
+    function load(opts = "__default__", override, _exclude = new Set()) {
+        // Load the options from a file path.
+        let config_path = undefined;
+        if (typeof opts === "string" || Array.isArray(opts)) {
+            let found;
+            // Search the config file.
+            if (opts === "__default__") {
+                found = vlib.cli.find_config_path({
+                    name: ["vtest", ".vtest"],
+                    extension: ["", ".json", ".jsonc"],
+                    up: 1,
+                    cwd: process.cwd(),
+                });
+                if (!found) {
+                    return { error: `Could not find a default configuration file named 'vtest.json' in the current working directory "${process.cwd()}" or 1 level above.` };
+                }
+            }
+            else {
+                found = Package.resolve_path_search(opts);
+                if (!found) {
+                    return { error: `No valid configuration file found in the provided path(s): ${typeof opts === "string" ? opts : opts.join(", ")}` };
+                }
+            }
+            // Prevent infinite recursion when the base config is already included.
+            if (_exclude.has(found.path)) {
+                return { error: `Configuration file '${found.path}' circularly references itself.` };
+            }
+            _exclude.add(found.path);
+            // Found the config file, load the data.
+            config_path = found.path;
+            const opts_data = found.load_sync({ type: "jsonc" });
+            if (!opts_data) {
+                return { error: `No valid JSONC data found at config file '${found.path}'` };
+            }
+            ;
+            opts = opts_data;
+        }
+        // Validate the loaded config.
+        const response = Config.Schema.validate(opts, {
+            error_prefix: config_path
+                ? `Invalid configuration file "${config_path}": `
+                : `Invalid configuration object: `,
+        });
+        if (typeof response.error === "string") {
+            return response;
+        }
+        // Load the base configuration file.
+        let base_config = undefined;
+        if (response.data.extends) {
+            const res = load(response.data.extends, undefined, _exclude);
+            if (typeof res === "object" && "error" in res) {
+                return res; // return the error object.
+            }
+            base_config = res;
+        }
+        // Build context object.
+        let ctx_opts;
+        if (response.data.options) {
+            ctx_opts = response.data.options;
+            ctx_opts.output = response.data.output;
+        }
+        else {
+            ctx_opts = { output: response.data.output };
+        }
+        const ctx = Package.Context.create(ctx_opts);
+        // Build the configuration object.
+        let config = {
+            include: response.data.include,
+            exclude: response.data.exclude,
+            env: response.data.env,
+            extends: response.data.extends,
+            ctx: ctx,
+            output: ctx.output, // for opts/initialized consistency.
+            options: ctx_opts, // for opts/initialized consistency.
+        };
+        // Merge the base configuration in place.
+        if (base_config) {
+            config = Config.merge(config, base_config, false);
+        }
+        // Merge the override configuration in place.
+        if (override && Object.keys(override).length > 0) {
+            config = Config.merge(config, override, false);
+        }
+        // Response.
+        return config;
+    }
+    Config.load = load;
+    /**
+     * Merge an additional configuration object into a current configuration.
+     * The new config attributes will override the existing ones.
+     * @param base The base configuration object.
+     * @param override The configuration object that will override the base configuration.
+     * @param copy Whether to copy the base context object (true) or update it in place (false).
+     * @returns The updated base configuration object.
+     */
+    function merge(base, override, copy = true) {
+        if (copy)
+            base = { ...base };
+        for (const key of Object.keys(override)) {
+            switch (key) {
+                case "include":
+                case "exclude":
+                case "env":
+                    if (!base[key]) {
+                        base[key] = [];
+                    }
+                    else if (copy) {
+                        base[key] = [...base[key]];
+                    }
+                    if (typeof override[key] === "string") {
+                        base[key] = [...base[key], override[key]];
+                    }
+                    else if (Array.isArray(override[key])) {
+                        base[key] = [...base[key], ...override[key]];
+                    }
+                    else {
+                        throw new TypeError(`Invalid type for "${key}", expected a string or an array of strings.`);
+                    }
+                    break;
+                case "options":
+                    base.ctx = Package.Context.merge(base.ctx, override.options ?? {}, copy);
+                    break;
+                case "ctx":
+                    /**
+                     * @warning Dont use field `ctx` also for a `Config` type ...
+                     *          the `options` field is kept, and if we would use Package.Context.merge
+                     *          on the `ctx` field, then it would override all fields since all fields are required.
+                     *          Therefore, overridding the ctx with all default options and ignoring the actual `options`.
+                     *          So we use the `options` field instead to correctly merge extended configurations. */
+                    break;
+                default:
+                    if (override[key] === undefined)
+                        continue; // skip undefined values.
+                    base[key] = override[key];
+                    break;
+            }
+        }
+        return base;
+    }
+    Config.merge = merge;
+})(Config || (Config = {}));
 //# sourceMappingURL=package.js.map

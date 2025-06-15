@@ -944,26 +944,26 @@ export class Path {
      *  @desc Load the data from the path
      *  @funcs 2
      */
-    async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends Record<any, any> = Record<any, any>>(opts: { type: "object", encoding?: BufferEncoding }): Promise<R>;
-    async load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): Promise<R>;
-    async load({
-        type = "string",
+    // async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends Record<any, any> = Record<any, any>>(opts: { type: "object", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): Promise<R>;
+    async load<T extends LoadSaveTypeName = "string">({
+        type = "string" as T,
         encoding = undefined
     }: {
-        type?: Path.LoadSaveTypeName,
+        type?: T,
         encoding?: BufferEncoding
-    } = {}): Promise<Path.LoadSaveType> {
-        return new Promise<Path.LoadSaveType>((resolve, reject) => {
+    } = {}): Promise<CastLoadSaveType<T>> {
+        return new Promise<any>((resolve, reject) => {
             fs.readFile(this.path, encoding, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {
-                    if (type == null || type === "buffer") {
+                    if (type == null || type === "buffer" || type === "undefined") {
                         resolve(data);
                     } else if (type === "string") {
                         resolve(data.toString());
@@ -986,36 +986,36 @@ export class Path {
             });
         });
     }
-    load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
-    load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
-    load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
-    load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
-    load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
-    load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
-    load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
-    load_sync({
-        type = "string",
+    // load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
+    // load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
+    // load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
+    // load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
+    // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
+    // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
+    // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
+    load_sync<T extends LoadSaveTypeName = "string">({
+        type = "string" as T,
         encoding = undefined,
     }: {
-        type?: Path.LoadSaveTypeName,
+        type?: T,
         encoding?: BufferEncoding
-    } = {}): Path.LoadSaveType {
+    } = {}): CastLoadSaveType<T> {
         const data = fs.readFileSync(this.path, encoding);
-        if (type == null || type === "buffer") {
-            return data;
+        if (type == null || type === "buffer" || type === "undefined") {
+            return data as CastLoadSaveType<T>;
         } else if (type === "string") {
-            return data.toString();
+            return data.toString() as CastLoadSaveType<T>;
         } else if (type === "array" || type === "object" || type === "json") {
             return JSON.parse(typeof data === "string" ? data : data.toString());
         } else if (type === "json5") {
             return JSON5.parse(typeof data === "string" ? data : data.toString());
         } else if (type === "jsonc") {
-            return JSONC.parse(typeof data === "string" ? data : data.toString());
+            return JSONC.parse(typeof data === "string" ? data : data.toString()) as CastLoadSaveType<T>;
         } else if (type === "number") {
-            return parseFloat(data.toString());
+            return parseFloat(data.toString()) as CastLoadSaveType<T>;
         } else if (type === "boolean") {
             const str = data.toString();
-            return str === "1" || str === "true" || str === "TRUE" || str === "True";
+            return (str === "1" || str === "true" || str === "TRUE" || str === "True") as CastLoadSaveType<T>;
         } else {
             // @ts-expect-error
             throw Error(`Invalid type "${type.toString()}".`);
@@ -1027,11 +1027,11 @@ export class Path {
      *  @desc Save data to the path
      *  @funcs 2
      */
-    async save(data: any, opts: { type: Path.LoadSaveTypeName }): Promise<void>
-    async save(data: string | Buffer, opts?: { type?: Path.LoadSaveTypeName }): Promise<void>
-    async save(data: any, opts?: { type?: Path.LoadSaveTypeName }): Promise<void> {
+    async save(data: any, opts: { type: LoadSaveTypeName }): Promise<void>
+    async save(data: string | Buffer, opts?: { type?: LoadSaveTypeName }): Promise<void>
+    async save(data: any, opts?: { type?: LoadSaveTypeName }): Promise<void> {
         if (opts?.type) {
-            if (opts.type == null || opts.type === "buffer") {
+            if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
                 // skip
             } else if (opts.type === "string") {
                 // skip
@@ -1060,17 +1060,17 @@ export class Path {
             });
         });
     }
-    save_sync(data: any, opts: { type: Exclude<Path.LoadSaveTypeName, "jsonc"> }): this
-    save_sync(data: string | Buffer, opts?: { type?: Exclude<Path.LoadSaveTypeName, "jsonc"> }): this
-    save_sync(data: any, opts?: { type?: Exclude<Path.LoadSaveTypeName, "jsonc"> }): this {
+    save_sync(data: any, opts: { type: Exclude<LoadSaveTypeName, "jsonc"> }): this
+    save_sync(data: string | Buffer, opts?: { type?: Exclude<LoadSaveTypeName, "jsonc"> }): this
+    save_sync(data: any, opts?: { type?: Exclude<LoadSaveTypeName, "jsonc"> }): this {
         if (opts?.type) {
-            if (opts.type == null || opts.type === "buffer") {
+            if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
                 // skip
             } else if (opts.type === "string") {
                 // skip
             } else if (opts.type === "array" || opts.type === "object" || opts.type === "json" || opts.type === "json5") {
                 data = JSON.stringify(data);
-            } else if ((opts.type as Path.LoadSaveTypeName) === "jsonc") {
+            } else if ((opts.type as LoadSaveTypeName) === "jsonc") {
                 throw new Error("JSONC is not supported in sync mode.");
             } else if (opts.type === "number") {
                 data = data.toString();
@@ -1329,15 +1329,35 @@ export class Path {
 }
 
 /**
+ * Casting `load` and `save` types.
+ */
+type LoadSaveTypeMap = {
+    undefined: Buffer; 
+    "buffer": Buffer;
+    "boolean": boolean;
+    "number": number;
+    "string": string;
+    "array": any[];
+    "object": Record<string, any>;
+    "json": any[] | Record<string, any>;
+    "json5": any[] | Record<string, any>;
+    "jsonc": any[] | Record<string, any>;
+}
+type LoadSaveTypeName = keyof LoadSaveTypeMap;
+type LoadSaveType = LoadSaveTypeMap[LoadSaveTypeName];
+type CastLoadSaveType<T extends LoadSaveTypeName, Never = never> =
+    T extends keyof LoadSaveTypeMap ? LoadSaveTypeMap[T] : Never;
+
+/**
  * Path types.
  */
 export namespace Path {
 
-    /**
-     * The valid types for `load` `save` methods.
-     */
-    export type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
-    export type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
+    // /**
+    //  * The valid types for `load` `save` methods.
+    //  */
+    // export type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
+    // export type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
 
     /**
      * A glob / regex path exclude list class.

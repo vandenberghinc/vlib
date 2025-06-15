@@ -27,6 +27,7 @@ export class Debug extends Logger<true> {
             super_opts = {
                 ...opts,
                 debug: true,
+                raw: true,
             };
         } else {
             // @ts-expect-error

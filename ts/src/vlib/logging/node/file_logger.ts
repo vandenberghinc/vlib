@@ -29,6 +29,7 @@ export class FileLogger extends Logger<false, false, FilePipe> {
         super({
             level: opts.level,
             debug: false,
+            raw: false,
             pipe: new FilePipe({
                 log_path: opts.log_path,
                 error_path: opts.error_path

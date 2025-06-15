@@ -17,7 +17,11 @@ import { String as StringUtils } from "../../primitives/string.js";
 import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.js";
 import { Cast } from "./cast.js";
 import { value_type } from "./throw.js";
-import { MutableObject } from "../../types/transform.js";
+import { MutableObject, RequiredFor } from "../../types/transform.js";
+import { suggest_attribute } from "./suggest_attr.js";
+import { create_json_schema, create_json_schema_sync, CreateJSONSchemaOpts } from "./json_schema.js";
+import { Path } from "../../generic/path.js";
+// import { log } from "../../logging/uni/logger.js";
 
 /** Base object or array. */
 type ObjOrArr = any[] | Record<string, any>
@@ -605,11 +609,16 @@ export function validate_object<const T extends ObjOrArr>(
                         !entry.schema.has(object_keys[x])
                         && !aliases.has(object_keys[x])
                     ) {
-                        console.log("Known fields:", Array.from(entry.schema.keys()));
+                        // console.log("Known fields:", Array.from(entry.schema.keys()));
                         const field = `${state.parent}${object_keys[x]}`;
+                        const suggested_key = suggest_attribute(
+                            object_keys[x],
+                            Array.from(entry.schema.keys()),
+                        );
                         return create_error(state, 
                             field,
-                            `${get_field_type(state, entry, true)} '${field}' is not allowed.`
+                            `${get_field_type(state, entry, true)} '${field}' is not allowed` +
+                            (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : ".")
                         );                              
                     }
                 }
@@ -719,8 +728,12 @@ export class Validator<
      */
     validated!: MutableObject<InferOutput<Data, Sch, Val, Tpl>>;
 
+    /** The `Schemas` object from the constructor, used to extract the input schemas. */
+    private schemas: Schemas<Data, Sch, Val, Tpl>;
+
     /** Constructor. */
     constructor(opts: Schemas<Data, Sch, Val, Tpl> & State.Opts<Throw>) {
+        this.schemas = opts;
         this.state = State.create<Throw>(opts);
         this.entry = {
             schema: opts.schema ? new ValidatorEntries(opts.schema) : undefined,
@@ -767,6 +780,32 @@ export class Validator<
             return res.data as Res;
         }
         return res as Res;
+    }
+
+
+    /**
+     * Create a JSON schema from the provided options.
+     * This is only supported for object schemas using the {@link Schemas.schema} option 
+     * passed to the constructor.
+     * @param opts The options for creating the JSON schema, 
+     *             see {@link CreateJSONSchemaOpts} for more info.
+     * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
+     */
+    async create_json_schema(
+        opts: RequiredFor<Omit<CreateJSONSchemaOpts, "schema">, "output">
+    ): Promise<object> {
+        if (this.schemas.schema == null) {
+            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+        }
+        return create_json_schema({ ...(opts ?? {}), schema: this.schemas.schema });
+    }
+    create_json_schema_sync(
+        opts?: Omit<CreateJSONSchemaOpts<Sch>, "schema">
+    ): object {
+        if (this.schemas.schema == null) {
+            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+        }
+        return create_json_schema_sync({ ...(opts ?? {}), schema: this.schemas.schema });
     }
 }
 export namespace Validator {

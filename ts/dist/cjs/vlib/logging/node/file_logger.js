@@ -31,6 +31,7 @@ class FileLogger extends import_logger.Logger {
     super({
       level: opts.level,
       debug: false,
+      raw: false,
       pipe: new import_file_pipe.FilePipe({
         log_path: opts.log_path,
         error_path: opts.error_path

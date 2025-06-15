@@ -17,13 +17,83 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  Repo: () => Repo
+  Repo: () => Repo,
+  RepoConfig: () => RepoConfig
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_vlib = require("../vlib/index.js");
 var import_git = require("./git.js");
 var import_npm = require("./npm.js");
 var import_ssh = require("./ssh.js");
+const import_meta = {};
+var RepoConfig;
+(function(RepoConfig2) {
+  RepoConfig2.Schema = {
+    version_path: {
+      type: "string",
+      required: false
+      // postprocess: (value) => {
+      //     if (value) {
+      //         value = value.trim();
+      //         if (value.charAt(0) !== "/") {
+      //             value = this.source.join(value).str();
+      //         }
+      //         return value;
+      //     }
+      // }
+    },
+    ssh: {
+      type: "object",
+      required: false,
+      schema: {
+        remotes: {
+          type: "array",
+          default: [],
+          value_schema: {
+            type: "object",
+            schema: {
+              alias: "string",
+              destination: "string",
+              enabled: { type: "boolean", default: true }
+            }
+          }
+        }
+      }
+    },
+    git: {
+      type: "object",
+      required: false,
+      schema: {
+        username: "string",
+        email: "string",
+        remotes: {
+          type: "array",
+          default: [],
+          value_schema: {
+            type: "object",
+            schema: {
+              remote: "string",
+              branch: "string",
+              destination: "string",
+              enabled: { type: "boolean", default: true }
+            }
+          }
+        }
+      }
+    },
+    npm: {
+      type: "object",
+      required: false,
+      schema: {
+        links: {
+          type: "object",
+          required: false,
+          value_scheme: { type: "array", value_scheme: "string" }
+        }
+      }
+    }
+  };
+})(RepoConfig || (RepoConfig = {}));
 class Repo {
   // Attributes.
   source;
@@ -122,9 +192,9 @@ class Repo {
       unknown: false,
       throw: true,
       schema: {
+        ...RepoConfig.Schema,
         version_path: {
-          type: "string",
-          required: false,
+          ...RepoConfig.Schema.version_path,
           postprocess: (value) => {
             if (value) {
               value = value.trim();
@@ -136,54 +206,12 @@ class Repo {
           }
         },
         ssh: !this.ssh_enabled ? "any" : {
-          type: "object",
-          required: this.ssh_enabled,
-          schema: {
-            remotes: {
-              type: "array",
-              default: [],
-              value_schema: {
-                type: "object",
-                schema: {
-                  alias: "string",
-                  destination: "string",
-                  enabled: { type: "boolean", default: true }
-                }
-              }
-            }
-          }
+          ...RepoConfig.Schema.ssh,
+          required: this.ssh_enabled
         },
         git: !this.git_enabled ? "any" : {
-          type: "object",
-          required: this.git_enabled,
-          schema: {
-            username: "string",
-            email: "string",
-            remotes: {
-              type: "array",
-              default: [],
-              value_schema: {
-                type: "object",
-                schema: {
-                  remote: "string",
-                  branch: "string",
-                  destination: "string",
-                  enabled: { type: "boolean", default: true }
-                }
-              }
-            }
-          }
-        },
-        npm: {
-          type: "object",
-          required: false,
-          schema: {
-            links: {
-              type: "object",
-              required: false,
-              value_scheme: { type: "array", value_scheme: "string" }
-            }
-          }
+          ...RepoConfig.Schema.git,
+          required: this.git_enabled
         }
       }
     });
@@ -214,7 +242,17 @@ class Repo {
     }
   }
 }
+const __root = import_meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
+if (process.argv.includes("--vlib-generate-schemas")) {
+  import_vlib.Schema.create_json_schema_sync({
+    unknown: false,
+    output: `${__root}assets/schemas/vrepo.json`,
+    schema: RepoConfig.Schema
+  });
+  (0, import_vlib.log)(`Generated JSON schema 'vrepo.json' at '${__root}assets/schemas/vrepo.json'`);
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Repo
+  Repo,
+  RepoConfig
 });

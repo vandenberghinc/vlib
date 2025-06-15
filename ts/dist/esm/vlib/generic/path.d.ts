@@ -279,78 +279,30 @@ export declare class Path {
      *  @desc Load the data from the path
      *  @funcs 2
      */
-    load<R extends Buffer = Buffer>(opts: {
-        type: undefined | "buffer";
+    load<T extends LoadSaveTypeName = "string">({ type, encoding }?: {
+        type?: T;
         encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends boolean = boolean>(opts: {
-        type: "boolean";
+    }): Promise<CastLoadSaveType<T>>;
+    load_sync<T extends LoadSaveTypeName = "string">({ type, encoding, }?: {
+        type?: T;
         encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends number = number>(opts: {
-        type: "number";
-        encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends string = string>(opts?: {
-        type?: "string";
-        encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends any[] = any[]>(opts: {
-        type: "array";
-        encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends Record<any, any> = Record<any, any>>(opts: {
-        type: "object";
-        encoding?: BufferEncoding;
-    }): Promise<R>;
-    load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: {
-        type: "json" | "json5" | "jsonc";
-        encoding?: BufferEncoding;
-    }): Promise<R>;
-    load_sync<R extends Buffer = Buffer>(opts: {
-        type: undefined | "buffer";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends boolean = boolean>(opts: {
-        type: "boolean";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends number = number>(opts: {
-        type: "number";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends string = string>(opts?: {
-        type?: "string";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends any[] = any[]>(opts: {
-        type: "array";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends Record<string, any> = Record<string, any>>(opts: {
-        type: "object";
-        encoding?: BufferEncoding;
-    }): R;
-    load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: {
-        type: "json" | "json5" | "jsonc";
-        encoding?: BufferEncoding;
-    }): R;
+    }): CastLoadSaveType<T>;
     /** @docs
      *  @title Save
      *  @desc Save data to the path
      *  @funcs 2
      */
     save(data: any, opts: {
-        type: Path.LoadSaveTypeName;
+        type: LoadSaveTypeName;
     }): Promise<void>;
     save(data: string | Buffer, opts?: {
-        type?: Path.LoadSaveTypeName;
+        type?: LoadSaveTypeName;
     }): Promise<void>;
     save_sync(data: any, opts: {
-        type: Exclude<Path.LoadSaveTypeName, "jsonc">;
+        type: Exclude<LoadSaveTypeName, "jsonc">;
     }): this;
     save_sync(data: string | Buffer, opts?: {
-        type?: Exclude<Path.LoadSaveTypeName, "jsonc">;
+        type?: Exclude<LoadSaveTypeName, "jsonc">;
     }): this;
     /**
      * Asynchronously reads the file at this._path using a streaming interface.
@@ -417,14 +369,26 @@ export declare class Path {
     } ? Path[] : never;
 }
 /**
+ * Casting `load` and `save` types.
+ */
+type LoadSaveTypeMap = {
+    undefined: Buffer;
+    "buffer": Buffer;
+    "boolean": boolean;
+    "number": number;
+    "string": string;
+    "array": any[];
+    "object": Record<string, any>;
+    "json": any[] | Record<string, any>;
+    "json5": any[] | Record<string, any>;
+    "jsonc": any[] | Record<string, any>;
+};
+type LoadSaveTypeName = keyof LoadSaveTypeMap;
+type CastLoadSaveType<T extends LoadSaveTypeName, Never = never> = T extends keyof LoadSaveTypeMap ? LoadSaveTypeMap[T] : Never;
+/**
  * Path types.
  */
 export declare namespace Path {
-    /**
-     * The valid types for `load` `save` methods.
-     */
-    type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
-    type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
     /**
      * A glob / regex path exclude list class.
      * @libris
@@ -468,3 +432,4 @@ export declare namespace Path {
         };
     }
 }
+export {};

@@ -190,9 +190,10 @@ export var Color;
      * @returns The cleaned string without colors.
      */
     function strip(data) {
-        return data.replace(/\u001b\[[0-9;]*m/g, '');
+        return data.indexOf('\x1B') === -1 ? data : data.replace(ansi_sgr_regex, '');
     }
     Color.strip = strip;
+    const ansi_sgr_regex = /\x1B\[[0-9;]*m/g; // PCRE-style pre-compiled regex
     /** Colorize a json object. */
     function json(value, opts) {
         return ObjectUtils.stringify(value, { ...(opts ?? {}), colored: true, json: true });

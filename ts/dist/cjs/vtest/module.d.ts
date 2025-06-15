@@ -3,6 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Path, GlobPatternList, Logger } from "../vlib/index.js";
+import { Package } from './package.js';
 /** Expect type. */
 type Expect = "error" | "success";
 /** User inputted unit test callback type */
@@ -22,12 +23,23 @@ export declare class Module {
     /** The path to the `output` directory from the active package. */
     private output?;
     /**
+     * The context options that are always used for the unit tests.
+     * Keep as opts so we can detect present keys.
+     */
+    private override_ctx?;
+    /**
      * Create a unit test module.
      * @param name The name of the module.
      */
     constructor(opts: {
         /** The name of the module. */
         name: string;
+        /**
+         * Optionally strip colors from the unit test outputs, defaults to `false`.
+         * Note that when this is defined, this wil always override other context options.
+         * So also when providing different options through the CLI or by a parent package.
+         */
+        strip_colors?: boolean;
     });
     /**
      * Try load the mod cache
@@ -54,7 +66,7 @@ export declare class Module {
     /**
      * Run the unit tests of the module
      */
-    run(ctx: Module.Context): Promise<{
+    run(ctx: Package.Context): Promise<{
         status: boolean;
         failed: number;
         succeeded: number;
@@ -70,34 +82,6 @@ export declare class Module {
         target: GlobPatternList.T | GlobPatternList.T[];
         yes?: boolean;
     }): Promise<void>;
-}
-export declare namespace Module {
-    /** The initialized module context. */
-    type Context = Required<Omit<Context.Opts, "output" | "target" | "stop_after">> & Pick<Context.Opts, "output" | "target" | "stop_after">;
-    /** Types for the context type. */
-    namespace Context {
-        /** The context input options. */
-        interface Opts {
-            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
-            target?: string;
-            /** Whether to enter interactive mode on failure. */
-            interactive?: boolean;
-            /** Do not show the diff from cached and new data. */
-            no_changes?: boolean;
-            /** Whether to stop on a failed unit test. */
-            stop_on_failure?: boolean;
-            /** The unit test id to stop after. */
-            stop_after?: string;
-            /** The number of times to repeat the tests. Defaults to 1. */
-            repeat?: number;
-            /** Whether to strip colors from the output. */
-            strip_colors?: boolean;
-            /** The path to the output directory. */
-            output: Path;
-        }
-        /** Create a context object from an options object. */
-        function create(opts: Opts): Context;
-    }
 }
 /**
  * The unit tests module cache.

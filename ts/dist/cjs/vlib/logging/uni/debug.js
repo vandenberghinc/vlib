@@ -31,7 +31,8 @@ class Debug extends import_logger.Logger {
     } else if (opts) {
       super_opts = {
         ...opts,
-        debug: true
+        debug: true,
+        raw: true
       };
     } else {
       throw new TypeError(`Logger constructor expects a number, ActiveLogLevel, or an object with level and debug properties, not "${opts.toString()}".`);

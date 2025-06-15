@@ -37,6 +37,7 @@ var import_js_beautify = __toESM(require("js-beautify"));
 var import_vlib = require("../vlib/index.js");
 var import_source_loc = require("../vlib/logging/uni/source_loc.js");
 var import_compute_diff = require("../vts/utils/compute_diff.js");
+var import_package = require("./package.js");
 const { js: beautify } = import_js_beautify.default;
 class Module {
   // Module name.
@@ -48,6 +49,11 @@ class Module {
   /** The path to the `output` directory from the active package. */
   output;
   /**
+   * The context options that are always used for the unit tests.
+   * Keep as opts so we can detect present keys.
+   */
+  override_ctx;
+  /**
    * Create a unit test module.
    * @param name The name of the module.
    */
@@ -56,6 +62,11 @@ class Module {
       throw new Error(`Unit test module "${name}" already exists.`);
     }
     this.name = opts.name;
+    this.override_ctx = {
+      // dont assign to defaults, keep undefined when not set.
+      // this way we can correctly override the package context.
+      strip_colors: opts.strip_colors
+    };
     Modules.push(this);
   }
   /**
@@ -105,6 +116,7 @@ class Module {
     }
     const loc = new import_source_loc.SourceLoc(1);
     this.unit_tests[id] = async (index, ctx) => {
+      console.log(`Running unit test with context: ${import_vlib.Color.object(ctx, { max_depth: 2 })}`);
       const extract_input = async (id2, source_file2) => {
         if (source_file2 == null)
           return void 0;
@@ -288,7 +300,12 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
         if (success) {
           return { success: true, hash: og_hash, output: res_str, expect };
         }
-        if (ctx.strip_colors && cached && import_vlib.Utils.hash(import_vlib.Color.strip(res_str), "sha256", "hex") === import_vlib.Utils.hash(import_vlib.Color.strip(cached.data), "sha256", "hex")) {
+        if (cached) {
+          const d = zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString();
+          console.log("PRE COLOR STRIP:\n" + d);
+          console.log("POST COLOR STRIP:\n" + import_vlib.Color.strip(d));
+        }
+        if (ctx.strip_colors && cached && import_vlib.Utils.hash(import_vlib.Color.strip(res_str), "sha256", "hex") === import_vlib.Utils.hash(import_vlib.Color.strip(zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString()), "sha256", "hex")) {
           return { success: true, hash: og_hash, output: res_str, expect };
         }
         if (ctx.interactive) {
@@ -326,6 +343,9 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
    * Run the unit tests of the module
    */
   async run(ctx) {
+    if (this.override_ctx) {
+      ctx = import_package.Package.Context.merge(ctx, this.override_ctx, true);
+    }
     import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
     let failed = 0, succeeded = 0;
@@ -426,26 +446,6 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
     import_vlib.debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
   }
 }
-(function(Module2) {
-  let Context;
-  (function(Context2) {
-    ;
-    function create(opts) {
-      return {
-        target: opts.target,
-        interactive: opts.interactive ?? true,
-        no_changes: opts.no_changes ?? false,
-        stop_on_failure: opts.stop_on_failure ?? false,
-        stop_after: opts.stop_after,
-        repeat: opts.repeat ?? 0,
-        strip_colors: opts.strip_colors ?? false,
-        output: opts.output
-        // ?? new Path("./.unit_tests"),
-      };
-    }
-    Context2.create = create;
-  })(Context = Module2.Context || (Module2.Context = {}));
-})(Module || (Module = {}));
 const Modules = [];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

@@ -343,3 +343,26 @@ export type NoOtherKeys<T extends object> =
 
 /** Make all fields non readonly in an object type. */
 export type MutableObject<T> = { -readonly [P in keyof T]: T[P] }
+
+
+/**
+ * Utility type to make all properties of T required, except for the specified keys K.
+ * This is useful when you want to enforce that all properties are required,
+ * except for a few specific ones that can remain optional.
+ */
+export type RequiredExcept<
+    T extends object,
+    K extends keyof T
+> = Required<Omit<T, K>> & Pick<T, K>
+
+/**
+ * Utility type to make the properties K of T required,
+ * while keeping all other properties unchanged.
+ * Duplicate of {@link Enforce}.
+ */
+export type RequiredFor<
+    T extends object,
+    K extends keyof T
+> = T extends any
+    ? Omit<T, K> & Required<Pick<T, K>>
+    : never;

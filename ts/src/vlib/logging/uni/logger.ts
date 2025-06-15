@@ -183,4 +183,4 @@ export class Logger<
 /**
  * A global log instance.
  */
-export const log: Logger = new Logger({ level: 0, debug: false });
+export const log: Logger = new Logger({ level: 0, debug: false, raw: true });

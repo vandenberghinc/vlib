@@ -60,7 +60,10 @@ cli.main({
     // { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." },
   ],
   async callback(args) {
-    const pkg = await import_package.Package.from_file(cli.options.config, cli.options);
+    const config = await import_package.Config.load(cli.options.config || "__default__");
+    if ("error" in config)
+      throw cli.error(config.error);
+    const pkg = new import_package.Package(config);
     await pkg.run(args);
   }
 });
@@ -74,7 +77,10 @@ cli.command({
     "List files": "vtest --list-files"
   },
   async callback(args) {
-    const pkg = await import_package.Package.from_file(cli.options.config, cli.options);
+    const config = await import_package.Config.load(cli.options.config || "__default__");
+    if ("error" in config)
+      throw cli.error(config.error);
+    const pkg = new import_package.Package(config);
     pkg.list_files();
   }
 });
@@ -87,7 +93,10 @@ cli.command({
     "List modules": "vtest --list-modules"
   },
   async callback(args) {
-    const pkg = await import_package.Package.from_file(cli.options.config, cli.options);
+    const config = await import_package.Config.load(cli.options.config || "__default__");
+    if ("error" in config)
+      throw cli.error(config.error);
+    const pkg = new import_package.Package(config);
     pkg.list_modules();
   }
 });
@@ -105,7 +114,10 @@ cli.command({
     { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." }
   ],
   async callback(args) {
-    const pkg = await import_package.Package.from_file(cli.options.config, cli.options);
+    const config = await import_package.Config.load(cli.options.config || "__default__");
+    if ("error" in config)
+      throw cli.error(config.error);
+    const pkg = new import_package.Package(config);
     await pkg.reset_unit_tests(args);
   }
 });

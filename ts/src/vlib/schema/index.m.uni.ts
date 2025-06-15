@@ -22,6 +22,7 @@ export {
 // validate/
 export * from "./validate/cast.js"
 export * from "./validate/throw.js"
+export * from "./validate/json_schema.js"
 // export {} from "./validator_entries.js" // dont export from this file, let users use `Validator` instead.
 export {
     validate,

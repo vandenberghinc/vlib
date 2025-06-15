@@ -200,8 +200,9 @@ export namespace Color {
      * @returns The cleaned string without colors.
      */
     export function strip(data: string): string {
-        return data.replace(/\u001b\[[0-9;]*m/g, '');
+        return data.indexOf('\x1B') === -1 ? data : data.replace(ansi_sgr_regex, '');
     }
+    const ansi_sgr_regex = /\x1B\[[0-9;]*m/g; // PCRE-style pre-compiled regex
 
     /** Colorize a json object. */
     export function json(value: any, opts?: ObjectUtils.StringifyOpts): string {

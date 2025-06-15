@@ -19,6 +19,7 @@ export class Debug extends Logger {
             super_opts = {
                 ...opts,
                 debug: true,
+                raw: true,
             };
         }
         else {

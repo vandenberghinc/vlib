@@ -3,10 +3,81 @@
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Path, Schema, CLI } from "../vlib/index.js";
+import { Path, CLI, log, Schema } from "../vlib/index.js";
 import { Git } from "./git.js";
 import { NPM } from "./npm.js";
 import { SSH } from "./ssh.js";
+export var RepoConfig;
+(function (RepoConfig) {
+    /**
+     * A generic scheme for generating the JSON schema for the repo configuration file.
+     */
+    RepoConfig.Schema = {
+        version_path: {
+            type: 'string',
+            required: false,
+            // postprocess: (value) => {
+            //     if (value) {
+            //         value = value.trim();
+            //         if (value.charAt(0) !== "/") {
+            //             value = this.source.join(value).str();
+            //         }
+            //         return value;
+            //     }
+            // }
+        },
+        ssh: {
+            type: "object",
+            required: false,
+            schema: {
+                remotes: {
+                    type: "array",
+                    default: [],
+                    value_schema: {
+                        type: "object",
+                        schema: {
+                            alias: "string",
+                            destination: "string",
+                            enabled: { type: "boolean", default: true },
+                        },
+                    },
+                },
+            },
+        },
+        git: {
+            type: "object",
+            required: false,
+            schema: {
+                username: "string",
+                email: "string",
+                remotes: {
+                    type: "array",
+                    default: [],
+                    value_schema: {
+                        type: "object",
+                        schema: {
+                            remote: "string",
+                            branch: "string",
+                            destination: "string",
+                            enabled: { type: "boolean", default: true },
+                        },
+                    },
+                },
+            },
+        },
+        npm: {
+            type: 'object',
+            required: false,
+            schema: {
+                links: {
+                    type: 'object',
+                    required: false,
+                    value_scheme: { type: 'array', value_scheme: 'string' },
+                },
+            },
+        }
+    };
+})(RepoConfig || (RepoConfig = {}));
 // Repo class.
 export class Repo {
     // Attributes.
@@ -75,6 +146,7 @@ export class Repo {
         this.name = this.source.full_name();
     }
     async init() {
+        // Initialize the configuration file.
         if (!this.config_path.exists()) {
             // throw new Error(`VRepo configuration file "${this.config_path.str()}" does not exist.`);
             this.config = {
@@ -103,14 +175,15 @@ export class Repo {
             }
         }
         this.assert_init();
+        // Validate the configuration file.
         Schema.validate(this.config, {
             error_prefix: `${this.config_path.str()}: Invalid vrepo configuration file. `,
             unknown: false,
             throw: true,
             schema: {
+                ...RepoConfig.Schema,
                 version_path: {
-                    type: 'string',
-                    required: false,
+                    ...RepoConfig.Schema.version_path,
                     postprocess: (value) => {
                         if (value) {
                             value = value.trim();
@@ -122,55 +195,13 @@ export class Repo {
                     }
                 },
                 ssh: !this.ssh_enabled ? "any" : {
-                    type: "object",
+                    ...RepoConfig.Schema.ssh,
                     required: this.ssh_enabled,
-                    schema: {
-                        remotes: {
-                            type: "array",
-                            default: [],
-                            value_schema: {
-                                type: "object",
-                                schema: {
-                                    alias: "string",
-                                    destination: "string",
-                                    enabled: { type: "boolean", default: true },
-                                },
-                            },
-                        },
-                    },
                 },
                 git: !this.git_enabled ? "any" : {
-                    type: "object",
+                    ...RepoConfig.Schema.git,
                     required: this.git_enabled,
-                    schema: {
-                        username: "string",
-                        email: "string",
-                        remotes: {
-                            type: "array",
-                            default: [],
-                            value_schema: {
-                                type: "object",
-                                schema: {
-                                    remote: "string",
-                                    branch: "string",
-                                    destination: "string",
-                                    enabled: { type: "boolean", default: true },
-                                },
-                            },
-                        },
-                    },
                 },
-                npm: {
-                    type: 'object',
-                    required: false,
-                    schema: {
-                        links: {
-                            type: 'object',
-                            required: false,
-                            value_scheme: { type: 'array', value_scheme: 'string' },
-                        },
-                    },
-                }
             }
         });
         // Initialize sub objects.
@@ -200,5 +231,15 @@ export class Repo {
             this.npm.save();
         }
     }
+}
+/** Generate the JSON schema's for the fields. */
+const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
+if (process.argv.includes("--vlib-generate-schemas")) {
+    Schema.create_json_schema_sync({
+        unknown: false,
+        output: `${__root}assets/schemas/vrepo.json`,
+        schema: RepoConfig.Schema,
+    });
+    log(`Generated JSON schema 'vrepo.json' at '${__root}assets/schemas/vrepo.json'`);
 }
 //# sourceMappingURL=repo.js.map

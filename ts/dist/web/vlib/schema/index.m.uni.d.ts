@@ -10,4 +10,5 @@
 export { Entry, Entries, ValueEntries, TupleEntries, Opts, Infer, } from "./infer/entry.js";
 export * from "./validate/cast.js";
 export * from "./validate/throw.js";
+export * from "./validate/json_schema.js";
 export { validate, Validator, InvalidUsageError, ValidateError, ValidateResponse, } from "./validate/validate.js";

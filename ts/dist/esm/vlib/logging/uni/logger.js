@@ -158,5 +158,5 @@ export class Logger extends Callable {
 /**
  * A global log instance.
  */
-export const log = new Logger({ level: 0, debug: false });
+export const log = new Logger({ level: 0, debug: false, raw: true });
 //# sourceMappingURL=logger.js.map

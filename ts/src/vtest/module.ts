@@ -13,6 +13,7 @@ const { js: beautify } = pkg;
 import { Color, Colors, Utils, Path, logging, GlobPattern, GlobPatternList, debug, Logger } from "@vlib";
 import { SourceLoc } from '@vlib/logging/uni/source_loc.js';
 import { compute_diff } from '../vts/utils/compute_diff.js';
+import { Package } from './package.js';
 
 // -----------------------------------------------------------------
 // Types.
@@ -51,7 +52,7 @@ export class Module {
         string,
         (
             index: number, // index of the unit test in the module.
-            ctx: Module.Context,
+            ctx: Package.Context,
         ) => Promise<{ success: boolean, hash?: string, output?: string, expect: Expect }>
     > = {};
 
@@ -61,6 +62,12 @@ export class Module {
     /** The path to the `output` directory from the active package. */
     private output?: Path;
 
+    /**
+     * The context options that are always used for the unit tests.
+     * Keep as opts so we can detect present keys.
+     */
+    private override_ctx?: Partial<Package.Context.Opts>;
+
     /** 
      * Create a unit test module.
      * @param name The name of the module.
@@ -68,6 +75,12 @@ export class Module {
     constructor(opts: {
         /** The name of the module. */
         name: string,
+        /**
+         * Optionally strip colors from the unit test outputs, defaults to `false`.
+         * Note that when this is defined, this wil always override other context options.
+         * So also when providing different options through the CLI or by a parent package.
+         */
+        strip_colors?: boolean;
     }) {
 
         // Check errors.
@@ -77,6 +90,11 @@ export class Module {
 
         // Attributes.
         this.name = opts.name;
+        this.override_ctx = {
+            // dont assign to defaults, keep undefined when not set.
+            // this way we can correctly override the package context.
+            strip_colors: opts.strip_colors, 
+        }
 
         // Add to unit test modules.
         Modules.push(this);
@@ -148,7 +166,9 @@ export class Module {
         const loc = new SourceLoc(1);
 
         // Add unit test.
-        this.unit_tests[id] = async (index: number, ctx: Module.Context) => {
+        this.unit_tests[id] = async (index: number, ctx: Package.Context) => {
+
+            console.log(`Running unit test with context: ${Color.object(ctx, { max_depth: 2 })}`);
 
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
@@ -409,11 +429,22 @@ export class Module {
                 }
 
                 // Check the hash while removing colors.
+                // if (ctx.strip_colors) {
+                //     console.log('STOP!', ctx.strip_colors, )
+                //     process.exit(1)
+                // }
+                // console.log('STOP!', ctx.strip_colors);
+                // (() => process.exit(1))();
+                if (cached) {
+                    const d = zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString();
+                    console.log("PRE COLOR STRIP:\n"+d);
+                    console.log("POST COLOR STRIP:\n" + Color.strip(d));
+                }
                 if (
                     ctx.strip_colors
                     && cached
                     && Utils.hash(Color.strip(res_str), "sha256", "hex") ===
-                       Utils.hash(Color.strip(cached.data), "sha256", "hex")
+                    Utils.hash(Color.strip(zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString()), "sha256", "hex")
                 ) {
                     return { success: true, hash: og_hash, output: res_str, expect };
                 }
@@ -470,7 +501,15 @@ export class Module {
     /**
      * Run the unit tests of the module
      */
-    async run(ctx: Module.Context): Promise<{ status: boolean, failed: number, succeeded: number }> {
+    async run(ctx: Package.Context): Promise<{ status: boolean, failed: number, succeeded: number }> {
+
+        // Override the context with the module's override context.
+        // Ensure we copy the context so we do not modify the original package context.
+        if (this.override_ctx) {
+            ctx = Package.Context.merge(ctx, this.override_ctx, true);
+        }
+
+        // console.log(`Running unit test module with context: ${Color.object(ctx, { max_depth: 2 })}`);
 
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
@@ -645,51 +684,6 @@ export class Module {
         }
         await this.save_mod_cache();
         debug.raw(`Reset ${deletions.length} unit tests in module "${this.name}".`);
-    }
-}
-export namespace Module {
-
-    /** The initialized module context. */
-    export type Context =
-        Required<Omit<Context.Opts, "output" | "target" | "stop_after">>
-        & Pick<Context.Opts, "output" | "target" | "stop_after">;
-
-    /** Types for the context type. */
-    export namespace Context {
-        
-        /** The context input options. */
-        export interface Opts {
-            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
-            target?: string;
-            /** Whether to enter interactive mode on failure. */
-            interactive?: boolean;
-            /** Do not show the diff from cached and new data. */
-            no_changes?: boolean;
-            /** Whether to stop on a failed unit test. */
-            stop_on_failure?: boolean;
-            /** The unit test id to stop after. */
-            stop_after?: string;
-            /** The number of times to repeat the tests. Defaults to 1. */
-            repeat?: number;
-            /** Whether to strip colors from the output. */
-            strip_colors?: boolean;
-            /** The path to the output directory. */
-            output: Path;
-        };
-
-        /** Create a context object from an options object. */
-        export function create(opts: Opts): Context {
-            return {
-                target: opts.target,
-                interactive: opts.interactive ?? true,
-                no_changes: opts.no_changes ?? false,
-                stop_on_failure: opts.stop_on_failure ?? false,
-                stop_after: opts.stop_after,
-                repeat: opts.repeat ?? 0,
-                strip_colors: opts.strip_colors ?? false,
-                output: opts.output// ?? new Path("./.unit_tests"),
-            };
-        }
     }
 }
 

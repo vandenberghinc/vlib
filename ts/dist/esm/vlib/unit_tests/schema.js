@@ -671,4 +671,20 @@ tests.add("aliases:1", create_success_unit_test({
     },
     // Expected error: missing required key "name"
 }));
+// -------------------------------------------------------------------------------
+// Invalid key, check close known matches
+tests.add("typo_invalid_attr:1", create_error_unit_test({
+    throw: true,
+    unknown: false,
+    object: {
+        option: "X",
+    },
+    schema: {
+        options: {
+            type: "string",
+            required: true,
+        },
+    },
+    // Expected error msg like: `Invalid key "option", did you mean "options"`
+}));
 //# sourceMappingURL=schema.js.map

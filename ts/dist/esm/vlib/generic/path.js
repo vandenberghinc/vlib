@@ -855,6 +855,18 @@ export class Path {
     unquote() {
         return new Path(StringUtils.unquote(this.path), false);
     }
+    /** @docs
+     *  @title Load
+     *  @desc Load the data from the path
+     *  @funcs 2
+     */
+    // async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends Record<any, any> = Record<any, any>>(opts: { type: "object", encoding?: BufferEncoding }): Promise<R>;
+    // async load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): Promise<R>;
     async load({ type = "string", encoding = undefined } = {}) {
         return new Promise((resolve, reject) => {
             fs.readFile(this.path, encoding, (err, data) => {
@@ -862,7 +874,7 @@ export class Path {
                     reject(err);
                 }
                 else {
-                    if (type == null || type === "buffer") {
+                    if (type == null || type === "buffer" || type === "undefined") {
                         resolve(data);
                     }
                     else if (type === "string") {
@@ -892,9 +904,16 @@ export class Path {
             });
         });
     }
+    // load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
+    // load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
+    // load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
+    // load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
+    // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
+    // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
+    // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
     load_sync({ type = "string", encoding = undefined, } = {}) {
         const data = fs.readFileSync(this.path, encoding);
-        if (type == null || type === "buffer") {
+        if (type == null || type === "buffer" || type === "undefined") {
             return data;
         }
         else if (type === "string") {
@@ -914,7 +933,7 @@ export class Path {
         }
         else if (type === "boolean") {
             const str = data.toString();
-            return str === "1" || str === "true" || str === "TRUE" || str === "True";
+            return (str === "1" || str === "true" || str === "TRUE" || str === "True");
         }
         else {
             // @ts-expect-error
@@ -923,7 +942,7 @@ export class Path {
     }
     async save(data, opts) {
         if (opts?.type) {
-            if (opts.type == null || opts.type === "buffer") {
+            if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
                 // skip
             }
             else if (opts.type === "string") {
@@ -961,7 +980,7 @@ export class Path {
     }
     save_sync(data, opts) {
         if (opts?.type) {
-            if (opts.type == null || opts.type === "buffer") {
+            if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
                 // skip
             }
             else if (opts.type === "string") {
@@ -1162,6 +1181,11 @@ export class Path {
  * Path types.
  */
 (function (Path) {
+    // /**
+    //  * The valid types for `load` `save` methods.
+    //  */
+    // export type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
+    // export type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
     /**
      * A glob / regex path exclude list class.
      * @libris

@@ -30,6 +30,76 @@ export interface RepoConfig {
         links?: Record<string, string[]>;
     };
 }
+export declare namespace RepoConfig {
+    /**
+     * A generic scheme for generating the JSON schema for the repo configuration file.
+     */
+    const Schema: {
+        readonly version_path: {
+            readonly type: "string";
+            readonly required: false;
+        };
+        readonly ssh: {
+            readonly type: "object";
+            readonly required: false;
+            readonly schema: {
+                readonly remotes: {
+                    readonly type: "array";
+                    readonly default: readonly [];
+                    readonly value_schema: {
+                        readonly type: "object";
+                        readonly schema: {
+                            readonly alias: "string";
+                            readonly destination: "string";
+                            readonly enabled: {
+                                readonly type: "boolean";
+                                readonly default: true;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        readonly git: {
+            readonly type: "object";
+            readonly required: false;
+            readonly schema: {
+                readonly username: "string";
+                readonly email: "string";
+                readonly remotes: {
+                    readonly type: "array";
+                    readonly default: readonly [];
+                    readonly value_schema: {
+                        readonly type: "object";
+                        readonly schema: {
+                            readonly remote: "string";
+                            readonly branch: "string";
+                            readonly destination: "string";
+                            readonly enabled: {
+                                readonly type: "boolean";
+                                readonly default: true;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        readonly npm: {
+            readonly type: "object";
+            readonly required: false;
+            readonly schema: {
+                readonly links: {
+                    readonly type: "object";
+                    readonly required: false;
+                    readonly value_scheme: {
+                        readonly type: "array";
+                        readonly value_scheme: "string";
+                    };
+                };
+            };
+        };
+    };
+}
 export declare class Repo {
     source: Path;
     name: string;

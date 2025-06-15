@@ -839,13 +839,25 @@ class Path {
   unquote() {
     return new Path(import_string.String.unquote(this.path), false);
   }
+  /** @docs
+   *  @title Load
+   *  @desc Load the data from the path
+   *  @funcs 2
+   */
+  // async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends Record<any, any> = Record<any, any>>(opts: { type: "object", encoding?: BufferEncoding }): Promise<R>;
+  // async load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): Promise<R>;
   async load({ type = "string", encoding = void 0 } = {}) {
     return new Promise((resolve, reject) => {
       fs.readFile(this.path, encoding, (err, data) => {
         if (err) {
           reject(err);
         } else {
-          if (type == null || type === "buffer") {
+          if (type == null || type === "buffer" || type === "undefined") {
             resolve(data);
           } else if (type === "string") {
             resolve(data.toString());
@@ -867,9 +879,16 @@ class Path {
       });
     });
   }
+  // load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
+  // load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
+  // load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
+  // load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
+  // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
+  // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
+  // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
   load_sync({ type = "string", encoding = void 0 } = {}) {
     const data = fs.readFileSync(this.path, encoding);
-    if (type == null || type === "buffer") {
+    if (type == null || type === "buffer" || type === "undefined") {
       return data;
     } else if (type === "string") {
       return data.toString();
@@ -890,7 +909,7 @@ class Path {
   }
   async save(data, opts) {
     if (opts?.type) {
-      if (opts.type == null || opts.type === "buffer") {
+      if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
       } else if (opts.type === "string") {
       } else if (opts.type === "array" || opts.type === "object" || opts.type === "json" || opts.type === "json5") {
         data = JSON.stringify(data);
@@ -918,7 +937,7 @@ class Path {
   }
   save_sync(data, opts) {
     if (opts?.type) {
-      if (opts.type == null || opts.type === "buffer") {
+      if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
       } else if (opts.type === "string") {
       } else if (opts.type === "array" || opts.type === "object" || opts.type === "json" || opts.type === "json5") {
         data = JSON.stringify(data);

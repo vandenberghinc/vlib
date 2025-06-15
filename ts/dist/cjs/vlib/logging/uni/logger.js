@@ -163,7 +163,7 @@ class Logger extends import_callable.Callable {
     }
   }
 }
-const log = new Logger({ level: 0, debug: false });
+const log = new Logger({ level: 0, debug: false, raw: true });
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Logger,

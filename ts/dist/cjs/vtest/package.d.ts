@@ -2,15 +2,175 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { GlobPatternList } from "../vlib/index.js";
+import { Path, GlobPatternList } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
-import { Module } from './module.js';
+import { Merge, RequiredExcept } from "../vlib/types/transform.js";
 /**
- * Initialized configuration options.
+ * The unit test package class.
+ * Responsible for executing managing its included modules and unit tests.
  */
-export type Config = typeof Config.Schema.validated & {
-    debug?: number | string;
-};
+export declare class Package {
+    /**
+     * The initialized configuration object.
+     */
+    config: Config;
+    /** Flag to indicate if the modules are already initialized by `init_modules()` */
+    private modules_initialized;
+    /**
+     * Resolve a path search to a file path, basically an OR operation if any file exists.
+     * @returns The resolved path or undefined when no path is provided.
+     */
+    static resolve_path_search(path: string | string[]): Path | undefined;
+    /** Construct a unit test package. */
+    constructor(config: Config);
+    /**
+     * Run the unit tests.
+     * @param opts Optional context options to override the current configuration options with.
+     * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
+     */
+    run(opts?: Partial<Package.Context.Opts>): Promise<boolean>;
+    /**
+     * List all included files to the console.
+     */
+    list_files(): Promise<void>;
+    /**
+     * List all included modules to the console.
+     */
+    list_modules(): Promise<void>;
+    /**
+     * Reset certain unit test results.
+     * @param module The module name to reset the unit tests for.
+     * @param ids The unit test ids to reset. Supports glob patterns.
+     * @param yes Automatically answer yes to all prompts.
+     */
+    reset_unit_tests({ module, target, yes, }: {
+        module: string;
+        target: GlobPatternList.T | GlobPatternList.T[];
+        yes?: boolean;
+    }): Promise<void>;
+    /** Parse the included files. */
+    private parse_includes;
+    private parsed_includes;
+    /** Initialize the environment files. */
+    private init_env;
+    /** Parse includes and initialize all unit test modules. */
+    private init_modules;
+}
+/** Package types. */
+export declare namespace Package {
+    /**
+     * Context object for running the unit tests.
+     * This context is passed to the module and unit test functions.
+     */
+    type Context = Merge<RequiredExcept<Context.Opts, "module" | "target" | "stop_after">, {
+        /** The initialized output directory path. */
+        output: Path;
+    }>;
+    /** Types for the context type. */
+    namespace Context {
+        /** The input options to create a context object. */
+        interface Opts {
+            /** The path to the output directory. */
+            output: string;
+            /** The module name to run. If not defined all modules will be run. */
+            module?: string;
+            /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
+            target?: string;
+            /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
+            debug?: string | number;
+            /** Automatically answer yes to all prompts. */
+            yes?: boolean;
+            /** Whether to enter interactive mode on failure. */
+            interactive?: boolean;
+            /** Do not show the diff from cached and new data. */
+            no_changes?: boolean;
+            /** Whether to stop on a failed unit test. */
+            stop_on_failure?: boolean;
+            /** The unit test id to stop after. */
+            stop_after?: string;
+            /** The number of times to repeat the tests. Defaults to 1. */
+            repeat?: number;
+            /** Optionally strip colors from the unit test outputs, defaults to `false` */
+            strip_colors?: boolean;
+        }
+        /** A validator schema for the context options. */
+        const Schema: {
+            readonly module: {
+                readonly type: "string";
+                readonly required: false;
+            };
+            readonly target: {
+                readonly type: "string";
+                readonly required: false;
+            };
+            readonly debug: {
+                readonly type: readonly ["string", "number"];
+                readonly required: false;
+            };
+            readonly yes: {
+                readonly type: "boolean";
+                readonly required: false;
+            };
+            readonly interactive: {
+                readonly type: "boolean";
+                readonly required: false;
+            };
+            readonly no_changes: {
+                readonly type: "boolean";
+                readonly required: false;
+            };
+            readonly stop_on_failure: {
+                readonly type: "boolean";
+                readonly required: false;
+            };
+            readonly stop_after: {
+                readonly type: "string";
+                readonly required: false;
+            };
+            readonly repeat: {
+                readonly type: "number";
+                readonly required: false;
+            };
+            readonly strip_colors: {
+                readonly type: "boolean";
+                readonly required: false;
+            };
+            /**
+             * @warning Keep this not required since this field
+             * is often ignored and added more in terms of consistency.
+             * Otherwise the `Config.create()` function will need to be updated
+             * since that does not expect the `output` field to be required
+             * in the `Config.options` field.
+             */
+            readonly output: {
+                readonly type: "string";
+                readonly required: false;
+            };
+        };
+        /** Create a context object from its input options. */
+        function create(opts: Context.Opts): Context;
+        /**
+         * Merge an additional context object into a current context object.
+         * The new context attributes will override the existing ones.
+         * @param base The base context object.
+         * @param override The context object that will override the base context.
+         * @param copy Whether to copy the base context object (true) or update it in place (false).
+         * @returns The updated base context object.
+         */
+        function merge(base: Context, override: Partial<Context.Opts>, copy?: boolean): Context;
+    }
+}
+/**
+ * Initialized configuration object.
+ * @dev_note that attribute `options` field is kept since this is used for the `extends` field.
+ */
+export type Config = Merge<RequiredExcept<Config.Opts, "exclude" | "env" | "extends">, {
+    include: string[];
+    exclude?: string[];
+    env?: string[];
+    ctx: Package.Context;
+    output: Path;
+}>;
 /** Configuration options. */
 export declare namespace Config {
     /**
@@ -38,9 +198,11 @@ export declare namespace Config {
          * New configuration values will override values from the base configuration.
          */
         extends?: string | string[];
+        /** The runtime context options. */
+        options?: Package.Context.Opts;
     }
     /** Initialize the schema validator. */
-    const Schema: vlib.Schema.Validator<any[] | Record<string, any>, true, {
+    const Schema: vlib.Schema.Validator<any[] | Record<string, any>, false, {
         readonly output: {
             readonly type: "string";
             readonly required: true;
@@ -70,98 +232,93 @@ export declare namespace Config {
             };
             readonly preprocess: (v: any) => any;
         };
-        readonly base: {
+        readonly extends: {
             readonly type: readonly ["string", "array"];
             readonly required: false;
         };
-        readonly strip_colors: {
-            readonly type: readonly ["boolean"];
+        readonly options: {
+            readonly type: "object";
+            readonly schema: {
+                readonly module: {
+                    readonly type: "string";
+                    readonly required: false;
+                };
+                readonly target: {
+                    readonly type: "string";
+                    readonly required: false;
+                };
+                readonly debug: {
+                    readonly type: readonly ["string", "number"];
+                    readonly required: false;
+                };
+                readonly yes: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
+                readonly interactive: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
+                readonly no_changes: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
+                readonly stop_on_failure: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
+                readonly stop_after: {
+                    readonly type: "string";
+                    readonly required: false;
+                };
+                readonly repeat: {
+                    readonly type: "number";
+                    readonly required: false;
+                };
+                readonly strip_colors: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
+                /**
+                 * @warning Keep this not required since this field
+                 * is often ignored and added more in terms of consistency.
+                 * Otherwise the `Config.create()` function will need to be updated
+                 * since that does not expect the `output` field to be required
+                 * in the `Config.options` field.
+                 */
+                readonly output: {
+                    readonly type: "string";
+                    readonly required: false;
+                };
+            };
             readonly required: false;
         };
     }, any, any[]>;
-}
-/**
- * The unit test package class.
- * Responsible for executing managing its included modules and unit tests.
- */
-export declare class Package {
     /**
-     * The initialized configuration object.
+     * Load or initialize a new configuration object.
+     * @param opts
+     *      The configuration options to initialize the configuration object with.
+     *      1) The string "__default__" to search & load the default configuration file.
+     *      2) A single path or an array with path options to load the configuration from,
+     *         note that a path string supports glob patterns.
+     *      3) An object type with the configuration options.
+     * @param override
+     *      An optional object which will be used to override the loaded configuration.
+     * @param _exclude
+     *      A system exclude set to ignore already included base paths to prevent infinite recursion.
+     *      Do not manually pass this parameter, as it is a system parameter
+     * @returns The initialized configuration object, or an object with an `error` field.
      */
-    config: Config;
-    /** Flag to indicate if the modules are already initialized by `init_modules()` */
-    private modules_initialized;
+    function load(opts?: Config.Opts | string | string[] | "__default__", override?: Partial<Config.Opts>, _exclude?: Set<string>): Config | {
+        error: string;
+    };
     /**
-     * Resolve a path search to a file path, basically an OR operation if any file exists.
-     * @returns The resolved path or undefined when no path is provided.
+     * Merge an additional configuration object into a current configuration.
+     * The new config attributes will override the existing ones.
+     * @param base The base configuration object.
+     * @param override The configuration object that will override the base configuration.
+     * @param copy Whether to copy the base context object (true) or update it in place (false).
+     * @returns The updated base configuration object.
      */
-    private static resolve_path_search;
-    /**
-     * Construct a unit test package.
-     * Loads the configuration from the provided file path or object.
-     */
-    constructor(config: Config.Opts);
-    /**
-     *
-     */
-    /**
-     * Try to load a package by input file or if omitted by searching for a default configuration file.
-     * If no input paths are provided, this function will search for a configuration file
-     * like 'vtest.json', '.vtest.json' etc. in the current working directory or 1 level above.
-     * @throw An error when no configuration file is found.
-     * @param inputs The input file path(s) to load the configuration from.
-     *               If not provided, the function will search for a default configuration file.
-     * @param override An optional object to override the loaded configuration.
-     */
-    static from_file(inputs?: string | string[], override?: Partial<Config.Opts>): Promise<Package>;
-    /**
-     * Merge an additional configuration object into the current configuration.
-     * The new attributes override the existing ones.
-     * @param config The configuration object to merge.
-     */
-    merge(config: Partial<Config.Opts>): void;
-    /** Run the unit tests. */
-    run(opts: Package.run.Opts): Promise<boolean>;
-    /**
-     * Reset unit tests.
-     */
-    /**
-     * List all included files to the console.
-     */
-    list_files(): Promise<void>;
-    /**
-     * List all included modules to the console.
-     */
-    list_modules(): Promise<void>;
-    /**
-     * Reset certain unit test results.
-     * @param module The module name to reset the unit tests for.
-     * @param ids The unit test ids to reset. Supports glob patterns.
-     * @param yes Automatically answer yes to all prompts.
-     */
-    reset_unit_tests({ module, target, yes, }: {
-        module: string;
-        target: GlobPatternList.T | GlobPatternList.T[];
-        yes?: boolean;
-    }): Promise<void>;
-    /** Parse the included files. */
-    private parse_includes;
-    /** Initialize the environment files. */
-    private init_env;
-    /** Parse includes and initialize all unit test modules. */
-    private init_modules;
-}
-/** Package types. */
-export declare namespace Package {
-    namespace run {
-        /** Argument options of `Package.run()` */
-        interface Opts extends Omit<Module.Context.Opts, "output"> {
-            /** The module name to run. If not defined all modules will be run. */
-            module?: string;
-            /** Automatically answer yes to all prompts. */
-            yes?: boolean;
-            /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
-            debug?: string | number;
-        }
-    }
+    function merge(base: Config, override: Partial<Config.Opts> | Config, copy?: boolean): Config;
 }

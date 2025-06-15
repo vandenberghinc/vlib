@@ -182,9 +182,10 @@ var Color;
   }
   Color2.disable = disable;
   function strip(data) {
-    return data.replace(/\u001b\[[0-9;]*m/g, "");
+    return data.indexOf("\x1B") === -1 ? data : data.replace(ansi_sgr_regex, "");
   }
   Color2.strip = strip;
+  const ansi_sgr_regex = /\x1B\[[0-9;]*m/g;
   function json(value, opts) {
     return import_object.ObjectUtils.stringify(value, { ...opts ?? {}, colored: true, json: true });
   }

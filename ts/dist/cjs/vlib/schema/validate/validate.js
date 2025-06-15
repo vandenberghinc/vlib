@@ -29,6 +29,8 @@ var import_string = require("../../primitives/string.js");
 var import_validator_entries = require("./validator_entries.js");
 var import_cast = require("./cast.js");
 var import_throw = require("./throw.js");
+var import_suggest_attr = require("./suggest_attr.js");
+var import_json_schema = require("./json_schema.js");
 var Schemas;
 (function(Schemas2) {
   Schemas2.is_fast = (value) => {
@@ -325,9 +327,9 @@ function validate_object(data, entry, state) {
         const object_keys = Object.keys(data);
         for (let x = 0; x < object_keys.length; x++) {
           if (!entry.schema.has(object_keys[x]) && !aliases.has(object_keys[x])) {
-            console.log("Known fields:", Array.from(entry.schema.keys()));
             const field = `${state.parent}${object_keys[x]}`;
-            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is not allowed.`);
+            const suggested_key = (0, import_suggest_attr.suggest_attribute)(object_keys[x], Array.from(entry.schema.keys()));
+            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is not allowed` + (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : "."));
           }
         }
       }
@@ -396,8 +398,11 @@ class Validator {
    *          The runtime value is `undefined`.
    */
   validated;
+  /** The `Schemas` object from the constructor, used to extract the input schemas. */
+  schemas;
   /** Constructor. */
   constructor(opts) {
+    this.schemas = opts;
     this.state = State.create(opts);
     this.entry = {
       schema: opts.schema ? new import_validator_entries.ValidatorEntries(opts.schema) : void 0,
@@ -429,6 +434,26 @@ class Validator {
       return res.data;
     }
     return res;
+  }
+  /**
+   * Create a JSON schema from the provided options.
+   * This is only supported for object schemas using the {@link Schemas.schema} option
+   * passed to the constructor.
+   * @param opts The options for creating the JSON schema,
+   *             see {@link CreateJSONSchemaOpts} for more info.
+   * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
+   */
+  async create_json_schema(opts) {
+    if (this.schemas.schema == null) {
+      throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+    }
+    return (0, import_json_schema.create_json_schema)({ ...opts ?? {}, schema: this.schemas.schema });
+  }
+  create_json_schema_sync(opts) {
+    if (this.schemas.schema == null) {
+      throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+    }
+    return (0, import_json_schema.create_json_schema_sync)({ ...opts ?? {}, schema: this.schemas.schema });
   }
 }
 function validate(data, val) {

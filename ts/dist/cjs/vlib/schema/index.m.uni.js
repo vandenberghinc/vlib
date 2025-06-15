@@ -28,6 +28,7 @@ module.exports = __toCommonJS(stdin_exports);
 var import_entry = require("./infer/entry.js");
 __reExport(stdin_exports, require("./validate/cast.js"), module.exports);
 __reExport(stdin_exports, require("./validate/throw.js"), module.exports);
+__reExport(stdin_exports, require("./validate/json_schema.js"), module.exports);
 var import_validate = require("./validate/validate.js");
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -37,5 +38,6 @@ var import_validate = require("./validate/validate.js");
   Validator,
   validate,
   ...require("./validate/cast.js"),
-  ...require("./validate/throw.js")
+  ...require("./validate/throw.js"),
+  ...require("./validate/json_schema.js")
 });
