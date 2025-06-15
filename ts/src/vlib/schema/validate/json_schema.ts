@@ -85,7 +85,10 @@ const entry_to_json_schema = (
                 v,
                 v.unknown !== NoValue ? { unknown: v.unknown } : state,
             );
-            if (v.required) req.push(k);
+            if (
+                (typeof v.required === "function" || v.required === true)
+                && v.default === NoValue
+            ) { req.push(k); }
         }
 
         json.type = "object";
@@ -200,7 +203,10 @@ export function create_json_schema_sync<const S extends Entries.Opts = Entries.O
         properties[key] = entry_to_json_schema(entry, {
             unknown: opts.unknown ?? true,
         });
-        if (entry.required !== false) required.push(key);
+        if (
+            (typeof entry.required === "function" || entry.required === true)
+            && entry.default === NoValue
+        ) { required.push(key); }
     }
 
     // Create the JSON-Schema object.

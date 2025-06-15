@@ -64,8 +64,9 @@ const entry_to_json_schema = (entry, state) => {
     const req = [];
     for (const [k, v] of entry.schema.entries()) {
       props[k] = entry_to_json_schema(v, v.unknown !== import_validator_entries.NoValue ? { unknown: v.unknown } : state);
-      if (v.required)
+      if ((typeof v.required === "function" || v.required === true) && v.default === import_validator_entries.NoValue) {
         req.push(k);
+      }
     }
     json.type = "object";
     json.properties = props;
@@ -110,8 +111,9 @@ function create_json_schema_sync(opts) {
     properties[key] = entry_to_json_schema(entry, {
       unknown: opts.unknown ?? true
     });
-    if (entry.required !== false)
+    if ((typeof entry.required === "function" || entry.required === true) && entry.default === import_validator_entries.NoValue) {
       required.push(key);
+    }
   }
   const schema = {
     $schema: "http://json-schema.org/draft-07/schema#",
