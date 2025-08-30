@@ -17,11 +17,11 @@ module.exports = __toCommonJS(stdin_exports);
 __reExport(stdin_exports, require("./git.js"), module.exports);
 __reExport(stdin_exports, require("./npm.js"), module.exports);
 __reExport(stdin_exports, require("./ssh.js"), module.exports);
-__reExport(stdin_exports, require("./repo.js"), module.exports);
+__reExport(stdin_exports, require("./package.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ...require("./git.js"),
   ...require("./npm.js"),
   ...require("./ssh.js"),
-  ...require("./repo.js")
+  ...require("./package.js")
 });

@@ -1,7 +1,6 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
- © 2022 - 2024 Daan van den Bergh.
  *
  * WARNING:
  *  This script is also embedded into vweb.
@@ -96,5 +95,13 @@ export declare namespace Color {
     function json(value: any, opts?: ObjectUtils.StringifyOpts): string;
     /** Colorize an object. */
     function object(value: object, opts?: ObjectUtils.StringifyOpts): string;
+    /**
+     * Convert ANSI color codes to HTML spans with Mac OS terminal colors.
+     *
+     * @param data - The string containing ANSI codes.
+     * @returns The HTML string with color spans.
+     */
+    function to_html(data: string): string;
+    /** Update html env for browser environment. */
 }
 export { Colors as colors };

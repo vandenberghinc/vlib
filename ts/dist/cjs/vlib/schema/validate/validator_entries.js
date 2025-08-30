@@ -30,6 +30,7 @@ class ValidatorEntry {
   // Attributes with the same type as the Entry type.
   required;
   allow_empty;
+  // ensure its defined for the type checker.
   min;
   max;
   enum;

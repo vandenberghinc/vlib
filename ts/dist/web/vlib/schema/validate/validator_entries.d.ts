@@ -21,10 +21,9 @@ type IsUnionType<Ent extends Entry.Opts> = Entry.FromOpts<Ent>["type"] extends r
  * @private
  */
 export declare class ValidatorEntry<const Opts extends Entry.Opts = Entry.Opts, // entries options
-Ent extends Entry.FromOpts<Opts> = Entry.FromOpts<Opts>, // entry type from the options.
-const IsUn extends IsUnionType<Opts> = IsUnionType<Opts>> {
+Ent extends Entry.FromOpts<Opts> = Entry.FromOpts<Opts>> {
     required?: Ent["required"];
-    allow_empty?: Ent["allow_empty"];
+    allow_empty: NonNullable<Ent["allow_empty"]>;
     min?: Ent["min"];
     max?: Ent["max"];
     enum?: Ent["enum"];
@@ -97,11 +96,11 @@ const IsUn extends IsUnionType<Opts> = IsUnionType<Opts>> {
      */
     validated: Entry.Infer<Opts>;
     /** Check if the `type` attribute is a single type, so not an array indicating a union type. */
-    readonly is_union_type: IsUn extends true ? true : false;
+    readonly is_union_type: IsUnionType<Opts> extends true ? true : false;
     /** Check if the `type` attribute is a single type, so not an array indicating a union type. */
-    readonly is_single_type: IsUn extends true ? false : true;
+    readonly is_single_type: IsUnionType<Opts> extends true ? false : true;
     /** The type. */
-    type?: IsUn extends true ? Entry.Type.Castable.Base[] : Entry.Type.Castable.Base;
+    type?: IsUnionType<Opts> extends true ? Entry.Type.Castable.Base[] : Entry.Type.Castable.Base;
     /** Constructor options. */
     constructor(entry_opts: Opts);
     /**
@@ -132,117 +131,21 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         allow_empty?: boolean;
         min?: number;
         max?: number;
-        schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | {
-            type?: any;
-            default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
-            allow_empty?: boolean;
-            min?: number;
-            max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
-            enum?: readonly any[];
-            alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: boolean;
-            } | {
-                preserve?: boolean;
-                strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: false;
-            } | {
-                preserve?: false;
-                strict: true;
-            }, "preserve"> | undefined;
-            charset?: RegExp | undefined;
-            field_type?: string;
-            unknown?: boolean;
-            readonly def?: any;
-        }> | undefined;
-        value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | {
-            type?: any;
-            default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
-            allow_empty?: boolean;
-            min?: number;
-            max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
-            enum?: readonly any[];
-            alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: boolean;
-            } | {
-                preserve?: boolean;
-                strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: false;
-            } | {
-                preserve?: false;
-                strict: true;
-            }, "preserve"> | undefined;
-            charset?: RegExp | undefined;
-            field_type?: string;
-            unknown?: boolean;
-            readonly def?: any;
-        } | undefined;
-        tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | {
-            type?: any;
-            default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
-            allow_empty?: boolean;
-            min?: number;
-            max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
-            enum?: readonly any[];
-            alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: boolean;
-            } | {
-                preserve?: boolean;
-                strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
-                preserve: true;
-                strict?: false;
-            } | {
-                preserve?: false;
-                strict: true;
-            }, "preserve"> | undefined;
-            charset?: RegExp | undefined;
-            field_type?: string;
-            unknown?: boolean;
-            readonly def?: any;
-        })[] | undefined;
+        schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+        value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+        tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
         verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
-        cast?: boolean | import("../../types/transform.js").Neverify<{
+        cast?: boolean | import("../../types/types.js").Neverify<{
             preserve: true;
             strict?: boolean;
         } | {
             preserve?: boolean;
             strict: true;
-        }, "preserve"> | import("../../types/transform.js").Neverify<{
+        }, "preserve"> | import("../../types/types.js").Neverify<{
             preserve: true;
             strict?: false;
         } | {
@@ -261,27 +164,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, Function | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -294,27 +197,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: Function | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -327,27 +230,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: (Function | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -377,27 +280,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "string" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -410,27 +313,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "string" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -443,27 +346,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("string" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -493,27 +396,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "number" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -526,27 +429,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "number" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -559,27 +462,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("number" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -596,7 +499,7 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         verify?: ((attr: number, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
         preprocess?: ((attr: number, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: number, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
-        cast?: boolean | import("../../types/transform.js").Neverify<{
+        cast?: boolean | import("../../types/types.js").Neverify<{
             preserve: true;
             strict?: boolean;
         } | {
@@ -615,27 +518,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "boolean" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -648,27 +551,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "boolean" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -681,27 +584,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("boolean" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -718,7 +621,7 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         verify?: ((attr: boolean, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
         preprocess?: ((attr: boolean, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: boolean, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
-        cast?: boolean | import("../../types/transform.js").Neverify<{
+        cast?: boolean | import("../../types/types.js").Neverify<{
             preserve: true;
             strict?: false;
         } | {
@@ -737,27 +640,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "undefined" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -770,27 +673,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "undefined" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -803,27 +706,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("undefined" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -853,27 +756,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "object" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -886,27 +789,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "object" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -919,27 +822,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("object" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -969,27 +872,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "null" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1002,27 +905,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "null" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1035,27 +938,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("null" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1085,27 +988,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "any" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1118,27 +1021,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "any" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1151,27 +1054,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("any" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1201,27 +1104,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, "array" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1234,27 +1137,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: "array" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1267,27 +1170,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: ("array" | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1317,27 +1220,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         min?: number;
         max?: number;
         schema?: Record<string, readonly Entry.Type.Castable.Base[] | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1350,27 +1253,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         }> | undefined;
         value_schema?: readonly Entry.Type.Castable.Base[] | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1383,27 +1286,27 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             readonly def?: any;
         } | undefined;
         tuple?: (readonly Entry.Type.Castable.Base[] | {
-            type?: any;
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
             default?: any;
-            required?: boolean | ((parent: any) => boolean) | undefined;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
             allow_empty?: boolean;
             min?: number;
             max?: number;
-            schema?: Record<string, any> | undefined;
-            value_schema?: any;
-            tuple?: any[] | undefined;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any, key?: string | number | undefined) => string | void | null | undefined) | undefined;
-            preprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            postprocess?: ((attr: any, parent: any, key: string | number) => any) | undefined;
-            cast?: boolean | import("../../types/transform.js").Neverify<{
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: boolean;
             } | {
                 preserve?: boolean;
                 strict: true;
-            }, "preserve"> | import("../../types/transform.js").Neverify<{
+            }, "preserve"> | import("../../types/types.js").Neverify<{
                 preserve: true;
                 strict?: false;
             } | {
@@ -1425,7 +1328,7 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         field_type?: string;
         unknown?: boolean;
         readonly def?: unknown;
-    }, false>>;
+    }>>;
     /**
      * An attribute with the inferred type of the entries.
      * Note that this value is undefined at runtime.

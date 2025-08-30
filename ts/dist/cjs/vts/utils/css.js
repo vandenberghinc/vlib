@@ -39,12 +39,15 @@ var CSS;
     return new import_clean_css.default().minify(data).styles;
   }
   CSS2.minify = minify;
-  async function bundle({ data, paths = void 0, minify: minify2 = false, output = void 0, postprocess = void 0, log_level = 0 }) {
-    if (paths !== void 0) {
+  async function bundle({ data, paths, minify: minify2 = false, output = void 0, postprocess = void 0, log_level = 0 }) {
+    if (paths != null) {
       data = "";
       for (const path of paths) {
         data += await new vlib.Path(path).load();
       }
+    }
+    if (!data) {
+      throw new Error("No CSS data provided or loaded from paths.");
     }
     if (minify2) {
       data = CSS2.minify(data);

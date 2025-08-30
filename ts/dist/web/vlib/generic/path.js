@@ -109,7 +109,7 @@ const multi_dot_extensions_suffixes = new Set(Array.from(multi_dot_extensions)
     const parts = ext.split('.');
     if (parts.length < 2)
         return acc;
-    const add = `.${parts.last()}`;
+    const add = `.${parts[parts.length - 1]}`;
     if (!acc.includes(add))
         acc.push(add);
     return acc;
@@ -214,11 +214,40 @@ export class Path {
     // Static method.
     /**
      * Get the user's home directory path.
-     * @static
      * @returns {Path} A new Path instance pointing to the user's home directory.
      */
     static home() {
         return new Path(os.homedir());
+    }
+    /**
+     * Get the current working directory path.
+     * @returns {Path} A new Path instance pointing to the current working directory.
+     */
+    static cwd() {
+        return new Path(process.cwd());
+    }
+    /**
+     * Get the temporary directory path.
+     * @returns {Path} A new Path instance pointing to the system's temporary directory.
+     */
+    static tmp() {
+        return new Path(os.tmpdir());
+    }
+    // /**
+    //  * Get the system's root directory path.
+    //  * @returns {Path} A new Path instance pointing to the system's root directory.
+    //  */
+    // static root(): Path {
+    //     // On Windows, the root is the drive letter with a trailing backslash.
+    //     // On Unix-like systems, it is simply "/".
+    //     return new Path(pathlib.parse(pathlib.resolve('/')).root);
+    // }
+    /**
+     * Get the current operating system's path separator.
+     * @returns {string} The path separator used by the current operating system ('/' for Unix-like, '\\' for Windows).
+     */
+    static sep() {
+        return pathlib.sep;
     }
     /**
      * Find the common base path between an array of paths.
@@ -262,8 +291,8 @@ export class Path {
     }
     /**
      * Ensure a path exists; throw an error if not.
-     * @param {string|Path} path - Path to check.
-     * @param {string} [err_prefix] - Optional prefix for the error message.
+     * @param path Path to check.
+     * @param err_prefix Optional prefix for the error message.
      */
     static ensure_exists_err(path, err_prefix = "") {
         path = new Path(path);
@@ -794,15 +823,17 @@ export class Path {
         });
     }
     /** @docs
-     *  @title Mkdir
-     *  @desc Create a directory
+     * @title Mkdir
+     * @desc Create a directory
+     * @param opts.recursive Whether to create parent directories if they do not exist, defaults to `false`
+     *        Note that using `recursive: false` has slight performance benefits.
      */
-    async mkdir() {
+    async mkdir(opts) {
         return new Promise((resolve, reject) => {
             if (this.exists()) {
                 return resolve();
             }
-            fs.mkdir(this.path, { recursive: true }, (err) => {
+            fs.mkdir(this.path, { recursive: opts?.recursive }, (err) => {
                 if (err) {
                     reject(err);
                 }
@@ -813,11 +844,11 @@ export class Path {
             });
         });
     }
-    mkdir_sync() {
+    mkdir_sync(opts) {
         if (this.exists()) {
             return this;
         }
-        fs.mkdirSync(this.path, { recursive: true });
+        fs.mkdirSync(this.path, { recursive: opts?.recursive });
         return this;
     }
     /** @docs
@@ -1181,14 +1212,9 @@ export class Path {
  * Path types.
  */
 (function (Path) {
-    // /**
-    //  * The valid types for `load` `save` methods.
-    //  */
-    // export type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
-    // export type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
     /**
      * A glob / regex path exclude list class.
-     * @libris
+     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
      */
     class ExcludeList {
         /** Size to keep uniform with `Set`. */
@@ -1212,7 +1238,10 @@ export class Path {
             }
             this.size = this.exclude_list.length;
         }
-        /** Normalize a path. */
+        /**
+         * Normalize a path.
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+         */
         normalize(input) {
             let normalized = pathlib.normalize(input);
             if (normalized.indexOf("\\") !== -1) {
@@ -1223,7 +1252,7 @@ export class Path {
         /**
          * Check if a path is excluded.
          * @returns True if the path is matched by the exclude list.
-         * @libris
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
          */
         has(input) {
             if (this.cache.has(input)) {

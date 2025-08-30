@@ -35,6 +35,10 @@ export function search({ query, targets = [], limit = 25, case_match = false, al
     if (query == null) {
         throw Error("Define parameter \"query\".");
     }
+    else if (!query) {
+        // empty string, prevent matching.
+        return [];
+    }
     // Vars.
     const is_obj = targets.length > 0 && typeof targets[0] === "object";
     const is_array = targets.length > 0 && Array.isArray(targets[0]);
@@ -49,9 +53,9 @@ export function search({ query, targets = [], limit = 25, case_match = false, al
     // Calculate the similairities.
     const calc_sims = (targets = []) => {
         for (let i = 0; i < targets.length; i++) {
-            let match;
+            let matched = null;
             if (is_array) {
-                match = globalThis.match(query, 
+                matched = match(query, 
                 // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
                 case_match ? targets[i] : targets[i].toLowerCase(), allow_exceeding_chars);
             }
@@ -59,23 +63,23 @@ export function search({ query, targets = [], limit = 25, case_match = false, al
                 const target = targets[i];
                 if (key) {
                     key = key;
-                    let min_match = null;
+                    let min_matched = null;
                     for (let k = 0; k < key.length; k++) {
                         if (target[key[k]] == null) {
                             continue;
                         }
-                        match = globalThis.match(query, case_match ? target[key[k]] : target[key[k]].toLowerCase(), allow_exceeding_chars);
-                        if (match != null && (min_match === null || match < min_match)) {
-                            min_match = match;
+                        matched = match(query, case_match ? target[key[k]] : target[key[k]].toLowerCase(), allow_exceeding_chars);
+                        if (matched != null && (min_matched === null || matched < min_matched)) {
+                            min_matched = matched;
                         }
                     }
-                    match = min_match;
+                    matched = min_matched;
                 }
                 else {
                     if (target[key] == null) {
                         continue;
                     }
-                    match = globalThis.match(query, case_match ? target[key] : target[key].toLowerCase(), allow_exceeding_chars);
+                    matched = match(query, case_match ? target[key] : target[key].toLowerCase(), allow_exceeding_chars);
                 }
                 if (nested_key !== null && target[nested_key] != null) {
                     calc_sims(target[nested_key]);
@@ -85,12 +89,12 @@ export function search({ query, targets = [], limit = 25, case_match = false, al
                 if (targets[i] == null) {
                     continue;
                 }
-                match = globalThis.match(query, 
+                matched = match(query, 
                 // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
                 case_match ? targets[i] : targets[i].toLowerCase(), allow_exceeding_chars);
             }
-            if (match !== null) {
-                results.push([match, targets[i]]);
+            if (matched !== null) {
+                results.push([matched, targets[i]]);
             }
         }
     };
@@ -104,11 +108,7 @@ export function search({ query, targets = [], limit = 25, case_match = false, al
     }
     // Convert the results to targets only.
     if (get_matches === false) {
-        let converted = [];
-        results.iterate((item) => {
-            converted.push(item[1]);
-        });
-        return converted;
+        return results.map((item) => item[1]);
     }
     // Return the results.
     return results;

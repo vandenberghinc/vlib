@@ -4,10 +4,10 @@
  */
 
 // Imports.
-import { Color, Colors, log, Path, GlobPatternList } from "@vlib";
 import * as vlib from "@vlib";
+import { Color, Colors, log, Path, GlobPatternList } from "@vlib";
 import { Modules } from './module.js';
-import { Merge, RequiredExcept } from "../vlib/types/transform.js";
+import { Merge, RequiredExcept } from "../vlib/types/types.js";
 
 /** The root path to `vlib/ts`, not yet checked if it exists. */
 const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
@@ -72,7 +72,7 @@ export class Package {
         const ctx: Package.Context = opts
             ? Package.Context.merge(config.ctx, opts, true)
             : config.ctx;
-        console.log(`Running unit test package with context: ${Color.object(ctx, { max_depth: 2 })}`);
+        // console.log(`Running unit test package with context: ${Color.object(ctx, { max_depth: 2 })}`);
 
         // Import environment files.
         this.init_env();
@@ -80,19 +80,28 @@ export class Package {
         // Initialize the modules.
         await this.init_modules();
 
-        // Test target module or only a single module defined.
-        if (ctx.module != null || Modules.length === 1) {
-            const mod = Modules.find(m => ctx.module == null || m.name === ctx.module);
-            if (!mod) {
-                throw new Error(`Module "${ctx.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`,);
-            }
-            const res = await mod.run(ctx);
+        // No modules defined, return false.
+        if (Modules.length === 0) {
+            throw new Error("No unit test modules defined, add unit tests using the 'vtest.Module.add()` function.");
+        }
+
+        // Filter the selected modules.
+        const mods = Modules.filter(m => ctx.module == null || ctx.module.match(m.name));
+        if (mods.length === 0) {
+            // when no module is found, then `ctx.module` was invalid since we already asserted `Modules` is not empty.
+            throw new Error(`Module "${ctx.module?.length === 1 ? ctx.module[0] : ctx.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`,);
+        }
+
+        // If we have a single module then run that module directly,
+        // so we can use a diferent indentation style.
+        if (mods.length === 1) {
+            const res = await mods[0].run(ctx);
             return res.status;
         }
 
         // Test all modules.
         let succeeded = 0, failed = 0;
-        for (const mod of Modules) {
+        for (const mod of mods) {
             if (ctx.yes) {
                 throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
             }
@@ -107,11 +116,11 @@ export class Package {
                 console.log(`${Color.red("Error")}: No unit tests are defined.`);
                 return false;
             }
-            console.log(Color.cyan_bold(`\nExecuted ${Modules.length} test modules.`));
+            console.log(Color.cyan_bold(`\nExecuted ${mods.length} test modules.`));
             console.log(`${prefix}All ${failed + succeeded} unit tests ${Colors.green}${Colors.bold}passed${Colors.end} successfully.`);
             return true;
         } else {
-            console.log(Color.cyan_bold(`\nExecuted ${Modules.length} test modules.`));
+            console.log(Color.cyan_bold(`\nExecuted ${mods.length} test modules.`));
             console.log(`${prefix}Encountered ${failed === 0 ? Colors.green : Colors.red}${Colors.bold}${failed}${Colors.end} failed unit tests.`);
             return false;
         }
@@ -249,6 +258,8 @@ export namespace Package {
         {
             /** The initialized output directory path. */
             output: Path;
+            /** The module name to run. If not defined all modules will be run. */
+            module?: vlib.GlobPatternList;
         }
     >
     
@@ -260,7 +271,7 @@ export namespace Package {
             /** The path to the output directory. */
             output: string;
             /** The module name to run. If not defined all modules will be run. */
-            module?: string;
+            module?: string | string[];
             /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
             target?: string;
             /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
@@ -275,6 +286,8 @@ export namespace Package {
             stop_on_failure?: boolean;
             /** The unit test id to stop after. */
             stop_after?: string;
+            /** When enabled this bypasses any cached output, forcing the user to re-evaluate the unit tests when in interactive mode, or simply cause a failure in non interactive mode. */
+            refresh?: boolean;
             /** The number of times to repeat the tests. Defaults to 1. */
             repeat?: number;
             /** Optionally strip colors from the unit test outputs, defaults to `false` */
@@ -283,7 +296,8 @@ export namespace Package {
 
         /** A validator schema for the context options. */
         export const Schema = {
-            module: { type: "string", required: false },
+            $schema: "any",
+            module: { type: ["string", "array"], required: false },
             target: { type: "string", required: false },
             debug: { type: ["string", "number"], required: false },
             yes: { type: "boolean", required: false },
@@ -291,6 +305,7 @@ export namespace Package {
             no_changes: { type: "boolean", required: false },
             stop_on_failure: { type: "boolean", required: false },
             stop_after: { type: "string", required: false },
+            refresh: { type: "boolean", required: false },
             repeat: { type: "number", required: false },
             strip_colors: { type: "boolean", required: false },
             /**
@@ -311,7 +326,6 @@ export namespace Package {
             }
             return {
                 output,
-                module: opts.module,
                 target: opts.target,
                 debug: opts.debug ?? 0,
                 yes: opts.yes ?? false,
@@ -321,6 +335,8 @@ export namespace Package {
                 stop_after: opts.stop_after,
                 repeat: opts.repeat ?? 0,
                 strip_colors: opts.strip_colors ?? false,
+                refresh: opts.refresh ?? false,
+                module: opts.module ? new vlib.GlobPatternList(opts.module) : undefined,
             };
         }
 
@@ -337,11 +353,28 @@ export namespace Package {
             override: Partial<Context.Opts>,
             copy: boolean = true
         ): Context {
+
+            // Merge.
             if (copy) base = { ...base };
             for (const key of Object.keys(override)) {
                 if (override[key] === undefined) continue; // skip undefined values.
                 base[key] = override[key];
             }
+
+            // Initialize the output path.
+            if (typeof base.output === "string") {
+                base.output = new Path(base.output).abs();
+                if (!base.output.exists() || !base.output.is_dir()) {
+                    throw new Error(`Output directory "${base.output}" does not exist or is not a directory.`);
+                }
+            }
+
+            // Validate potentially overrided props.
+            if (base.module != null && base.module instanceof vlib.GlobPatternList === false) {
+                base.module = new vlib.GlobPatternList(base.module);
+            }
+
+            // Response.
             return base;
         }
     }
@@ -402,6 +435,7 @@ export namespace Config {
         throw: false,
         unknown: false,
         schema: {
+            $schema: "any",
             output: { type: "string", required: true },
             include: {
                 type: "array",
@@ -434,9 +468,10 @@ export namespace Config {
         },
     });
     if (process.argv.includes("--vlib-generate-schemas")) {
-        Schema.create_json_schema_sync({
+        vlib.Schema.create_json_schema_sync({
             unknown: false,
             output: `${__root}assets/schemas/vtest.json`,
+            schema: Schema.schemas.schema!
         });
         log(`Generated JSON schema 'vtest.json' at '${__root}assets/schemas/vtest.json'`);
     }

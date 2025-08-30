@@ -1,7 +1,13 @@
 /**
- * @author Daan van den BerghX
+ * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+/**
+ * Export the version number.
+ * @warning Expect an error since we should not import any of the `vts/types` files.
+ *          Otherwise we would declare these attributes globally also on non vts processed files.
+ *          @ts-expect-error */
+export declare const version: any;
 /** types/ */
 export type * as Types from "./types/index.m.js";
 export type * as types from "./types/index.m.js";
@@ -24,8 +30,8 @@ export declare const error: (...args: any[]) => void;
 export declare const warn: (arg: any, ...args: any[]) => void;
 export declare const warning: (arg: any, ...args: any[]) => void;
 /** scheme/ */
-export * as Schema from "./schema/index.m.uni.js";
-export * as schema from "./schema/index.m.uni.js";
+export * as Schema from "./schema/index.m.node.js";
+export * as schema from "./schema/index.m.node.js";
 /** jsonc/ */
 export * from "./jsonc/jsonc.js";
 /** crypto/ */
@@ -40,9 +46,5 @@ export * as Code from "./code/index.m.uni.js";
 export * as code from "./code/index.m.uni.js";
 /** clipboard/ */
 export * from "./clipboard/index.js";
-/**
- * Export the version number.
- * @warning Expect an error since we should not import any of the `vts/types` files.
- *          Otherwise we would declare these attributes globally also on non vts processed files.
- *          @ts-expect-error */
-export declare const version: any;
+/** zip/ */
+export * from "./generic/zip.js";

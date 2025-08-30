@@ -1,8 +1,6 @@
-var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -16,14 +14,6 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
@@ -31,7 +21,6 @@ __export(stdin_exports, {
   GlobPatternList: () => GlobPatternList
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_path = __toESM(require("path"));
 class GlobPattern {
   /** The original glob pattern. */
   pattern;
@@ -44,6 +33,10 @@ class GlobPattern {
   constructor(pattern) {
     this.pattern = pattern;
     this.regex = GlobPattern.compile(pattern);
+  }
+  /** Get the length. */
+  get length() {
+    return this.pattern.length;
   }
   /**
    * Update the pattern on the current instance.
@@ -88,7 +81,23 @@ class GlobPattern {
    * @returns True if `str` looks like a glob pattern; false otherwise.
    */
   static is(str) {
-    return /[\*\?\[\]\{\}]/.test(str);
+    for (let i = 0, n = str.length; i < n; ++i) {
+      switch (str.charCodeAt(i)) {
+        case 42:
+        // *
+        case 63:
+        // ?
+        case 91:
+        // [
+        case 93:
+        // ]
+        case 123:
+        // {
+        case 125:
+          return true;
+      }
+    }
+    return false;
   }
   /**
    * Compile a glob pattern to a regular expression.
@@ -180,28 +189,37 @@ class GlobPattern {
   toString() {
     return `GlobPattern("${this.pattern}")`;
   }
+  /** Cast to primitives. */
+  /** Cast to primitives. */
+  [Symbol.toPrimitive](hint) {
+    switch (hint) {
+      case "number":
+        return this.pattern.length;
+      case "string":
+        return this.pattern;
+      case "default":
+      default:
+        return this.toString();
+    }
+  }
 }
 ;
 class GlobPatternList {
   items;
-  absolute;
   /**
    *
    * @param list A single glob pattern or an array of glob patterns.
-   * @param opts Options to configure the list.
-   * @param opts.absolute When true, all string patterns are resolved to absolute paths using `path.resolve()`.
-   *                      This is useful when you want to ensure all patterns are absolute paths.
-   *                      Defaults to false.
    */
-  constructor(list, opts) {
-    this.absolute = opts?.absolute ?? false;
-    const init_item = (item) => {
-      if (this.absolute && typeof item === "string") {
-        item = import_path.default.resolve(item);
-      }
-      return item instanceof GlobPattern || !GlobPattern.is(item) ? item : new GlobPattern(item);
-    };
-    this.items = Array.isArray(list) ? list.map(init_item) : [init_item(list)];
+  constructor(list) {
+    this.items = Array.isArray(list) ? list.map(GlobPatternList.init_list_item) : [GlobPatternList.init_list_item(list)];
+  }
+  /** Initialize a list item. */
+  static init_list_item(item) {
+    return item instanceof GlobPattern || !GlobPattern.is(item) ? item : new GlobPattern(item);
+  }
+  /** Get the length. */
+  get length() {
+    return this.items.length;
   }
   /**
    * Test if a value matches any of the glob patterns in the list.

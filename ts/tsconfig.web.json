@@ -20,28 +20,10 @@
         "noImplicitAny": false,
         "paths": {
             "@vlib": [
-                "./src/vlib/index.ts"
+                "./src/vlib/index.web.ts"
             ],
             "@vlib/*": [
                 "./src/vlib/*"
-            ],
-            "@vrepo": [
-                "./src/vrepo/index.ts"
-            ],
-            "@vrepo/*": [
-                "./src/vrepo/*"
-            ],
-            "@vtest": [
-                "./src/vtest/index.ts"
-            ],
-            "@vtest/*": [
-                "./src/vtest/*"
-            ],
-            "@vts": [
-                "./src/vts/index.ts"
-            ],
-            "@vts/*": [
-                "./src/vts/*"
             ],
         },
     },

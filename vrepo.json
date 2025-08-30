@@ -24,5 +24,8 @@
 	            "enabled": true
 	        }
 	    ]
-	}
+	},
+    "npm": {
+        "path": "ts/package.json"
+    }
 }

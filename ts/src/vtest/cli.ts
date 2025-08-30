@@ -48,12 +48,13 @@ cli.main({
         { id: ["--no-changes", "-nc"], type: "boolean", description: "Do not log any diff changes between cached and new data when in interactive mode." },
         { id: ["--stop-on-failure", "-f"], type: "boolean", description: "Stop running tests on the first failure." },
         { id: ["--stop-after", "-a"], type: "string", description: "Stop running tests after a certain number of tests." },
-        { id: ["--repeat", "-r"], type: "number", required: false, description: "Repeat the tests a certain number of times. By default the tests are only executed once." },
+        { id: ["--refresh", "-r"], type: "boolean", required: false, description: "When enabled this bypasses any cached output, forcing the user to re-evaluate the unit tests when in interactive mode, or simply cause a failure in non interactive mode." },
+        { id: ["--repeat"], type: "number", required: false, description: "Repeat the tests a certain number of times. By default the tests are only executed once." },
         { id: ["--debug", "-d"], type: "number", description: "Set the debug level, 0 for no debug, 1 for basic debug, 2 for verbose debug." },
         // { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." },
     ],
     async callback(args) {
-        const config = await Config.load(cli.options.config || "__default__");
+        const config: Config | { error: string } = Config.load(cli.options.config || "__default__");
         if ("error" in config) throw cli.error(config.error);
         const pkg = new Package(config);
         await pkg.run(args)

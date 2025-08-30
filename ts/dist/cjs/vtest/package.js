@@ -31,8 +31,8 @@ __export(stdin_exports, {
   Package: () => Package
 });
 module.exports = __toCommonJS(stdin_exports);
-var import_vlib = require("../vlib/index.js");
 var vlib = __toESM(require("../vlib/index.js"));
+var import_vlib = require("../vlib/index.js");
 var import_module = require("./module.js");
 const import_meta = {};
 const __root = import_meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
@@ -77,19 +77,21 @@ class Package {
   async run(opts) {
     const config = this.config;
     const ctx = opts ? Package.Context.merge(config.ctx, opts, true) : config.ctx;
-    console.log(`Running unit test package with context: ${import_vlib.Color.object(ctx, { max_depth: 2 })}`);
     this.init_env();
     await this.init_modules();
-    if (ctx.module != null || import_module.Modules.length === 1) {
-      const mod = import_module.Modules.find((m) => ctx.module == null || m.name === ctx.module);
-      if (!mod) {
-        throw new Error(`Module "${ctx.module}" was not found, the available modules are: [${import_module.Modules.map((i) => i.name).join(", ")}]`);
-      }
-      const res = await mod.run(ctx);
+    if (import_module.Modules.length === 0) {
+      throw new Error("No unit test modules defined, add unit tests using the 'vtest.Module.add()` function.");
+    }
+    const mods = import_module.Modules.filter((m) => ctx.module == null || ctx.module.match(m.name));
+    if (mods.length === 0) {
+      throw new Error(`Module "${ctx.module?.length === 1 ? ctx.module[0] : ctx.module}" was not found, the available modules are: [${import_module.Modules.map((i) => i.name).join(", ")}]`);
+    }
+    if (mods.length === 1) {
+      const res = await mods[0].run(ctx);
       return res.status;
     }
     let succeeded = 0, failed = 0;
-    for (const mod of import_module.Modules) {
+    for (const mod of mods) {
       if (ctx.yes) {
         throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
       }
@@ -107,12 +109,12 @@ class Package {
         return false;
       }
       console.log(import_vlib.Color.cyan_bold(`
-Executed ${import_module.Modules.length} test modules.`));
+Executed ${mods.length} test modules.`));
       console.log(`${prefix}All ${failed + succeeded} unit tests ${import_vlib.Colors.green}${import_vlib.Colors.bold}passed${import_vlib.Colors.end} successfully.`);
       return true;
     } else {
       console.log(import_vlib.Color.cyan_bold(`
-Executed ${import_module.Modules.length} test modules.`));
+Executed ${mods.length} test modules.`));
       console.log(`${prefix}Encountered ${failed === 0 ? import_vlib.Colors.green : import_vlib.Colors.red}${import_vlib.Colors.bold}${failed}${import_vlib.Colors.end} failed unit tests.`);
       return false;
     }
@@ -217,7 +219,8 @@ Executed ${import_module.Modules.length} test modules.`));
   let Context;
   (function(Context2) {
     Context2.Schema = {
-      module: { type: "string", required: false },
+      $schema: "any",
+      module: { type: ["string", "array"], required: false },
       target: { type: "string", required: false },
       debug: { type: ["string", "number"], required: false },
       yes: { type: "boolean", required: false },
@@ -225,6 +228,7 @@ Executed ${import_module.Modules.length} test modules.`));
       no_changes: { type: "boolean", required: false },
       stop_on_failure: { type: "boolean", required: false },
       stop_after: { type: "string", required: false },
+      refresh: { type: "boolean", required: false },
       repeat: { type: "number", required: false },
       strip_colors: { type: "boolean", required: false },
       /**
@@ -243,7 +247,6 @@ Executed ${import_module.Modules.length} test modules.`));
       }
       return {
         output,
-        module: opts.module,
         target: opts.target,
         debug: opts.debug ?? 0,
         yes: opts.yes ?? false,
@@ -252,7 +255,9 @@ Executed ${import_module.Modules.length} test modules.`));
         stop_on_failure: opts.stop_on_failure ?? false,
         stop_after: opts.stop_after,
         repeat: opts.repeat ?? 0,
-        strip_colors: opts.strip_colors ?? false
+        strip_colors: opts.strip_colors ?? false,
+        refresh: opts.refresh ?? false,
+        module: opts.module ? new vlib.GlobPatternList(opts.module) : void 0
       };
     }
     Context2.create = create;
@@ -263,6 +268,15 @@ Executed ${import_module.Modules.length} test modules.`));
         if (override[key] === void 0)
           continue;
         base[key] = override[key];
+      }
+      if (typeof base.output === "string") {
+        base.output = new import_vlib.Path(base.output).abs();
+        if (!base.output.exists() || !base.output.is_dir()) {
+          throw new Error(`Output directory "${base.output}" does not exist or is not a directory.`);
+        }
+      }
+      if (base.module != null && base.module instanceof vlib.GlobPatternList === false) {
+        base.module = new vlib.GlobPatternList(base.module);
       }
       return base;
     }
@@ -276,6 +290,7 @@ var Config;
     throw: false,
     unknown: false,
     schema: {
+      $schema: "any",
       output: { type: "string", required: true },
       include: {
         type: "array",
@@ -308,9 +323,10 @@ var Config;
     }
   });
   if (process.argv.includes("--vlib-generate-schemas")) {
-    Config2.Schema.create_json_schema_sync({
+    vlib.Schema.create_json_schema_sync({
       unknown: false,
-      output: `${__root}assets/schemas/vtest.json`
+      output: `${__root}assets/schemas/vtest.json`,
+      schema: Config2.Schema.schemas.schema
     });
     (0, import_vlib.log)(`Generated JSON schema 'vtest.json' at '${__root}assets/schemas/vtest.json'`);
   }

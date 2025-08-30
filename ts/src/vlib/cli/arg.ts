@@ -362,6 +362,7 @@ export class Base<
 
     /** Get as identifier such as id/name/main based on variant + mode. */
     identifier(): string {
+        if (this.arg_name) return this.arg_name;
         if (this.variant === "index") {
             return `arg_${this.index}`;
         } else if (this.variant === "id") {

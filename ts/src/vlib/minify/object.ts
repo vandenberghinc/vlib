@@ -19,7 +19,7 @@ export namespace Scheme {
         /** Optional minified key for this node */
         key: string;
         /** Nested child mappings */
-        scheme ?: Record<string, Entry>;
+        scheme?: Record<string, Entry>;
     }
 
     /**
@@ -33,7 +33,7 @@ export namespace Scheme {
 /**
  * Flatten a nested MinifyScheme into a dot-path → minified key map
  */
-function flatten_scheme(
+export function flatten_scheme(
     scheme: Scheme,
     prefix: string = '',
     result: Record<string, string> = {}
@@ -181,9 +181,11 @@ export function expand({ object, scheme, flat_scheme, copy = true }: {
 // But `Object` and `object` are the only items exported by the `index.m.ts` file.
 
 const fn_mod = minify as typeof minify & {
+    flatten_scheme: typeof flatten_scheme;
     expand: typeof expand;
     Scheme: Scheme;
 };
+fn_mod.flatten_scheme = flatten_scheme;
 fn_mod.expand = expand;
 type _Scheme = Scheme;
 namespace fn_mod {

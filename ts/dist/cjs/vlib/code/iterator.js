@@ -20,68 +20,25 @@ __export(stdin_exports, {
   Iterator: () => Iterator,
   Language: () => Language,
   Languages: () => Languages,
-  Location: () => Location,
   languages: () => languages
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_colors = require("../generic/colors.js");
-var import_index_m_uni = require("../schema/index.m.uni.js");
-var Location;
-(function(Location2) {
-  function advance(loc, num = 1) {
-    if (num < 1)
-      throw new Error(`Cannot advance location by ${num}, must be at least 1.`);
-    const clone = {
-      line: loc.line,
-      col: loc.col,
-      pos: loc.pos,
-      source: loc.source
-    };
-    while (num--) {
-      const c = clone.source.data[clone.pos];
-      if (c === "\n" && clone.source.data[clone.pos + 1] !== "\\") {
-        clone.line++;
-        clone.col = 1;
-      } else {
-        clone.col++;
-      }
-      clone.pos++;
-    }
-    return clone;
-  }
-  Location2.advance = advance;
-  function retreat(loc, num = 1) {
-    if (num < 1) {
-      throw new Error(`Cannot retreat location by ${num}, must be at least 1.`);
-    }
-    const clone = {
-      line: loc.line,
-      col: loc.col,
-      pos: loc.pos,
-      source: loc.source
-    };
-    while (num--) {
-      clone.pos--;
-      const c = clone.source.data[clone.pos];
-      if (c === "\n" && (clone.pos === 0 || clone.source.data[clone.pos - 1] !== "\\")) {
-        clone.line--;
-        const prevNl = clone.source.data.lastIndexOf("\n", clone.pos - 1);
-        clone.col = prevNl >= 0 ? clone.pos - prevNl : clone.pos + 1;
-      } else {
-        clone.col--;
-      }
-    }
-    return clone;
-  }
-  Location2.retreat = retreat;
-})(Location || (Location = {}));
+var import_index_m_web = require("../schema/index.m.web.js");
 class Language {
   /** Options. */
   name;
+  whitespace;
+  inline_whitespace;
+  line_terminators;
   string;
   comment;
   regex;
   first_regex_chars;
+  /**
+   * Has any `string`, `comment` or `regex` options defined.
+   */
+  has_patterns;
   /** Constructor. */
   constructor(opts) {
     if (typeof opts === "string") {
@@ -90,16 +47,29 @@ class Language {
         throw new Error(`Language option '${opts}' is not supported, the following default languages are supported: ${Object.keys(Languages).join(", ")}`);
       }
       this.name = l.name;
+      this.whitespace = l.whitespace;
+      this.inline_whitespace = l.inline_whitespace;
+      this.line_terminators = l.line_terminators;
       this.string = l.string;
       this.comment = l.comment;
       this.regex = l.regex;
+      this.first_regex_chars = l.first_regex_chars;
+      this.has_patterns = l.has_patterns;
     } else if (opts && typeof opts === "object") {
       this.name = opts.name;
-      this.string = opts.string instanceof Set ? opts.string : opts.string ? new Set(opts.string) : void 0;
-      this.comment = {
-        ...opts.comment,
+      this.inline_whitespace = new Set(opts.inline_whitespace ?? [" ", "	"]);
+      this.line_terminators = new Set(opts.line_terminators ?? ["\n", "\r"]);
+      this.whitespace = /* @__PURE__ */ new Set([
+        ...this.inline_whitespace,
+        ...this.line_terminators
+      ]);
+      this.string = opts.string ? new Set(opts.string) : void 0;
+      this.comment = !opts.comment ? void 0 : {
+        line: opts.comment == null ? void 0 : typeof opts.comment?.line === "string" ? { open: opts.comment.line, sol: true } : typeof opts.comment?.line === "object" ? { open: opts.comment?.line?.open, sol: opts.comment?.line?.sol ?? true } : void 0,
+        block: opts.comment?.block,
         first_block_chars: Language._first_char_set_from_patterns(opts.comment?.block)
       };
+      this.has_patterns = this.string != null || this.comment != null || this.regex != null;
       this.regex = opts.regex;
       this.first_regex_chars = Language._first_char_set_from_patterns(opts.regex);
     } else
@@ -123,18 +93,41 @@ class Language {
     }
   }
 }
+const iterator_restore_keys = [
+  // hot scalars
+  "pos",
+  "line",
+  "col",
+  "at_sol",
+  "sol_index",
+  "char",
+  "next",
+  "prev",
+  "is_whitespace",
+  "is_inline_whitespace",
+  "is_eol",
+  "is_escaped",
+  "is_not_escaped",
+  "avail",
+  "no_avail",
+  // less‑hot but harmless
+  "lang",
+  "end",
+  "exclude_comments"
+];
 class Iterator {
   // --------------------------------------------------------
   // Fixed attributes (or semi) - attributes that can be passed to the constructor.
   // Dont use `?` or `!` to ensure all copies and inits are ok.
   /**
    * The language attributes from the attached iterator.
-   * Ensure its readonly so we can use the iterator to safely switch languages.
+   * @warning Do not manually change attribute `lang`, use `switch_language()` instead.
+   *          Changing the language context while inside a language pattern (string, comment, regex) may cause undefined behaviour.
    */
   lang;
   /** The source file. */
   source;
-  /** The end index, the iterator emits an `no_avail` when reaching this index, defaults to `source.data.length`. */
+  /** The end index, defaults to `source.data.length`. */
   end;
   /**
    * Exclude all comments from visitations.
@@ -142,11 +135,6 @@ class Iterator {
    * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator.
    */
   exclude_comments;
-  /**
-   * Locked, advancing is no longer allowed when enabled.
-   * Therefore, `advance()` will throw an error when attempting to do so.
-   */
-  locked;
   // --------------------------------------------------------
   // Dynamic state attributes.
   // These are updated during the iteration.
@@ -171,15 +159,16 @@ class Iterator {
   avail;
   /** Flag to indicate if the state no longer has any available data to advance to. */
   no_avail;
-  /** Is whitespace `\s` (including line breaks `\n\r`). */
+  /**
+   * Is at whitespace, including line terminators.
+   * So one of the prodived whitespace or line-terminators chars from the language context.
+   **/
   is_whitespace;
-  /** Is inline whitespace `\s` (excluding line breaks `\n\r`). */
+  /** Is at inline whitespace, one of the prodived whitespace chars from the language context. */
   is_inline_whitespace;
-  /** Is at end of line `\n`. */
+  /** Is at end of line, one of the prodived line-terminator chars from the language context. */
   is_eol;
-  /** Is a line break char `\n\r`. */
-  is_line_break;
-  /** checks if the current char is escaped by previous \.  */
+  /** Checks if the current char is escaped by previous \.  */
   is_escaped;
   /** checks if the current char is NOT escaped by previous \.  */
   is_not_escaped;
@@ -191,7 +180,7 @@ class Iterator {
   is_regex;
   /** Depth trackings. */
   depth;
-  /**
+  /**d
    * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
    */
   constructor(state, opts) {
@@ -200,7 +189,6 @@ class Iterator {
       this.end = state.end;
       this.lang = state.lang;
       this.exclude_comments = state.exclude_comments;
-      this.locked = state.locked;
       this.pos = state.pos;
       this.line = state.line;
       this.col = state.col;
@@ -216,7 +204,6 @@ class Iterator {
       this.is_whitespace = state.is_whitespace;
       this.is_inline_whitespace = state.is_inline_whitespace;
       this.is_eol = state.is_eol;
-      this.is_line_break = state.is_line_break;
       this.avail = state.avail;
       this.no_avail = state.no_avail;
       this.is_escaped = state.is_escaped;
@@ -234,11 +221,10 @@ class Iterator {
       if (typeof state === "object" && "data" in state)
         this.source = state;
       else
-        throw new TypeError(`Invalid type for state, expected Source or State<S>, got: ${(0, import_index_m_uni.value_type)(state)}`);
+        throw new TypeError(`Invalid type for state, expected Source or State<S>, got: ${(0, import_index_m_web.value_type)(state)}`);
       this.end = opts?.end ?? this.source.data.length;
-      this.lang = opts?.language instanceof Language ? opts.language : opts?.language ? new Language(opts.language) : void 0;
+      this.lang = opts?.language instanceof Language ? opts.language : new Language(opts?.language ?? {});
       this.exclude_comments = opts?.exclude_comments ?? false;
-      this.locked = false;
       this.pos = 0;
       this.line = 1;
       this.col = 1;
@@ -250,8 +236,8 @@ class Iterator {
       this.depth = {
         parenth: 0,
         bracket: 0,
-        brace: 0,
-        template: 0
+        brace: 0
+        // template: 0,
       };
       this.char = void 0;
       this.next = void 0;
@@ -259,7 +245,6 @@ class Iterator {
       this.is_whitespace = void 0;
       this.is_inline_whitespace = void 0;
       this.is_eol = void 0;
-      this.is_line_break = void 0;
       this.avail = void 0;
       this.no_avail = void 0;
       this.is_escaped = void 0;
@@ -276,7 +261,34 @@ class Iterator {
   // Keep the methods that heavily edit the attributes here, such as reset() etc.
   /** Create a (semi-deep) copy clone of all attributes except for the `source` attribute. */
   clone() {
-    return new Iterator(this);
+    const view = Object.create(Object.getPrototypeOf(this));
+    view.source = this.source;
+    view.lang = this.lang;
+    view.end = this.end;
+    view.exclude_comments = this.exclude_comments;
+    view.pos = this.pos;
+    view.line = this.line;
+    view.col = this.col;
+    view.at_sol = this.at_sol;
+    view.sol_index = this.sol_index;
+    view.char = this.char;
+    view.next = this.next;
+    view.prev = this.prev;
+    view.is_whitespace = this.is_whitespace;
+    view.is_inline_whitespace = this.is_inline_whitespace;
+    view.is_eol = this.is_eol;
+    view.is_escaped = this.is_escaped;
+    view.is_not_escaped = this.is_not_escaped;
+    view.avail = this.avail;
+    view.no_avail = this.no_avail;
+    view.depth = { ...this.depth };
+    if (this.is_str)
+      view.is_str = { ...this.is_str };
+    if (this.is_comment)
+      view.is_comment = { ...this.is_comment };
+    if (this.is_regex)
+      view.is_regex = { ...this.is_regex };
+    return view;
   }
   /**
    * Restore an earlier state.
@@ -286,31 +298,16 @@ class Iterator {
    * @param opts The state to restore.
    * @returns The current state instance for method chaining.
    */
-  restore(opts, copy = true) {
-    this.lang = opts.lang;
-    this.source = opts.source;
-    this.end = opts.end;
-    this.locked = opts.locked;
-    this.pos = opts.pos;
-    this.line = opts.line;
-    this.col = opts.col;
-    this.at_sol = opts.at_sol;
-    this.sol_index = opts.sol_index;
-    this.is_str = opts.is_str ? { ...opts.is_str } : void 0;
-    this.is_comment = opts.is_comment ? { ...opts.is_comment } : void 0;
-    this.is_regex = opts.is_regex ? { ...opts.is_regex } : void 0;
-    this.depth = { ...opts.depth };
-    this.char = opts.char;
-    this.next = opts.next;
-    this.prev = opts.prev;
-    this.is_whitespace = opts.is_whitespace;
-    this.is_inline_whitespace = opts.is_inline_whitespace;
-    this.is_eol = opts.is_eol;
-    this.is_line_break = opts.is_line_break;
-    this.avail = opts.avail;
-    this.no_avail = opts.no_avail;
-    this.is_escaped = opts.is_escaped;
-    this.is_not_escaped = opts.is_not_escaped;
+  restore(it) {
+    if (it.source !== this.source) {
+      throw new Error("Cannot restore from a different source");
+    }
+    for (const k of iterator_restore_keys)
+      this[k] = it[k];
+    this.depth = { ...it.depth };
+    this.is_str = it.is_str ? { ...it.is_str } : void 0;
+    this.is_comment = it.is_comment ? { ...it.is_comment } : void 0;
+    this.is_regex = it.is_regex ? { ...it.is_regex } : void 0;
     return this;
   }
   /**
@@ -329,8 +326,8 @@ class Iterator {
     this.depth = {
       parenth: 0,
       bracket: 0,
-      brace: 0,
-      template: 0
+      brace: 0
+      // template: 0,
     };
     this.init();
     return this;
@@ -344,7 +341,6 @@ class Iterator {
   stop() {
     this.reset();
     this.pos = this.end;
-    this.locked = true;
     return this;
   }
   /**
@@ -354,10 +350,13 @@ class Iterator {
    *          In this case an `string` type error message will be returned.
    *          Upon success the the old language context is returned, which might be undefined.
    * @throws  An error if the string language name is invalid or if the input type is invalid.
+   * @param language The new language context to switch to.
+   * @param forced Whether to force the language switch, defaults to `false`.
+   *               When `true`, the language switch will be performed even if the current state is inside a string, comment or regex literal.
    */
-  switch_language(language) {
-    if (this.is_str || this.is_comment || this.is_regex) {
-      return "Cannot switch language while current state is inside a string, comment or regex literal.";
+  switch_language(language, forced = false) {
+    if ((this.is_str || this.is_comment || this.is_regex) && !forced) {
+      return `Cannot switch language while current state is inside a ${this.is_str ? "string" : this.is_comment ? "comment" : "regex"} literal.`;
     }
     const old = this.lang;
     this.lang = language instanceof Language ? language : new Language(language);
@@ -371,63 +370,72 @@ class Iterator {
   // So we can keep this organized and separate from the other methods.
   /**
    * Scan opening language patterns.
+   * Ensure this is only called when `this.lang && this.is_not_escaped && this.is_code`.
    * The following state attributes must be set for the current position:
    * - `pos`
    * - `char`
    * - `at_sol` - whether the current position is at the start of a line.
    */
   scan_opening_lang_patterns() {
-    if (this.lang.string?.has(this.char)) {
-      this.is_str = { open: this.char, pos: this.pos };
-    } else if (this.at_sol && this.lang.comment?.line && this.source.data.startsWith(this.lang.comment.line, this.pos)) {
-      this.is_comment = { type: "line", open: this.lang.comment?.line, pos: 0 };
-    } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
-      for (const [open, close] of this.lang.comment.block) {
-        if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
-          this.is_comment = { type: "block", open, close, pos: 0 };
-          break;
+    if (this.lang.has_patterns && this.is_not_escaped) {
+      if (this.lang.string?.has(this.char)) {
+        this.is_str = { open: this.char, pos: this.pos };
+        return;
+      } else if (this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
+        this.is_comment = { type: "line", open: this.lang.comment?.line.open, pos: 0 };
+        return;
+      } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
+        for (const [open, close] of this.lang.comment.block) {
+          if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
+            this.is_comment = { type: "block", open, close, pos: 0 };
+            return;
+          }
         }
       }
-    }
-    if (this.lang.regex && this.lang.first_regex_chars?.has(this.char)) {
-      for (const [open, close] of this.lang.regex) {
-        if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
-          this.is_regex = { open, close, pos: 0 };
-          break;
+      if (this.lang.regex && this.lang.first_regex_chars?.has(this.char)) {
+        for (const [open, close] of this.lang.regex) {
+          if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
+            this.is_regex = { open, close, pos: 0 };
+            return;
+          }
         }
       }
     }
   }
   /**
    * Scan closing language patterns.
-   * @warning Should only be called when `this.lang && this.is_not_escaped && !this.is_code`
+   * @warning Should only be called when `this.lang.has_patterns`
    */
   scan_closing_lang_patterns() {
-    if (this.is_str && this.is_str.pos !== this.pos && this.char === this.is_str.open) {
-      this.is_str = void 0;
-    } else if (this.is_comment && this.is_comment.type === "block") {
-      const com = this.is_comment;
-      const close = com.close;
-      const pos_in_close = com.pos;
-      if (this.char === close[pos_in_close]) {
-        com.pos++;
-        if (com.pos === close.length) {
-          this.is_comment = void 0;
+    if (this.is_not_escaped && !this.is_code) {
+      if (this.is_str && this.is_str.pos !== this.pos && this.char === this.is_str.open) {
+        this.is_str = void 0;
+        return;
+      } else if (this.is_comment && this.is_comment.type === "block") {
+        const com = this.is_comment;
+        const close = com.close;
+        const pos_in_close = com.pos;
+        if (this.char === close[pos_in_close]) {
+          com.pos++;
+          if (com.pos === close.length) {
+            this.is_comment = void 0;
+            return;
+          }
+        } else {
+          com.pos = this.char === close[0] ? 1 : 0;
         }
-      } else {
-        com.pos = this.char === close[0] ? 1 : 0;
-      }
-    } else if (this.is_regex) {
-      const rex = this.is_regex;
-      const close = rex.close;
-      const pos_in_close = rex.pos;
-      if (this.char === close[pos_in_close]) {
-        rex.pos++;
-        if (rex.pos === close.length) {
-          this.is_regex = void 0;
+      } else if (this.is_regex) {
+        const rex = this.is_regex;
+        const close = rex.close;
+        if (this.char === close[rex.pos]) {
+          rex.pos++;
+          if (rex.pos === close.length) {
+            this.is_regex = void 0;
+            return;
+          }
+        } else {
+          rex.pos = this.char === close[0] ? 1 : 0;
         }
-      } else {
-        rex.pos = this.char === close[0] ? 1 : 0;
       }
     }
   }
@@ -437,49 +445,26 @@ class Iterator {
    * When combining this with language patterns, ensure its called after the `scan_closing_` and before `scan_opening_` methods.
    */
   set_defaults() {
-    this.char = this.source.data[this.pos];
-    this.next = this.source.data[this.pos + 1];
-    this.prev = this.source.data[this.pos - 1];
+    this.char = this.source.data[this.pos] ?? "";
+    this.next = this.source.data[this.pos + 1] ?? "";
+    this.prev = this.source.data[this.pos - 1] ?? "";
     this.avail = this.pos < this.end;
     this.no_avail = this.pos >= this.end;
-    this.is_escaped = false;
-    this.is_not_escaped = true;
-    switch (this.prev) {
-      case "\\":
-        this.is_escaped = true;
-        this.is_not_escaped = false;
-        break;
-      default:
-        break;
-    }
+    this.is_escaped = this.prev !== "\\" ? false : this.is_escaped_at(this.pos);
+    this.is_not_escaped = !this.is_escaped;
     this.is_whitespace = false;
     this.is_inline_whitespace = false;
     this.is_eol = false;
-    this.is_line_break = false;
-    switch (this.char) {
-      case " ":
-      case "	":
-        this.is_inline_whitespace = true;
-        this.is_whitespace = true;
-        break;
-      case "\n":
-        if (this.is_not_escaped) {
-          this.is_eol = true;
-          this.is_line_break = true;
-          this.is_whitespace = true;
-          if (this.is_comment?.type === "line") {
-            this.is_comment = void 0;
-          }
-        }
-        break;
-      case "\r":
-        if (this.is_not_escaped) {
-          this.is_line_break = true;
-          this.is_whitespace = true;
-        }
-        break;
-      default:
-        break;
+    if (this.lang.inline_whitespace.has(this.char)) {
+      this.is_inline_whitespace = true;
+      this.is_whitespace = true;
+    }
+    if (this.is_not_escaped && this.lang.line_terminators.has(this.char)) {
+      this.is_eol = true;
+      this.is_whitespace = true;
+      if (this.is_comment?.type === "line") {
+        this.is_comment = void 0;
+      }
     }
     if (this.is_code) {
       switch (this.char) {
@@ -487,25 +472,25 @@ class Iterator {
           this.depth.parenth++;
           break;
         case ")":
-          this.depth.parenth--;
+          if (this.depth.parenth > 0) {
+            this.depth.parenth--;
+          }
           break;
         case "[":
           this.depth.bracket++;
           break;
         case "]":
-          this.depth.bracket--;
+          if (this.depth.bracket > 0) {
+            this.depth.bracket--;
+          }
           break;
         case "{":
           this.depth.brace++;
           break;
         case "}":
-          this.depth.brace--;
-          break;
-        case "<":
-          this.depth.template++;
-          break;
-        case ">":
-          this.depth.template--;
+          if (this.depth.brace > 0) {
+            this.depth.brace--;
+          }
           break;
       }
     }
@@ -521,33 +506,40 @@ class Iterator {
   init() {
     let at_sol = this.pos === 0, sol_index = 0;
     if (!at_sol) {
-      for (let i = this.pos; i > 0; i--) {
-        switch (this.source.data[i]) {
-          case "\n":
-            at_sol = true;
+      const src = this.source.data;
+      const ws = this.lang.inline_whitespace;
+      const eols = this.lang.line_terminators;
+      for (let i = this.pos - 1; i >= 0; i--) {
+        const c = src[i];
+        if (eols.has(c)) {
+          if (c === "\r" && src[i + 1] === "\n") {
+            sol_index = i + 2;
+          } else if (c === "\n" && i > 0 && src[i - 1] === "\r") {
+            i--;
+            sol_index = i + 2;
+          } else {
             sol_index = i + 1;
-            break;
-          case " ":
-          case "	":
-          case "\r":
-            continue;
-          default:
-            break;
+          }
+          at_sol = true;
+          break;
         }
+        if (ws.has(c))
+          continue;
         break;
       }
     }
-    if (this.lang && this.is_not_escaped && !this.is_code) {
+    if (this.lang.has_patterns && this.is_not_escaped && !this.is_code) {
       this.scan_closing_lang_patterns();
     }
     this.at_sol = at_sol;
     this.sol_index = sol_index;
     this.set_defaults();
-    if (this.lang && this.is_not_escaped && this.is_code) {
+    if (this.lang.has_patterns && this.is_not_escaped && this.is_code) {
       this.scan_opening_lang_patterns();
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
-      this.advance();
+      this.consume_comment();
+      return;
     }
   }
   /**
@@ -561,20 +553,21 @@ class Iterator {
    *      While init() needs to assign for the exact current pos.
    */
   advance() {
-    if (this.locked) {
-      throw new Error("Iterator state is locked, cannot advance.");
-    }
     const old_state = {
       // at_sol: this.at_sol,
       // sol_index: this.sol_index,
       is_inline_whitespace: this.is_inline_whitespace,
       is_eol: this.is_eol
     };
-    if (this.lang && this.is_not_escaped && !this.is_code) {
+    if (this.lang.has_patterns && this.is_not_escaped && !this.is_code) {
       this.scan_closing_lang_patterns();
     }
     if (old_state.is_eol) {
-      this.pos++;
+      if (this.char === "\r" && this.next === "\n") {
+        this.pos += 2;
+      } else {
+        this.pos++;
+      }
       this.line++;
       this.col = 1;
       this.sol_index = this.pos;
@@ -587,31 +580,43 @@ class Iterator {
       }
     }
     this.set_defaults();
-    if (this.lang && this.is_not_escaped && this.is_code) {
+    if (this.lang.has_patterns && this.is_not_escaped && this.is_code) {
       this.scan_opening_lang_patterns();
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
-      this.advance();
+      this.consume_comment();
     }
   }
-  /** Get debug info about the (minimized) cursor position. */
-  debug_cursor() {
-    return {
-      ch: this.char,
-      pos: this.pos,
-      loc: `${this.line}:${this.col}`,
-      ...this.at_sol ? { at_sol: this.at_sol } : {},
-      ...this.is_eol ? { is_eol: this.is_eol } : {},
-      ...this.is_comment ? { is_comment: this.is_comment } : {},
-      ...this.is_str ? { is_str: this.is_str } : {},
-      ...this.is_regex ? { is_regex: this.is_regex } : {}
-    };
+  /**
+   * Perform a minor system advance on a small clone of the iterator,
+   * meant to only advance the iterator while tracking the current `line` and `col` context.
+   * @warning Do not pass an `Iterator` instance to parameter `ctx`, since this may cause undefined behaviour.
+   * @param ctx The context to advance.
+   */
+  minor_advance(ctx) {
+    const old_char = this.source.data[ctx.pos];
+    if (this.lang.line_terminators.has(old_char) && this.is_not_escaped) {
+      if (this.char === "\r" && this.next === "\n") {
+        this.pos += 2;
+      } else {
+        this.pos++;
+      }
+      ctx.line++;
+      ctx.col = 1;
+      ctx.at_sol = true;
+    } else {
+      ctx.pos++;
+      ctx.col++;
+      if (ctx.at_sol && !this.lang.inline_whitespace.has(old_char)) {
+        ctx.at_sol = false;
+      }
+    }
   }
   // --------------------------------------------------------
   // Retrieving characters.
   /** Peek characters at the current position + adjust. */
   peek(adjust) {
-    return this.source.data[this.pos + adjust];
+    return this.source.data[this.pos + adjust] ?? "";
   }
   /** Get a char at at a specific position, does not check indexes. */
   at(pos) {
@@ -661,12 +666,14 @@ class Iterator {
    * When `lang` is defined, we can only jump forward, since we need to call `advance()` to update the language contexts.
    * However, when `lang` is not defined, we can jump to any position without advancing.
    * The `this.pos` will be set to the given position, and the state will be initialized.
+   * When `lang` is defined, the position must be greater than or equal to the current position.
+   * @throws An error when the position is out of bounds, or when jumping to a past position with a language defined.
    */
   jump_to(n) {
     if (n < 0 || n >= this.end) {
       throw new Error(`Cannot jump to position ${n}, must be between 0 and ${this.end - 1}.`);
     }
-    if (this.lang) {
+    if (this.lang.has_patterns) {
       if (n < this.pos) {
         throw new Error(`Cannot jump to a past position ${n} < ${this.pos} when language is defined.`);
       }
@@ -692,14 +699,14 @@ class Iterator {
     while (this.is_whitespace)
       this.advance();
   }
-  /** Consume a single optional end of line [\n\r]?. */
+  /** Consume a single optional end of line char. */
   consume_eol() {
-    if (this.is_line_break)
+    if (this.is_eol)
       this.advance();
   }
-  /** Consume one or multiple optional end of line's [\n\r]*. */
+  /** Consume one or multiple optional end of line's*. */
   consume_eols() {
-    while (this.is_line_break)
+    while (this.is_eol)
       this.advance();
   }
   /**
@@ -724,16 +731,45 @@ class Iterator {
   /**
    * Consume the entire line till (not including) the end of line.
    * Automatically checks `this.avail` and breaks when there is no data left.
-   * @note This does not consume the end of line `\n` character.
+   * @note This does not consume the end of line character.
    */
   consume_line(slice) {
     return this.consume_until((s) => s.is_eol, slice);
   }
-  /** Consume an optional comment at the current location. */
+  /**
+  * Consume a comment at the current location.
+  *
+  * - Line comments consume until the next line terminator or EOF.
+  * - Block comments consume until the matching closing pattern or EOF.
+  *
+  * @param slice If true, returns the consumed comment content.
+  * @returns The consumed comment string when slice is true.
+  */
   consume_comment(slice) {
-    if (!this.is_comment)
+    const start = this.pos;
+    if (!this.is_comment) {
       return slice ? "" : void 0;
-    return this.consume_until((it) => !it.is_comment, slice);
+    }
+    if (this.is_comment.type === "line") {
+      const end_idx = this.find_next_eol_fast(this.pos);
+      if (end_idx === -1) {
+        this.stop();
+      } else {
+        this.pos = end_idx;
+        this.init();
+      }
+    } else {
+      const close_pattern = this.is_comment.close;
+      const data_str = this.source.data;
+      const idx = data_str.indexOf(close_pattern, this.pos);
+      if (idx === -1) {
+        this.stop();
+      } else {
+        this.pos = idx + close_pattern.length;
+        this.init();
+      }
+    }
+    return slice ? this.source.data.slice(start, this.pos) : void 0;
   }
   /**
    * Walk the iterator to the end of a file with a visit callback.
@@ -782,129 +818,58 @@ class Iterator {
   // --------------------------------------------------------
   // Character checks.
   /**
-   * Is linebreak, charset `[\n\r]`.
+   * Check if a given index is escaped by a preceding `\\`,
+   * accounts for multiple backslashes.
+   * @param index The index of the character to check, note that this should not be the index of the `\\` itself.
+   * @returns `true` if the character at the index is escaped by its preceding `\\`, `false` otherwise.
+   */
+  is_escaped_at(index) {
+    if (this.source.data[index - 1] !== "\\")
+      return false;
+    let i = index - 1;
+    let backslash_count = 1;
+    while (--i >= 0 && this.source.data[i] === "\\")
+      backslash_count++;
+    return backslash_count % 2 === 1;
+  }
+  /**
+   * Is a linebreak (line terminator), a.k.a is this char one of the provided line terminators chars.
    * @param c The character or index of the character to check.
    * @note Use `this.is_linebreak` to check the char at the current position, instead of this method.
    */
   is_linebreak(c) {
     if (typeof c === "number")
-      c = this.source.data[c];
-    switch (c) {
-      case "\n":
-      case "\r":
-        return true;
-      default:
-        return false;
-    }
+      return this.lang.line_terminators.has(this.source.data[c]);
+    return this.lang.line_terminators.has(c);
   }
   /**
-   * Is whitespace, charset `[ \t\n\r]`.
+   * Is whitespace, so including the line terminators and normal whitespace chars.
    * @param c The character or index of the character to check.
    * @note Use `this.is_whitespace` to check the char at the current position, instead of this method.
    */
   is_whitespace_at(c) {
     if (typeof c === "number")
       c = this.source.data[c];
-    switch (c) {
-      case " ":
-      case "	":
-      case "\n":
-      case "\r":
-        return true;
-      default:
-        return false;
-    }
+    return this.lang.whitespace.has(c);
   }
   /**
-   * Is whitespace, charset `[ \t]`.
+   * Is whitespace, so only the inline whitespace chars, not the line terminators.
    * @param c The character or index of the character to check.
    * @note Use `this.is_inline_whitespace` to check the char at the current position, instead of this method.
    */
   is_inline_whitespace_at(c) {
     if (typeof c === "number")
-      c = this.source.data[c];
-    switch (c) {
-      case " ":
-      case "	":
-        return true;
-      default:
-        return false;
-    }
+      return this.lang.inline_whitespace.has(this.source.data[c]);
+    return this.lang.inline_whitespace.has(c);
   }
   /**
    * Is alphanumeric char [a-zA-Z0-9]
    * @param c The character or index of the character to check.
    */
   is_alphanumeric(c = this.char) {
-    if (typeof c === "number")
-      c = this.source.data[c];
-    switch (c) {
-      case "a":
-      case "b":
-      case "c":
-      case "d":
-      case "e":
-      case "f":
-      case "g":
-      case "h":
-      case "i":
-      case "j":
-      case "k":
-      case "l":
-      case "m":
-      case "n":
-      case "o":
-      case "p":
-      case "q":
-      case "r":
-      case "s":
-      case "t":
-      case "u":
-      case "v":
-      case "w":
-      case "x":
-      case "y":
-      case "z":
-      case "A":
-      case "B":
-      case "C":
-      case "D":
-      case "E":
-      case "F":
-      case "G":
-      case "H":
-      case "I":
-      case "J":
-      case "K":
-      case "L":
-      case "M":
-      case "N":
-      case "O":
-      case "P":
-      case "Q":
-      case "R":
-      case "S":
-      case "T":
-      case "U":
-      case "V":
-      case "W":
-      case "X":
-      case "Y":
-      case "Z":
-      case "0":
-      case "1":
-      case "2":
-      case "3":
-      case "4":
-      case "5":
-      case "6":
-      case "7":
-      case "8":
-      case "9":
-        return true;
-      default:
-        return false;
-    }
+    const code = typeof c === "number" ? this.source.data.charCodeAt(c) : c.charCodeAt(0);
+    return code >= 48 && code <= 57 || // 0-9
+    (code | 32) >= 97 && (code | 32) <= 122;
   }
   /**
    * Is lowercase char [a-z]
@@ -946,7 +911,7 @@ class Iterator {
     }
   }
   /**
-   * Is lowercase char [a-z]
+   * Is uppercase char [A-Z]
    * @param c The character or index of the character to check.
    */
   is_uppercase(c = this.char) {
@@ -1065,17 +1030,35 @@ class Iterator {
     const src = this.source;
     let search_pos = this.pos;
     while (next > 0) {
-      const idx = src.data.indexOf("\n", search_pos);
+      let idx = -1;
+      for (let i = search_pos; i < src.data.length; i++) {
+        if (this.lang.line_terminators.has(src.data[i]) && !this.is_escaped_at(i)) {
+          idx = i;
+          break;
+        }
+      }
       if (idx === -1)
         return -1;
-      if (idx > 0 && src.data[idx - 1] === "\\") {
-        search_pos = idx + 1;
-        continue;
-      }
       next -= 1;
       if (next === 0)
         return idx;
       search_pos = idx + 1;
+    }
+    return -1;
+  }
+  /**
+   * Find the index of the next end of line, without a `next` option,
+   * offering a slight performance boost. Excluding escaped line terminators.
+   * @param start The index to start searching from, defaults to `this.pos`.
+   * @param end The end index to stop searching at, defaults to the `this.source.data.length`.
+   * @returns The index of the next end of line, or -1 if not found.
+   */
+  find_next_eol_fast(start = this.pos, end = this.source.data.length) {
+    const src = this.source;
+    const charset = this.lang.line_terminators;
+    for (let i = start; i < end; i++) {
+      if (charset.has(src.data[i]) && !this.is_escaped_at(i))
+        return i;
     }
     return -1;
   }
@@ -1131,31 +1114,13 @@ class Iterator {
    * @param skip Optionally use a filter to skip over first characters, if the skip function returns true the index will be incremented, till the next end of line is reached.
    * @returns The first character of the next line, or an empty string if there is no next line.
    */
-  first_of_next_lineX(skip) {
-    let i = this.source.data.indexOf("\n", this.pos);
-    if (i < 0) {
-      return "";
-    }
-    ++i;
-    if (skip) {
-      while (i < this.end && skip(i + 1)) {
-        ++i;
-      }
-    }
-    if (i >= this.end) {
-      return "";
-    }
-    return this.source.data[i];
-  }
   first_niw_of_next_line() {
-    const i = this.source.data.indexOf("\n", this.pos);
-    if (i < 0) {
+    const i = this.find_next_eol_fast(this.pos);
+    if (i < 0)
       return "";
-    }
     const first = this.incr_on_inline_whitespace(i + 1);
-    if (first >= this.end) {
+    if (first >= this.end)
       return "";
-    }
     return this.source.data[first];
   }
   /** Get the first non whitespace char looking from index `start`, defaults to `this.pos` */
@@ -1182,9 +1147,8 @@ class Iterator {
       return index;
     }
     let c;
-    while (index < end && ((c = this.source.data[index]) === "\n" || c === "\r" || c === " " || c === "	")) {
+    while (index < end && this.lang.whitespace.has(this.source.data[index]))
       ++index;
-    }
     return index;
   }
   incr_on_inline_whitespace(index, end) {
@@ -1194,9 +1158,8 @@ class Iterator {
       return index;
     }
     let c;
-    while (index < end && ((c = this.source.data[index]) === " " || c === "	")) {
+    while (index < end && this.lang.inline_whitespace.has(this.source.data[index]))
       ++index;
-    }
     return index;
   }
   /** Decrement the index until a non-whitespace char is found, stops if the char at the index is not inline whitespace. */
@@ -1206,7 +1169,7 @@ class Iterator {
     }
     let c;
     const si = index;
-    while (index >= min_index && ((c = this.source.data[index]) === "\n" || c === "\r" || c === " " || c === "	")) {
+    while (index >= min_index && this.lang.whitespace.has(this.source.data[index])) {
       --index;
     }
     if (plus_1_when_decremented && si !== index) {
@@ -1220,7 +1183,7 @@ class Iterator {
     }
     let c;
     const si = index;
-    while (index >= min_index && ((c = this.source.data[index]) === " " || c === "	")) {
+    while (index >= min_index && this.lang.inline_whitespace.has(this.source.data[index])) {
       --index;
     }
     if (plus_1_when_decremented && si !== index) {
@@ -1232,12 +1195,12 @@ class Iterator {
   // Slicing methods.
   /** Slice the current line till the current position or till the end of the line without consuming. */
   slice_line(opts) {
-    const end = opts?.full ? this.source.data.indexOf("\n", this.pos) : this.pos;
+    const end = opts?.full ? this.find_next_eol_fast(this.pos) : this.pos;
     return end < this.sol_index ? this.source.data.slice(this.sol_index) : this.source.data.slice(this.sol_index, end);
   }
   /** Slice the next line. */
   slice_next_line() {
-    const i = this.source.data.indexOf("\n", this.pos);
+    const i = this.find_next_eol_fast(this.pos);
     return i < 0 ? this.source.data.slice(this.pos) : this.source.data.slice(this.pos, i);
   }
   /** Slice content */
@@ -1246,6 +1209,19 @@ class Iterator {
   }
   // --------------------------------------------------------
   // Debug helpers.
+  /** Get debug info about the (minimized) cursor position. */
+  debug_cursor() {
+    return {
+      ch: this.char,
+      pos: this.pos,
+      loc: `${this.line}:${this.col}`,
+      ...this.at_sol ? { at_sol: this.at_sol } : {},
+      ...this.is_eol ? { is_eol: this.is_eol } : {},
+      ...this.is_comment ? { is_comment: this.is_comment } : {},
+      ...this.is_str ? { is_str: this.is_str } : {},
+      ...this.is_regex ? { is_regex: this.is_regex } : {}
+    };
+  }
   /** Debug methods */
   debug_dump_code(title, code, colored = true) {
     let lines = code.split("\n");
@@ -1281,174 +1257,260 @@ class Iterator {
 const Languages = {
   js: new Language({
     name: "js",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
+    // All valid whitespace, should be valid for all js variants.
+    inline_whitespace: [
+      // ASCII
+      " ",
+      "	",
+      "\v",
+      "\f",
+      // Unicode WhiteSpace
+      "\xA0",
+      "\u1680",
+      "\u180E",
+      "\u2000",
+      "\u2001",
+      "\u2002",
+      "\u2003",
+      "\u2004",
+      "\u2005",
+      "\u2006",
+      "\u2007",
+      "\u2008",
+      "\u2009",
+      "\u200A",
+      "\u202F",
+      "\u205F",
+      "\u3000",
+      "\uFEFF"
+    ],
+    // All valid line terminators, should be valid for all js variants.
+    line_terminators: [
+      "\n",
+      // U+000A – LF
+      "\r",
+      // U+000D – CR  (handle CRLF as one break)
+      "\u2028",
+      // U+2028 – LS
+      "\u2029",
+      // U+2029 – PS
+      "\x85"
+      // U+0085 – NEL (TypeScript extension – safe to include)
+    ],
+    string: ["'", '"', "`"],
     comment: {
-      line: "//",
+      line: {
+        open: "//",
+        sol: false
+      },
       block: [["/*", "*/"]]
-    },
-    regex: [["/", "/"]]
+    }
+    // regex: [["/", "/"]],
   }),
   ts: new Language({
     name: "ts",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
+    // All valid whitespace, should be valid for all ts variants.
+    inline_whitespace: [
+      // ASCII
+      " ",
+      "	",
+      "\v",
+      "\f",
+      // Unicode WhiteSpace
+      "\xA0",
+      "\u1680",
+      "\u180E",
+      "\u2000",
+      "\u2001",
+      "\u2002",
+      "\u2003",
+      "\u2004",
+      "\u2005",
+      "\u2006",
+      "\u2007",
+      "\u2008",
+      "\u2009",
+      "\u200A",
+      "\u202F",
+      "\u205F",
+      "\u3000",
+      "\uFEFF"
+    ],
+    // All valid line terminators, should be valid for all ts variants.
+    line_terminators: [
+      "\n",
+      // U+000A – LF
+      "\r",
+      // U+000D – CR  (handle CRLF as one break)
+      "\u2028",
+      // U+2028 – LS
+      "\u2029",
+      // U+2029 – PS
+      "\x85"
+      // U+0085 – NEL (TypeScript extension – safe to include)
+    ],
+    string: ["'", '"', "`"],
     comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    },
-    regex: [["/", "/"]]
-  }),
-  css: new Language({
-    name: "css",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: void 0,
-      block: [["/*", "*/"]]
-    }
-  }),
-  html: new Language({
-    name: "html",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      block: [["<!--", "-->"]]
-    }
-  }),
-  json: new Language({
-    name: "json",
-    string: /* @__PURE__ */ new Set(['"'])
-  }),
-  json5: new Language({
-    name: "json5",
-    string: /* @__PURE__ */ new Set(['"']),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  jsonc: new Language({
-    name: "jsonc",
-    string: /* @__PURE__ */ new Set(['"']),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  yaml: new Language({
-    name: "yaml",
-    string: /* @__PURE__ */ new Set(['"']),
-    comment: {
-      line: "#"
-    }
-  }),
-  xml: new Language({
-    name: "xml",
-    string: /* @__PURE__ */ new Set(['"']),
-    comment: {
-      block: [["<!--", "-->"]]
-    }
-  }),
-  md: new Language({
-    name: "md",
-    string: /* @__PURE__ */ new Set(['"']),
-    comment: {
-      line: "<!--"
-    }
-  }),
-  python: new Language({
-    name: "python",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "#",
-      block: [["'''", "'''"], ['"""', '"""']]
-    }
-  }),
-  c: new Language({
-    name: "c",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "//",
+      line: {
+        open: "//",
+        sol: false
+      },
       block: [["/*", "*/"]]
     }
-  }),
-  cpp: new Language({
-    name: "cpp",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  java: new Language({
-    name: "java",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  php: new Language({
-    name: "php",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  ruby: new Language({
-    name: "ruby",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "#",
-      block: [["=begin", "=end"]]
-    }
-  }),
-  go: new Language({
-    name: "go",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  rust: new Language({
-    name: "rust",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  swift: new Language({
-    name: "swift",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  kotlin: new Language({
-    name: "kotlin",
-    string: /* @__PURE__ */ new Set(["'", '"', "`"]),
-    comment: {
-      line: "//",
-      block: [["/*", "*/"]]
-    }
-  }),
-  shell: new Language({
-    name: "shell",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "#"
-      // block: [["<<", "EOF"]],
-    }
-  }),
-  bash: new Language({
-    name: "bash",
-    string: /* @__PURE__ */ new Set(["'", '"']),
-    comment: {
-      line: "#"
-      // block: [["<<", "EOF"]],
-    }
+    // regex: [["/", "/"]],
   })
+  // css: new Language({
+  //     name: "css",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: undefined,
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // html: new Language({
+  //     name: "html",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         block: [["<!--", "-->"]],
+  //     },
+  // }),
+  // json: new Language({
+  //     name: "json",
+  //     string: new Set(['"']),
+  // }),
+  // json5: new Language({
+  //     name: "json5",
+  //     string: ['"'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // jsonc: new Language({
+  //     name: "jsonc",
+  //     string: ['"'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // yaml: new Language({
+  //     name: "yaml",
+  //     string: ['"'],
+  //     comment: {
+  //         line: "#",
+  //     },
+  // }),
+  // xml: new Language({
+  //     name: "xml",
+  //     string: ['"'],
+  //     comment: {
+  //         block: [["<!--", "-->"]],
+  //     },
+  // }),
+  // md: new Language({
+  //     name: "md",
+  //     string: ['"'],
+  //     comment: {
+  //         line: "<!--",
+  //     },
+  // }),
+  // python: new Language({
+  //     name: "python",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "#",
+  //         block: [["'''", "'''"], ['"""', '"""']],
+  //     },
+  // }),
+  // c: new Language({
+  //     name: "c",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // cpp: new Language({
+  //     name: "cpp",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // java: new Language({
+  //     name: "java",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // php: new Language({
+  //     name: "php",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // ruby: new Language({
+  //     name: "ruby",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "#",
+  //         block: [["=begin", "=end"]],
+  //     },
+  // }),
+  // go: new Language({
+  //     name: "go",
+  //     string: new Set(["'", '"']),
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // rust: new Language({
+  //     name: "rust",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // swift: new Language({
+  //     name: "swift",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // kotlin: new Language({
+  //     name: "kotlin",
+  //     string: ["'", '"', '`'],
+  //     comment: {
+  //         line: "//",
+  //         block: [["/*", "*/"]],
+  //     },
+  // }),
+  // shell: new Language({
+  //     name: "shell",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: "#",
+  //         // block: [["<<", "EOF"]],
+  //     },
+  // }),
+  // bash: new Language({
+  //     name: "bash",
+  //     string: ["'", '"'],
+  //     comment: {
+  //         line: "#",
+  //         // block: [["<<", "EOF"]],
+  //     },
+  // }),
 };
 const languages = Languages;
 // Annotate the CommonJS export names for ESM import in node:
@@ -1456,6 +1518,5 @@ const languages = Languages;
   Iterator,
   Language,
   Languages,
-  Location,
   languages
 });

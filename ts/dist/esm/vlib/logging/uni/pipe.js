@@ -9,6 +9,8 @@ import { SourceLoc } from './source_loc.js';
 import { ActiveLogLevel, Directive } from './directives.js';
 import { Spinners } from "./spinners.js";
 import { ObjectUtils } from "../../primitives/object.js";
+/** * Whether the current environment is a web browser. */
+const web_env = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 /**
  * Pipe class.
  * Responsible for logging data to a pipe function, typically `console.log`.
@@ -140,10 +142,15 @@ export class Pipe {
                     this.push_arg(msg, file_msg, add.replace(/^Error: /gm, `${Color.red("Error")}: `));
                 }
             }
+            // else if (Array.isArray(item)) {
+            //     this.push_arg(msg, file_msg, "[ARRAY]");
+            // }
             else {
                 // Transform item via custom `toString() str()` if provided.
                 if (item && typeof item === "object") {
-                    if (typeof item.toString === "function" && item.toString !== Object.prototype.toString) {
+                    if (typeof item.toString === "function"
+                        && item.toString !== Object.prototype.toString
+                        && item.toString !== Array.prototype.toString) {
                         item = item.toString.call(item);
                     }
                     else if (typeof item.str === "function") {
@@ -151,16 +158,15 @@ export class Pipe {
                     }
                 }
                 // Dump objects in color in debug mode.
-                if (typeof item === "object" && ObjectUtils.is_plain(item)
-                // && (log_mode === Directive.debug || log_mode === Directive.error || log_mode === Directive.warn)
-                ) {
+                if (typeof item === "object" && (ObjectUtils.is_plain(item)
+                    || (Array.isArray(item) /** && Object.getPrototypeOf(item) === Array.prototype */))) {
                     if (this._transform) {
                         if ((item = this._transform(item)) === Directive.ignore) {
                             continue;
                         }
                         transformed = true;
                     }
-                    if (item && typeof item === "object") {
+                    if (item && !web_env && typeof item === "object") {
                         // dump objects in color.
                         if (level <= active_log_level) {
                             this.push_arg(msg, file_msg, Color.object(item, { max_depth: 3, max_length: 25000 }));
@@ -379,6 +385,7 @@ export class Pipe {
     log(...args) {
         this.ensure_out_err();
         const r = this.pipe(args);
+        // console.log("Pipe.log", r);
         if (r.ignored || !r.data) {
             return;
         }

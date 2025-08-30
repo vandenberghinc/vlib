@@ -59,8 +59,8 @@ var Logging = __toESM(require("./logging/index.m.node.js"));
 var logging = __toESM(require("./logging/index.m.node.js"));
 var import_index_m_node = require("./logging/index.m.node.js");
 var import_index_m_node2 = require("./logging/index.m.node.js");
-var Schema = __toESM(require("./schema/index.m.uni.js"));
-var schema = __toESM(require("./schema/index.m.uni.js"));
+var Schema = __toESM(require("./schema/index.m.node.js"));
+var schema = __toESM(require("./schema/index.m.node.js"));
 __reExport(stdin_exports, require("./jsonc/jsonc.js"), module.exports);
 var Crypto = __toESM(require("./crypto/index.m.js"));
 var crypto = __toESM(require("./crypto/index.m.js"));
@@ -69,12 +69,13 @@ __reExport(stdin_exports, require("./generic/utils.js"), module.exports);
 var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
+__reExport(stdin_exports, require("./generic/zip.js"), module.exports);
 Error.stackTraceLimit = 25;
+const version = "1.6.28";
 const print = (...args) => import_index_m_node2.log.raw(0, ...args);
 const error = (...args) => import_index_m_node2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);
 const warning = warn;
-const version = "1.6.21";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CLI,
@@ -103,5 +104,6 @@ const version = "1.6.21";
   ...require("./jsonc/jsonc.js"),
   ...require("./search/index.uni.js"),
   ...require("./generic/utils.js"),
-  ...require("./clipboard/index.js")
+  ...require("./clipboard/index.js"),
+  ...require("./generic/zip.js")
 });

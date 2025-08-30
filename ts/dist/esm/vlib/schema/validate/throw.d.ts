@@ -6,7 +6,7 @@
  *
  * @todo create an InferType type utility that infers teh object type for an object scheme, similar to how CLI does it.
  */
-import { Merge } from "../../types/transform.js";
+import { Merge } from "../../types/types.js";
 /**
  * Get a value type as string for error reporting.
  * Converts `null` to "null", `undefined` to "undefined",

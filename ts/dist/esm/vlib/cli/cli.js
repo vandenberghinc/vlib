@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Iterator } from '../code/iterator.js';
-import * as Scheme from '../schema/index.m.uni.js';
+import * as Scheme from '../schema/index.m.node.js';
 import { Color, Colors } from '../generic/colors.js';
 import { CLIError } from './error.js';
 import { And, Or, and_or_str } from './query.js';
@@ -233,31 +233,32 @@ export class CLI {
                     let mode = "key";
                     const parsed = {};
                     new Iterator({ data: input }, { language: { string: ["'", '"', '`'] } }).walk(it => {
-                        const c = it.char;
+                        const state = it;
+                        const c = state.char;
                         if (mode === "key"
                             && it.is_code
                             && (c === ":" || c === "=")) {
-                            key = it.slice(key_start, it.pos);
+                            key = it.slice(key_start, state.pos);
                             mode = "value";
-                            value_start = it.pos + 1;
+                            value_start = state.pos + 1;
                         }
                         else if (mode === "value"
                             && it.is_code
-                            && !it.is_escaped
+                            && !state.is_escaped
                             && (c === "," || c === ";")) {
                             if (key) {
-                                let end = it.pos;
+                                let end = state.pos;
                                 let first = input.charAt(value_start);
                                 if (
                                 // strip quotes.
                                 (first === "'" || first === '"' || first === "`")
-                                    && first === input.charAt(it.pos - 1)) {
+                                    && first === input.charAt(state.pos - 1)) {
                                     ++value_start;
                                     --end;
                                 }
                                 parsed[key] = it.slice(value_start, end);
                             }
-                            key_start = it.pos + 1;
+                            key_start = state.pos + 1;
                             mode = "key";
                         }
                     });
@@ -410,6 +411,7 @@ export class CLI {
                     // Get and cast.
                     else {
                         const { status, value } = this.info(arg, args_start_index, command);
+                        // console.log("Searching for arg ", arg, " with status ", status, " and value ", value);
                         if (log.on(2))
                             log("Argument info ", and_or_str(arg.id), ": ", { status, value });
                         if (status === "not_found" && arg.required) {
@@ -468,6 +470,7 @@ export class CLI {
                 index = arg.index + start_index;
                 value_index = arg.index + start_index; // same index for value.
             }
+            // console.log("Found index by index variant: ", { start_index, index, value_index }, " for arg ", arg.identifier());
         }
         // And id.
         else if (arg.id instanceof And) {
@@ -515,6 +518,15 @@ export class CLI {
             || (value = this.argv[value_index]) === undefined
             || (exclude_dash && value.charAt(0) === "-")) {
             // if (debug.on(3)) debug("Resetting value index ", {
+            //     value_index,
+            //     argv_length: this.argv.length,
+            //     value,
+            //     value_X: this.argv[value_index ?? -1],
+            //     exclude_dash,
+            //     first: value?.charAt(0),
+            //     argv: this.argv,
+            // });
+            // console.log("Resetting value index ", {
             //     value_index,
             //     argv_length: this.argv.length,
             //     value,
@@ -600,7 +612,7 @@ export class CLI {
         //     return this.add_info(this._cast(query, this.argv[offset], type, _command) as any, _command);
         // }
         // Find the value index.
-        const { found, is_boolean, value_index } = this.find_arg(query);
+        const { found, is_boolean, value_index } = this.find_arg(query, _s_index ?? 0);
         if (is_boolean) {
             if (found === false && typeof def === "boolean") {
                 return this.add_info({
@@ -934,7 +946,8 @@ export class CLI {
                             this.docs(command);
                             return true;
                         }
-                        return this.run_command(command, found_index);
+                        // console.log("Found index:", found_index, " args: ", this.argv.slice(found_index + 1));
+                        return this.run_command(command, found_index + 1);
                     }
                 }
             };

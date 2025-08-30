@@ -306,6 +306,24 @@ namespace StringUtils {
         if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s;
         return `"${s}"`;
     }
+
+    /**
+     * Truncate a string to max length, the string remains the same
+     * if the string's length is below `max`, otherwise its truncated to `max`.
+     * 
+     * @param data The string to limit.
+     * @param max The maximum length of the string.
+     * @param truncated_suffix Optional suffix to append if the string is truncated, by default the string is truncated without suffix.
+     * 
+     * @docs
+     */
+    export function truncate(data: string | String, max: number, truncated_suffix?: string): string {
+        const truncated = data.length > max ? data.slice(0, max) : data instanceof String ? data.valueOf() : data;
+        if (truncated_suffix) {
+            return `${truncated}${truncated_suffix}`;
+        }
+        return truncated;
+    }
 }
 export { StringUtils as String };
 export { StringUtils as string }; // for snake_case compatibility

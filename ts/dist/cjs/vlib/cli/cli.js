@@ -34,7 +34,7 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_iterator = require("../code/iterator.js");
-var Scheme = __toESM(require("../schema/index.m.uni.js"));
+var Scheme = __toESM(require("../schema/index.m.node.js"));
 var import_colors = require("../generic/colors.js");
 var import_error = require("./error.js");
 var import_query = require("./query.js");
@@ -239,25 +239,26 @@ class CLI {
         let mode = "key";
         const parsed = {};
         new import_iterator.Iterator({ data: input }, { language: { string: ["'", '"', "`"] } }).walk((it) => {
-          const c = it.char;
+          const state = it;
+          const c = state.char;
           if (mode === "key" && it.is_code && (c === ":" || c === "=")) {
-            key = it.slice(key_start, it.pos);
+            key = it.slice(key_start, state.pos);
             mode = "value";
-            value_start = it.pos + 1;
-          } else if (mode === "value" && it.is_code && !it.is_escaped && (c === "," || c === ";")) {
+            value_start = state.pos + 1;
+          } else if (mode === "value" && it.is_code && !state.is_escaped && (c === "," || c === ";")) {
             if (key) {
-              let end = it.pos;
+              let end = state.pos;
               let first = input.charAt(value_start);
               if (
                 // strip quotes.
-                (first === "'" || first === '"' || first === "`") && first === input.charAt(it.pos - 1)
+                (first === "'" || first === '"' || first === "`") && first === input.charAt(state.pos - 1)
               ) {
                 ++value_start;
                 --end;
               }
               parsed[key] = it.slice(value_start, end);
             }
-            key_start = it.pos + 1;
+            key_start = state.pos + 1;
             mode = "key";
           }
         });
@@ -487,7 +488,7 @@ class CLI {
     if (this.argv_info.has(cache_id)) {
       return this.argv_info.get(cache_id);
     }
-    const { found, is_boolean, value_index } = this.find_arg(query);
+    const { found, is_boolean, value_index } = this.find_arg(query, _s_index ?? 0);
     if (is_boolean) {
       if (found === false && typeof def === "boolean") {
         return this.add_info({
@@ -803,7 +804,7 @@ Examples:
               this.docs(command);
               return true;
             }
-            return this.run_command(command, found_index);
+            return this.run_command(command, found_index + 1);
           }
         }
       };

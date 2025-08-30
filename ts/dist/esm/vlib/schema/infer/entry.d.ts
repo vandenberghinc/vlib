@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Neverify } from "../../types/transform.js";
+import { Neverify } from "../../types/types.js";
 import { Cast } from "../validate/cast.js";
 import { InferEntries, InferEntry, InferTupleEntries, InferValueEntries } from "./infer.js";
 /** Base object or array. */
@@ -33,7 +33,6 @@ type CastType = Entry.Type.Castable<"readonly">;
  */
 export type Entry<T extends CastType = CastType, // type of entry
 V extends Entry.Type.Cast<T> = Entry.Type.Cast<T>, // value of entry
-/** P is @deprecated */
 P extends ObjOrArr = ObjOrArr, // parent object for callbacks.
 Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived : {}) & {
     /**
@@ -55,27 +54,27 @@ Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived :
      */
     required?: boolean | ((parent: P) => boolean);
     /**
-     * Allow empty strings, arrays or objects.
+     * Allow empty strings, arrays, objects or numbers (NaN).
      * Defaults to `true`.
      */
     allow_empty?: boolean;
     /**
-     * Set a minimum length for strings or arrays, and min `x >= min` value of number.
+     * Set a minimum (length) for numbers, strings, arrays or object entries, and min `x >= min` value of number.
      */
     min?: number;
     /**
-     * Set a maximum length for strings or arrays, and max `x <= max` value of number.
+     * Set a maximum (length) for numbers, strings, arrays or object entries, and max `x <= max` value of number.
      */
     max?: number;
     /**
      * A nested schema for when the attribute is an object.
      */
-    schema?: Record<string, (T | Entry<any, any, any, Derived>)>;
+    schema?: Record<string, (T | DerivedEntry<Derived>)>;
     /**
      * A nested schema for the array items for when the attribute is an array.
      * Or a schema for the value's of an object.
      */
-    value_schema?: (T | Entry<any, any, any, Derived>);
+    value_schema?: (T | DerivedEntry<Derived>);
     /**
      * Tuple schema for when the input object is an array.
      * This can be used to verify each item in an array specifically with a predefined length.
@@ -84,7 +83,7 @@ Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived :
      *
      * @note this attribute is ignored when the input object is not an array.
      */
-    tuple?: (T | Entry<any, any, any, Derived>)[];
+    tuple?: (T | DerivedEntry<Derived>)[];
     /**
      * A list of valid values for the attribute.
      */
@@ -141,6 +140,7 @@ Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived :
     /** Alias for `default`. */
     readonly def?: V | ((obj: any) => V);
 };
+export type DerivedEntry<D extends Entry.Derived = {}> = Entry<CastType, Entry.Type.Cast<CastType>, ObjOrArr, D>;
 /** Types for the `Entry` namespace. */
 export declare namespace Entry {
     /** A small alias for the derived base type. */
@@ -225,7 +225,7 @@ export declare namespace Entries {
     /**
      * Inferrable input options for constructing a new `schema: Entries` object.
      */
-    type Opts<D extends Entry.Derived = {}> = NonNullable<Entry<any, any, any, D>["schema"]>;
+    type Opts<D extends Entry.Derived = {}> = NonNullable<DerivedEntry<D>["schema"]>;
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     type Infer<T extends Opts> = InferEntries<T>;
 }
@@ -238,7 +238,7 @@ export declare namespace ValueEntries {
     /**
      * Inferrable input options for constructing a new `value_schema: Entry` object.
      */
-    type Opts<Derived extends Record<string, any> = {}> = NonNullable<Entry<any, any, any, Derived>["value_schema"]>;
+    type Opts<Derived extends Record<string, any> = {}> = NonNullable<DerivedEntry<Derived>["value_schema"]>;
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     type Infer<ParentT extends "array" | "object", V extends Opts> = InferValueEntries<ParentT, V>;
 }
@@ -251,7 +251,7 @@ export declare namespace TupleEntries {
     /**
      * Inferrable input options for constructing a new `value_schema: Entry` object.
      */
-    type Opts<Derived extends Record<string, any> = {}> = NonNullable<Entry<any, any, any, Derived>["tuple"]>;
+    type Opts<Derived extends Record<string, any> = {}> = NonNullable<DerivedEntry<Derived>["tuple"]>;
     /** Extract the value‐type for a tuple, preserving tuple positions */
     type Infer<T extends Opts> = InferTupleEntries<T>;
 }

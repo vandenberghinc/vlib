@@ -1,11 +1,11 @@
 var import_validator_entries = require("../schema/validate/validator_entries.js");
 var import_vtest = require("../../vtest/index.js");
-var import_index_m_uni = require("../schema/index.m.uni.js");
+var import_index_m_node = require("../schema/index.m.node.js");
 const tests = new import_vtest.Module({ name: "vlib/schema" });
 function create_error_unit_test(opts) {
   return () => {
     try {
-      (0, import_index_m_uni.validate)(opts.object, opts);
+      (0, import_index_m_node.validate)(opts.object, opts);
       return "__NO_ERROR_THROWN__";
     } catch (error) {
       return error.message;
@@ -14,7 +14,7 @@ function create_error_unit_test(opts) {
 }
 function create_success_unit_test(opts) {
   return () => {
-    const result = (0, import_index_m_uni.validate)(opts.object, opts);
+    const result = (0, import_index_m_node.validate)(opts.object, opts);
     return JSON.stringify(result);
   };
 }
@@ -205,7 +205,7 @@ tests.add("scheme_test:9", create_error_unit_test({
 }));
 tests.add("scheme_test:10", () => {
   let x = void 0;
-  const response = (0, import_index_m_uni.validate)({
+  const response = (0, import_index_m_node.validate)({
     // x: undefined,
   }, {
     throw: true,
@@ -265,7 +265,7 @@ tests.add("scheme_verify_missing_optional_no_error:1", create_success_unit_test(
   // Expected success: no error, returns {}
 }));
 tests.add("scheme_verify_default_applied:1", () => {
-  const response = (0, import_index_m_uni.validate)({}, {
+  const response = (0, import_index_m_node.validate)({}, {
     throw: true,
     unknown: false,
     schema: {
@@ -373,7 +373,7 @@ tests.add("scheme_verify_conditional_required_not_met:1", create_success_unit_te
   // Expected success: returns JSON string when conditional required not triggered
 }));
 tests.add("scheme_verify_default_boolean:1", "error", () => {
-  const response = (0, import_index_m_uni.validate)({
+  const response = (0, import_index_m_node.validate)({
     // 'enabled' missing
     enabled: void 0
   }, {

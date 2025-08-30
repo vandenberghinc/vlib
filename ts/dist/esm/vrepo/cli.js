@@ -9,9 +9,31 @@ import path from 'path';
 import { execSync } from "node:child_process";
 import * as vlib from "../vlib/index.js";
 // Imports.
-import { Repo } from "./repo.js";
+import { Package } from "./package.js";
 // Wrapper function to locate the configuration file.
-const find_config_path = () => Repo.find_config_path()?.path;
+const find_config_path = (cwd = process.cwd()) => Package.find_config_path(cwd)?.path;
+/** Wrapper function to initialize the `sources` list provided input paths. */
+async function init_sources(cmd, source, sources) {
+    // Create sources array.
+    let all_sources = [];
+    if (typeof source === "string") {
+        all_sources.push(source);
+    }
+    else if (Array.isArray(sources)) {
+        all_sources.push(...sources);
+    }
+    else {
+        all_sources.push(find_config_path() || "./");
+    }
+    if (all_sources.some(p => vlib.GlobPattern.is(p))) {
+        all_sources = await vlib.Path.glob(all_sources, { string: true });
+    }
+    for (let i = 0; i < all_sources.length; ++i) {
+        if (!vlib.Path.exists(all_sources[i]))
+            throw cmd.error(`Source path '${all_sources[i]}' does not exist.`);
+    }
+    return all_sources;
+}
 // CLI.
 const cli = new vlib.cli.CLI({ name: "vrepo", version: "1.0.2", strict: true });
 // ---------------------------------------------------------------
@@ -38,7 +60,7 @@ cli.command({
             source = find_config_path() || "./";
         }
         // Init repo.
-        const repo = new Repo({
+        const repo = new Package({
             source,
             npm: false,
             ssh: Boolean(ssh),
@@ -63,12 +85,8 @@ cli.command({
                 message: `Adding ssh remote "${remote.alias}:${remote.destination}" to "${repo.name}".`,
                 success: `Added ssh remote "${remote.alias}:${remote.destination}" to "${repo.name}".`,
             });
-            const duplicate = repo.config.ssh.remotes.iterate((item) => {
-                if (item.alias === remote.alias && item.destination === remote.destination) {
-                    return true;
-                }
-            });
-            if (duplicate !== true) {
+            const duplicate = repo.config.ssh.remotes.find(i => i.alias === remote.alias && i.destination === remote.destination);
+            if (!duplicate) {
                 repo.config.ssh.remotes.push(remote);
             }
             spinner.success();
@@ -90,12 +108,10 @@ cli.command({
                 message: `Adding git remote "${item.remote}:${item.destination}:${item.branch}" to "${repo.name}".`,
                 success: `Added git remote "${item.remote}:${item.destination}:${item.branch}" to "${repo.name}".`,
             });
-            const duplicate = repo.config.git.remotes.iterate((item) => {
-                if (item.remote === item.remote && item.destination === item.destination && item.branch === item.branch) {
-                    return true;
-                }
-            });
-            if (duplicate !== true) {
+            const duplicate = repo.config.git.remotes.find(i => i.remote === item.remote
+                && i.destination === item.destination
+                && i.branch === item.branch);
+            if (!duplicate) {
                 repo.config.git.remotes.push(item);
             }
             spinner.success();
@@ -123,22 +139,10 @@ cli.command({
     ],
     async callback({ source = null, sources = null, git = false, ssh = false, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const source of all_sources) {
-            const repo = new Repo({
+            const repo = new Package({
                 source,
                 npm: false,
             });
@@ -324,36 +328,24 @@ cli.command({
     ],
     async callback({ source = null, sources = null, git = null, forced = false, ensure_push = false, log_level = 0, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const src of all_sources) {
-            const repo = new Repo({ source: src, npm: false });
+            const repo = new Package({ source: src, npm: false });
             await repo.init();
             repo.assert_init();
             // Build Git remotes.
             let git_remotes = [];
             if (Array.isArray(git) && git.length > 0) {
-                for (const remoteName of git) {
-                    const found = repo.config.git.remotes.iterate(item => {
-                        if (item.remote === remoteName) {
+                for (const remote_name of git) {
+                    const found = repo.config.git.remotes.find(item => {
+                        if (item.remote === remote_name) {
                             git_remotes.push(item);
                             return true;
                         }
                     });
                     if (!found) {
-                        throw this.error(`Git remote "${remoteName}" does not exist.`);
+                        throw this.error(`Git remote "${remote_name}" does not exist.`);
                     }
                 }
             }
@@ -399,22 +391,10 @@ cli.command({
     ],
     async callback({ source = null, sources = null, git = null, forced = false, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const src of all_sources) {
-            const repo = new Repo({ source: src, npm: false });
+            const repo = new Package({ source: src, npm: false });
             await repo.init();
             repo.assert_init();
             // Build Git remotes.
@@ -460,29 +440,17 @@ cli.command({
     ],
     async callback({ source = null, sources = null, ssh = null, del = false, log_level = 0, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const src of all_sources) {
-            const repo = new Repo({ source: src, npm: false });
+            const repo = new Package({ source: src, npm: false });
             await repo.init();
             repo.assert_init();
             // Build SSH remotes.
             let ssh_remotes = [];
             if (Array.isArray(ssh) && ssh.length > 0) {
                 for (const alias of ssh) {
-                    const found = repo.config.ssh.remotes.iterate(item => {
+                    const found = repo.config.ssh.remotes.find(item => {
                         if (item.alias === alias) {
                             ssh_remotes.push(item);
                             return true;
@@ -528,22 +496,10 @@ cli.command({
     ],
     async callback({ source = null, sources = null, ssh = null, del = false, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const src of all_sources) {
-            const repo = new Repo({ source: src, npm: false });
+            const repo = new Package({ source: src, npm: false });
             await repo.init();
             repo.assert_init();
             // Build SSH remotes.
@@ -585,24 +541,12 @@ cli.command({
         { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." }, { id: "--sources", type: "array", description: "The source paths to multiple packages, when undefined the argument --source or the current working directory will be used as the source path." },
         { id: "--on-commits-only", type: "boolean", description: "Only when local commits have been made." },
     ],
-    callback: async ({ source = null, sources = null, on_commits_only = false, }) => {
+    async callback({ source = null, sources = null, on_commits_only = false, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const source of all_sources) {
-            const repo = new Repo({
+            const repo = new Package({
                 source,
                 git: false,
                 ssh: false,
@@ -647,27 +591,10 @@ cli.command({
             throw this.error(`The argument --dependencies is required.`, { docs: true });
         }
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Iterate sources array.
         for (const source of all_sources) {
-            const vrepo_src = new vlib.Path(source + "/.vrepo");
-            if (!vrepo_src.exists()) {
-                throw this.error(`The vrepo source path "${source}" does not exist. Create an empty json file to continue.`);
-                // vrepo_src.save_sync("{}");
-            }
-            const repo = new Repo({
+            const repo = new Package({
                 source,
                 git: false,
                 ssh: false,
@@ -681,13 +608,12 @@ cli.command({
                 throw this.error(`Argument --dependencies is required when this command is executed for the first time.`, { docs: true });
             }
             const spinner = new vlib.logging.Spinner({
-                message: `Linking ${dependencies.length} dependencies to "${vrepo_src.str()}".`,
-                success: `Linked ${dependencies.length} dependencies to "${vrepo_src.str()}".`,
+                message: `Linking ${dependencies.length} dependencies to "${source}".`,
+                success: `Linked ${dependencies.length} dependencies to "${source}".`,
             });
             let cmd = "npm --silent link";
             let edits = 0;
             for (const dependency of dependencies) {
-                const dep_str = dependency;
                 const abs_dependency = vlib.Path.abs(dependency); // use relative path mainly.
                 const dependency_path = new vlib.Path(dependency + "/package.json");
                 if (!dependency_path.exists()) {
@@ -723,11 +649,11 @@ cli.command({
                     }
                 }
             }
-            execSync(cmd, { cwd: source, stdio: "inherit" });
+            execSync(cmd, { cwd: repo.source.path, stdio: "inherit" });
             // Save.
             if (edits) {
                 try {
-                    await vrepo_src.save(repo.config, { type: "jsonc" });
+                    repo.config_path.save(repo.config, { type: "jsonc" });
                 }
                 catch (err) {
                     spinner.error();
@@ -753,53 +679,58 @@ cli.command({
     ],
     async callback({ source = null, sources = null, install = false, }) {
         // Create sources array.
-        let all_sources = [];
-        if (typeof source === "string") {
-            all_sources.push(source);
-        }
-        else if (Array.isArray(sources)) {
-            all_sources.push(...sources);
-        }
-        else {
-            all_sources.push(find_config_path() || "./");
-        }
-        if (all_sources.some(p => vlib.GlobPattern.is(p))) {
-            all_sources = await vlib.Path.glob(all_sources, { string: true });
-        }
+        const all_sources = await init_sources(this, source, sources);
         // Unlink wrapper.
         const unlink = async (source) => {
-            const package_json_path = new vlib.Path(source + "/package.json");
-            if (!package_json_path.exists()) {
-                throw this.error(`The package.json file does not exist in the source path "${source}".`);
+            // Load source.
+            const src_pkg = new Package({
+                source,
+                git: false,
+                ssh: false,
+                npm: true,
+            });
+            await src_pkg.init();
+            src_pkg.assert_init();
+            if (!src_pkg.npm) {
+                throw this.error(`The source package "${source}" is not a valid npm package.`);
             }
-            // Load package.json.
-            const package_json = await package_json_path.load({ type: "object" });
-            if (package_json.name == null || package_json.version == null) {
-                throw this.error(`The package.json file does not contain a name or version field.`);
-            }
-            package_json.vrepo_links ??= {};
-            package_json.dependencies ??= {};
+            // Load links.
+            const links = src_pkg.config?.npm?.links || [];
             const spinner = new vlib.logging.Spinner({
-                message: `Unlinking ${Object.keys(package_json.vrepo_links ?? {}).length} libraries from "${package_json.name}@${package_json.version}".`,
-                success: `Unlinked ${Object.keys(package_json.vrepo_links ?? {}).length} libraries from "${package_json.name}@${package_json.version}".`,
+                message: `Unlinking ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`,
+                success: `Unlinked ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`,
             });
             let cmd = "npm --silent unlink";
             let npm_publishes = 0;
-            for (const [name, dependency] of Object.entries(package_json.vrepo_links)) {
-                const dependency_path = new vlib.Path(dependency + "/.vrepo");
-                if (!dependency_path.exists()) {
-                    spinner.error();
-                    throw this.error(`The dependency path "${dependency}" does not exist.`);
+            if (Object.keys(links).length === 0) {
+                throw this.error(`No linked libraries found in "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`);
+            }
+            for (const [name, dependencies] of Object.entries(links)) {
+                // Check if one of the dependency paths exits.
+                let dependency = undefined;
+                for (const dep_path of dependencies) {
+                    if (fs.existsSync(dep_path)) {
+                        dependency = dep_path;
+                        break;
+                    }
                 }
-                const config = await dependency_path.load({ type: "object" });
-                if (config.vrepo_links?.length) {
+                if (!dependency) {
+                    throw this.error(`No valid dependency found for "${name}".`);
+                }
+                const dpcy_package = find_config_path(dependency);
+                if (!dpcy_package) {
+                    spinner.error();
+                    throw this.error(`Dependency "${dependency}" does not have a 'vrepo.json' like configuration file.`);
+                }
+                const config = await new vlib.Path(dpcy_package).load({ type: "object" });
+                if (config.links?.length) {
                     // Recursively unlink.
                     await unlink(dependency);
                 }
                 cmd += " " + name;
                 // Publish to npm when changed.
-                const repo = new Repo({
-                    source: dependency,
+                const repo = new Package({
+                    source: dpcy_package,
                     git: false,
                     ssh: false,
                 });
@@ -813,11 +744,11 @@ cli.command({
                 else {
                     vlib.log(`Package ${vlib.Color.bold(repo.npm.id)} has not changed.`);
                 }
-                package_json.dependencies[repo.npm.config.name] = "^" + repo.npm.config.version;
+                src_pkg.npm.pkg.dependencies[repo.npm.pkg.name] = "^" + repo.npm.pkg.version;
             }
-            execSync(cmd, { cwd: source, stdio: "inherit" });
+            execSync(cmd, { cwd: src_pkg.source.str(), stdio: "inherit" });
             // Save.
-            await package_json_path.save(JSON.stringify(package_json, null, 4));
+            src_pkg.save();
             // Wait till the published libraries are live.
             if (npm_publishes && install) {
                 await new Promise(resolve => setTimeout(resolve, 2_500));
@@ -971,7 +902,7 @@ cli.command({
         }
         // Iterate sources array.
         for (const source of all_sources) {
-            const repo = new Repo({
+            const repo = new Package({
                 source,
                 npm: false,
                 ssh: false,
@@ -1021,7 +952,7 @@ cli.command({
         }
         // Iterate sources array.
         for (const source of all_sources) {
-            const repo = new Repo({
+            const repo = new Package({
                 source,
                 npm: false,
                 ssh: false,

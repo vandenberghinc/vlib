@@ -8,7 +8,7 @@
  */
 
 import { ObjectUtils } from "@vlib/index.web.js";
-import { Merge } from "../../types/transform.js";
+import { Merge } from "../../types/types.js";
 
 // -------------------------------------------------------
 // Utility functions.

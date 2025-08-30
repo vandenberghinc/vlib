@@ -24,6 +24,8 @@ module.exports = __toCommonJS(stdin_exports);
 function search({ query, targets = [], limit = 25, case_match = false, allow_exceeding_chars = true, get_matches = false, key = null, nested_key = null }) {
   if (query == null) {
     throw Error('Define parameter "query".');
+  } else if (!query) {
+    return [];
   }
   const is_obj = targets.length > 0 && typeof targets[0] === "object";
   const is_array = targets.length > 0 && Array.isArray(targets[0]);
@@ -37,9 +39,9 @@ function search({ query, targets = [], limit = 25, case_match = false, allow_exc
   }
   const calc_sims = (targets2 = []) => {
     for (let i = 0; i < targets2.length; i++) {
-      let match2;
+      let matched = null;
       if (is_array) {
-        match2 = globalThis.match(
+        matched = match(
           query,
           // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
           case_match ? targets2[i] : targets2[i].toLowerCase(),
@@ -49,22 +51,22 @@ function search({ query, targets = [], limit = 25, case_match = false, allow_exc
         const target = targets2[i];
         if (key) {
           key = key;
-          let min_match = null;
+          let min_matched = null;
           for (let k = 0; k < key.length; k++) {
             if (target[key[k]] == null) {
               continue;
             }
-            match2 = globalThis.match(query, case_match ? target[key[k]] : target[key[k]].toLowerCase(), allow_exceeding_chars);
-            if (match2 != null && (min_match === null || match2 < min_match)) {
-              min_match = match2;
+            matched = match(query, case_match ? target[key[k]] : target[key[k]].toLowerCase(), allow_exceeding_chars);
+            if (matched != null && (min_matched === null || matched < min_matched)) {
+              min_matched = matched;
             }
           }
-          match2 = min_match;
+          matched = min_matched;
         } else {
           if (target[key] == null) {
             continue;
           }
-          match2 = globalThis.match(query, case_match ? target[key] : target[key].toLowerCase(), allow_exceeding_chars);
+          matched = match(query, case_match ? target[key] : target[key].toLowerCase(), allow_exceeding_chars);
         }
         if (nested_key !== null && target[nested_key] != null) {
           calc_sims(target[nested_key]);
@@ -73,15 +75,15 @@ function search({ query, targets = [], limit = 25, case_match = false, allow_exc
         if (targets2[i] == null) {
           continue;
         }
-        match2 = globalThis.match(
+        matched = match(
           query,
           // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
           case_match ? targets2[i] : targets2[i].toLowerCase(),
           allow_exceeding_chars
         );
       }
-      if (match2 !== null) {
-        results.push([match2, targets2[i]]);
+      if (matched !== null) {
+        results.push([matched, targets2[i]]);
       }
     }
   };
@@ -91,11 +93,7 @@ function search({ query, targets = [], limit = 25, case_match = false, allow_exc
     results.length = limit;
   }
   if (get_matches === false) {
-    let converted = [];
-    results.iterate((item) => {
-      converted.push(item[1]);
-    });
-    return converted;
+    return results.map((item) => item[1]);
   }
   return results;
 }

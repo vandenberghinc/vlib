@@ -7,7 +7,7 @@
 import * as fs from "fs"
 import * as vlib from "@vlib"
 import { Path } from "@vlib"
-import { EnforceOne, Merge } from "@vlib/types/index.m.js";
+import { AtLeastOneOf, Merge } from "@vlib/types/index.m.js";
 import { compute_diff } from "../utils/compute_diff.js";
 import type { Transformer } from "../transformer/transformer.js";
 

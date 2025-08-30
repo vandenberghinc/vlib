@@ -4,24 +4,21 @@
  */
 import * as os from 'os';
 import * as sysinfo from 'sysinfo';
-/*  @docs:
-    @chapter: System
-    @title: System
-    @desc: The system module.
-    @parse: false
-*/
-export const System = {
-    /* @docs:
-        @title: Format bytes
-        @desc: Format bytes into a converted string with a suffixed B, KB, MB, or GB
-        @return:
-            Returns the bytes converted into a string suffixed with a B, KB, MB, or GB
-        @param:
-            @name: bytes
-            @desc: The number of bytes
-            @type: number
+/**
+ * The system module.
+ * @chapter System
+ * @parse false
+ * @docs
+ */
+export var System;
+(function (System) {
+    /**
+     * Format bytes into a converted string with a suffixed B, KB, MB, or GB.
+     * @returns Returns the bytes converted into a string suffixed with a B, KB, MB, or GB
+     * @param bytes The number of bytes
+     * @docs
     */
-    format_bytes(bytes) {
+    function format_bytes(bytes) {
         if (bytes > 1024 * 1024 * 1024) {
             return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)}GB`;
         }
@@ -32,14 +29,14 @@ export const System = {
             return `${(bytes / 1024).toFixed(2)}KB`;
         }
         return `${(bytes).toFixed(2)}B`;
-    },
-    /* @docs:
-        @title: CPU usage
-        @desc: Get the system cpu usage
-        @return:
-            Returns a number containing the current cpu usage in percentage
+    }
+    System.format_bytes = format_bytes;
+    /**
+     * Get the system CPU usage.
+     * @returns Returns a number containing the current cpu usage in percentage
+     * @docs
     */
-    cpu_usage() {
+    function cpu_usage() {
         const cpus = os.cpus();
         let total_time = 0;
         let total_used = 0;
@@ -50,17 +47,15 @@ export const System = {
             total_used += cpu_used;
         });
         return (total_used / total_time) * 100;
-    },
-    /* @docs:
-        @title: Memory usage
-        @desc: Get the system memory usage
-        @return:
-            Returns a `{total, used, free, used_percentage}` object with memory usage
-        @param:
-            @name: format
-            @desc: Format the bytes into a converted string with a suffixed B, KB, MB, or GB
+    }
+    System.cpu_usage = cpu_usage;
+    /**
+     * Get the system memory usage.
+     * @returns Returns a `{total, used, free, used_percentage}` object with memory usage
+     * @param format Format the bytes into a converted string with a suffixed B, KB, MB, or GB
+     * @docs
     */
-    memory_usage(format = true) {
+    function memory_usage(format = true) {
         const total = os.totalmem();
         const free = os.freemem();
         const used = total - free;
@@ -70,17 +65,15 @@ export const System = {
             free: format ? System.format_bytes(free) : free,
             used_percentage: (used / total) * 100,
         };
-    },
-    /* @docs:
-        @title: Network usage
-        @desc: Get the system network usage
-        @return:
-            Returns a `{sent, received}` object with sent and received bytes usage
-        @param:
-            @name: format
-            @desc: Format the bytes into a converted string with a suffixed B, KB, MB, or GB
+    }
+    System.memory_usage = memory_usage;
+    /**
+     * Get the system network usage.
+     * @returns Returns a `{sent, received}` object with sent and received bytes usage
+     * @param format Format the bytes into a converted string with a suffixed B, KB, MB, or GB
+     * @docs
     */
-    async network_usage(format = true) {
+    async function network_usage(format = true) {
         const stats = await sysinfo.networkStats();
         let sent = 0;
         let received = 0;
@@ -93,5 +86,6 @@ export const System = {
             received: format ? System.format_bytes(received) : received,
         };
     }
-};
+    System.network_usage = network_usage;
+})(System || (System = {}));
 //# sourceMappingURL=system.js.map

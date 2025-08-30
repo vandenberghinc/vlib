@@ -56,7 +56,7 @@ class Daemon {
   errors;
   path;
   proc;
-  constructor({ name, user, group = void 0, command, args = [], cwd = void 0, env = {}, description, auto_restart = false, auto_restart_limit = -1, auto_restart_delay = -1, logs = void 0, errors = void 0 }) {
+  constructor({ name, user, group = void 0, command, args = [], cwd = void 0, env = {}, description, auto_restart, logs = void 0, errors = void 0 }) {
     if (typeof name !== "string") {
       throw new Error(`Parameter "name" must be a defined value of type "string", not "${typeof name}".`);
     }
@@ -77,7 +77,12 @@ class Daemon {
     this.cwd = cwd;
     this.env = env;
     this.desc = description;
-    this.auto_restart = auto_restart;
+    const { enabled: auto_restart_enabled = false, limit: auto_restart_limit = -1, delay: auto_restart_delay = -1 } = auto_restart ?? {
+      enabled: false,
+      limit: -1,
+      delay: -1
+    };
+    this.auto_restart = auto_restart_enabled;
     this.auto_restart_limit = auto_restart_limit;
     this.auto_restart_delay = auto_restart_delay;
     this.logs = logs;
@@ -93,15 +98,21 @@ class Daemon {
   }
   // The rest of the implementation remains exactly the same, 
   // just adding return types to the functions.
+  /**
+   * Build the platform-specific daemon configuration content.
+   * On macOS, returns a launchd plist; on Linux, returns a systemd unit file.
+   * @returns The serialized configuration content.
+   * @private
+   */
   create_h() {
     if (process.platform === "darwin") {
       let data = "";
       data += '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n    <key>Label</key>\n    <string>' + this.name + "</string>\n    <key>UserName</key>\n    <string>" + this.user + "</string>\n";
-      data += "	<key>ProgramArguments</key>\n	<array>\n		<string>" + this.command + "</string>\n";
-      this.args.iterate((i) => {
-        data += "		<string>" + i + "</string>\n";
+      data += " <key>ProgramArguments</key>\n <array>\n   <string>" + this.command + "</string>\n";
+      this.args.walk((i) => {
+        data += "   <string>" + i + "</string>\n";
       });
-      data += "	</array>\n";
+      data += " </array>\n";
       if (this.group) {
         data += "    <key>GroupName</key>\n    <string>" + this.group + "</string>\n";
       }
@@ -123,11 +134,11 @@ class Daemon {
     } else if (process.platform === "linux") {
       let data = "";
       data += "[Unit]\nDescription=" + this.desc + "\nAfter=network.target\nStartLimitIntervalSec=0\n\n[Service]\nUser=" + this.user + "\nType=simple\nExecStart=" + this.command + " ";
-      this.args.iterate((i) => {
+      this.args.walk((i) => {
         data += '"' + i + '" ';
       });
       data += "\n";
-      Object.keys(this.env).iterate((key) => {
+      Object.keys(this.env).walk((key) => {
         data += 'Environment="' + key + "=" + this.env[key] + '"\n';
       });
       if (this.cwd) {
@@ -151,6 +162,12 @@ class Daemon {
       throw new Error(`Operating system "${process.platform}" is not yet supported.`);
     }
   }
+  /**
+   * Load the daemon configuration into the OS service manager.
+   * On macOS, runs `launchctl load` for the generated plist.
+   * @returns Resolves when the configuration has been loaded.
+   * @private
+   */
   async load_h() {
     if (process.platform === "darwin") {
       const status = await this.proc.start({ command: `launchctl load ${this.path.str()}` });
@@ -161,6 +178,12 @@ class Daemon {
       throw new Error(`Operating system "${process.platform}" is not yet supported.`);
     }
   }
+  /**
+   * Reload the daemon configuration in the OS service manager.
+   * On macOS, unloads and reloads via `launchctl`; on Linux, runs `systemctl daemon-reload`.
+   * @returns Resolves when the configuration has been reloaded.
+   * @private
+   */
   async reload_h() {
     if (process.platform === "darwin") {
       const status = await this.proc.start({
@@ -180,27 +203,24 @@ class Daemon {
       throw new Error(`Operating system "${process.platform}" is not yet supported.`);
     }
   }
-  /* @docs
-      @title: Exists
-      @description:
-          Check if the daemon's exists.
-      @note: Requires root priviliges.
-      @return:
-          Returns a boolean indicating whether the daemon's configuration file exists.
-  */
+  /**
+   * Check if the daemon exists.
+   * @note Requires root priviliges.
+   * @returns Returns a boolean indicating whether the daemon's configuration file exists.
+   * @docs
+   */
   exists() {
     if (!is_root) {
       throw new Error("Root privileges required.");
     }
     return this.path.exists();
   }
-  /* @docs
-      @title: Create
-      @description:
-          Create the daemon's configuration file.
-          Use `update()` to update an exisiting daemon.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Create the daemon's configuration file.
+   * Use `update()` to update an exisiting daemon.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async create() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -213,13 +233,12 @@ class Daemon {
       await this.load_h();
     }
   }
-  /* @docs
-      @title: Update
-      @description:
-          Update the daemon's configuration file.
-          Use `create()` to create an unexisiting daemon.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Update the daemon's configuration file.
+   * Use `create()` to create an unexisiting daemon.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async update() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -230,25 +249,23 @@ class Daemon {
     this.path.save_sync(this.create_h());
     await this.reload_h();
   }
-  /* @docs
-      @title: Remove
-      @description:
-          Remove the daemon's configuration file.
-          Equal to `path().remove()`.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Remove the daemon's configuration file.
+   * Equal to `path().remove()`.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async remove() {
     if (!is_root) {
       throw new Error("Root privileges required.");
     }
     this.path.del_sync();
   }
-  /* @docs
-      @title: Start
-      @description:
-          Start the daemon.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Start the daemon.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async start() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -267,12 +284,11 @@ class Daemon {
       throw new Error("Failed to start the daemon.");
     }
   }
-  /* @docs
-      @title: Stop
-      @description:
-          Stop the daemon.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Stop the daemon.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async stop() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -291,12 +307,11 @@ class Daemon {
       throw new Error("Failed to stop the daemon.");
     }
   }
-  /* @docs
-      @title: Restart
-      @description:
-          Restart the daemon.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Restart the daemon.
+   * @note Requires root priviliges.
+   * @docs
+   */
   async restart() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -315,14 +330,12 @@ class Daemon {
       throw new Error("Failed to restart the daemon.");
     }
   }
-  /* @docs
-      @title: Is running
-      @description:
-          Check if the service daemon is running.
-      @note: Requires root priviliges.
-      @return:
-          @type: Promise<boolean>
-  */
+  /**
+   * Check if the service daemon is running.
+   * @note Requires root priviliges.
+   * @returns Returns a promise that resolves to a boolean indicating if the daemon is running.
+   * @docs
+   */
   async is_running() {
     if (!is_root) {
       throw new Error("Root privileges required.");
@@ -343,12 +356,12 @@ class Daemon {
     }
     return this.proc?.out?.split("	")[1] == "0";
   }
-  /* @docs
-      @title: tail
-      @description:
-          Tail the daemon logs.
-      @note: Requires root priviliges.
-  */
+  /**
+   * Tail the daemon logs.
+   * @note Requires root priviliges.
+   * @param lines The number of log lines to show. Defaults to 100.
+   * @docs
+   */
   async tail(lines = 100) {
     if (!is_root) {
       throw new Error("Root privileges required.");

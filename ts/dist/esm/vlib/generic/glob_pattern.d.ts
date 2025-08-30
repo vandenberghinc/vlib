@@ -1,6 +1,8 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ *
+ * Note that this file is used in both Node.js and browser environments.
  */
 /**
  * The GlobPattern class compiles a glob‐style pattern into a regular expression
@@ -64,6 +66,8 @@ export declare class GlobPattern {
      * @param pattern - The glob pattern to compile.
      */
     constructor(pattern: string);
+    /** Get the length. */
+    get length(): number;
     /**
      * Update the pattern on the current instance.
      * @param pattern - The new glob pattern.
@@ -102,6 +106,9 @@ export declare class GlobPattern {
     private static compile;
     /** To string */
     toString(): string;
+    /** Cast to primitives. */
+    /** Cast to primitives. */
+    [Symbol.toPrimitive](hint: 'string' | 'number' | 'default'): string | number;
 }
 /**
  * A glob pattern list that can contain multiple glob patterns.
@@ -113,18 +120,15 @@ export declare class GlobPattern {
  */
 export declare class GlobPatternList {
     items: GlobPatternList.T[];
-    absolute: boolean;
     /**
      *
      * @param list A single glob pattern or an array of glob patterns.
-     * @param opts Options to configure the list.
-     * @param opts.absolute When true, all string patterns are resolved to absolute paths using `path.resolve()`.
-     *                      This is useful when you want to ensure all patterns are absolute paths.
-     *                      Defaults to false.
      */
-    constructor(list: GlobPatternList.T | GlobPatternList.T[], opts?: {
-        absolute?: boolean;
-    });
+    constructor(list: GlobPatternList.T | GlobPatternList.T[]);
+    /** Initialize a list item. */
+    private static init_list_item;
+    /** Get the length. */
+    get length(): number;
     /**
      * Test if a value matches any of the glob patterns in the list.
      * @note This method does not resolve the `value` path, even when `opts.absolute` is true.

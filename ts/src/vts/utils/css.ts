@@ -8,11 +8,11 @@
 
 import CleanCSS from 'clean-css';
 import * as vlib from "@vlib";
+import { AtLeastOneOf } from '@vlib/types/types.js';
 
 // ---------------------------------------------------------
 /**
- * CSS utils.
- * Mainly because this is might be used in combination with the ts bundler.
+ * The CSS utility namespace to minify and bundle CSS code.
  */
 export namespace CSS {
 
@@ -25,29 +25,39 @@ export namespace CSS {
 
     /**
      * Bundle CSS code or files.
+     * @param data The CSS code as a string or the path to a file containing CSS code.
+     * @param paths Optional paths to load additional CSS files from, when provided, the `data` parameter is ignored.
+     * @param minify Whether to minify the CSS code, defaults to `false`.
+     * @param output Optional output path or paths to save the bundled CSS code.
+     * @param postprocess Optional function to postprocess the CSS code after bundling and minification.
+     * @param log_level The log level, defaults to `0` (no logs).
+     * @returns The bundled CSS code as a string.
      */
     export async function bundle({
         data,
-        paths = undefined,
+        paths,
         minify = false,
         output = undefined,
         postprocess = undefined,
         log_level = 0,
-    }: {
-        data: string;
+    }: AtLeastOneOf<{
+        data?: string;
         paths?: string[];
         minify?: boolean;
         output?: string | string[];
         postprocess?: undefined | ((data: string) => string | Promise<string>);
         log_level?: number;
-    }): Promise<string> {
+    }, "data" | "paths">): Promise<string> {
 
         // Load via paths.
-        if (paths !== undefined) {
+        if (paths != null) {
             data = "";
             for (const path of paths) {
                 (data as string) += await new vlib.Path(path).load();
             }
+        }
+        if (!data) {
+            throw new Error("No CSS data provided or loaded from paths.");
         }
 
         // Minify.

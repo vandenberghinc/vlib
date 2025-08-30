@@ -45,7 +45,7 @@ export class NoDebug extends Plugin {
 
             // use a context‐aware iterator to walk from the '('
             // @todo using state tracking could
-            const it = new vlib.code.Iterator(
+            const it: vlib.Code.Iterator = new vlib.code.Iterator(
                 { data },
                 { language: "ts" }
             );

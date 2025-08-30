@@ -5,7 +5,7 @@
 import * as vlib from "../../vlib/index.js";
 import { Path } from "../../vlib/index.js";
 import { Plugin, Source } from "../plugins/plugin.js";
-import { Enforce, Merge, TransformFor } from "@vlib/types/index.m.js";
+import { RequiredKeys, Merge, Neverify, Optional } from "../../vlib/types/index.m.js";
 /**
  * Transformer options.
  */
@@ -16,7 +16,7 @@ export declare namespace Transformer {
      * - Base & { tsconfig!: X }
      * - Base & { include!: X[] }
      */
-    type Opts<V extends "tsconfig" | "include" | "memory" = "tsconfig" | "include" | "memory"> = V extends "tsconfig" ? TransformFor<Opts.Base, "tsconfig", never, "include" | "exclude" | "check_include", {}, never> : V extends "include" ? TransformFor<Opts.Base, "include", "exclude", never, {}, never> : TransformFor<Opts.Base, "memory", never, never, {}, never>;
+    type Opts<V extends "tsconfig" | "include" | "memory" = "tsconfig" | "include" | "memory"> = V extends "tsconfig" ? Neverify<RequiredKeys<Opts.Base, "tsconfig">, "include" | "exclude" | "check_include"> : V extends "include" ? Optional<RequiredKeys<Opts.Base, "include">, "exclude"> : RequiredKeys<Opts.Base, "files">;
     /** Base options. */
     namespace Opts {
         interface Base {
@@ -82,7 +82,7 @@ export declare namespace Transformer {
         }
     }
     /** The initialized config type. */
-    type Config = Merge<Enforce<Transformer.Opts, "yes" | "async" | "parse_imports" | "insert_tsconfig" | "check_include" | "debug">, {
+    type Config = Merge<RequiredKeys<Transformer.Opts, "yes" | "async" | "parse_imports" | "insert_tsconfig" | "check_include" | "debug">, {
         /** Active de debug instance. */
         debug: vlib.Logger;
         /** A shared mutex for interactive prompts, in case we run in async. */

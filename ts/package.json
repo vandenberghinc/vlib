@@ -1,6 +1,6 @@
 {
     "name": "@vandenberghinc/vlib",
-    "version": "1.6.21",
+    "version": "1.6.28",
     "description": "Generic TypeScript library built for VInc applications.",
     "type": "module",
     "module": "./dist/esm/vlib/index.js",
@@ -13,7 +13,9 @@
             "require": "./dist/cjs/vlib/index.js"
         },
         "./types": {
-            "types": "./dist/esm/global/types.d.ts"
+            "import": "./dist/esm/vlib/types/index.m.d.ts",
+            "types": "./dist/esm/vlib/types/index.m.d.ts",
+            "require": "./dist/cjs/vlib/types/index.m.d.ts"
         },
         "./frontend": {
             "import": "./dist/web/vlib/index.web.js",
@@ -70,6 +72,7 @@
     },
     "author": "Daan van den Bergh",
     "dependencies": {
+        "archiver": "^7.0.1",
         "bson": "^6.10.3",
         "clean-css": "^5.3.3",
         "clipboardy": "^4.0.0",
@@ -86,12 +89,14 @@
         "js-beautify": "^1.15.4",
         "json5": "^2.2.3",
         "minimatch": "^10.0.1",
+        "node-stream-zip": "^1.15.0",
         "sysinfo": "^0.0.1",
         "systeminformation": "^5.25.11",
         "typescript": "^5.8.3",
         "ws": "^8.18.1"
     },
     "devDependencies": {
+        "@types/archiver": "^6.0.3",
         "@types/node": "^22.13.14"
     }
 }

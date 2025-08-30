@@ -3,8 +3,6 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * {Date}
- *
  * A wrapper around the global Date object that extends its functionality.
  */
 export class Date extends globalThis.Date {
@@ -13,22 +11,25 @@ export class Date extends globalThis.Date {
             super();
         }
         else if (arguments.length === 1) {
-            super(arguments[0]);
+            const arg = arguments[0];
+            if (typeof arg === 'object' && arg !== null && !(arg instanceof globalThis.Date) && 'year' in arg) {
+                // Object-based constructor
+                const opts = arg;
+                super(opts.year !== undefined ? opts.year : new globalThis.Date().getFullYear(), opts.month !== undefined ? opts.month : 0, opts.date !== undefined ? opts.date : 1, opts.hours !== undefined ? opts.hours : 0, opts.minutes !== undefined ? opts.minutes : 0, opts.seconds !== undefined ? opts.seconds : 0, opts.ms !== undefined ? opts.ms : 0);
+            }
+            else {
+                super(arg);
+            }
         }
         else {
             super(arguments[0], arguments[1], arguments[2] || 1, arguments[3] || 0, arguments[4] || 0, arguments[5] || 0, arguments[6] || 0);
         }
     }
-    /** @docs
-     *  @title Format
-     *  @desc Format a date object to a string using various format specifiers
-     *  @param
-     *      @name format
-     *      @desc The date format string using % specifiers (e.g., %Y-%m-%d)
-     *      @type string
-     *  @returns
-     *      @type string
-     *      @desc The formatted date string
+    /**
+     * Format a date object to a string using various format specifiers
+     * @param {string} format - The date format string using % specifiers (e.g., %Y-%m-%d)
+     * @returns {string} The formatted date string
+     * @docs
      */
     format(format) {
         let formatted = "";
@@ -40,24 +41,24 @@ export class Date extends globalThis.Date {
                         formatted += "%";
                         ++i;
                         break;
-                    // %a : locale’s abbreviated weekday name (e.g., Sun).
+                    // %a : locale's abbreviated weekday name (e.g., Sun).
                     case 'a':
                         formatted += new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(this);
                         ++i;
                         break;
-                    // %A : locale’s full weekday name (e.g., Sunday).
+                    // %A : locale's full weekday name (e.g., Sunday).
                     case 'A':
                         formatted += new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(this);
                         ++i;
                         break;
-                    // %b : locale’s abbreviated month name (e.g., Jan); same as %h.
-                    // %h : locale’s abbreviated month name (e.g., Jan); same as %b.
+                    // %b : locale's abbreviated month name (e.g., Jan); same as %h.
+                    // %h : locale's abbreviated month name (e.g., Jan); same as %b.
                     case 'b':
                     case 'h':
                         formatted += new Intl.DateTimeFormat('en-US', { month: 'short' }).format(this);
                         ++i;
                         break;
-                    // %B : locale’s full month name (e.g., January).
+                    // %B : locale's full month name (e.g., January).
                     case 'B':
                         formatted += new Intl.DateTimeFormat('en-US', { month: 'long' }).format(this);
                         ++i;
@@ -132,7 +133,7 @@ export class Date extends globalThis.Date {
                         formatted += String(this.getMilliseconds()).padStart(Number(format[i + 2]) || 3, '0');
                         i += 2;
                         break;
-                    // %p : locale’s equivalent of either AM or PM.
+                    // %p : locale's equivalent of either AM or PM.
                     case 'p':
                         formatted += new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).format(this);
                         ++i;
@@ -142,7 +143,7 @@ export class Date extends globalThis.Date {
                         formatted += new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: true }).format(this).toLowerCase();
                         ++i;
                         break;
-                    // %r : locale’s 12-hour clock time (e.g., 11:11:04 PM).
+                    // %r : locale's 12-hour clock time (e.g., 11:11:04 PM).
                     case 'r':
                         formatted += this.format("%I:%M:%S %p");
                         ++i;
@@ -201,12 +202,12 @@ export class Date extends globalThis.Date {
                         formatted += String(Math.floor((this.getTime() - new globalThis.Date(this.getFullYear(), 0, 1).getTime()) / (86400 * 1000) + 1) / 7).padStart(2, '0');
                         ++i;
                         break;
-                    // %x : locale’s date representation (e.g., 12/31/99).
+                    // %x : locale's date representation (e.g., 12/31/99).
                     case 'x':
                         formatted += new Intl.DateTimeFormat('en-US').format(this);
                         ++i;
                         break;
-                    // %X : locale’s time representation (e.g., 23:13:48).
+                    // %X : locale's time representation (e.g., 23:13:48).
                     case 'X':
                         formatted += new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric' }).format(this);
                         ++i;
@@ -290,32 +291,26 @@ export class Date extends globalThis.Date {
         // }
         // return formatted;
     }
-    /** @docs
-     *  @title Milliseconds
-     *  @desc Get the timestamp in milliseconds
-     *  @returns
-     *      @type number
-     *      @desc The timestamp in milliseconds
+    /**
+     * Get the timestamp in milliseconds
+     * @returns {number} The timestamp in milliseconds
+     * @docs
      */
     msec() {
         return this.getTime();
     }
-    /** @docs
-     *  @title Seconds
-     *  @desc Get the timestamp in seconds
-     *  @returns
-     *      @type number
-     *      @desc The timestamp in seconds
+    /**
+     * Get the timestamp in seconds
+     * @returns {number} The timestamp in seconds
+     * @docs
      */
     sec() {
         return Math.floor(this.getTime() / 1000);
     }
-    /** @docs
-     *  @title Minute start
-     *  @desc Get a new date object set to the start of the current minute
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the minute
+    /**
+     * Get a new date object set to the start of the current minute
+     * @returns {Date} A new date object set to the start of the minute
+     * @docs
      */
     minute_start() {
         const date = new Date(this.getTime());
@@ -323,40 +318,62 @@ export class Date extends globalThis.Date {
         date.setMilliseconds(0);
         return date;
     }
-    /** @docs
-     *  @title Hour start
-     *  @desc Get a new date object set to the start of the current hour
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the hour
+    /**
+     * Get a new date object set to the end of the current minute
+     * @returns {Date} A new date object set to the end of the minute (59 seconds, 999 milliseconds)
+     * @docs
+     */
+    minute_end() {
+        const date = new Date(this.getTime());
+        date.setSeconds(59);
+        date.setMilliseconds(999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current hour
+     * @returns {Date} A new date object set to the start of the hour
+     * @docs
      */
     hour_start() {
         const date = new Date(this.getTime());
         date.setMinutes(0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Day start
-     *  @desc Get a new date object set to the start of the current day
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the day
+    /**
+     * Get a new date object set to the end of the current hour
+     * @returns {Date} A new date object set to the end of the hour (59 minutes, 59 seconds, 999 milliseconds)
+     * @docs
+     */
+    hour_end() {
+        const date = new Date(this.getTime());
+        date.setMinutes(59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current day
+     * @returns {Date} A new date object set to the start of the day
+     * @docs
      */
     day_start() {
         const date = new Date(this.getTime());
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Week start
-     *  @desc Get a new date object set to the start of the current week
-     *  @param
-     *      @name sunday_start
-     *      @desc Whether to use Sunday (true) or Monday (false) as the start of the week
-     *      @type boolean
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the week
+    /**
+     * Get a new date object set to the end of the current day
+     * @returns {Date} A new date object set to the end of the day (23:59:59.999)
+     * @docs
+     */
+    day_end() {
+        const date = new Date(this.getTime());
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current week
+     * @param {boolean} sunday_start - Whether to use Sunday (true) or Monday (false) as the start of the week
+     * @returns {Date} A new date object set to the start of the week
+     * @docs
      */
     week_start(sunday_start = true) {
         const diff = (this.getDay() + 7 - (sunday_start ? 0 : 1)) % 7;
@@ -365,12 +382,23 @@ export class Date extends globalThis.Date {
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Month start
-     *  @desc Get a new date object set to the start of the current month
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the month
+    /**
+     * Get a new date object set to the end of the current week
+     * @param {boolean} sunday_start - Whether to use Sunday (true) or Monday (false) as the start of the week
+     * @returns {Date} A new date object set to the end of the week (last day at 23:59:59.999)
+     * @docs
+     */
+    week_end(sunday_start = true) {
+        const diff = (this.getDay() + 7 - (sunday_start ? 0 : 1)) % 7;
+        const date = new Date(this.getTime());
+        date.setDate(this.getDate() + (6 - diff));
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current month
+     * @returns {Date} A new date object set to the start of the month
+     * @docs
      */
     month_start() {
         const date = new Date(this.getTime());
@@ -378,12 +406,21 @@ export class Date extends globalThis.Date {
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Quarter year start
-     *  @desc Get a new date object set to the start of the current quarter
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the quarter
+    /**
+     * Get a new date object set to the end of the current month
+     * @returns {Date} A new date object set to the end of the month (last day at 23:59:59.999)
+     * @docs
+     */
+    month_end() {
+        const date = new Date(this.getTime());
+        date.setMonth(date.getMonth() + 1, 0);
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current quarter
+     * @returns {Date} A new date object set to the start of the quarter
+     * @docs
      */
     quarter_year_start() {
         const date = new Date(this.getTime());
@@ -403,12 +440,33 @@ export class Date extends globalThis.Date {
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Half year start
-     *  @desc Get a new date object set to the start of the current half year
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the half year
+    /**
+     * Get a new date object set to the end of the current quarter
+     * @returns {Date} A new date object set to the end of the quarter (last day at 23:59:59.999)
+     * @docs
+     */
+    quarter_year_end() {
+        const date = new Date(this.getTime());
+        const month = date.getMonth() + 1;
+        if (month > 9) {
+            date.setMonth(11, 31);
+        }
+        else if (month > 6) {
+            date.setMonth(8, 30);
+        }
+        else if (month > 3) {
+            date.setMonth(5, 30);
+        }
+        else {
+            date.setMonth(2, 31);
+        }
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current half year
+     * @returns {Date} A new date object set to the start of the half year
+     * @docs
      */
     half_year_start() {
         const date = new Date(this.getTime());
@@ -421,12 +479,26 @@ export class Date extends globalThis.Date {
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Year start
-     *  @desc Get a new date object set to the start of the current year
-     *  @returns
-     *      @type Date
-     *      @desc A new date object set to the start of the year
+    /**
+     * Get a new date object set to the end of the current half year
+     * @returns {Date} A new date object set to the end of the half year (last day at 23:59:59.999)
+     * @docs
+     */
+    half_year_end() {
+        const date = new Date(this.getTime());
+        if (date.getMonth() + 1 > 6) {
+            date.setMonth(11, 31);
+        }
+        else {
+            date.setMonth(5, 30);
+        }
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Get a new date object set to the start of the current year
+     * @returns {Date} A new date object set to the start of the year
+     * @docs
      */
     year_start() {
         const date = new Date(this.getTime());
@@ -434,16 +506,22 @@ export class Date extends globalThis.Date {
         date.setHours(0, 0, 0, 0);
         return date;
     }
-    /** @docs
-     *  @title Increment date
-     *  @desc Create a new date incremented by the specified amounts
-     *  @param
-     *      @name options
-     *      @desc Object containing increment values
-     *      @type IncrementOptions
-     *  @returns
-     *      @type Date
-     *      @desc A new date object incremented by the specified amounts
+    /**
+     * Get a new date object set to the end of the current year
+     * @returns {Date} A new date object set to the end of the year (December 31st at 23:59:59.999)
+     * @docs
+     */
+    year_end() {
+        const date = new Date(this.getTime());
+        date.setMonth(11, 31);
+        date.setHours(23, 59, 59, 999);
+        return date;
+    }
+    /**
+     * Create a new date incremented by the specified amounts
+     * @param {IncrementOptions} options - Object containing increment values for various time units
+     * @returns {Date} A new date object incremented by the specified amounts
+     * @docs
      */
     increment({ seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0 }) {
         const date = new Date(this.getTime());
@@ -461,16 +539,11 @@ export class Date extends globalThis.Date {
             date.setFullYear(date.getFullYear() + years);
         return date;
     }
-    /** @docs
-     *  @title Decrement date
-     *  @desc Create a new date decremented by the specified amounts
-     *  @param
-     *      @name options
-     *      @desc Object containing decrement values
-     *      @type IncrementOptions
-     *  @returns
-     *      @type Date
-     *      @desc A new date object decremented by the specified amounts
+    /**
+     * Create a new date decremented by the specified amounts
+     * @param {IncrementOptions} options - Object containing decrement values for various time units
+     * @returns {Date} A new date object decremented by the specified amounts
+     * @docs
      */
     decrement({ seconds = 0, minutes = 0, hours = 0, days = 0, weeks = 0, months = 0, years = 0 }) {
         const date = new Date(this.getTime());

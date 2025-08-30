@@ -22,7 +22,7 @@ __export(stdin_exports, {
 module.exports = __toCommonJS(stdin_exports);
 var import_path = require("../generic/path.js");
 function find_config_path({ name, extension = "", cwd = process.cwd(), up = 1 }) {
-  const paths = [];
+  const paths = [new import_path.Path(cwd)];
   if (typeof name === "string")
     name = [name];
   if (!extension)

@@ -2,7 +2,6 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import type { Cast } from "./cast.js";
 import { CLIError } from "./error.js";
 import { And, Or } from "./query.js";
 import { CLI } from "./cli.js";
@@ -125,7 +124,7 @@ export declare abstract class Base<const S extends Strict = Strict, const M exte
      */
     find(commands: readonly Arg.Command[], query: {
         id: string | string[] | And | Or;
-    }): Arg.Command<Arg.Strict, Arg.Variant, Cast.Castable, readonly any[]> | undefined;
+    }): Arg.Command<Arg.Strict, Arg.Variant, import("./cast.js").Cast.Castable, readonly any[]> | undefined;
     /** Utility to check againt index. */
     eq_index(query: this["index"]): boolean;
     /** Check if the id attribute matches a certain query. */

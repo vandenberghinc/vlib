@@ -5,8 +5,8 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
-  for (var name2 in all)
-    __defProp(target, name2, { get: all[name2], enumerable: true });
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -59,7 +59,7 @@ class Module {
    */
   constructor(opts) {
     if (Modules.find((i) => i.name === opts.name)) {
-      throw new Error(`Unit test module "${name}" already exists.`);
+      throw new Error(`Unit test module "${opts.name}" already exists.`);
     }
     this.name = opts.name;
     this.override_ctx = {
@@ -116,7 +116,6 @@ class Module {
     }
     const loc = new import_source_loc.SourceLoc(1);
     this.unit_tests[id] = async (index, ctx) => {
-      console.log(`Running unit test with context: ${import_vlib.Color.object(ctx, { max_depth: 2 })}`);
       const extract_input = async (id2, source_file2) => {
         if (source_file2 == null)
           return void 0;
@@ -153,8 +152,8 @@ class Module {
               for (const prop of args[0].properties) {
                 if (!ts.isPropertyAssignment(prop))
                   continue;
-                const name2 = prop.name;
-                const key = ts.isIdentifier(name2) ? name2.text : ts.isStringLiteral(name2) ? name2.text : "";
+                const name = prop.name;
+                const key = ts.isIdentifier(name) ? name.text : ts.isStringLiteral(name) ? name.text : "";
                 if (key === "id" && ts.isStringLiteral(prop.initializer) && prop.initializer.text === id2) {
                   foundId = true;
                 }
@@ -286,7 +285,9 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
         }
         let res_str = typeof res === "object" && res !== null ? import_vlib.Color.object(res) : typeof res === "string" ? res : JSON.stringify(res);
         let cached = this.mod_cache[id];
-        if (cached && cached.expect !== expect) {
+        if (ctx.refresh) {
+          cached = void 0;
+        } else if (cached && cached.expect !== expect) {
           import_vlib.debug.raw(import_vlib.Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
           cached = void 0;
         }
@@ -299,11 +300,6 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
         }
         if (success) {
           return { success: true, hash: og_hash, output: res_str, expect };
-        }
-        if (cached) {
-          const d = zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString();
-          console.log("PRE COLOR STRIP:\n" + d);
-          console.log("POST COLOR STRIP:\n" + import_vlib.Color.strip(d));
         }
         if (ctx.strip_colors && cached && import_vlib.Utils.hash(import_vlib.Color.strip(res_str), "sha256", "hex") === import_vlib.Utils.hash(import_vlib.Color.strip(zlib.gunzipSync(Buffer.from(cached.data, "base64")).toString()), "sha256", "hex")) {
           return { success: true, hash: og_hash, output: res_str, expect };

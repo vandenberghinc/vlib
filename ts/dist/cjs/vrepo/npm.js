@@ -35,8 +35,9 @@ var import_crypto = __toESM(require("crypto"));
 var import_vlib = require("../vlib/index.js");
 class NPM {
   source;
-  config_path;
-  config;
+  pkg_path;
+  pkg_base;
+  pkg;
   version_path;
   id;
   /** Constructor validator. */
@@ -45,19 +46,26 @@ class NPM {
     unknown: false,
     schema: {
       source: "string",
+      pkg_path: { type: "string", required: false },
       version_path: { type: "string", required: false }
     }
   });
-  // Constructor.
-  constructor({ source, version_path = void 0 }) {
+  /**
+   * Create a new NPM instance.
+   * @param source The source directory of the NPM package.
+   * @param pkg_path The absolute path to the `package.json` file, defaults to `./package.json` in the source directory.
+   */
+  constructor({ source, pkg_path = void 0, version_path = void 0 }) {
     NPM.validator.validate(arguments[0]);
     this.source = new import_vlib.Path(source);
-    this.config_path = this.source.join(`/package.json`);
-    if (!this.config_path.exists()) {
-      throw new Error(`NPM configuration file "${this.config_path.str()}" does not exist.`);
+    this.version_path = version_path;
+    this.pkg_path = pkg_path ? new import_vlib.Path(pkg_path.trim()[0] === "/" ? pkg_path : this.source.join(pkg_path)) : this.source.join("package.json");
+    if (!this.pkg_path.exists()) {
+      throw new Error(`NPM configuration file "${this.pkg_path.str()}" does not exist.`);
     }
-    this.config = JSON.parse(this.config_path.load_sync());
-    this.id = this.config.name + "@" + this.config.version;
+    this.pkg_base = this.pkg_path.abs().base() ?? this.pkg_path;
+    this.pkg = JSON.parse(this.pkg_path.load_sync());
+    this.id = this.pkg.name + "@" + this.pkg.version;
   }
   // Check if the user is logged in.
   async logged_in() {
@@ -65,7 +73,7 @@ class NPM {
     await proc.start({
       command: "npm",
       args: ["whoami"],
-      working_directory: this.source.str(),
+      working_directory: this.pkg_base.str(),
       interactive: false
     });
     return proc.exit_status === 0;
@@ -79,11 +87,11 @@ class NPM {
   }
   // Save the config.
   save() {
-    this.config_path.save_sync(JSON.stringify(this.config, null, 4));
+    this.pkg_path.save_sync(JSON.stringify(this.pkg, null, 4));
   }
   // Increment the version.
   async increment_version({ save = true } = {}) {
-    let version = this.config.version;
+    let version = this.pkg.version;
     if (version === void 0) {
       version = "1.0.0";
     } else {
@@ -92,7 +100,7 @@ class NPM {
       version = split.join(".");
     }
     if (save) {
-      this.config.version = version;
+      this.pkg.version = version;
       this.save();
     }
     return version;
@@ -100,19 +108,19 @@ class NPM {
   // Publish a package.
   async publish({ only_if_changed = false }) {
     if (only_if_changed && !await this.has_commits()) {
-      return { has_changed: false, live_version: this.config.version };
+      return { has_changed: false, live_version: this.pkg.version };
     }
     await this.login();
     if (this.version_path) {
       const version_export = new import_vlib.Path(this.version_path);
-      version_export.save_sync(`module.exports="${this.config.version}";`);
+      version_export.save_sync(`export default "${this.pkg.version}";`);
     }
-    if (this.config.bin !== void 0) {
+    if (this.pkg.bin !== void 0) {
       const proc2 = new import_vlib.Proc();
       await proc2.start({
         command: "npm",
         args: ["link"],
-        working_directory: this.source.str(),
+        working_directory: this.pkg_base.str(),
         interactive: false
       });
       if (proc2.exit_status !== 0) {
@@ -122,23 +130,23 @@ class NPM {
         throw new Error(proc2.err);
       }
     }
-    const old_version = this.config.version;
+    const old_version = this.pkg.version;
     await this.increment_version();
     const readme = this.source.join(`/README.md`);
     let readme_data;
     if (readme.exists()) {
       readme_data = await readme.load();
-      await readme.save(readme_data.replace(/version-.s*-blue/, `badge/version-${this.config.version}-blue`));
+      await readme.save(readme_data.replace(/version-.s*-blue/, `badge/version-${this.pkg.version}-blue`));
     }
     const proc = new import_vlib.Proc();
     await proc.start({
       command: "npm",
       args: ["publish"],
-      working_directory: this.source.str(),
+      working_directory: this.pkg_base.str(),
       interactive: false
     });
     if (proc.exit_status !== 0) {
-      this.config.version = old_version;
+      this.pkg.version = old_version;
       this.save();
       if (readme_data !== void 0) {
         await readme.save(readme_data);
@@ -146,14 +154,13 @@ class NPM {
       if (proc.err) {
         console.log(proc.err);
       }
-      throw new Error(`Failed to publish pacakge ${this.config.name}.`);
+      throw new Error(`Failed to publish pacakge ${this.pkg.name}.`);
     }
-    return { has_changed: true, live_version: this.config.version };
+    return { has_changed: true, live_version: this.pkg.version };
   }
   // Checks whether the local package differs from the published version by comparing tarball SHA-1 checksums.
   async has_commits(log_level = -1, tmp_dir = "/tmp") {
-    const resolved_package_dir = this.source.abs();
-    const pkg_path = resolved_package_dir.join("package.json");
+    const pkg_path = this.pkg_path;
     if (!pkg_path.exists()) {
       throw new Error(`Configuration file ${pkg_path.str()} does not exist.`);
     }
@@ -168,11 +175,11 @@ class NPM {
       throw new Error(`Configuration file ${pkg_path.str()} must contain both 'name' and 'version'.`);
     }
     if (log_level > 0) {
-      console.log(`Packing package "${pkg.name}" version "${pkg.version}" from ${resolved_package_dir.str()} into ${tmp_dir}...`);
+      console.log(`Packing package "${pkg.name}" version "${pkg.version}" from ${this.pkg_base} into ${tmp_dir}...`);
     }
     let npm_pack_output;
     try {
-      npm_pack_output = (0, import_child_process.execSync)(`npm pack --silent ${resolved_package_dir.str()}`, { cwd: tmp_dir });
+      npm_pack_output = (0, import_child_process.execSync)(`npm pack --silent ${this.pkg_base}`, { cwd: tmp_dir });
     } catch (error) {
       throw new Error("Error during npm pack execution");
     }

@@ -1,9 +1,9 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ * 
+ * Note that this file is used in both Node.js and browser environments.
  */
-
-import pathlib from "path";
 
 /**
  * The GlobPattern class compiles a glob‐style pattern into a regular expression
@@ -74,6 +74,9 @@ export class GlobPattern {
         this.regex = GlobPattern.compile(pattern);
     }
 
+    /** Get the length. */
+    get length(): number { return this.pattern.length; }
+
     /**
      * Update the pattern on the current instance.
      * @param pattern - The new glob pattern.
@@ -122,7 +125,19 @@ export class GlobPattern {
      */
     static is(str: string): boolean {
         // If the string contains any of: *, ?, [, ], {, or }
-        return /[\*\?\[\]\{\}]/.test(str);
+        for (let i = 0, n = str.length; i < n; ++i) {
+            switch (str.charCodeAt(i)) {
+                case 42:  // *
+                case 63:  // ?
+                case 91:  // [
+                case 93:  // ]
+                case 123: // {
+                case 125: // }
+                    return true;
+            }
+        }
+        return false;
+        // return /[\*\?\[\]\{\}]/.test(str);
     }
 
     /**
@@ -216,6 +231,28 @@ export class GlobPattern {
     toString(): string {
         return `GlobPattern("${this.pattern}")`;
     }
+
+    /** Cast to primitives. */
+    /** Cast to primitives. */
+    [Symbol.toPrimitive](hint: 'string' | 'number' | 'default'): string | number {
+        switch (hint) {
+            case 'number':
+                // A numeric context (`+gp`, `gp > 10`, Math.max(…))
+                // – return a cheap, deterministic metric: the pattern’s length.
+                return this.pattern.length;
+
+            case 'string':
+                // String contexts (`'' + gp`, template literals)
+                // – return just the raw glob so it can be embedded directly.
+                return this.pattern;
+            case 'default':
+            default:
+                // Loose contexts (`==`, console.log) – show a descriptive label.
+                // Re-use `toString()` so the logic stays in one place.
+                return this.toString();
+        }
+
+    }
 };
 
 /**
@@ -228,32 +265,26 @@ export class GlobPattern {
  */
 export class GlobPatternList {
     items: GlobPatternList.T[];
-    absolute: boolean;
 
     /**
      * 
      * @param list A single glob pattern or an array of glob patterns.
-     * @param opts Options to configure the list. 
-     * @param opts.absolute When true, all string patterns are resolved to absolute paths using `path.resolve()`.
-     *                      This is useful when you want to ensure all patterns are absolute paths.
-     *                      Defaults to false.
      */
-    constructor(list: GlobPatternList.T | GlobPatternList.T[], opts?: {
-        absolute?: boolean;
-    }) {
-        this.absolute = opts?.absolute ?? false;
-        const init_item = (item: GlobPatternList.T): GlobPatternList.T => {
-            if (this.absolute && typeof item === "string") {
-                item = pathlib.resolve(item);
-            }
-            return (
-                item instanceof GlobPattern || !GlobPattern.is(item)
-                    ? item
-                    : new GlobPattern(item)
-            );
-        }
-        this.items = Array.isArray(list) ? list.map(init_item) : [init_item(list)];
+    constructor(list: GlobPatternList.T | GlobPatternList.T[]) {
+        this.items = Array.isArray(list) ? list.map(GlobPatternList.init_list_item) : [GlobPatternList.init_list_item(list)];
     }
+
+    /** Initialize a list item. */
+    private static init_list_item(item: GlobPatternList.T): GlobPatternList.T {
+        return (
+            item instanceof GlobPattern || !GlobPattern.is(item)
+                ? item
+                : new GlobPattern(item)
+        );
+    }
+
+    /** Get the length. */
+    get length(): number { return this.items.length; }
 
     /**
      * Test if a value matches any of the glob patterns in the list.
@@ -281,10 +312,7 @@ export class GlobPatternList {
 
     /** Check if an array contains either a string glob patern or a GlobPattern instance. */
     static is(list: GlobPatternList.T[]): boolean {
-        return list.some(item => 
-            item instanceof GlobPattern
-            || GlobPattern.is(item)
-        );
+        return list.some(item => item instanceof GlobPattern || GlobPattern.is(item));
     }
 
     /** To string */

@@ -27,6 +27,7 @@ var import_source_loc = require("./source_loc.js");
 var import_directives = require("./directives.js");
 var import_spinners = require("./spinners.js");
 var import_object = require("../../primitives/object.js");
+const web_env = typeof window !== "undefined" && typeof window.document !== "undefined";
 class Pipe {
   /**
    * The active log level.
@@ -125,20 +126,20 @@ class Pipe {
         }
       } else {
         if (item && typeof item === "object") {
-          if (typeof item.toString === "function" && item.toString !== Object.prototype.toString) {
+          if (typeof item.toString === "function" && item.toString !== Object.prototype.toString && item.toString !== Array.prototype.toString) {
             item = item.toString.call(item);
           } else if (typeof item.str === "function") {
             item = item.str.call(item);
           }
         }
-        if (typeof item === "object" && import_object.ObjectUtils.is_plain(item)) {
+        if (typeof item === "object" && (import_object.ObjectUtils.is_plain(item) || Array.isArray(item))) {
           if (this._transform) {
             if ((item = this._transform(item)) === import_directives.Directive.ignore) {
               continue;
             }
             transformed = true;
           }
-          if (item && typeof item === "object") {
+          if (item && !web_env && typeof item === "object") {
             if (level <= active_log_level) {
               this.push_arg(msg, file_msg, import_colors.Color.object(item, { max_depth: 3, max_length: 25e3 }));
             } else {

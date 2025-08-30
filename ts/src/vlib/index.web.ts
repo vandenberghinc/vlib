@@ -6,6 +6,12 @@
 // Set stacktrace limit.
 Error.stackTraceLimit = 25;
 
+/**
+ * Version number
+ * Inserted by vts after compilation
+ * @ts-expect-error */
+export const version = __version;
+
 /** types/ */
 export type * as Types from "./types/index.m.js"
 export type * as types from "./types/index.m.js"
@@ -14,8 +20,8 @@ export type * as types from "./types/index.m.js"
 export * from "./primitives/index.uni.js"
 
 /** scheme/ */
-export * as Schema from "./schema/index.m.uni.js"
-export * as schema from "./schema/index.m.uni.js"
+export * as Schema from "./schema/index.m.web.js"
+export * as schema from "./schema/index.m.web.js"
 
 /** generic/ */
 export * from "./generic/index.web.js"
@@ -39,9 +45,3 @@ export * as code from "./code/index.m.uni.js"
 
 /** clipboard/ */
 export * from "./clipboard/index.web.js"
-
-/**
- * Version number
- * Inserted by vts after compilation
- * @ts-expect-error */
-export const version = __version;

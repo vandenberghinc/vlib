@@ -228,6 +228,14 @@ var StringUtils;
     return `"${s}"`;
   }
   StringUtils2.quote = quote;
+  function truncate(data, max, truncated_suffix) {
+    const truncated = data.length > max ? data.slice(0, max) : data instanceof String ? data.valueOf() : data;
+    if (truncated_suffix) {
+      return `${truncated}${truncated_suffix}`;
+    }
+    return truncated;
+  }
+  StringUtils2.truncate = truncate;
 })(StringUtils || (StringUtils = {}));
 String.prototype.first = function() {
   return this[0];

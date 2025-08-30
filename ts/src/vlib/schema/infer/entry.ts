@@ -3,7 +3,7 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
-import { Neverify } from "../../types/transform.js";
+import { Neverify } from "../../types/types.js";
 import { Cast } from "../validate/cast.js";
 import { InferEntries, InferEntry, InferTupleEntries, InferValueEntries } from "./infer.js";
 
@@ -45,7 +45,6 @@ type CastType = Entry.Type.Castable<"readonly">;
 export type Entry<
     T extends CastType = CastType, // type of entry
     V extends Entry.Type.Cast<T> = Entry.Type.Cast<T>, // value of entry
-    /** P is @deprecated */
     P extends ObjOrArr = ObjOrArr, // parent object for callbacks.
     Derived extends Entry.Derived = {}, // a derived object with additional attributes.
 > = (Derived extends Entry.Derived ? Derived : {}) & {
@@ -68,28 +67,28 @@ export type Entry<
      */
     required?: boolean | ((parent: P) => boolean);
     /**
-     * Allow empty strings, arrays or objects.
+     * Allow empty strings, arrays, objects or numbers (NaN).
      * Defaults to `true`.
      */
     allow_empty?: boolean;
     /**
-     * Set a minimum length for strings or arrays, and min `x >= min` value of number.
+     * Set a minimum (length) for numbers, strings, arrays or object entries, and min `x >= min` value of number.
      */
     min?: number;
     /**
-     * Set a maximum length for strings or arrays, and max `x <= max` value of number.
+     * Set a maximum (length) for numbers, strings, arrays or object entries, and max `x <= max` value of number.
      */
     max?: number;
     /**
      * A nested schema for when the attribute is an object.
      */
-    schema?: Record<string, (T | Entry<any, any, any, Derived>)>;
+    schema?: Record<string, (T | DerivedEntry<Derived>)>;
     // schema?: Entries.Opts;
     /**
      * A nested schema for the array items for when the attribute is an array.
      * Or a schema for the value's of an object.
      */
-    value_schema?: (T | Entry<any, any, any, Derived>);
+    value_schema?: (T | DerivedEntry<Derived>);
     // value_schema?: ValueEntries.Opts;
     /**
      * Tuple schema for when the input object is an array.
@@ -99,7 +98,7 @@ export type Entry<
      * 
      * @note this attribute is ignored when the input object is not an array.
      */
-    tuple?: (T | Entry<any, any, any, Derived>)[];
+    tuple?: (T | DerivedEntry<Derived>)[];
     // tuple?: TupleEntries.Opts;
     /**
      * A list of valid values for the attribute.
@@ -175,6 +174,8 @@ export type Entry<
     /** Alias for `default`. */
     readonly def?: V | ((obj: any) => V);
 };
+export type DerivedEntry<D extends Entry.Derived = {}> = Entry<CastType, Entry.Type.Cast<CastType>, ObjOrArr, D>;
+
 
 /** Types for the `Entry` namespace. */
 export namespace Entry {
@@ -388,7 +389,7 @@ export namespace Entries {
      * Inferrable input options for constructing a new `schema: Entries` object.
      */
     export type Opts<D extends Entry.Derived = {}> =
-        NonNullable<Entry<any, any, any, D>["schema"]>
+        NonNullable<DerivedEntry<D>["schema"]>
 
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     export type Infer<T extends Opts> = InferEntries<T>;
@@ -406,7 +407,7 @@ export namespace ValueEntries {
      * Inferrable input options for constructing a new `value_schema: Entry` object.
      */
     export type Opts<Derived extends Record<string, any> = {}> =
-        NonNullable<Entry<any, any, any, Derived>["value_schema"]>
+        NonNullable<DerivedEntry<Derived>["value_schema"]>
 
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     export type Infer<
@@ -427,7 +428,7 @@ export namespace TupleEntries {
      * Inferrable input options for constructing a new `value_schema: Entry` object.
      */
     export type Opts<Derived extends Record<string, any> = {}> =
-        NonNullable<Entry<any, any, any, Derived>["tuple"]>
+        NonNullable<DerivedEntry<Derived>["tuple"]>
 
     /** Extract the value‐type for a tuple, preserving tuple positions */
     export type Infer<T extends Opts> = InferTupleEntries<T>;

@@ -2,18 +2,11 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  *
- * In order to keep the `Validator` thread safe, we pass a created state object
- * Down to all functions, Some attribtus are validating nested objects.
- * While others are passed by reference.
- *
- * Since the state object needs to be created and not tied to a validator instance.
- * It makes more sense to use a global function strategy instead of a class instance,
- * which could mistakenly be re-used.
+ * @todo create Compiled function for validating each entry
  */
 import { Entries, TupleEntries, ValueEntries } from "../infer/entry.js";
 import { ValidatorEntry } from "./validator_entries.js";
-import { MutableObject, RequiredFor } from "../../types/transform.js";
-import { CreateJSONSchemaOpts } from "./json_schema.js";
+import { MutableObject } from "../../types/literals.js";
 /** Base object or array. */
 type ObjOrArr = any[] | Record<string, any>;
 /**
@@ -168,8 +161,11 @@ export declare class Validator<Data extends ObjOrArr, Throw extends boolean = fa
      *          The runtime value is `undefined`.
      */
     validated: MutableObject<InferOutput<Data, Sch, Val, Tpl>>;
-    /** The `Schemas` object from the constructor, used to extract the input schemas. */
-    private schemas;
+    /**
+     * The `Schemas` object from the constructor, used to extract the input schemas.
+     * Kept public public so users can do `create_json_schema({..., schema: validator.schemas.schema})` to create a JSON schema.
+     */
+    schemas: Schemas<Data, Sch, Val, Tpl>;
     /** Constructor. */
     constructor(opts: Schemas<Data, Sch, Val, Tpl> & State.Opts<Throw>);
     /**
@@ -178,16 +174,6 @@ export declare class Validator<Data extends ObjOrArr, Throw extends boolean = fa
      * @param state Optionally provide a state object to override the current state.
      */
     validate<const T extends ObjOrArr>(data: T, state?: Partial<State.Opts<Throw>>): ValidateResponse.Thrown<Data, Throw, Sch, Val, Tpl>;
-    /**
-     * Create a JSON schema from the provided options.
-     * This is only supported for object schemas using the {@link Schemas.schema} option
-     * passed to the constructor.
-     * @param opts The options for creating the JSON schema,
-     *             see {@link CreateJSONSchemaOpts} for more info.
-     * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
-     */
-    create_json_schema(opts: RequiredFor<Omit<CreateJSONSchemaOpts, "schema">, "output">): Promise<object>;
-    create_json_schema_sync(opts?: Omit<CreateJSONSchemaOpts<Sch>, "schema">): object;
 }
 export declare namespace Validator {
     /**

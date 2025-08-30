@@ -19,6 +19,7 @@ import { Spinners } from '../uni/spinners.js';
  * Also streams different, parseable messages to the files.
  * Later these can be extracted into a structured list of log messages.
  * This could be used to extract or search for specific log messages,
+ * @docs
  */
 export class FilePipe extends Pipe {
     log_path;
@@ -33,7 +34,10 @@ export class FilePipe extends Pipe {
     _out;
     // @ts-expect-error
     _err;
-    /** Constructor. */
+    /**
+     * Constructor.
+     * @docs
+     */
     constructor({ log_level = 0, log_path = undefined, error_path = undefined, max_mb = undefined, } = {}) {
         // Attributes.
         super({ log_level, out: d => process.stdout.write(d) });
@@ -59,6 +63,8 @@ export class FilePipe extends Pipe {
      * @param path      The Path instance for the log or error file.
      * @param type Either 'log' or 'error' indicating which stream property to refresh.
      * @param max_bytes Maximum allowed file size in bytes.
+     *
+     * @docs
      */
     async truncate_log_file(path, type, max_bytes) {
         const file_path = path.str();
@@ -102,6 +108,7 @@ export class FilePipe extends Pipe {
     static log_file_pattern = /^\(date=(.*?)\)\s*(?:\(loc=(.*?)\))?\s*(?:\(thread=(.*?)\))?\s*(?:\(level=(.*?)\))?\s*(?:\(type=(.*?)\))?:\s*/;
     /**
      * Parse a log file.
+     * @docs
      */
     async _parse_log_file(path) {
         if (!path.exists()) {
@@ -156,14 +163,15 @@ export class FilePipe extends Pipe {
     // Public.
     /**
      * Stop the logger and close the file streams.
+     * @docs
      */
     stop() {
         if (this.log_stream) {
-            console.log("Closing log stream.");
+            // console.log("Closing log stream.");
             this.log_stream.close();
         }
         if (this.err_stream) {
-            console.log("Closing error stream.");
+            // console.log("Closing error stream.");
             this.err_stream.close();
         }
     }
@@ -171,6 +179,7 @@ export class FilePipe extends Pipe {
      * Assign paths for the logger class.
      * @param log_path The path to a new log path, or `undefined` to reset the log stream.
      * @param error_path The path to a new error path, or `undefined` to reset the error stream.
+     * @docs
      */
     assign_paths(log_path, error_path) {
         // Init or reset log stream.
@@ -198,7 +207,7 @@ export class FilePipe extends Pipe {
     }
     // --------------------------------------------------
     // Override the log method to support the file streams.
-    /** @docs:
+    /**
      * Log data to the console and file streams when defined.
      * See {@link Pipe.log} for more details.
      *
@@ -206,6 +215,7 @@ export class FilePipe extends Pipe {
      *      The data to log.
      *      The first number is treated as the local log level.
      *      Any other directives are allowed before the first non-directive / local log level argument.
+     * @docs
      */
     log(...args) {
         let { local_level, active_log_level, is_raw, log_mode: mode, loc, local_level_arg_index } = this.parse_directives(args);

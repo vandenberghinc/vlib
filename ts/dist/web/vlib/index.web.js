@@ -1,15 +1,20 @@
-/** vts-version */ const __version="1.6.21"; /** vts-version END */
+/** vts-version */ const __version="1.6.28"; /** vts-version END */
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 // Set stacktrace limit.
 Error.stackTraceLimit = 25;
+/**
+ * Version number
+ * Inserted by vts after compilation
+ * @ts-expect-error */
+export const version = __version;
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** scheme/ */
-export * as Schema from "./schema/index.m.uni.js";
-export * as schema from "./schema/index.m.uni.js";
+export * as Schema from "./schema/index.m.web.js";
+export * as schema from "./schema/index.m.web.js";
 /** generic/ */
 export * from "./generic/index.web.js";
 /** debugging/ */
@@ -28,9 +33,4 @@ export * as Code from "./code/index.m.uni.js";
 export * as code from "./code/index.m.uni.js";
 /** clipboard/ */
 export * from "./clipboard/index.web.js";
-/**
- * Version number
- * Inserted by vts after compilation
- * @ts-expect-error */
-export const version = __version;
 //# sourceMappingURL=index.web.js.map

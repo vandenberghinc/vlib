@@ -2,10 +2,11 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+// Imports.
 import { Color } from "../generic/colors.js";
 import { CLIError } from "./error.js";
 import { And, and_or_str, Or } from "./query.js";
-import * as Scheme from "../schema/index.m.uni.js";
+import * as Scheme from "../schema/index.m.node.js";
 import * as Arg from "./arg.js";
 // ------------------------------------------------------------------------
 /**

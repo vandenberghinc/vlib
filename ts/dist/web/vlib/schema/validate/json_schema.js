@@ -1,9 +1,11 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ *
+ * Note that this file only supports nodejs environments.
  */
 import { Path } from "../../generic/path.js";
-import { InvalidUsageError } from "../index.m.uni.js";
+import { InvalidUsageError } from "../index.m.node.js";
 import { NoValue, ValidatorEntries } from "./validator_entries.js";
 // ---------------------------------------------------------------
 // Internal helpers.

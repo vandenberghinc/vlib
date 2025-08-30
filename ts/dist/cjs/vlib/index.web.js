@@ -46,8 +46,8 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
-var Schema = __toESM(require("./schema/index.m.uni.js"));
-var schema = __toESM(require("./schema/index.m.uni.js"));
+var Schema = __toESM(require("./schema/index.m.web.js"));
+var schema = __toESM(require("./schema/index.m.web.js"));
 __reExport(stdin_exports, require("./generic/index.web.js"), module.exports);
 var Debugging = __toESM(require("./logging/index.m.web.js"));
 var debugging = __toESM(require("./logging/index.m.web.js"));
@@ -58,11 +58,11 @@ var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.web.js"), module.exports);
 Error.stackTraceLimit = 25;
+const version = "1.6.28";
 const print = (...args) => import_index_m_web2.log.raw(0, ...args);
 const error = (...args) => import_index_m_web2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_web2.log.warn(arg, ...args);
 const warning = warn;
-const version = "1.6.21";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Code,

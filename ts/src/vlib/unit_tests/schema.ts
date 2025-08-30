@@ -8,7 +8,7 @@
 // Imports.
 import { ValidatorEntries } from "@vlib/schema/validate/validator_entries.js";
 import { Module } from "../../vtest/index.js";
-import { validate, Entries, Validator } from "../schema/index.m.uni.js";
+import { validate, Entries, Validator } from "../schema/index.m.node.js";
 
 // Unit tests module.
 const tests = new Module({ name: "vlib/schema" });

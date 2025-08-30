@@ -9,7 +9,7 @@ import { ObjectUtils } from "../primitives/object.js";
 /**
  * Flatten a nested MinifyScheme into a dot-path → minified key map
  */
-function flatten_scheme(scheme, prefix = '', result = {}) {
+export function flatten_scheme(scheme, prefix = '', result = {}) {
     for (const key in scheme) {
         if (!Object.prototype.hasOwnProperty.call(scheme, key))
             continue;
@@ -137,6 +137,7 @@ export function expand({ object, scheme, flat_scheme, copy = true }) {
 // Still export the other exports directly as well for internal use.
 // But `Object` and `object` are the only items exported by the `index.m.ts` file.
 const fn_mod = minify;
+fn_mod.flatten_scheme = flatten_scheme;
 fn_mod.expand = expand;
 export { fn_mod as Object };
 export { fn_mod as object }; // snake_case compatibility

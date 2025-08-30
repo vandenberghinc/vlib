@@ -20,7 +20,39 @@ export declare class Git {
             readonly type: "string";
             readonly required: false;
         };
-    }, any, any[]>;
+    }, Schema.ValueEntries.Opts<{}>, (Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | {
+        type?: Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | undefined;
+        default?: any;
+        required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+        allow_empty?: boolean;
+        min?: number;
+        max?: number;
+        schema?: Record<string, Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+        value_schema?: Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+        tuple?: (Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+        enum?: readonly any[];
+        alias?: string | readonly string[];
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        cast?: boolean | import("../vlib/types/types.js").Neverify<{
+            preserve: true;
+            strict?: boolean;
+        } | {
+            preserve?: boolean;
+            strict: true;
+        }, "preserve"> | import("../vlib/types/types.js").Neverify<{
+            preserve: true;
+            strict?: false;
+        } | {
+            preserve?: false;
+            strict: true;
+        }, "preserve"> | undefined;
+        charset?: RegExp | undefined;
+        field_type?: string;
+        unknown?: boolean;
+        readonly def?: any;
+    })[]>;
     constructor({ source, username, email, version_path, }: {
         source: string;
         username: string;

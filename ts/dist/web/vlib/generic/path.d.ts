@@ -24,10 +24,24 @@ export declare class Path {
     [Symbol.toPrimitive](hint: 'string' | 'number' | 'default'): string | number;
     /**
      * Get the user's home directory path.
-     * @static
      * @returns {Path} A new Path instance pointing to the user's home directory.
      */
     static home(): Path;
+    /**
+     * Get the current working directory path.
+     * @returns {Path} A new Path instance pointing to the current working directory.
+     */
+    static cwd(): Path;
+    /**
+     * Get the temporary directory path.
+     * @returns {Path} A new Path instance pointing to the system's temporary directory.
+     */
+    static tmp(): Path;
+    /**
+     * Get the current operating system's path separator.
+     * @returns {string} The path separator used by the current operating system ('/' for Unix-like, '\\' for Windows).
+     */
+    static sep(): string;
     /**
      * Find the common base path between an array of paths.
      * @param {string[]} paths - Array of path strings to analyze.
@@ -38,8 +52,8 @@ export declare class Path {
     static exists(path: string): boolean;
     /**
      * Ensure a path exists; throw an error if not.
-     * @param {string|Path} path - Path to check.
-     * @param {string} [err_prefix] - Optional prefix for the error message.
+     * @param path Path to check.
+     * @param err_prefix Optional prefix for the error message.
      */
     static ensure_exists_err(path: string | Path, err_prefix?: string): void;
     /**
@@ -249,11 +263,17 @@ export declare class Path {
      */
     trash(): Promise<void>;
     /** @docs
-     *  @title Mkdir
-     *  @desc Create a directory
+     * @title Mkdir
+     * @desc Create a directory
+     * @param opts.recursive Whether to create parent directories if they do not exist, defaults to `false`
+     *        Note that using `recursive: false` has slight performance benefits.
      */
-    mkdir(): Promise<void>;
-    mkdir_sync(): this;
+    mkdir(opts?: {
+        recursive?: boolean;
+    }): Promise<void>;
+    mkdir_sync(opts?: {
+        recursive?: boolean;
+    }): this;
     /** @docs
      *  @title Touch
      *  @desc Create a file
@@ -390,28 +410,6 @@ type CastLoadSaveType<T extends LoadSaveTypeName, Never = never> = T extends key
  */
 export declare namespace Path {
     /**
-     * A glob / regex path exclude list class.
-     * @libris
-     */
-    class ExcludeList {
-        /** Size to keep uniform with `Set`. */
-        size: number;
-        /** The internal exclude list. */
-        private exclude_list;
-        /** An internal cache. */
-        private cache;
-        /** The constructor. */
-        constructor(...exclude_list: (string | RegExp)[]);
-        /** Normalize a path. */
-        normalize(input: string): string;
-        /**
-         * Check if a path is excluded.
-         * @returns True if the path is matched by the exclude list.
-         * @libris
-         */
-        has(input: string): boolean;
-    }
-    /**
      * Types for glob methods.
      */
     namespace glob {
@@ -430,6 +428,31 @@ export declare namespace Path {
             stats?: boolean;
             string?: boolean;
         };
+    }
+    /**
+     * A glob / regex path exclude list class.
+     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+     */
+    class ExcludeList {
+        /** Size to keep uniform with `Set`. */
+        size: number;
+        /** The internal exclude list. */
+        private exclude_list;
+        /** An internal cache. */
+        private cache;
+        /** The constructor. */
+        constructor(...exclude_list: (string | RegExp)[]);
+        /**
+         * Normalize a path.
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+         */
+        normalize(input: string): string;
+        /**
+         * Check if a path is excluded.
+         * @returns True if the path is matched by the exclude list.
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+         */
+        has(input: string): boolean;
     }
 }
 export {};

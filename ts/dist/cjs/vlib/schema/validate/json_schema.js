@@ -22,7 +22,7 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_path = require("../../generic/path.js");
-var import_index_m_uni = require("../index.m.uni.js");
+var import_index_m_web = require("../index.m.web.js");
 var import_validator_entries = require("./validator_entries.js");
 const entry_to_json_schema = (entry, state) => {
   const json = {};
@@ -100,7 +100,7 @@ const entry_to_json_schema = (entry, state) => {
 };
 function create_json_schema_sync(opts) {
   if (!opts?.schema) {
-    throw new import_index_m_uni.InvalidUsageError("Validator.create_json_schema() requires the `schema` option.");
+    throw new import_index_m_web.InvalidUsageError("Validator.create_json_schema() requires the `schema` option.");
   }
   const entries = new import_validator_entries.ValidatorEntries(opts.schema);
   const properties = {

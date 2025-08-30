@@ -1,10 +1,12 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ *
+ * Note that this file only supports nodejs environments.
  */
 import { Path } from "../../generic/path.js";
-import { Entries } from "../index.m.uni.js";
-import { RequiredFor } from "@vlib/types/transform.js";
+import { RequiredKeys } from "../../types/types.js";
+import { Entries } from "../index.m.web.js";
 /**
  * The options for creating a JSON-Schema.
  */
@@ -35,4 +37,4 @@ export declare function create_json_schema_sync<const S extends Entries.Opts = E
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
  */
-export declare function create_json_schema<const S extends Entries.Opts = Entries.Opts>(opts: RequiredFor<CreateJSONSchemaOpts<S>, "output">): Promise<object>;
+export declare function create_json_schema<const S extends Entries.Opts = Entries.Opts>(opts: RequiredKeys<CreateJSONSchemaOpts<S>, "output">): Promise<object>;

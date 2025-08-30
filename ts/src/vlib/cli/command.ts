@@ -4,13 +4,11 @@
  */
 
 // Imports.
-import { Transform, Merge } from "../types/index.m.js";
 import { Color } from "../generic/colors.js";
-import type { Cast } from "./cast.js";
 import { CLIError } from "./error.js";
 import { And, and_or_str, Or } from "./query.js";
 import { CLI } from "./cli.js";
-import * as Scheme from "../schema/index.m.uni.js";
+import * as Scheme from "../schema/index.m.node.js";
 import type { InferArgs } from "./infer_args.js";
 import type { ExtractFlag, HasFlag, IfFlag } from "../types/flags.js";
 import * as Arg from "./arg.js";

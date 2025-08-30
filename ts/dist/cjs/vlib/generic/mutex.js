@@ -76,6 +76,9 @@ class Mutex {
   locked() {
     return this._locked;
   }
+  is_locked() {
+    return this._locked;
+  }
   /**
    * Number of queued waiters.
    */

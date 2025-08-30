@@ -14,7 +14,7 @@ Full documentation at [Github Pages](https://vandenberghinc.github.io/vlib).
 - **Unit Testing (VTest):** A built-in unit testing framework with a CLI runner (`vtest`) supporting test filtering, interactive mode, and result reporting.
 - **Repository Management (VRepo):** A CLI tool (`vrepo`) to streamline project version control and publishing workflows (e.g. pushing/pulling to multiple Git/SSH remotes and publishing packages to npm).
 - **TypeScript Build Tools (VTS):** A TypeScript compiler plugin/CLI for automating source transformations (inserting `__dirname`/`__filename` in ESM modules, updating file headers, injecting version numbers, etc.) and post-processing build outputs.
-- **Data Validation (Scheme):** A flexible schema validation system to define the shape of objects (with types, required fields, default values, nested schemas, etc.) and validate or transform data at runtime.
+- **Data Validation (Schema):** A flexible schema validation system to define the shape of objects (with types, required fields, default values, nested schemas, etc.) and validate or transform data at runtime.
 - **System Utilities:** Cross-platform abstractions for environment variables, file paths, and other system interactions (with Node and browser support where applicable).
 - **Networking Helpers:** Simplified HTTP/HTTPS request function and WebSocket client utility for basic networking tasks.
 - **Utilities & Helpers:** Miscellaneous helpers such as colored logging (`logger`, `debug`, `print`), cryptographic hashing functions, JSON-with-comments parsing (JSONC), deep object cloning, debounce and delay functions, and more.
@@ -36,9 +36,9 @@ After installation, you can import and use VLib in your TypeScript or Node.js pr
 ```ts
 import * as vlib from '@vandenberghinc/vlib';
 
-// Example: Validating an object with a Scheme (schema)
+// Example: Validating an object with a Schema (schema)
 const data = { name: "Alice" };
-const validated = vlib.Scheme.validate(data, {
+const validated = vlib.Schema.validate(data, {
     throw: true,
     schema: {
         name: { type: 'string' },
@@ -63,11 +63,10 @@ VLib comes with optional CLI utilities if installed globally or invoked via `npx
   ```
   This command will execute the specified test module and output results to the given directory. VTest supports additional flags for filtering tests, interactive selection, repeating tests, and debugging output.
 
-- **`vrepo`:** Manage project repositories and publishing. For example:
+- **`vrepo`:** Manage project repositories and publishing. For example push (publish) the current npm package:
   ```bash
-  vrepo --push --git --ssh
+  vrepo --npm --push
   ```
-  This would push the current project to all configured Git and SSH remotes. VRepo supports various modes and options to pull changes, publish to npm (`--publish-npm`), add new remotes, remove commit history, list large files, link local dependencies, and more – streamlining release workflows.
 
 - **`vts`:** TypeScript build assistant for pre- and post-processing. For instance, you can use `vts` to transform ESM output to CommonJS:
   ```bash
@@ -87,6 +86,7 @@ VLib is organized into multiple modules, each targeting a specific area:
 - **Networking:** The `sockets/` module provides a simple HTTP/HTTPS request function and WebSocket client, abstracting Node.js networking APIs for ease of use.
 - **JSONC:** JSON-with-comments support (`jsonc/`) allowing you to parse JSON or config files that include comments.
 - **Crypto:** Basic cryptography helpers (`crypto/`), such as hashing utilities (e.g. generating SHA-256 digests via Node's crypto module).
+- **Zip Utilities:** High-level helpers for creating, extracting, and inspecting zip archives.
 - **VTest:** The unit testing library (`vtest/`) enabling you to write tests that can be executed with the `vtest` CLI, including features like selective test runs and result output to files.
 - **VRepo:** The repository management library (`vrepo/`), which underpins the `vrepo` CLI commands for multi-remote Git/SSH operations and npm publishing automation.
 - **VTS:** The TypeScript pre/post-processing tools (`vts/`), used internally and available for custom build processes (e.g. adding boilerplate to compiled outputs or performing text transformations on generated code).

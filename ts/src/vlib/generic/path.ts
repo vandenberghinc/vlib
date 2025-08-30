@@ -16,8 +16,6 @@ import { JSONC } from '../jsonc/jsonc.js';
 import { String as StringUtils } from "../primitives/string.js";
 import fg from 'fast-glob';
 
-import { Utils } from "./utils.js"
-
 /**
  * A list of all multi dotted file extensions.
  * Used to identify multi-dot file extensions.
@@ -126,7 +124,7 @@ const multi_dot_extensions_suffixes: Set<string> = new Set<string>(
     .reduce((acc, ext) => {
         const parts = ext.split('.');
         if (parts.length < 2) return acc;
-        const add = `.${parts.last()}`;
+        const add = `.${parts[parts.length - 1]}`;
         if (!acc.includes(add)) acc.push(add);
         return acc;
     }, [] as string[])
@@ -242,11 +240,44 @@ export class Path {
 
     /**
      * Get the user's home directory path.
-     * @static
      * @returns {Path} A new Path instance pointing to the user's home directory.
      */
     static home(): Path {
         return new Path(os.homedir());
+    }
+
+    /**
+     * Get the current working directory path.
+     * @returns {Path} A new Path instance pointing to the current working directory.
+     */
+    static cwd(): Path {
+        return new Path(process.cwd());
+    }
+
+    /**
+     * Get the temporary directory path.
+     * @returns {Path} A new Path instance pointing to the system's temporary directory.
+     */
+    static tmp(): Path {
+        return new Path(os.tmpdir());
+    }
+
+    // /**
+    //  * Get the system's root directory path.
+    //  * @returns {Path} A new Path instance pointing to the system's root directory.
+    //  */
+    // static root(): Path {
+    //     // On Windows, the root is the drive letter with a trailing backslash.
+    //     // On Unix-like systems, it is simply "/".
+    //     return new Path(pathlib.parse(pathlib.resolve('/')).root);
+    // }
+
+    /**
+     * Get the current operating system's path separator.
+     * @returns {string} The path separator used by the current operating system ('/' for Unix-like, '\\' for Windows).
+     */
+    static sep(): string {
+        return pathlib.sep;
     }
 
     /**
@@ -302,8 +333,8 @@ export class Path {
 
     /**
      * Ensure a path exists; throw an error if not.
-     * @param {string|Path} path - Path to check.
-     * @param {string} [err_prefix] - Optional prefix for the error message.
+     * @param path Path to check.
+     * @param err_prefix Optional prefix for the error message.
      */
     static ensure_exists_err(path: string | Path, err_prefix = ""): void {
         path = new Path(path);
@@ -317,7 +348,6 @@ export class Path {
 
     /**
      * Get the length of the current path string.
-     * @readonly
      * @returns {number} The number of characters in the path string.
      */
     get length(): number {
@@ -329,7 +359,6 @@ export class Path {
 
     /**
      * Get the file system stats for the current path.
-     * @readonly
      * @returns {fs.Stats} The file system stats object with modified time properties.
      * @throws Error if the path does not exist or cannot be accessed.
      */
@@ -347,7 +376,6 @@ export class Path {
 
     /**
      * Get the device identifier where the file resides.
-     * @readonly
      * @returns {number} The numeric device identifier.
      */
     get dev(): number {
@@ -356,7 +384,6 @@ export class Path {
 
     /**
      * Get the file system specific inode number.
-     * @readonly
      * @returns {number} The inode number of the file.
      */
     get ino(): number {
@@ -365,7 +392,6 @@ export class Path {
 
     /**
      * Get the file mode bits (permission and type).
-     * @readonly
      * @returns {number} The file mode bits.
      */
     get mode(): number {
@@ -374,7 +400,6 @@ export class Path {
 
     /**
      * Get the number of hard links to the file.
-     * @readonly
      * @returns {number} The number of hard links.
      */
     get nlink(): number {
@@ -383,7 +408,6 @@ export class Path {
 
     /**
      * Get the user identifier of the file's owner.
-     * @readonly
      * @returns {number} The numeric user ID.
      */
     get uid(): number {
@@ -392,7 +416,6 @@ export class Path {
 
     /**
      * Get the group identifier of the file's group.
-     * @readonly
      * @returns {number} The numeric group ID.
      */
     get gid(): number {
@@ -401,7 +424,6 @@ export class Path {
 
     /**
      * Get the device identifier for special files.
-     * @readonly
      * @returns {number} The device identifier for special files.
      */
     get rdev(): number {
@@ -410,7 +432,6 @@ export class Path {
 
     /**
      * Get the total size in bytes. For directories, calculates size recursively.
-     * @readonly
      * @returns {number} Total size in bytes.
      */
     get size(): number {
@@ -433,7 +454,6 @@ export class Path {
 
     /**
      * Get the file system block size for I/O operations.
-     * @readonly
      * @returns {number} Block size in bytes.
      */
     get blksize(): number {
@@ -442,7 +462,6 @@ export class Path {
 
     /**
      * Get the number of blocks allocated to the file.
-     * @readonly
      * @returns {number} Number of allocated blocks.
      */
     get blocks(): number {
@@ -451,7 +470,6 @@ export class Path {
 
     /**
      * Get the last access time of the file (in milliseconds).
-     * @readonly
      * @returns {number} Milliseconds representing the last access time.
      */
     get atime(): number {
@@ -460,7 +478,6 @@ export class Path {
 
     /**
      * Get the last modification time of the file (in milliseconds).
-     * @readonly
      * @returns {number} Milliseconds representing the last modification time.
      */
     get mtime(): number {
@@ -469,7 +486,6 @@ export class Path {
 
     /**
      * Get the last change time of the file metadata (in milliseconds).
-     * @readonly
      * @returns {number} Milliseconds representing the last change time.
      */
     get ctime(): number {
@@ -478,7 +494,6 @@ export class Path {
 
     /**
      * Get the creation time of the file (in milliseconds).
-     * @readonly
      * @returns {number} Milliseconds representing the file creation time.
      */
     get birthtime(): number {
@@ -487,7 +502,6 @@ export class Path {
 
     /**
      * Get disk usage information for the directory.
-     * @async
      * @throws {Error} If the path is not a directory.
      * @returns {Promise<{available: number; free: number; total: number}>} Object containing disk space information in bytes.
      */
@@ -508,7 +522,6 @@ export class Path {
 
     /**
      * Get available disk space for the directory.
-     * @async
      * @throws {Error} If the path is not a directory.
      * @returns {Promise<number>} Number of bytes available to the current user.
      */
@@ -557,13 +570,11 @@ export class Path {
         this._abs = undefined;
         return this;
     }
-
     refresh(): this {
         return this.reset();
     }
 
     /** 
-     * {Is file}
      * Check if the path is a directory
      */
     is_file(): boolean {
@@ -577,16 +588,15 @@ export class Path {
     }
 
     /** 
-     * {Is directory}
      * Check if the path is a directory
      */
     is_dir(): boolean {
         return this.stat.isDirectory();
     }
 
-    /** @docs
-     *  @title Exists
-     *  @desc Check if the path exists
+    /** 
+     * Check if the path exists
+     * @docs
      */
     exists(): boolean {
         return fs.existsSync(this.path);
@@ -707,9 +717,9 @@ export class Path {
         return this._extension!;
     }
 
-    /** @docs
-     *  @title Get absolute
-     *  @desc Get the absolute path of the path
+    /** 
+     * Get the absolute path of the path
+     * @docs
      */
     abs(): Path {
         if (this._abs !== undefined) { return this._abs; }
@@ -720,9 +730,9 @@ export class Path {
         return new Path(path).abs();
     }
 
-    /** @docs
-     *  @title Join
-     *  @desc Join the path with another name or subpath
+    /**
+     * Join the path with another name or subpath
+     * @docs
      */
     join(subpath: string | Path, clean: boolean = true): Path {
         if (subpath instanceof Path) {
@@ -731,10 +741,10 @@ export class Path {
         return new Path(`${this.path}/${subpath}`, clean);
     }
 
-    /** @docs
-     *  @title Copy
-     *  @desc Copy the path to another location
-     *  @funcs 2
+    /**
+     * Copy the path to another location
+     * @funcs 2
+     * @docs
      */
     async cp(destination: string | Path): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -764,9 +774,9 @@ export class Path {
         fs_extra.copySync(this.path, destination);
     }
 
-    /** @docs
-     *  @title Move
-     *  @desc Move the path to another location
+    /**
+     * Move the path to another location
+     * @docs
      */
     async mv(destination: string | Path): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -787,10 +797,10 @@ export class Path {
         });
     }
 
-    /** @docs
-     *  @title Delete
-     *  @desc Delete the path
-     *  @funcs 2
+    /**
+     * Delete the path
+     * @funcs 2
+     * @docs
      */
     async del({ recursive = false } = {}): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -828,9 +838,9 @@ export class Path {
         return this;
     }
 
-    /** @docs
-     *  @title Trash
-     *  @desc Move the path to the trash directory
+    /**
+     * Move the path to the trash directory
+     * @docs
      */
     async trash(): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -866,16 +876,18 @@ export class Path {
         });
     }
 
-    /** @docs
-     *  @title Mkdir
-     *  @desc Create a directory
+    /**
+     * Create a directory
+     * @param opts.recursive Whether to create parent directories if they do not exist, defaults to `false`
+     *        Note that using `recursive: false` has slight performance benefits.
+     * @docs
      */
-    async mkdir(): Promise<void> {
+    async mkdir(opts?: { recursive?: boolean }): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.exists()) {
                 return resolve();
             }
-            fs.mkdir(this.path, { recursive: true }, (err) => {
+            fs.mkdir(this.path, { recursive: opts?.recursive }, (err) => {
                 if (err) {
                     reject(err);
                 } else {
@@ -885,17 +897,17 @@ export class Path {
             });
         });
     }
-    mkdir_sync(): this {
+    mkdir_sync(opts?: { recursive?: boolean }): this {
         if (this.exists()) {
             return this;
         }
-        fs.mkdirSync(this.path, { recursive: true });
+        fs.mkdirSync(this.path, { recursive: opts?.recursive });
         return this;
     }
 
-    /** @docs
-     *  @title Touch
-     *  @desc Create a file
+    /**
+     * Create a file
+     * @docs
      */
     async touch(): Promise<void> {
         return this.save("");
@@ -939,10 +951,10 @@ export class Path {
         return new Path(StringUtils.unquote(this.path), false);
     }
 
-    /** @docs
-     *  @title Load
-     *  @desc Load the data from the path
-     *  @funcs 2
+    /**
+     * Load the data from the path
+     * @funcs 2
+     * @docs
      */
     // async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
     // async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
@@ -1022,10 +1034,10 @@ export class Path {
         }
     }
 
-    /** @docs
-     *  @title Save
-     *  @desc Save data to the path
-     *  @funcs 2
+    /**
+     * Save data to the path
+     * @funcs 2
+     * @docs
      */
     async save(data: any, opts: { type: LoadSaveTypeName }): Promise<void>
     async save(data: string | Buffer, opts?: { type?: LoadSaveTypeName }): Promise<void>
@@ -1310,22 +1322,6 @@ export class Path {
         ) as any;
     }
 
-    // ------------------------- DEPRECATED ------------------------------
-    // // Truncate.
-    // /** @docs
-    //  *  @title Truncate
-    //  *  @desc Truncate the file
-    //  */
-    // async truncate(): Promise<void> {
-    //     return new Promise((resolve, reject) => {
-    //         fs.truncate(this._path, (err) => {
-    //             if (err) {
-    //                 return reject(err);
-    //             }
-    //             resolve();
-    //         });
-    //     });
-    // }
 }
 
 /**
@@ -1353,72 +1349,6 @@ type CastLoadSaveType<T extends LoadSaveTypeName, Never = never> =
  */
 export namespace Path {
 
-    // /**
-    //  * The valid types for `load` `save` methods.
-    //  */
-    // export type LoadSaveTypeName = undefined | "boolean" | "number" | "string" | "buffer" | "array" | "object" | "json" | "json5" | "jsonc";
-    // export type LoadSaveType = undefined | boolean | number | string | Buffer | any[] | Record<string, any>;
-
-    /**
-     * A glob / regex path exclude list class.
-     * @libris
-     */
-    export class ExcludeList {
-        
-        /** Size to keep uniform with `Set`. */
-        size: number = 0;
-        
-        /** The internal exclude list. */
-        private exclude_list: (Minimatch | RegExp)[] = [];
-        
-        /** An internal cache. */
-        private cache = new Map<string, boolean>();
-
-        /** The constructor. */
-        constructor(...exclude_list: (string | RegExp)[]) {
-            for (const item of exclude_list) {
-                if (item instanceof RegExp) {
-                    this.exclude_list.push(item);
-                } else {
-                    this.exclude_list.push(new Minimatch(this.normalize(item), {
-                        dot: true,    // allow matches on dot-files/dirs
-                        matchBase: false,
-                    }));
-                }
-            }
-            this.size = this.exclude_list.length;
-        }
-        
-        /** Normalize a path. */
-        normalize(input: string): string {
-            let normalized = pathlib.normalize(input);
-            if (normalized.indexOf("\\") !== -1) {
-                normalized = normalized.split(pathlib.sep).join('/');
-            }
-            return normalized;
-        }
-        
-        /**
-         * Check if a path is excluded.
-         * @returns True if the path is matched by the exclude list.
-         * @libris
-         */
-        has(
-            input: string
-        ): boolean {
-            if (this.cache.has(input)) {
-                return this.cache.get(input)!;
-            }
-            const normalized = this.normalize(input);
-            const res = this.exclude_list.some(item => (
-                (item instanceof RegExp && item.test(normalized))
-                || (item instanceof Minimatch && item.match(normalized))
-            ));
-            this.cache.set(input, res);
-            return res;
-        }
-    }
-
     /**
      * Types for glob methods.
      */
@@ -1444,6 +1374,70 @@ export namespace Path {
         //     ? { string: true }
         //     : { string?: false }
         // )
+    }
+
+
+    /**
+     * A glob / regex path exclude list class.
+     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+     */
+    export class ExcludeList {
+
+        /** Size to keep uniform with `Set`. */
+        size: number = 0;
+
+        /** The internal exclude list. */
+        private exclude_list: (Minimatch | RegExp)[] = [];
+
+        /** An internal cache. */
+        private cache = new Map<string, boolean>();
+
+        /** The constructor. */
+        constructor(...exclude_list: (string | RegExp)[]) {
+            for (const item of exclude_list) {
+                if (item instanceof RegExp) {
+                    this.exclude_list.push(item);
+                } else {
+                    this.exclude_list.push(new Minimatch(this.normalize(item), {
+                        dot: true,    // allow matches on dot-files/dirs
+                        matchBase: false,
+                    }));
+                }
+            }
+            this.size = this.exclude_list.length;
+        }
+
+        /**
+         * Normalize a path.
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+         */
+        normalize(input: string): string {
+            let normalized = pathlib.normalize(input);
+            if (normalized.indexOf("\\") !== -1) {
+                normalized = normalized.split(pathlib.sep).join('/');
+            }
+            return normalized;
+        }
+
+        /**
+         * Check if a path is excluded.
+         * @returns True if the path is matched by the exclude list.
+         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+         */
+        has(
+            input: string
+        ): boolean {
+            if (this.cache.has(input)) {
+                return this.cache.get(input)!;
+            }
+            const normalized = this.normalize(input);
+            const res = this.exclude_list.some(item => (
+                (item instanceof RegExp && item.test(normalized))
+                || (item instanceof Minimatch && item.match(normalized))
+            ));
+            this.cache.set(input, res);
+            return res;
+        }
     }
 
 }

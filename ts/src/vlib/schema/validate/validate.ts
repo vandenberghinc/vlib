@@ -2,26 +2,17 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  * 
- * In order to keep the `Validator` thread safe, we pass a created state object
- * Down to all functions, Some attribtus are validating nested objects.
- * While others are passed by reference.
- * 
- * Since the state object needs to be created and not tied to a validator instance.
- * It makes more sense to use a global function strategy instead of a class instance,
- * which could mistakenly be re-used.
+ * @todo create Compiled function for validating each entry
  */
 
 // Imports.
-import { Entries, Entry, Infer, TupleEntries, ValueEntries } from "../infer/entry.js";
+import { Entries, Entry, TupleEntries, ValueEntries } from "../infer/entry.js";
 import { String as StringUtils } from "../../primitives/string.js";
 import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.js";
 import { Cast } from "./cast.js";
 import { value_type } from "./throw.js";
-import { MutableObject, RequiredFor } from "../../types/transform.js";
+import { MutableObject} from "../../types/literals.js";
 import { suggest_attribute } from "./suggest_attr.js";
-import { create_json_schema, create_json_schema_sync, CreateJSONSchemaOpts } from "./json_schema.js";
-import { Path } from "../../generic/path.js";
-// import { log } from "../../logging/uni/logger.js";
 
 /** Base object or array. */
 type ObjOrArr = any[] | Record<string, any>
@@ -187,10 +178,10 @@ namespace State {
         override: Partial<State.Opts<Throw>>,
     ): State {
         return {
-            parent: 
+            parent:
                 (typeof override.parent === "string" && override.parent.length > 0 && /[a-zA-Z0-9]+/g.test(override.parent.last()!))
-                ? override.parent + "."
-                : override.parent ?? state.parent,
+                    ? override.parent + "."
+                    : override.parent ?? state.parent,
             field_type: override.field_type ?? state.field_type,
             unknown: override.unknown ?? state.unknown,
             shared: {
@@ -277,7 +268,11 @@ function check_type(
                 if (res.error) return res;
                 object[obj_key] = res.data;
             }
-
+            
+            // Check empty.
+            if (!entry.allow_empty && object[obj_key].length === 0) {
+                return "empty";
+            }
             // Check min max items.
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
@@ -309,6 +304,20 @@ function check_type(
                 if (res.error) return res;
                 object[obj_key] = res.data;
             }
+            const key_length = Object.keys(object[obj_key]).length;
+            // Check empty.
+            if (!entry.allow_empty && key_length === 0) {
+                return "empty";
+            }
+            // Check min max items.
+            if (typeof entry.min === "number" && key_length < entry.min) {
+                const field = `${state.parent}${obj_key}`;
+                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+            }
+            if (typeof entry.max === "number" && key_length > entry.max) {
+                const field = `${state.parent}${obj_key}`;
+                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+            }
             return true;
         }
 
@@ -316,9 +325,6 @@ function check_type(
         case "string": {
             if (typeof object[obj_key] !== "string" && !(object[obj_key] instanceof String)) {
                 return false;
-            }
-            if (entry.allow_empty !== true && object[obj_key].length === 0) {
-                return "empty";
             }
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
@@ -331,7 +337,7 @@ function check_type(
             if (type !== typeof object[obj_key]) {
                 return false;
             }
-            if (entry.allow_empty !== true && object[obj_key].length === 0) {
+            if (!entry.allow_empty && object[obj_key].length === 0) {
                 return "empty";
             }
             return true;
@@ -342,7 +348,7 @@ function check_type(
             if (type !== typeof object[obj_key]) {
                 return false;
             }
-            if (entry.allow_empty !== true && isNaN(object[obj_key])) {
+            if (!entry.allow_empty && isNaN(object[obj_key])) {
                 return "empty";
             }
             if (typeof entry.min === "number" && object[obj_key] < entry.min) {
@@ -615,11 +621,11 @@ export function validate_object<const T extends ObjOrArr>(
                             object_keys[x],
                             Array.from(entry.schema.keys()),
                         );
-                        return create_error(state, 
+                        return create_error(state,
                             field,
                             `${get_field_type(state, entry, true)} '${field}' is not allowed` +
                             (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : ".")
-                        );                              
+                        );
                     }
                 }
             }
@@ -728,8 +734,11 @@ export class Validator<
      */
     validated!: MutableObject<InferOutput<Data, Sch, Val, Tpl>>;
 
-    /** The `Schemas` object from the constructor, used to extract the input schemas. */
-    private schemas: Schemas<Data, Sch, Val, Tpl>;
+    /**
+     * The `Schemas` object from the constructor, used to extract the input schemas.
+     * Kept public public so users can do `create_json_schema({..., schema: validator.schemas.schema})` to create a JSON schema.
+     */
+    schemas: Schemas<Data, Sch, Val, Tpl>;
 
     /** Constructor. */
     constructor(opts: Schemas<Data, Sch, Val, Tpl> & State.Opts<Throw>) {
@@ -737,7 +746,8 @@ export class Validator<
         this.state = State.create<Throw>(opts);
         this.entry = {
             schema: opts.schema ? new ValidatorEntries(opts.schema) : undefined,
-            value_schema: opts.value_schema ? new ValidatorEntry(opts.value_schema) as ValidatorEntry : undefined,
+            // @todo fix `as unknown as` conversion
+            value_schema: opts.value_schema ? new ValidatorEntry(opts.value_schema) as unknown as ValidatorEntry : undefined,
             tuple_schema: opts.tuple ? opts.tuple.map(v => new ValidatorEntry(v)) : undefined,
             field_type: this.state.field_type ?? "attribute",
             unknown: this.state.unknown,
@@ -782,31 +792,32 @@ export class Validator<
         return res as Res;
     }
 
-
-    /**
-     * Create a JSON schema from the provided options.
-     * This is only supported for object schemas using the {@link Schemas.schema} option 
-     * passed to the constructor.
-     * @param opts The options for creating the JSON schema, 
-     *             see {@link CreateJSONSchemaOpts} for more info.
-     * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
-     */
-    async create_json_schema(
-        opts: RequiredFor<Omit<CreateJSONSchemaOpts, "schema">, "output">
-    ): Promise<object> {
-        if (this.schemas.schema == null) {
-            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-        }
-        return create_json_schema({ ...(opts ?? {}), schema: this.schemas.schema });
-    }
-    create_json_schema_sync(
-        opts?: Omit<CreateJSONSchemaOpts<Sch>, "schema">
-    ): object {
-        if (this.schemas.schema == null) {
-            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-        }
-        return create_json_schema_sync({ ...(opts ?? {}), schema: this.schemas.schema });
-    }
+    // DEPRECATED
+    // Since this is a browser+nodejs file and the JSON schema is only supported in nodejs
+    // /**
+    //  * Create a JSON schema from the provided options.
+    //  * This is only supported for object schemas using the {@link Schemas.schema} option 
+    //  * passed to the constructor.
+    //  * @param opts The options for creating the JSON schema, 
+    //  *             see {@link CreateJSONSchemaOpts} for more info.
+    //  * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
+    //  */
+    // async create_json_schema(
+    //     opts: RequiredKeys<Omit<CreateJSONSchemaOpts, "schema">, "output">
+    // ): Promise<object> {
+    //     if (this.schemas.schema == null) {
+    //         throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+    //     }
+    //     return create_json_schema({ ...(opts ?? {}), schema: this.schemas.schema });
+    // }
+    // create_json_schema_sync(
+    //     opts?: Omit<CreateJSONSchemaOpts<Sch>, "schema">
+    // ): object {
+    //     if (this.schemas.schema == null) {
+    //         throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
+    //     }
+    //     return create_json_schema_sync({ ...(opts ?? {}), schema: this.schemas.schema });
+    // }
 }
 export namespace Validator {
 
@@ -838,7 +849,7 @@ export function validate<
     const Tpl extends TupleEntries.Opts = TupleEntries.Opts,
 >(
     data: Data,
-    val: 
+    val:
         /**
          * Optimal performance, validate against a pre-constructed `Validator` object.
          * This is the recommended way to validate data, since it avoids the overhead of creating a new `Validator` object each time.
@@ -906,8 +917,8 @@ export namespace ValidateResponse {
         Tpl extends TupleEntries.Opts = TupleEntries.Opts,
     > =
         Throw extends true
-            ? InferOutput<Data, Sch, Val, Tpl>
-            : ValidateResponse<"error"> | ValidateResponse<"success", InferOutput<Data, Sch, Val, Tpl>>;
+        ? InferOutput<Data, Sch, Val, Tpl>
+        : ValidateResponse<"error"> | ValidateResponse<"success", InferOutput<Data, Sch, Val, Tpl>>;
 }
 
 // ------------------------------------------------------------

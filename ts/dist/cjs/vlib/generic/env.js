@@ -33,7 +33,7 @@ __export(stdin_exports, {
 module.exports = __toCommonJS(stdin_exports);
 var import_fs = __toESM(require("fs"));
 var import_dotenv = require("dotenv");
-var Scheme = __toESM(require("../schema/index.m.uni.js"));
+var Scheme = __toESM(require("../schema/index.m.node.js"));
 var Env;
 (function(Env2) {
   Env2.map = /* @__PURE__ */ new Map();

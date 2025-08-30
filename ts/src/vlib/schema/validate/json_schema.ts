@@ -1,12 +1,14 @@
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ * 
+ * Note that this file only supports nodejs environments.
  */
 
 import { Path } from "@vlib/generic/path.js";
-import { Entries, InvalidUsageError } from "../index.m.uni.js";
+import { RequiredKeys } from "@vlib/types/types.js";
+import { Entries, InvalidUsageError } from "../index.m.web.js";
 import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.js";
-import { RequiredFor } from "@vlib/types/transform.js";
 
 // ---------------------------------------------------------------
 // Internal helpers.
@@ -238,7 +240,7 @@ export function create_json_schema_sync<const S extends Entries.Opts = Entries.O
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
  */
 export async function create_json_schema<const S extends Entries.Opts = Entries.Opts>(
-    opts: RequiredFor<CreateJSONSchemaOpts<S>, "output">
+    opts: RequiredKeys<CreateJSONSchemaOpts<S>, "output">
 ): Promise<object> {
     
     // Create the schema.

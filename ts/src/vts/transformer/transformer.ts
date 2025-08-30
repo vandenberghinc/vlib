@@ -4,13 +4,12 @@
  */
 
 // Imports.
-import fs from "fs/promises";
 import fg from 'fast-glob';
 import path_module from "path";
 import * as vlib from "@vlib";
 import { Path } from "@vlib";
 import { log_helper, Plugin, Source } from "../plugins/plugin.js";
-import { Enforce, Merge, EnforceOne, Transform, TransformFor } from "@vlib/types/index.m.js";
+import { RequiredKeys, Merge, Neverify, Optional } from "@vlib/types/index.m.js";
 import { parse_imports } from "../utils/parse_imports.js";
 
 /**
@@ -24,12 +23,18 @@ export namespace Transformer {
      * - Base & { tsconfig!: X } 
      * - Base & { include!: X[] }
      */
+    export type Opts<V extends "tsconfig" | "include" | "memory" = "tsconfig" | "include" | "memory"> =
+        V extends "tsconfig"
+            ? Neverify<RequiredKeys<Opts.Base, "tsconfig">, "include" | "exclude" | "check_include">
+            : V extends "include"
+                ? Optional<RequiredKeys<Opts.Base, "include">, "exclude">
+                : RequiredKeys<Opts.Base, "files">
 
-    export type Opts<V extends "tsconfig" | "include" | "memory" = "tsconfig" | "include" | "memory"> = V extends "tsconfig"
-        ? TransformFor<Opts.Base, "tsconfig", never, "include" | "exclude" | "check_include", {}, never>
-        : V extends "include"
-            ? TransformFor<Opts.Base, "include", "exclude", never, {}, never >
-            : TransformFor<Opts.Base, "memory", never, never, {}, never>
+    // export type Opts<V extends "tsconfig" | "include" | "memory" = "tsconfig" | "include" | "memory"> = V extends "tsconfig"
+    //     ? TransformFor<Opts.Base, "tsconfig", never, "include" | "exclude" | "check_include", {}, never>
+    //     : V extends "include"
+    //         ? TransformFor<Opts.Base, "include", "exclude", never, {}, never >
+    //         : TransformFor<Opts.Base, "memory", never, never, {}, never>
 
     /** Base options. */
     export namespace Opts {
@@ -98,7 +103,7 @@ export namespace Transformer {
 
     /** The initialized config type. */
     export type Config = Merge<
-        Enforce<
+        RequiredKeys<
             Transformer.Opts,
             "yes" | "async" | "parse_imports"
             | "insert_tsconfig" | "check_include" | "debug"
@@ -463,7 +468,7 @@ export class Transformer {
         if (this.config.list_files) { return {}; }
         
         // Drop all undefined plugins or plugins that do not have a callback.
-        const plugins = this.config.plugins?.filter(p => p && p.callback) as Enforce<Plugin, "callback">[];
+        const plugins = this.config.plugins?.filter(p => p && p.callback) as RequiredKeys<Plugin, "callback">[];
 
         // Update debug instance on plugins.
         await Promise.all(plugins.map(p => p.build({

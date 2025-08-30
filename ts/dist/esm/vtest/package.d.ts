@@ -2,9 +2,9 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path, GlobPatternList } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
-import { Merge, RequiredExcept } from "../vlib/types/transform.js";
+import { Path, GlobPatternList } from "../vlib/index.js";
+import { Merge, RequiredExcept } from "../vlib/types/types.js";
 /**
  * The unit test package class.
  * Responsible for executing managing its included modules and unit tests.
@@ -65,6 +65,8 @@ export declare namespace Package {
     type Context = Merge<RequiredExcept<Context.Opts, "module" | "target" | "stop_after">, {
         /** The initialized output directory path. */
         output: Path;
+        /** The module name to run. If not defined all modules will be run. */
+        module?: vlib.GlobPatternList;
     }>;
     /** Types for the context type. */
     namespace Context {
@@ -73,7 +75,7 @@ export declare namespace Package {
             /** The path to the output directory. */
             output: string;
             /** The module name to run. If not defined all modules will be run. */
-            module?: string;
+            module?: string | string[];
             /** The target unit test to run. If not defined all unit tests will be run. Asterisks (*) are supported to run multiple targeted unit tests. */
             target?: string;
             /** The active debug level to use for the unit tests. However this may also be a unit test id, in which case all logs of this unit test will be shown, while hiding all other logs. */
@@ -88,6 +90,8 @@ export declare namespace Package {
             stop_on_failure?: boolean;
             /** The unit test id to stop after. */
             stop_after?: string;
+            /** When enabled this bypasses any cached output, forcing the user to re-evaluate the unit tests when in interactive mode, or simply cause a failure in non interactive mode. */
+            refresh?: boolean;
             /** The number of times to repeat the tests. Defaults to 1. */
             repeat?: number;
             /** Optionally strip colors from the unit test outputs, defaults to `false` */
@@ -95,8 +99,9 @@ export declare namespace Package {
         }
         /** A validator schema for the context options. */
         const Schema: {
+            readonly $schema: "any";
             readonly module: {
-                readonly type: "string";
+                readonly type: readonly ["string", "array"];
                 readonly required: false;
             };
             readonly target: {
@@ -125,6 +130,10 @@ export declare namespace Package {
             };
             readonly stop_after: {
                 readonly type: "string";
+                readonly required: false;
+            };
+            readonly refresh: {
+                readonly type: "boolean";
                 readonly required: false;
             };
             readonly repeat: {
@@ -203,6 +212,7 @@ export declare namespace Config {
     }
     /** Initialize the schema validator. */
     const Schema: vlib.Schema.Validator<any[] | Record<string, any>, false, {
+        readonly $schema: "any";
         readonly output: {
             readonly type: "string";
             readonly required: true;
@@ -239,8 +249,9 @@ export declare namespace Config {
         readonly options: {
             readonly type: "object";
             readonly schema: {
+                readonly $schema: "any";
                 readonly module: {
-                    readonly type: "string";
+                    readonly type: readonly ["string", "array"];
                     readonly required: false;
                 };
                 readonly target: {
@@ -271,6 +282,10 @@ export declare namespace Config {
                     readonly type: "string";
                     readonly required: false;
                 };
+                readonly refresh: {
+                    readonly type: "boolean";
+                    readonly required: false;
+                };
                 readonly repeat: {
                     readonly type: "number";
                     readonly required: false;
@@ -293,7 +308,39 @@ export declare namespace Config {
             };
             readonly required: false;
         };
-    }, any, any[]>;
+    }, vlib.Schema.ValueEntries.Opts<{}>, (vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | {
+        type?: vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | undefined;
+        default?: any;
+        required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+        allow_empty?: boolean;
+        min?: number;
+        max?: number;
+        schema?: Record<string, vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+        value_schema?: vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+        tuple?: (vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+        enum?: readonly any[];
+        alias?: string | readonly string[];
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        cast?: boolean | vlib.Types.Neverify<{
+            preserve: true;
+            strict?: boolean;
+        } | {
+            preserve?: boolean;
+            strict: true;
+        }, "preserve"> | vlib.Types.Neverify<{
+            preserve: true;
+            strict?: false;
+        } | {
+            preserve?: false;
+            strict: true;
+        }, "preserve"> | undefined;
+        charset?: RegExp | undefined;
+        field_type?: string;
+        unknown?: boolean;
+        readonly def?: any;
+    })[]>;
     /**
      * Load or initialize a new configuration object.
      * @param opts

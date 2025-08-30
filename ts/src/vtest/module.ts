@@ -85,7 +85,7 @@ export class Module {
 
         // Check errors.
         if (Modules.find(i => i.name === opts.name)) {
-            throw new Error(`Unit test module "${name}" already exists.`);
+            throw new Error(`Unit test module "${opts.name}" already exists.`);
         }
 
         // Attributes.
@@ -167,8 +167,6 @@ export class Module {
 
         // Add unit test.
         this.unit_tests[id] = async (index: number, ctx: Package.Context) => {
-
-            console.log(`Running unit test with context: ${Color.object(ctx, { max_depth: 2 })}`);
 
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
@@ -412,7 +410,10 @@ export class Module {
 
                 // Extract previous hash & data.
                 let cached: undefined | CacheRecord = this.mod_cache![id];
-                if (cached && cached.expect !== expect) {
+                if (ctx.refresh) {
+                    // reset the cached result by refresh, forcing a re-evaluation.
+                    cached = undefined;
+                } else if (cached && cached.expect !== expect) {
                     debug.raw(Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
                     cached = undefined;
                 }
@@ -435,11 +436,6 @@ export class Module {
                 // }
                 // console.log('STOP!', ctx.strip_colors);
                 // (() => process.exit(1))();
-                if (cached) {
-                    const d = zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString();
-                    console.log("PRE COLOR STRIP:\n"+d);
-                    console.log("POST COLOR STRIP:\n" + Color.strip(d));
-                }
                 if (
                     ctx.strip_colors
                     && cached
@@ -508,8 +504,6 @@ export class Module {
         if (this.override_ctx) {
             ctx = Package.Context.merge(ctx, this.override_ctx, true);
         }
-
-        // console.log(`Running unit test module with context: ${Color.object(ctx, { max_depth: 2 })}`);
 
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));

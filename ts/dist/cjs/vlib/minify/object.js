@@ -19,6 +19,7 @@ var stdin_exports = {};
 __export(stdin_exports, {
   Object: () => fn_mod,
   expand: () => expand,
+  flatten_scheme: () => flatten_scheme,
   minify: () => minify,
   object: () => fn_mod
 });
@@ -117,11 +118,13 @@ function expand({ object, scheme, flat_scheme, copy = true }) {
   return expanded_obj;
 }
 const fn_mod = minify;
+fn_mod.flatten_scheme = flatten_scheme;
 fn_mod.expand = expand;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Object,
   expand,
+  flatten_scheme,
   minify,
   object
 });

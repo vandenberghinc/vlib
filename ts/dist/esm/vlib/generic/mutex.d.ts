@@ -53,6 +53,7 @@ export declare class Mutex {
      * Check if the mutex is currently locked.
      */
     locked(): boolean;
+    is_locked(): boolean;
     /**
      * Number of queued waiters.
      */

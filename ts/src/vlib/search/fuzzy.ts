@@ -54,6 +54,9 @@ export function search({
     // Checks.
     if (query == null) {
         throw Error("Define parameter \"query\".");
+    } else if (!query) {
+        // empty string, prevent matching.
+        return [];
     }
 
     // Vars.
@@ -67,9 +70,9 @@ export function search({
     // Calculate the similairities.
     const calc_sims = (targets: any[] = []) => {
         for (let i = 0; i < targets.length; i++) {
-            let match;
+            let matched: ReturnType<typeof match> = null;
             if (is_array) {
-                match = globalThis.match(
+                matched = match(
                     query,
                     // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
                     case_match ? targets[i] : targets[i].toLowerCase(),
@@ -80,22 +83,22 @@ export function search({
                 const target = targets[i];
                 if (key) {
                     key = key as string[]
-                    let min_match = null;
+                    let min_matched: ReturnType<typeof match> = null;
                     for (let k = 0; k < key.length; k++) {
                         if (target[key[k]] == null) { continue; }
-                        match = globalThis.match(
+                        matched = match(
                             query,
                             case_match ? target[key[k]] : target[key[k]].toLowerCase(),
                             allow_exceeding_chars
                         );
-                        if (match != null && (min_match === null || match < min_match)) {
-                            min_match = match;
+                        if (matched != null && (min_matched === null || matched < min_matched)) {
+                            min_matched = matched;
                         }
                     }
-                    match = min_match;
+                    matched = min_matched;
                 } else {
                     if (target[key as string] == null) { continue; }
-                    match = globalThis.match(
+                    matched = match(
                         query,
                         case_match ? target[key as string] : target[key as string].toLowerCase(),
                         allow_exceeding_chars
@@ -106,15 +109,15 @@ export function search({
                 }
             } else {
                 if (targets[i] == null) { continue; }
-                match = globalThis.match(
+                matched = match(
                     query,
                     // case_match ? targets[i][0] : targets[i][0].toLowerCase(),
                     case_match ? targets[i] : targets[i].toLowerCase(),
                     allow_exceeding_chars
                 );
             }
-            if (match !== null) {
-                results.push([match, targets[i]]);
+            if (matched !== null) {
+                results.push([matched, targets[i]]);
             }
         }
     }
@@ -132,11 +135,7 @@ export function search({
 
     // Convert the results to targets only.
     if (get_matches === false) {
-        let converted: any[] = [];
-        results.iterate((item) => {
-            converted.push(item[1]);
-        })
-        return converted;
+        return results.map((item) => item[1]);
     }
 
     // Return the results.

@@ -3,8 +3,8 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 // Imports.
-import { Color, Colors, log, Path } from "../vlib/index.js";
 import * as vlib from "../vlib/index.js";
+import { Color, Colors, log, Path } from "../vlib/index.js";
 import { Modules } from './module.js';
 /** The root path to `vlib/ts`, not yet checked if it exists. */
 const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
@@ -59,23 +59,30 @@ export class Package {
         const ctx = opts
             ? Package.Context.merge(config.ctx, opts, true)
             : config.ctx;
-        console.log(`Running unit test package with context: ${Color.object(ctx, { max_depth: 2 })}`);
+        // console.log(`Running unit test package with context: ${Color.object(ctx, { max_depth: 2 })}`);
         // Import environment files.
         this.init_env();
         // Initialize the modules.
         await this.init_modules();
-        // Test target module or only a single module defined.
-        if (ctx.module != null || Modules.length === 1) {
-            const mod = Modules.find(m => ctx.module == null || m.name === ctx.module);
-            if (!mod) {
-                throw new Error(`Module "${ctx.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`);
-            }
-            const res = await mod.run(ctx);
+        // No modules defined, return false.
+        if (Modules.length === 0) {
+            throw new Error("No unit test modules defined, add unit tests using the 'vtest.Module.add()` function.");
+        }
+        // Filter the selected modules.
+        const mods = Modules.filter(m => ctx.module == null || ctx.module.match(m.name));
+        if (mods.length === 0) {
+            // when no module is found, then `ctx.module` was invalid since we already asserted `Modules` is not empty.
+            throw new Error(`Module "${ctx.module?.length === 1 ? ctx.module[0] : ctx.module}" was not found, the available modules are: [${Modules.map(i => i.name).join(", ")}]`);
+        }
+        // If we have a single module then run that module directly,
+        // so we can use a diferent indentation style.
+        if (mods.length === 1) {
+            const res = await mods[0].run(ctx);
             return res.status;
         }
         // Test all modules.
         let succeeded = 0, failed = 0;
-        for (const mod of Modules) {
+        for (const mod of mods) {
             if (ctx.yes) {
                 throw new Error(`The --yes option is not supported when running all unit tests, target a single module instead.`);
             }
@@ -92,12 +99,12 @@ export class Package {
                 console.log(`${Color.red("Error")}: No unit tests are defined.`);
                 return false;
             }
-            console.log(Color.cyan_bold(`\nExecuted ${Modules.length} test modules.`));
+            console.log(Color.cyan_bold(`\nExecuted ${mods.length} test modules.`));
             console.log(`${prefix}All ${failed + succeeded} unit tests ${Colors.green}${Colors.bold}passed${Colors.end} successfully.`);
             return true;
         }
         else {
-            console.log(Color.cyan_bold(`\nExecuted ${Modules.length} test modules.`));
+            console.log(Color.cyan_bold(`\nExecuted ${mods.length} test modules.`));
             console.log(`${prefix}Encountered ${failed === 0 ? Colors.green : Colors.red}${Colors.bold}${failed}${Colors.end} failed unit tests.`);
             return false;
         }
@@ -207,7 +214,8 @@ export class Package {
     (function (Context) {
         /** A validator schema for the context options. */
         Context.Schema = {
-            module: { type: "string", required: false },
+            $schema: "any",
+            module: { type: ["string", "array"], required: false },
             target: { type: "string", required: false },
             debug: { type: ["string", "number"], required: false },
             yes: { type: "boolean", required: false },
@@ -215,6 +223,7 @@ export class Package {
             no_changes: { type: "boolean", required: false },
             stop_on_failure: { type: "boolean", required: false },
             stop_after: { type: "string", required: false },
+            refresh: { type: "boolean", required: false },
             repeat: { type: "number", required: false },
             strip_colors: { type: "boolean", required: false },
             /**
@@ -234,7 +243,6 @@ export class Package {
             }
             return {
                 output,
-                module: opts.module,
                 target: opts.target,
                 debug: opts.debug ?? 0,
                 yes: opts.yes ?? false,
@@ -244,6 +252,8 @@ export class Package {
                 stop_after: opts.stop_after,
                 repeat: opts.repeat ?? 0,
                 strip_colors: opts.strip_colors ?? false,
+                refresh: opts.refresh ?? false,
+                module: opts.module ? new vlib.GlobPatternList(opts.module) : undefined,
             };
         }
         Context.create = create;
@@ -256,6 +266,7 @@ export class Package {
          * @returns The updated base context object.
          */
         function merge(base, override, copy = true) {
+            // Merge.
             if (copy)
                 base = { ...base };
             for (const key of Object.keys(override)) {
@@ -263,6 +274,18 @@ export class Package {
                     continue; // skip undefined values.
                 base[key] = override[key];
             }
+            // Initialize the output path.
+            if (typeof base.output === "string") {
+                base.output = new Path(base.output).abs();
+                if (!base.output.exists() || !base.output.is_dir()) {
+                    throw new Error(`Output directory "${base.output}" does not exist or is not a directory.`);
+                }
+            }
+            // Validate potentially overrided props.
+            if (base.module != null && base.module instanceof vlib.GlobPatternList === false) {
+                base.module = new vlib.GlobPatternList(base.module);
+            }
+            // Response.
             return base;
         }
         Context.merge = merge;
@@ -277,6 +300,7 @@ export var Config;
         throw: false,
         unknown: false,
         schema: {
+            $schema: "any",
             output: { type: "string", required: true },
             include: {
                 type: "array",
@@ -309,9 +333,10 @@ export var Config;
         },
     });
     if (process.argv.includes("--vlib-generate-schemas")) {
-        Config.Schema.create_json_schema_sync({
+        vlib.Schema.create_json_schema_sync({
             unknown: false,
             output: `${__root}assets/schemas/vtest.json`,
+            schema: Config.Schema.schemas.schema
         });
         log(`Generated JSON schema 'vtest.json' at '${__root}assets/schemas/vtest.json'`);
     }

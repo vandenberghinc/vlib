@@ -2,6 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+// Imports.
 import fg from 'fast-glob';
 import path_module from "path";
 import * as vlib from "../../vlib/index.js";

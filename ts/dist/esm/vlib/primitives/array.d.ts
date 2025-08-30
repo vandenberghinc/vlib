@@ -34,24 +34,9 @@ export declare namespace ArrayUtils {
      */
     function is_any<T>(x: any): x is T[] | readonly T[];
     /**
-     * Asynchronous iteration function for arrays.
-     */
-    /**
-     * Async-await iteration function for arrays.
-     */
-    /**
-     * Iteration function that collects handler results.
-     */
-    /**
      * Iterate an array reversed.
      */
     function iterate_reversed<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => R): R | null;
-    /**
-     * Asynchronous reversed iteration.
-     */
-    /**
-     * Async-await reversed iteration.
-     */
     /**
      * Drop an item by value.
      */
@@ -64,6 +49,16 @@ export declare namespace ArrayUtils {
      * Drop duplicate items from an array.
      */
     function drop_duplicates<T>(arr: T[]): T[];
+    /**
+     * Truncate an array to max length, the array remains the same
+     * if the array's length is below `max`, otherwise its truncated to `max`.
+     *
+     * @param arr The array to truncate.
+     * @param max The maximum length of the array.
+     *
+     * @docs
+     */
+    function truncate<T>(arr: T[], max: number): T[];
     /**
      * Limit from end, always creates a new array.
      */
@@ -88,18 +83,13 @@ export declare namespace ArrayUtils {
 }
 export { ArrayUtils as Array };
 export { ArrayUtils as array };
-/** Extend global array with some basic methods. */
+/** Global array utilities. */
 declare global {
     interface Array<T> {
+        /** Alias for `push`. */
         append(...items: T[]): number;
-        walk: Array<T>["forEach"];
-        first(): T | undefined;
-        last(): T | undefined;
-        /** @deprecated Use `vlib.Array.iterate()` instead. */
-        iterate(handler: (item: T, index: number, array: T[]) => any): any;
-        /** @deprecated Use `vlib.Array.iterate()` instead. */
-        iterate(start: number, handler: (item: T, index: number, array: T[]) => any): any;
-        /** @deprecated Use `vlib.Array.iterate()` instead. */
-        iterate(start: number, end: number, handler: (item: T, index: number, array: T[]) => any): any;
+        /** Alias for `forEach`. */
+        walk(callback: (value: T, index: number, array: T[]) => void, thisArg?: any): void;
     }
 }
+export {};

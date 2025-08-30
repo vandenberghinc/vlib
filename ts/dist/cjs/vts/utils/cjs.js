@@ -61,7 +61,7 @@ async function cjs({ src, dest, target, platform, override = false, debug = 0 })
     if (!out_base) {
       throw new Error(`Failed to resolve base path for output path "${out_path.str()}"`);
     }
-    await out_base.mkdir();
+    await out_base.mkdir({ recursive: true });
     const ext = esm.extension();
     if (ext !== ".js") {
       if (esm.full_name() === "package.json") {

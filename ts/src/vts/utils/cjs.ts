@@ -69,7 +69,7 @@ export async function cjs({
         if (!out_base) {
             throw new Error(`Failed to resolve base path for output path "${out_path.str()}"`);
         }
-        await out_base.mkdir();
+        await out_base.mkdir({ recursive: true });
 
         // Copy plain.
         const ext = esm.extension();

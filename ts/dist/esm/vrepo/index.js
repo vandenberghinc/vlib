@@ -5,5 +5,5 @@
 export * from "./git.js";
 export * from "./npm.js";
 export * from "./ssh.js";
-export * from "./repo.js";
+export * from "./package.js";
 //# sourceMappingURL=index.js.map

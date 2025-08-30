@@ -2,20 +2,13 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  *
- * In order to keep the `Validator` thread safe, we pass a created state object
- * Down to all functions, Some attribtus are validating nested objects.
- * While others are passed by reference.
- *
- * Since the state object needs to be created and not tied to a validator instance.
- * It makes more sense to use a global function strategy instead of a class instance,
- * which could mistakenly be re-used.
+ * @todo create Compiled function for validating each entry
  */
 import { String as StringUtils } from "../../primitives/string.js";
 import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.js";
 import { Cast } from "./cast.js";
 import { value_type } from "./throw.js";
 import { suggest_attribute } from "./suggest_attr.js";
-import { create_json_schema, create_json_schema_sync } from "./json_schema.js";
 export var Schemas;
 (function (Schemas) {
     /**
@@ -117,6 +110,10 @@ function check_type(state, object, obj_key, entry, type) {
                     return res;
                 object[obj_key] = res.data;
             }
+            // Check empty.
+            if (!entry.allow_empty && object[obj_key].length === 0) {
+                return "empty";
+            }
             // Check min max items.
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
@@ -144,15 +141,26 @@ function check_type(state, object, obj_key, entry, type) {
                     return res;
                 object[obj_key] = res.data;
             }
+            const key_length = Object.keys(object[obj_key]).length;
+            // Check empty.
+            if (!entry.allow_empty && key_length === 0) {
+                return "empty";
+            }
+            // Check min max items.
+            if (typeof entry.min === "number" && key_length < entry.min) {
+                const field = `${state.parent}${obj_key}`;
+                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+            }
+            if (typeof entry.max === "number" && key_length > entry.max) {
+                const field = `${state.parent}${obj_key}`;
+                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+            }
             return true;
         }
         // String types.
         case "string": {
             if (typeof object[obj_key] !== "string" && !(object[obj_key] instanceof String)) {
                 return false;
-            }
-            if (entry.allow_empty !== true && object[obj_key].length === 0) {
-                return "empty";
             }
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
@@ -165,7 +173,7 @@ function check_type(state, object, obj_key, entry, type) {
             if (type !== typeof object[obj_key]) {
                 return false;
             }
-            if (entry.allow_empty !== true && object[obj_key].length === 0) {
+            if (!entry.allow_empty && object[obj_key].length === 0) {
                 return "empty";
             }
             return true;
@@ -175,7 +183,7 @@ function check_type(state, object, obj_key, entry, type) {
             if (type !== typeof object[obj_key]) {
                 return false;
             }
-            if (entry.allow_empty !== true && isNaN(object[obj_key])) {
+            if (!entry.allow_empty && isNaN(object[obj_key])) {
                 return "empty";
             }
             if (typeof entry.min === "number" && object[obj_key] < entry.min) {
@@ -511,7 +519,10 @@ export class Validator {
      *          The runtime value is `undefined`.
      */
     validated;
-    /** The `Schemas` object from the constructor, used to extract the input schemas. */
+    /**
+     * The `Schemas` object from the constructor, used to extract the input schemas.
+     * Kept public public so users can do `create_json_schema({..., schema: validator.schemas.schema})` to create a JSON schema.
+     */
     schemas;
     /** Constructor. */
     constructor(opts) {
@@ -519,6 +530,7 @@ export class Validator {
         this.state = State.create(opts);
         this.entry = {
             schema: opts.schema ? new ValidatorEntries(opts.schema) : undefined,
+            // @todo fix `as unknown as` conversion
             value_schema: opts.value_schema ? new ValidatorEntry(opts.value_schema) : undefined,
             tuple_schema: opts.tuple ? opts.tuple.map(v => new ValidatorEntry(v)) : undefined,
             field_type: this.state.field_type ?? "attribute",
@@ -550,26 +562,6 @@ export class Validator {
             return res.data;
         }
         return res;
-    }
-    /**
-     * Create a JSON schema from the provided options.
-     * This is only supported for object schemas using the {@link Schemas.schema} option
-     * passed to the constructor.
-     * @param opts The options for creating the JSON schema,
-     *             see {@link CreateJSONSchemaOpts} for more info.
-     * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
-     */
-    async create_json_schema(opts) {
-        if (this.schemas.schema == null) {
-            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-        }
-        return create_json_schema({ ...(opts ?? {}), schema: this.schemas.schema });
-    }
-    create_json_schema_sync(opts) {
-        if (this.schemas.schema == null) {
-            throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-        }
-        return create_json_schema_sync({ ...(opts ?? {}), schema: this.schemas.schema });
     }
 }
 // ------------------------------------------------------------

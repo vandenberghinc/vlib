@@ -36,14 +36,14 @@ export class ValidatorEntry<
     const Opts extends Entry.Opts = Entry.Opts, // entries options
     // the following generics are system generics and auto inferred from Opts.
     Ent extends Entry.FromOpts<Opts> = Entry.FromOpts<Opts>, // entry type from the options.
-    const IsUn extends IsUnionType<Opts> = IsUnionType<Opts>, // is union type, required for distriminated `type` attribute.
+    // const IsUn extends IsUnionType<Opts> = IsUnionType<Opts>, // is union type, required for distriminated `type` attribute.
 > {
 
     // ------------------------------------------------------------------
     // Attributes with the same type as the Entry type.
 
     required?: Ent["required"];
-    allow_empty?: Ent["allow_empty"];
+    allow_empty: NonNullable<Ent["allow_empty"]>; // ensure its defined for the type checker.
     min?: Ent["min"];
     max?: Ent["max"];
     enum?: Ent["enum"];
@@ -133,13 +133,13 @@ export class ValidatorEntry<
     validated!: Entry.Infer<Opts>;
 
     /** Check if the `type` attribute is a single type, so not an array indicating a union type. */
-    readonly is_union_type: IsUn extends true ? true : false;
+    readonly is_union_type: IsUnionType<Opts> extends true ? true : false;
 
     /** Check if the `type` attribute is a single type, so not an array indicating a union type. */
-    readonly is_single_type: IsUn extends true ? false : true;
+    readonly is_single_type: IsUnionType<Opts> extends true ? false : true;
 
     /** The type. */
-    type?: IsUn extends true
+    type?: IsUnionType<Opts> extends true
         ? Entry.Type.Castable.Base[]
         : Entry.Type.Castable.Base; // allow any type, not just the `Entry.Type` castable types.
 
@@ -276,12 +276,12 @@ export class ValidatorEntries<const S extends Entries.Opts = Entries.Opts> exten
         for (const [key, value] of Object.entries(schema)) {
             if (!value) continue; // skip empty values to avoid runtime errors.
             const entry = value instanceof ValidatorEntry ? value : new ValidatorEntry(value);
-            this.set(key, entry);
+            this.set(key, entry as ValidatorEntry);
 
             // Add the aliases.
             if (entry.alias?.length) {
                 for (let i = 0; i < entry.alias.length; i++) {
-                    this.aliases.set(entry.alias[i], entry);
+                    this.aliases.set(entry.alias[i], entry as ValidatorEntry);
                 }
             }
         }

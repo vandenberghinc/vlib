@@ -30,7 +30,6 @@ var import_validator_entries = require("./validator_entries.js");
 var import_cast = require("./cast.js");
 var import_throw = require("./throw.js");
 var import_suggest_attr = require("./suggest_attr.js");
-var import_json_schema = require("./json_schema.js");
 var Schemas;
 (function(Schemas2) {
   Schemas2.is_fast = (value) => {
@@ -104,6 +103,9 @@ function check_type(state, object, obj_key, entry, type) {
           return res;
         object[obj_key] = res.data;
       }
+      if (!entry.allow_empty && object[obj_key].length === 0) {
+        return "empty";
+      }
       if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
         const field = `${state.parent}${obj_key}`;
         return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
@@ -130,15 +132,24 @@ function check_type(state, object, obj_key, entry, type) {
           return res;
         object[obj_key] = res.data;
       }
+      const key_length = Object.keys(object[obj_key]).length;
+      if (!entry.allow_empty && key_length === 0) {
+        return "empty";
+      }
+      if (typeof entry.min === "number" && key_length < entry.min) {
+        const field = `${state.parent}${obj_key}`;
+        return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+      }
+      if (typeof entry.max === "number" && key_length > entry.max) {
+        const field = `${state.parent}${obj_key}`;
+        return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+      }
       return true;
     }
     // String types.
     case "string": {
       if (typeof object[obj_key] !== "string" && !(object[obj_key] instanceof String)) {
         return false;
-      }
-      if (entry.allow_empty !== true && object[obj_key].length === 0) {
-        return "empty";
       }
       if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
         const field = `${state.parent}${obj_key}`;
@@ -151,7 +162,7 @@ function check_type(state, object, obj_key, entry, type) {
       if (type !== typeof object[obj_key]) {
         return false;
       }
-      if (entry.allow_empty !== true && object[obj_key].length === 0) {
+      if (!entry.allow_empty && object[obj_key].length === 0) {
         return "empty";
       }
       return true;
@@ -161,7 +172,7 @@ function check_type(state, object, obj_key, entry, type) {
       if (type !== typeof object[obj_key]) {
         return false;
       }
-      if (entry.allow_empty !== true && isNaN(object[obj_key])) {
+      if (!entry.allow_empty && isNaN(object[obj_key])) {
         return "empty";
       }
       if (typeof entry.min === "number" && object[obj_key] < entry.min) {
@@ -398,7 +409,10 @@ class Validator {
    *          The runtime value is `undefined`.
    */
   validated;
-  /** The `Schemas` object from the constructor, used to extract the input schemas. */
+  /**
+   * The `Schemas` object from the constructor, used to extract the input schemas.
+   * Kept public public so users can do `create_json_schema({..., schema: validator.schemas.schema})` to create a JSON schema.
+   */
   schemas;
   /** Constructor. */
   constructor(opts) {
@@ -406,6 +420,7 @@ class Validator {
     this.state = State.create(opts);
     this.entry = {
       schema: opts.schema ? new import_validator_entries.ValidatorEntries(opts.schema) : void 0,
+      // @todo fix `as unknown as` conversion
       value_schema: opts.value_schema ? new import_validator_entries.ValidatorEntry(opts.value_schema) : void 0,
       tuple_schema: opts.tuple ? opts.tuple.map((v) => new import_validator_entries.ValidatorEntry(v)) : void 0,
       field_type: this.state.field_type ?? "attribute",
@@ -434,26 +449,6 @@ class Validator {
       return res.data;
     }
     return res;
-  }
-  /**
-   * Create a JSON schema from the provided options.
-   * This is only supported for object schemas using the {@link Schemas.schema} option
-   * passed to the constructor.
-   * @param opts The options for creating the JSON schema,
-   *             see {@link CreateJSONSchemaOpts} for more info.
-   * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
-   */
-  async create_json_schema(opts) {
-    if (this.schemas.schema == null) {
-      throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-    }
-    return (0, import_json_schema.create_json_schema)({ ...opts ?? {}, schema: this.schemas.schema });
-  }
-  create_json_schema_sync(opts) {
-    if (this.schemas.schema == null) {
-      throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-    }
-    return (0, import_json_schema.create_json_schema_sync)({ ...opts ?? {}, schema: this.schemas.schema });
   }
 }
 function validate(data, val) {

@@ -106,6 +106,10 @@ var ArrayUtils;
     }, []);
   }
   ArrayUtils2.drop_duplicates = drop_duplicates;
+  function truncate(arr, max) {
+    return arr.length > max ? arr.slice(0, max) : arr;
+  }
+  ArrayUtils2.truncate = truncate;
   function limit_from_end(arr, limit) {
     const limited = [];
     if (arr.length > limit) {
@@ -194,17 +198,18 @@ var ArrayUtils;
   }
   ArrayUtils2.divide = divide;
 })(ArrayUtils || (ArrayUtils = {}));
-Array.prototype.append = Array.prototype.push;
-Array.prototype.walk = Array.prototype.forEach;
-Array.prototype.first = function() {
-  return this[0];
-};
-Array.prototype.last = function() {
-  return this[this.length - 1];
-};
-Array.prototype.iterate = function(...args) {
-  return ArrayUtils.iterate(this, ...args);
-};
+Object.defineProperty(Array.prototype, "append", {
+  value: Array.prototype.push,
+  writable: true,
+  configurable: true,
+  enumerable: false
+});
+Object.defineProperty(Array.prototype, "walk", {
+  value: Array.prototype.forEach,
+  writable: true,
+  configurable: true,
+  enumerable: false
+});
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Array,

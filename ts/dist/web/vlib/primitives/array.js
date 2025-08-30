@@ -67,60 +67,6 @@ export var ArrayUtils;
     }
     ArrayUtils.is_any = is_any;
     /**
-     * Asynchronous iteration function for arrays.
-     */
-    // export function iterate_async<T>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<any>): Promise<any>[] {
-    //     if (typeof start === "function") {
-    //         handler = start;
-    //         start = null;
-    //     }
-    //     if (start == null) start = 0;
-    //     if (end == null) end = arr.length;
-    //     const promises: Promise<any>[] = [];
-    //     for (let i = start; i < end; i++) {
-    //         const res = handler!(arr[i]);
-    //         if (res != null && res instanceof Promise) {
-    //             promises.push(res);
-    //         }
-    //     }
-    //     return promises;
-    // }
-    /**
-     * Async-await iteration function for arrays.
-     */
-    // export async function iterate_async_await<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<R>): Promise<R | null> {
-    //     if (typeof start === "function") {
-    //         handler = start;
-    //         start = null;
-    //     }
-    //     if (start == null) start = 0;
-    //     if (end == null) end = arr.length;
-    //     for (let i = start; i < end; i++) {
-    //         const res = handler!(arr[i]);
-    //         if (res != null && res instanceof Promise) {
-    //             const pres = await res;
-    //             if (pres != null) return pres;
-    //         }
-    //     }
-    //     return null;
-    // }
-    /**
-     * Iteration function that collects handler results.
-     */
-    // export function iterate_append<T, U>(arr: T[], start: any, end?: any, handler?: (item: T) => U): U[] {
-    //     if (typeof start === "function") {
-    //         handler = start;
-    //         start = null;
-    //     }
-    //     if (start == null) start = 0;
-    //     if (end == null) end = arr.length;
-    //     const items: U[] = [];
-    //     for (let i = start; i < end; i++) {
-    //         items.push(handler!(arr[i]));
-    //     }
-    //     return items;
-    // }
-    /**
      * Iterate an array reversed.
      */
     function iterate_reversed(arr, start, end, handler) {
@@ -141,42 +87,6 @@ export var ArrayUtils;
         return null;
     }
     ArrayUtils.iterate_reversed = iterate_reversed;
-    /**
-     * Asynchronous reversed iteration.
-     */
-    // export function iterate_reversed_async<T>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<any>): Promise<any>[] {
-    //     if (handler == null && start != null) {
-    //         handler = start;
-    //         start = null;
-    //     }
-    //     if (start == null) start = 0;
-    //     if (end == null) end = arr.length;
-    //     const promises: Promise<any>[] = [];
-    //     for (let i = end - 1; i >= start; i--) {
-    //         const res = handler!(arr[i]);
-    //         if (res != null && res instanceof Promise) promises.push(res);
-    //     }
-    //     return promises;
-    // }
-    /**
-     * Async-await reversed iteration.
-     */
-    // export async function iterate_reversed_async_await<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => Promise<R>): Promise<R | null> {
-    //     if (handler == null && start != null) {
-    //         handler = start;
-    //         start = null;
-    //     }
-    //     if (start == null) start = 0;
-    //     if (end == null) end = arr.length;
-    //     for (let i = end - 1; i >= start; i--) {
-    //         const res = handler!(arr[i]);
-    //         if (res != null && res instanceof Promise) {
-    //             const pres = await res;
-    //             if (pres != null) return pres;
-    //         }
-    //     }
-    //     return null;
-    // }
     /**
      * Drop an item by value.
      */
@@ -212,6 +122,19 @@ export var ArrayUtils;
         }, []);
     }
     ArrayUtils.drop_duplicates = drop_duplicates;
+    /**
+     * Truncate an array to max length, the array remains the same
+     * if the array's length is below `max`, otherwise its truncated to `max`.
+     *
+     * @param arr The array to truncate.
+     * @param max The maximum length of the array.
+     *
+     * @docs
+     */
+    function truncate(arr, max) {
+        return arr.length > max ? arr.slice(0, max) : arr;
+    }
+    ArrayUtils.truncate = truncate;
     /**
      * Limit from end, always creates a new array.
      */
@@ -322,10 +245,41 @@ export var ArrayUtils;
 })(ArrayUtils || (ArrayUtils = {}));
 export { ArrayUtils as Array };
 export { ArrayUtils as array }; // for snake_case compatibility
-Array.prototype.append = Array.prototype.push;
-Array.prototype.walk = Array.prototype.forEach;
-Array.prototype.first = function () { return this[0]; };
-Array.prototype.last = function () { return this[this.length - 1]; };
-/** @deprecated Use `vlib.Array.iterate()` instead. */
-Array.prototype.iterate = function (...args) { return ArrayUtils.iterate(this, ...args); };
+// if (!("append" in Array.prototype)) {
+Object.defineProperty(Array.prototype, "append", {
+    value: Array.prototype.push,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+});
+// }
+// if (!("walk" in Array.prototype)) {
+Object.defineProperty(Array.prototype, "walk", {
+    value: Array.prototype.forEach,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+});
+// DEPRECATED
+// /** Extend global array with some basic methods. */
+// declare global {
+//     interface Array<T> {
+//         append(...items: T[]): number;
+//         walk: Array<T>["forEach"];
+//         first(): T | undefined;
+//         last(): T | undefined;
+//         /** @deprecated Use `vlib.Array.iterate()` instead. */
+//         iterate(handler: (item: T, index: number, array: T[]) => any): any;
+//         /** @deprecated Use `vlib.Array.iterate()` instead. */
+//         iterate(start: number, handler: (item: T, index: number, array: T[]) => any): any;
+//         /** @deprecated Use `vlib.Array.iterate()` instead. */
+//         iterate(start: number, end: number, handler: (item: T, index: number, array: T[]) => any): any;
+//     }
+// }
+// Array.prototype.append = Array.prototype.push; 
+// Array.prototype.walk = Array.prototype.forEach; 
+// Array.prototype.first = function <T>(): T | undefined { return this[0]; };
+// Array.prototype.last = function <T>(): T | undefined { return this[this.length - 1]; };
+// /** @deprecated Use `vlib.Array.iterate()` instead. */
+// Array.prototype.iterate = function <T>(this: Array<T>, ...args: any[]): any { return ArrayUtils.iterate(this, ...args as [any]); };
 //# sourceMappingURL=array.js.map

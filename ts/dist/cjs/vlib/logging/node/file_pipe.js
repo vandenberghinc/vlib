@@ -52,7 +52,10 @@ class FilePipe extends import_pipe.Pipe {
   _out;
   // @ts-expect-error
   _err;
-  /** Constructor. */
+  /**
+   * Constructor.
+   * @docs
+   */
   constructor({ log_level = 0, log_path = void 0, error_path = void 0, max_mb = void 0 } = {}) {
     super({ log_level, out: (d) => process.stdout.write(d) });
     this.log_path = void 0;
@@ -77,6 +80,8 @@ class FilePipe extends import_pipe.Pipe {
    * @param path      The Path instance for the log or error file.
    * @param type Either 'log' or 'error' indicating which stream property to refresh.
    * @param max_bytes Maximum allowed file size in bytes.
+   *
+   * @docs
    */
   async truncate_log_file(path, type, max_bytes) {
     const file_path = path.str();
@@ -113,6 +118,7 @@ class FilePipe extends import_pipe.Pipe {
   static log_file_pattern = /^\(date=(.*?)\)\s*(?:\(loc=(.*?)\))?\s*(?:\(thread=(.*?)\))?\s*(?:\(level=(.*?)\))?\s*(?:\(type=(.*?)\))?:\s*/;
   /**
    * Parse a log file.
+   * @docs
    */
   async _parse_log_file(path) {
     if (!path.exists()) {
@@ -163,14 +169,13 @@ class FilePipe extends import_pipe.Pipe {
   // Public.
   /**
    * Stop the logger and close the file streams.
+   * @docs
    */
   stop() {
     if (this.log_stream) {
-      console.log("Closing log stream.");
       this.log_stream.close();
     }
     if (this.err_stream) {
-      console.log("Closing error stream.");
       this.err_stream.close();
     }
   }
@@ -178,6 +183,7 @@ class FilePipe extends import_pipe.Pipe {
    * Assign paths for the logger class.
    * @param log_path The path to a new log path, or `undefined` to reset the log stream.
    * @param error_path The path to a new error path, or `undefined` to reset the error stream.
+   * @docs
    */
   assign_paths(log_path, error_path) {
     if (this.log_stream)
@@ -201,7 +207,7 @@ class FilePipe extends import_pipe.Pipe {
   }
   // --------------------------------------------------
   // Override the log method to support the file streams.
-  /** @docs:
+  /**
    * Log data to the console and file streams when defined.
    * See {@link Pipe.log} for more details.
    *
@@ -209,6 +215,7 @@ class FilePipe extends import_pipe.Pipe {
    *      The data to log.
    *      The first number is treated as the local log level.
    *      Any other directives are allowed before the first non-directive / local log level argument.
+   * @docs
    */
   log(...args) {
     let { local_level, active_log_level, is_raw, log_mode: mode, loc, local_level_arg_index } = this.parse_directives(args);

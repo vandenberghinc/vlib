@@ -39,7 +39,7 @@ export class Module {
     constructor(opts) {
         // Check errors.
         if (Modules.find(i => i.name === opts.name)) {
-            throw new Error(`Unit test module "${name}" already exists.`);
+            throw new Error(`Unit test module "${opts.name}" already exists.`);
         }
         // Attributes.
         this.name = opts.name;
@@ -109,7 +109,6 @@ export class Module {
         const loc = new SourceLoc(1);
         // Add unit test.
         this.unit_tests[id] = async (index, ctx) => {
-            console.log(`Running unit test with context: ${Color.object(ctx, { max_depth: 2 })}`);
             /**
              * Try to extract the 3rd argument (the input‐callback) from a source file
              * where a call like `tests.add("…id…", …, <inputFn>)` occurs.
@@ -325,7 +324,11 @@ export class Module {
                 let res_str = typeof res === "object" && res !== null ? Color.object(res) : typeof res === "string" ? res : JSON.stringify(res);
                 // Extract previous hash & data.
                 let cached = this.mod_cache[id];
-                if (cached && cached.expect !== expect) {
+                if (ctx.refresh) {
+                    // reset the cached result by refresh, forcing a re-evaluation.
+                    cached = undefined;
+                }
+                else if (cached && cached.expect !== expect) {
                     debug.raw(Color.yellow(`Unit test "${id}" seems to have changed the expected result to "${expect}" from "${cached?.expect}", resetting cached result.`));
                     cached = undefined;
                 }
@@ -346,11 +349,6 @@ export class Module {
                 // }
                 // console.log('STOP!', ctx.strip_colors);
                 // (() => process.exit(1))();
-                if (cached) {
-                    const d = zlib.gunzipSync(Buffer.from(cached.data, 'base64')).toString();
-                    console.log("PRE COLOR STRIP:\n" + d);
-                    console.log("POST COLOR STRIP:\n" + Color.strip(d));
-                }
                 if (ctx.strip_colors
                     && cached
                     && Utils.hash(Color.strip(res_str), "sha256", "hex") ===
@@ -407,7 +405,6 @@ export class Module {
         if (this.override_ctx) {
             ctx = Package.Context.merge(ctx, this.override_ctx, true);
         }
-        // console.log(`Running unit test module with context: ${Color.object(ctx, { max_depth: 2 })}`);
         // Logs.
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Variables.

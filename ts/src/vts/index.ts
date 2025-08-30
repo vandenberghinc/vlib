@@ -5,7 +5,8 @@
  * @warning never export anything from types since those are global module extension files.
  *          NOT `export * from "./types/dirname.js";`
  */
-export * from "./utils/bundle.js";
+export { CompilerError, BundleOptions, BundleResult, bundle } from "./bundle/bundle.js";
+export * from "./bundle/inspect.js";
 export * from "./utils/cjs.js";
 export * from "./utils/css.js";
 export * from "./utils/parse_imports.js";

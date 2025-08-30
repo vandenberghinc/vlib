@@ -23,6 +23,10 @@ export declare namespace Scheme {
     type Flat = Record<string, string>;
 }
 /**
+ * Flatten a nested MinifyScheme into a dot-path → minified key map
+ */
+export declare function flatten_scheme(scheme: Scheme, prefix?: string, result?: Record<string, string>): Record<string, string>;
+/**
  * Minify an object based on a given scheme.
  */
 export declare function minify({ object, scheme, flat_scheme }: {
@@ -40,6 +44,7 @@ export declare function expand({ object, scheme, flat_scheme, copy }: {
     copy?: boolean;
 }): Record<string, any>;
 declare const fn_mod: typeof minify & {
+    flatten_scheme: typeof flatten_scheme;
     expand: typeof expand;
     Scheme: Scheme;
 };
