@@ -18,10 +18,14 @@ __reExport(stdin_exports, require("./throw.js"), module.exports);
 __reExport(stdin_exports, require("./colors.js"), module.exports);
 __reExport(stdin_exports, require("./mutex.js"), module.exports);
 __reExport(stdin_exports, require("./glob_pattern.js"), module.exports);
+__reExport(stdin_exports, require("./events.js"), module.exports);
+__reExport(stdin_exports, require("./system/web.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ...require("./throw.js"),
   ...require("./colors.js"),
   ...require("./mutex.js"),
-  ...require("./glob_pattern.js")
+  ...require("./glob_pattern.js"),
+  ...require("./events.js"),
+  ...require("./system/web.js")
 });

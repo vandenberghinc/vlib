@@ -303,7 +303,13 @@ export declare class Iterator<Src extends Source = Source> {
      * When `lang` is defined, the position must be greater than or equal to the current position.
      * @throws An error when the position is out of bounds, or when jumping to a past position with a language defined.
      */
-    jump_to(n: number): void;
+    jump_to(n: number, opts?: {
+        /**
+         * Wheter to advance, only advances when a language context is defined.
+         * @default true
+         */
+        advance?: boolean;
+    }): void;
     /** Consume a string match. */
     consume_optional(s: string): void;
     /** Consume inline whitespace (excluding line breaks). */

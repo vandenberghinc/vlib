@@ -59,13 +59,48 @@ export declare class Date extends globalThis.Date {
      */
     format(format: string): string;
     /**
-     * Get the timestamp in milliseconds
+     * Format a UNIX timestamp (in seconds) as a locale-aware date/time string.
+     *
+     * - In browsers, `locale` and `time_zone` default to the user's settings
+     *   (`navigator.language` / `navigator.languages` and the browser's time zone).
+     * - In Node or other environments, defaults come from the runtime's Intl config.
+     *
+     * @param unix_seconds  UNIX timestamp in **seconds** since epoch.
+     * @param locale        Optional BCP-47 locale (e.g. "en-US", "nl-NL").
+     * @param time_zone     Optional IANA time zone (e.g. "Europe/Amsterdam").
+     */
+    format_locale({ locale, time_zone, show_timezone, }: {
+        locale?: string;
+        time_zone?: string;
+        show_timezone?: boolean;
+    }): string;
+    /**
+     * Detect the preferred locale of the current environment.
+     *
+     * - In browsers, returns `navigator.languages[0]` or `navigator.language` when available.
+     * - In Node/other envs, returns `Intl.DateTimeFormat().resolvedOptions().locale` when available.
+     * - Returns `undefined` if no locale can be determined.
+     *
+     * @returns A BCP-47 locale string (e.g. "en-US") or `undefined`.
+     */
+    static detect_locale(): string | undefined;
+    /**
+     * Detect the current time zone of the environment.
+     *
+     * Uses `Intl.DateTimeFormat().resolvedOptions().timeZone`, which typically
+     * reflects the user's local time zone (e.g. "Europe/Amsterdam").
+     *
+     * @returns An IANA time zone string, or `undefined` if detection fails.
+     */
+    static detect_time_zone(): string | undefined;
+    /**
+     * Get the unix timestamp in milliseconds
      * @returns {number} The timestamp in milliseconds
      * @docs
      */
     msec(): number;
     /**
-     * Get the timestamp in seconds
+     * Get the unix timestamp in seconds
      * @returns {number} The timestamp in seconds
      * @docs
      */

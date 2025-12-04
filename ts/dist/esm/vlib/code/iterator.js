@@ -852,11 +852,11 @@ export class Iterator {
      * When `lang` is defined, the position must be greater than or equal to the current position.
      * @throws An error when the position is out of bounds, or when jumping to a past position with a language defined.
      */
-    jump_to(n) {
+    jump_to(n, opts) {
         if (n < 0 || n >= this.end) {
             throw new Error(`Cannot jump to position ${n}, must be between 0 and ${this.end - 1}.`);
         }
-        if (this.lang.has_patterns) {
+        if (this.lang.has_patterns && opts?.advance !== false) {
             if (n < this.pos) {
                 throw new Error(`Cannot jump to a past position ${n} < ${this.pos} when language is defined.`);
             }

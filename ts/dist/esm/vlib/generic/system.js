@@ -19,7 +19,13 @@ export var System;
      * @docs
     */
     function format_bytes(bytes) {
-        if (bytes > 1024 * 1024 * 1024) {
+        if (typeof bytes === "string") {
+            bytes = Buffer.byteLength(bytes, "utf-8");
+        }
+        if (bytes > 1024 * 1024 * 1024 * 1024) {
+            return `${(bytes / (1024 * 1024 * 1024 * 1024)).toFixed(2)}TB`;
+        }
+        else if (bytes > 1024 * 1024 * 1024) {
             return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)}GB`;
         }
         else if (bytes > 1024 * 1024) {
@@ -28,7 +34,7 @@ export var System;
         else if (bytes > 1024) {
             return `${(bytes / 1024).toFixed(2)}KB`;
         }
-        return `${(bytes).toFixed(2)}B`;
+        return `${Math.floor(bytes)}B`;
     }
     System.format_bytes = format_bytes;
     /**

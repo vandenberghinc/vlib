@@ -506,6 +506,7 @@ export class Module {
         }
 
         // Logs.
+        if (typeof ctx.debug === "number") debug.level.set(ctx.debug)
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
 
         // Variables.

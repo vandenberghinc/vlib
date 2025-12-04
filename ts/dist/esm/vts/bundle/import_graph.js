@@ -7,6 +7,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 /**
  * ImportGraphPlugin that builds import graph during resolution, works even when builds fail
+ *
+ * @note This does not accurately work with tracking imports across libraries.
  */
 export class ImportGraphPlugin {
     options;

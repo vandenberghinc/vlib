@@ -41,31 +41,52 @@ export declare namespace websocket {
         private commands;
         private events;
         private rate_limit_cache;
-        private _clear_caches_timeout?;
+        private _clear_caches_interval?;
         constructor({ ip, port, https, rate_limit, api_keys, server, }: ServerOptions);
         start(): void;
         stop(): Promise<void>;
         on_event(event: string, callback: Function): void;
         on(command: string, callback: (stream: Stream, id: string, data: any) => void): void;
-        send({ stream, command, id, data }: {
-            stream: Stream;
-            command: string;
-            id?: string;
-            data: any;
-        }): Promise<string>;
         await_response({ stream, id, timeout, step }: {
             stream: Stream;
             id: string;
             timeout?: number;
             step?: number;
         }): Promise<WebSocketMessage>;
+        /**
+         * Send a command and expect a single response.
+         */
         request({ stream, command, data, timeout }: {
+            /** The stream. */
             stream: Stream;
+            /** The command identifier. */
             command: string;
+            /** The data to send. */
             data: any;
+            /** The timeout in milliseconds. */
             timeout?: number;
         }): Promise<WebSocketMessage>;
+        /**
+         * Send a response to a received command.
+         */
+        respond({ stream, id, data, }: {
+            /** The stream. */
+            stream: Stream;
+            /** The request id from the received command. */
+            id: string;
+            /** The data to sent. */
+            data: any;
+        }): Promise<void>;
+        /** Clear all caches. */
         private _clear_caches;
+        /**
+         * Send data through the websocket.
+         * Either a request command when `command` is defined,
+         * or a response when `command` is undefined and `id` is defined.
+         * Note that `id` should always be defined in a sent response,
+         * but it can be auto generated when sending a request command.
+         */
+        private send_helper;
     }
     export interface ReconnectConfig {
         interval: number;
@@ -95,22 +116,38 @@ export declare namespace websocket {
         on_event(event: string, callback: Function): void;
         on(command: string, callback: (id: string, data: any) => void): void;
         send_raw(data: string | Buffer): Promise<void>;
-        send({ command, id, data }: {
-            command: string;
-            id?: string;
-            data: any;
-        }): Promise<string>;
+        /** Await till the stream is connected. */
         await_till_connected(timeout?: number): Promise<void>;
         await_response({ id, timeout, step }: {
             id: string;
             timeout?: number;
             step?: number;
         }): Promise<WebSocketMessage>;
+        /**
+         * Send a command and expect a single response.
+         */
         request({ command, data, timeout }: {
             command: string;
             data: any;
             timeout?: number;
         }): Promise<WebSocketMessage>;
+        /**
+         * Send a response to a received command.
+         */
+        respond({ id, data, }: {
+            /** The request id from the received command. */
+            id: string;
+            /** The data to sent. */
+            data: any;
+        }): Promise<void>;
+        /**
+         * Send data through the websocket.
+         * Either a request command when `command` is defined,
+         * or a response when `command` is undefined and `id` is defined.
+         * Note that `id` should always be defined in a sent response,
+         * but it can be auto generated when sending a request command.
+         */
+        private send_helper;
     }
     export {};
 }

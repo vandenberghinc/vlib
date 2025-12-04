@@ -29,9 +29,11 @@ export declare namespace Env {
      * This joins all found environment variables into the current environment.
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
+     * @param opts.override - When true, existing environment variables will be overridden by those in the .env file.
      */
     function from(path: string, opts?: {
         refresh?: boolean;
+        override?: boolean;
     }): void;
     const import_file: typeof from;
     /**

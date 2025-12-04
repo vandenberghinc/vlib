@@ -56,10 +56,11 @@ export namespace Env {
      * This joins all found environment variables into the current environment.
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
+     * @param opts.override - When true, existing environment variables will be overridden by those in the .env file.
      */
     export function from(
         path: string,
-        opts: { refresh?: boolean } = { refresh: false }
+        opts: { refresh?: boolean, override?: boolean } = { refresh: false, override: true }
     ): void {
 
         // Check cache.
@@ -69,7 +70,7 @@ export namespace Env {
 
         // Load .env file into process.env if it exists
         if (fs.existsSync(path)) {
-            const result = config({ path: path });
+            const result = config({ path: path, override: opts.override });
             if (result.error) {
                 throw result.error;
             }

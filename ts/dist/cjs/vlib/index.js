@@ -52,7 +52,7 @@ module.exports = __toCommonJS(stdin_exports);
 var CLI = __toESM(require("./cli/index.m.js"));
 var cli = __toESM(require("./cli/index.m.js"));
 __reExport(stdin_exports, require("./sockets/request.js"), module.exports);
-__reExport(stdin_exports, require("./sockets/websocket.js"), module.exports);
+__reExport(stdin_exports, require("./sockets/websocket.deprecated.js"), module.exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
 __reExport(stdin_exports, require("./generic/index.js"), module.exports);
 var Logging = __toESM(require("./logging/index.m.node.js"));
@@ -71,7 +71,7 @@ var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
 __reExport(stdin_exports, require("./generic/zip.js"), module.exports);
 Error.stackTraceLimit = 25;
-const version = "1.6.28";
+const version = "1.6.33";
 const print = (...args) => import_index_m_node2.log.raw(0, ...args);
 const error = (...args) => import_index_m_node2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);
@@ -98,7 +98,7 @@ const warning = warn;
   warn,
   warning,
   ...require("./sockets/request.js"),
-  ...require("./sockets/websocket.js"),
+  ...require("./sockets/websocket.deprecated.js"),
   ...require("./primitives/index.uni.js"),
   ...require("./generic/index.js"),
   ...require("./jsonc/jsonc.js"),

@@ -99,7 +99,10 @@ export declare namespace Package {
         }
         /** A validator schema for the context options. */
         const Schema: {
-            readonly $schema: "any";
+            readonly $schema: {
+                readonly type: "any";
+                readonly required: false;
+            };
             readonly module: {
                 readonly type: readonly ["string", "array"];
                 readonly required: false;
@@ -212,7 +215,10 @@ export declare namespace Config {
     }
     /** Initialize the schema validator. */
     const Schema: vlib.Schema.Validator<any[] | Record<string, any>, false, {
-        readonly $schema: "any";
+        readonly $schema: {
+            readonly type: "any";
+            readonly required: false;
+        };
         readonly output: {
             readonly type: "string";
             readonly required: true;
@@ -249,7 +255,10 @@ export declare namespace Config {
         readonly options: {
             readonly type: "object";
             readonly schema: {
-                readonly $schema: "any";
+                readonly $schema: {
+                    readonly type: "any";
+                    readonly required: false;
+                };
                 readonly module: {
                     readonly type: readonly ["string", "array"];
                     readonly required: false;
@@ -320,7 +329,10 @@ export declare namespace Config {
         tuple?: (vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: boolean | vlib.Types.Neverify<{

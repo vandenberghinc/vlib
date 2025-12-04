@@ -278,6 +278,24 @@ export var ObjectUtils;
         return ref;
     }
     ObjectUtils.merge_missing = merge_missing;
+    /**
+     * Runtime implementation of TypeScript's Pick utility type.
+     * Creates a new object with only the specified keys from the source object.
+     *
+     * @param obj - The source object to pick properties from
+     * @param keys - Array of keys to pick from the source object
+     * @returns A new object containing only the specified properties
+     */
+    function pick(obj, ...keys) {
+        const result = {};
+        for (const key of keys) {
+            if (key in obj) {
+                result[key] = obj[key];
+            }
+        }
+        return result;
+    }
+    ObjectUtils.pick = pick;
     /** Helper to stringify any input value. */
     function _stringify_helper(value, 
     /** The active indent level, or false for no indentation, -1 is not supported. */

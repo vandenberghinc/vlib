@@ -30,10 +30,12 @@ __export(stdin_exports, {
   inspect_bundle: () => inspect_bundle
 });
 module.exports = __toCommonJS(stdin_exports);
+var pathlib = __toESM(require("path"));
 var esbuild = __toESM(require("esbuild"));
 var import_vlib = require("../../vlib/index.js");
 var import_bundle = require("./bundle.js");
 var import_import_graph = require("./import_graph.js");
+var import_trace_imports = require("./trace_imports.js");
 async function inspect_bundle(options) {
   let { include = [], externals = [], output = void 0, platform = "browser", format = "iife", target = "es2021", minify = false, tree_shaking = void 0, opts = {} } = options;
   const errors = [];
@@ -43,11 +45,15 @@ async function inspect_bundle(options) {
     outfile = outfile.path;
   let build_result = void 0;
   let secondary_build_result = void 0;
-  const graph = new import_import_graph.ImportGraphPlugin({ track_externals: true });
+  const use_import_graph = false;
+  const graph = use_import_graph ? new import_import_graph.ImportGraphPlugin({ track_externals: true }) : void 0;
+  const import_tracer = !use_import_graph ? new import_trace_imports.ImportTracer() : void 0;
   let plugins = [];
   if (opts.plugins)
     plugins = [...opts.plugins];
-  plugins.push(graph.plugin, {
+  if (graph)
+    plugins.push(graph.plugin);
+  plugins.push({
     name: "capture-result",
     setup(build) {
       build.onEnd((result) => {
@@ -111,14 +117,26 @@ async function inspect_bundle(options) {
   let import_chains;
   const get_import_chains = () => {
     import_chains = [];
-    for (let i = 0; i < errors.length; i++) {
-      const p = errors[i].file_name;
-      if (!p)
-        continue;
-      const g = graph.get_import_chains(p);
-      if (!g)
-        continue;
-      import_chains.push(g);
+    if (graph) {
+      for (let i = 0; i < errors.length; i++) {
+        const p = errors[i].file_name;
+        if (!p)
+          continue;
+        const g = graph.get_import_chains(p);
+        if (!g)
+          continue;
+        import_chains.push(g);
+      }
+    } else {
+      const traces = [];
+      for (const e of errors) {
+        if (e.file_name) {
+          for (const input of include) {
+            traces.push({ from: pathlib.resolve(input.toString()), to: pathlib.resolve(e.file_name) });
+          }
+        }
+      }
+      import_chains = import_tracer.trace(traces);
     }
     return import_chains;
   };
@@ -134,7 +152,7 @@ async function inspect_bundle(options) {
     },
     inputs,
     import_chains: get_import_chains,
-    format_import_chains: () => graph.format_import_chains(get_import_chains()),
+    format_import_chains: () => use_import_graph ? graph.format_import_chains(get_import_chains()) : import_tracer.format_import_chains(get_import_chains()),
     metafile: build_result?.metafile ? esbuild.analyzeMetafileSync(build_result.metafile, { verbose: false }) : void 0,
     debug({ limit, filter }) {
       const lines = [];
@@ -146,12 +164,16 @@ async function inspect_bundle(options) {
           continue;
         lines.push(e.data);
         if (e.file_name) {
-          const chain = graph.get_import_chains(e.file_name);
-          if (chain) {
-            const g = graph.format_import_chains([chain], "    ", 10);
-            lines.push(...g);
-            if (g.length > 0) {
-              lines.push("");
+          const error_chains = use_import_graph ? [graph.get_import_chains(e.file_name)] : import_tracer.trace(include.map((p) => ({ from: pathlib.resolve(p.toString()), to: pathlib.resolve(e.file_name) })));
+          if (error_chains?.length) {
+            for (const chain of error_chains) {
+              if (!chain || !chain.found || chain.chains.length === 0)
+                continue;
+              const g = use_import_graph ? graph.format_import_chains([chain], "    ", 10) : import_tracer.format_import_chains([chain], "    ", 10);
+              lines.push(...g);
+              if (g.length > 0) {
+                lines.push("");
+              }
             }
           }
         }

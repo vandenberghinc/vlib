@@ -22,7 +22,9 @@ __export(stdin_exports, {
   InvalidUsageError: () => import_validate.InvalidUsageError,
   ValidateError: () => import_validate.ValidateError,
   Validator: () => import_validate.Validator,
-  validate: () => import_validate.validate
+  validate: () => import_validate.validate,
+  validate_entry: () => import_validate.validate_entry,
+  validate_object: () => import_validate.validate_object
 });
 module.exports = __toCommonJS(stdin_exports);
 var import_entry = require("./infer/entry.js");
@@ -36,6 +38,8 @@ var import_validate = require("./validate/validate.js");
   ValidateError,
   Validator,
   validate,
+  validate_entry,
+  validate_object,
   ...require("./validate/cast.js"),
   ...require("./validate/throw.js")
 });

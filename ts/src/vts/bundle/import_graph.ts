@@ -19,6 +19,8 @@ export interface ImportChain {
 
 /**
  * ImportGraphPlugin that builds import graph during resolution, works even when builds fail
+ *
+ * @note This does not accurately work with tracking imports across libraries.
  */
 export class ImportGraphPlugin {
     private graph = new Map<string, { imports: Set<string>; imported_by: Set<string> }>();

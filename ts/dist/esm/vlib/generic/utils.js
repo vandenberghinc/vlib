@@ -42,7 +42,7 @@ export var Utils;
      * Format a byte size to human readable string.
      * @param value The value in bytes or a string to get byte length of
      * @returns Formatted string (e.g., "1.5MB")
-     * @docs
+     * @deprecated use System.format_bytes instead.
      */
     function format_bytes(value) {
         if (typeof value === "string") {

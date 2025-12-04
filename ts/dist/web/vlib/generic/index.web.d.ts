@@ -6,3 +6,5 @@ export * from "./throw.js";
 export * from "./colors.js";
 export * from "./mutex.js";
 export * from "./glob_pattern.js";
+export * from "./events.js";
+export * from "./system/web.js";

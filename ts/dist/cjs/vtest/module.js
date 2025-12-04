@@ -342,6 +342,8 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
     if (this.override_ctx) {
       ctx = import_package.Package.Context.merge(ctx, this.override_ctx, true);
     }
+    if (typeof ctx.debug === "number")
+      import_vlib.debug.level.set(ctx.debug);
     import_vlib.debug.raw(import_vlib.Color.cyan_bold(`
 Commencing ${this.name} unit tests.`));
     let failed = 0, succeeded = 0;

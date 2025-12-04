@@ -214,6 +214,16 @@ var ObjectUtils;
     return ref;
   }
   ObjectUtils2.merge_missing = merge_missing;
+  function pick(obj, ...keys) {
+    const result = {};
+    for (const key of keys) {
+      if (key in obj) {
+        result[key] = obj[key];
+      }
+    }
+    return result;
+  }
+  ObjectUtils2.pick = pick;
   function _stringify_helper(value, indent_level, nested_depth, opts, circular_cache) {
     let indent = indent_level === false ? "" : opts._indent_str?.repeat(indent_level) ?? "";
     let next_indent = indent_level === false ? "" : opts._indent_str?.repeat(indent_level + 1) ?? "";

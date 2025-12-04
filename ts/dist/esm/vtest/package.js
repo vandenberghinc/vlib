@@ -197,7 +197,13 @@ export class Package {
             if (typeof this.config.ctx.debug === "number" && this.config.ctx.debug >= 1) {
                 log.marker(`Importing unit test module: ${p}`);
             }
-            await import(abs);
+            try {
+                await import(abs);
+            }
+            catch (err) {
+                log.error(`Failed to import unit test module: ${p}`);
+                throw err;
+            }
         }
         // Error when no unit tests are defined.
         if (Modules.length === 0) {
@@ -214,7 +220,7 @@ export class Package {
     (function (Context) {
         /** A validator schema for the context options. */
         Context.Schema = {
-            $schema: "any",
+            $schema: { type: "any", required: false },
             module: { type: ["string", "array"], required: false },
             target: { type: "string", required: false },
             debug: { type: ["string", "number"], required: false },
@@ -300,7 +306,7 @@ export var Config;
         throw: false,
         unknown: false,
         schema: {
-            $schema: "any",
+            $schema: { type: "any", required: false },
             output: { type: "string", required: true },
             include: {
                 type: "array",

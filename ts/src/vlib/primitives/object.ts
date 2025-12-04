@@ -294,6 +294,27 @@ export namespace ObjectUtils {
         return ref as unknown as Omit<T, keyof U> & U;
     }
 
+    /**
+     * Runtime implementation of TypeScript's Pick utility type.
+     * Creates a new object with only the specified keys from the source object.
+     * 
+     * @param obj - The source object to pick properties from
+     * @param keys - Array of keys to pick from the source object
+     * @returns A new object containing only the specified properties
+     */
+    export function pick<T extends object, K extends keyof T>(
+        obj: T,
+        ...keys: K[]
+    ): Pick<T, K> {
+        const result = {} as Pick<T, K>;
+        for (const key of keys) {
+            if (key in obj) {
+                result[key] = obj[key];
+            }
+        }
+        return result;
+    }
+
     // ---------------------------------------------------------
     // Stringify functions.
 

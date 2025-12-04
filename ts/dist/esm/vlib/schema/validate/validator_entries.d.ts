@@ -136,7 +136,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: boolean | import("../../types/types.js").Neverify<{
@@ -175,7 +178,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -208,7 +214,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -241,7 +250,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -264,7 +276,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: Function, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: Function, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: Function, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: Function, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -291,7 +306,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -324,7 +342,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -357,7 +378,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -380,7 +404,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: string, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: string, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: string, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: string, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -407,7 +434,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -440,7 +470,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -473,7 +506,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -496,7 +532,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: number, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: number, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: number, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: number, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: boolean | import("../../types/types.js").Neverify<{
@@ -529,7 +568,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -562,7 +604,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -595,7 +640,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -618,7 +666,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: boolean, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: boolean, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: boolean, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: boolean, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: boolean | import("../../types/types.js").Neverify<{
@@ -651,7 +702,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -684,7 +738,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -717,7 +774,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -740,7 +800,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: undefined, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: undefined, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: undefined, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: undefined, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -767,7 +830,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -800,7 +866,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -833,7 +902,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -856,7 +928,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: Record<string, any>, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: Record<string, any>, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: Record<string, any>, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: Record<string, any>, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -883,7 +958,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -916,7 +994,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -949,7 +1030,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -972,7 +1056,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: null, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: null, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: null, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: null, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -999,7 +1086,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1032,7 +1122,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1065,7 +1158,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1088,7 +1184,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -1115,7 +1214,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1148,7 +1250,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1181,7 +1286,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1204,7 +1312,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: string[], parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: string[], parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: string[], parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: string[], parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;
@@ -1231,7 +1342,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1264,7 +1378,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1297,7 +1414,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
             tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
             enum?: readonly any[];
             alias?: string | readonly string[];
-            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
             preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
             cast?: boolean | import("../../types/types.js").Neverify<{
@@ -1320,7 +1440,10 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         })[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: unknown, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: unknown, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: unknown, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: unknown, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: undefined;

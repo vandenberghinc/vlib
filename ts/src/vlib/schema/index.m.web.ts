@@ -21,6 +21,8 @@ export * from "./validate/cast.js"
 export * from "./validate/throw.js"
 export {
     validate,
+    validate_entry,
+    validate_object,
     Validator,
     InvalidUsageError,
     ValidateError,

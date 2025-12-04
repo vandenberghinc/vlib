@@ -53,3 +53,12 @@ export class FileLogger extends Logger<false, false, FilePipe> {
         this.pipe.assign_paths(log_path, error_path);
     }
 }
+
+// Tests.
+// const logger = new FileLogger({
+//     level: 0,
+// });
+// const err_1 = new Error("This is test error 1.");
+// err_1.cause = new Error("This is test error 2.");
+// (err_1 as any).somevalue = 42;
+// logger.error("Test error log: ", err_1);

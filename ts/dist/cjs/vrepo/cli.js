@@ -607,7 +607,7 @@ cli.command({
       if (!src_pkg.npm) {
         throw this.error(`The source package "${source2}" is not a valid npm package.`);
       }
-      const links = src_pkg.config?.npm?.links || [];
+      const links = src_pkg.config?.npm?.links || {};
       const spinner = new vlib.logging.Spinner({
         message: `Unlinking ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`,
         success: `Unlinked ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`

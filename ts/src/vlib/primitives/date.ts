@@ -411,7 +411,105 @@ export class Date extends globalThis.Date {
     }
 
     /**
-     * Get the timestamp in milliseconds
+     * Format a UNIX timestamp (in seconds) as a locale-aware date/time string.
+     *
+     * - In browsers, `locale` and `time_zone` default to the user's settings
+     *   (`navigator.language` / `navigator.languages` and the browser's time zone).
+     * - In Node or other environments, defaults come from the runtime's Intl config.
+     *
+     * @param unix_seconds  UNIX timestamp in **seconds** since epoch.
+     * @param locale        Optional BCP-47 locale (e.g. "en-US", "nl-NL").
+     * @param time_zone     Optional IANA time zone (e.g. "Europe/Amsterdam").
+     */
+    format_locale({
+        locale,
+        time_zone,
+        show_timezone = false,
+    }: {
+        locale?: string,
+        time_zone?: string,
+        show_timezone?: boolean;
+    }): string {
+        const resolved_locale = locale ?? Date.detect_locale();
+        const resolved_time_zone = time_zone ?? Date.detect_time_zone();
+        const formatter = new Intl.DateTimeFormat(resolved_locale, {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZone: resolved_time_zone,
+            /** @todo set `hour12` based on user's time zone. */
+        });
+        let formatted = formatter.format(this);
+        if (show_timezone) {
+            formatted = `${formatted} ${resolved_time_zone ?? "local time"}`;
+        }
+        return formatted;
+    }
+
+    /**
+     * Detect the preferred locale of the current environment.
+     *
+     * - In browsers, returns `navigator.languages[0]` or `navigator.language` when available.
+     * - In Node/other envs, returns `Intl.DateTimeFormat().resolvedOptions().locale` when available.
+     * - Returns `undefined` if no locale can be determined.
+     *
+     * @returns A BCP-47 locale string (e.g. "en-US") or `undefined`.
+     */
+    static detect_locale(): string | undefined {
+        // Browser environment
+        if (typeof navigator !== "undefined") {
+            const nav_any = navigator as any;
+
+            if (Array.isArray(nav_any.languages) && nav_any.languages.length > 0) {
+                const candidate = nav_any.languages[0];
+                if (typeof candidate === "string" && candidate.length > 0) {
+                    return candidate;
+                }
+            }
+
+            if (typeof nav_any.language === "string" && nav_any.language.length > 0) {
+                return nav_any.language;
+            }
+        }
+
+        // Node / other JS environments
+        try {
+            const opts = Intl.DateTimeFormat().resolvedOptions();
+            if (typeof opts.locale === "string" && opts.locale.length > 0) {
+                return opts.locale;
+            }
+        } catch {
+            // ignore and fall through
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Detect the current time zone of the environment.
+     *
+     * Uses `Intl.DateTimeFormat().resolvedOptions().timeZone`, which typically
+     * reflects the user's local time zone (e.g. "Europe/Amsterdam").
+     *
+     * @returns An IANA time zone string, or `undefined` if detection fails.
+     */
+    static detect_time_zone(): string | undefined {
+        try {
+            const opts = Intl.DateTimeFormat().resolvedOptions();
+            if (typeof opts.timeZone === "string" && opts.timeZone.length > 0) {
+                return opts.timeZone;
+            }
+        } catch {
+            // ignore and fall through
+        }
+        return undefined;
+    }
+
+    /**
+     * Get the unix timestamp in milliseconds
      * @returns {number} The timestamp in milliseconds
      * @docs
      */
@@ -420,7 +518,7 @@ export class Date extends globalThis.Date {
     }
 
     /**
-     * Get the timestamp in seconds
+     * Get the unix timestamp in seconds
      * @returns {number} The timestamp in seconds
      * @docs
      */

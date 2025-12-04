@@ -43,12 +43,12 @@ var Env;
     }
   }
   const loaded_dotenvs = /* @__PURE__ */ new Set();
-  function from(path, opts = { refresh: false }) {
+  function from(path, opts = { refresh: false, override: true }) {
     if (loaded_dotenvs.has(path) && !opts.refresh) {
       return;
     }
     if (import_fs.default.existsSync(path)) {
-      const result = (0, import_dotenv.config)({ path });
+      const result = (0, import_dotenv.config)({ path, override: opts.override });
       if (result.error) {
         throw result.error;
       }

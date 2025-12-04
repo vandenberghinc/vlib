@@ -22,7 +22,10 @@ export declare class SSH {
         tuple?: (Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
-        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => string | void | null | undefined) | undefined;
+        verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         cast?: boolean | import("../vlib/types/types.js").Neverify<{

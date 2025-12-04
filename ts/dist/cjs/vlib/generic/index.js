@@ -24,9 +24,10 @@ __reExport(stdin_exports, require("./mutex.js"), module.exports);
 __reExport(stdin_exports, require("./network.js"), module.exports);
 __reExport(stdin_exports, require("./performance.js"), module.exports);
 __reExport(stdin_exports, require("./process.js"), module.exports);
-__reExport(stdin_exports, require("./system.js"), module.exports);
+__reExport(stdin_exports, require("./system/node.js"), module.exports);
 __reExport(stdin_exports, require("./time_limiter.js"), module.exports);
 __reExport(stdin_exports, require("./glob_pattern.js"), module.exports);
+__reExport(stdin_exports, require("./events.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ...require("./throw.js"),
@@ -39,7 +40,8 @@ __reExport(stdin_exports, require("./glob_pattern.js"), module.exports);
   ...require("./network.js"),
   ...require("./performance.js"),
   ...require("./process.js"),
-  ...require("./system.js"),
+  ...require("./system/node.js"),
   ...require("./time_limiter.js"),
-  ...require("./glob_pattern.js")
+  ...require("./glob_pattern.js"),
+  ...require("./events.js")
 });

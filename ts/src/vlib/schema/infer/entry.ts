@@ -117,7 +117,7 @@ export type Entry<
         attr: V,
         parent: P,
         key?: IndexOrKey<P>
-    ) => string | void | null | undefined;
+    ) => void | null | undefined | string | { error: string; raw?: string };
     /**
      * Pre process the attribute.
      * The callback should return the updated value.

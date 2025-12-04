@@ -2,6 +2,8 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+// FIX // audit 
+// FIX // convert to jsdoc.
 import * as http from 'http';
 import * as https from 'https';
 import * as bson from 'bson';
@@ -55,7 +57,7 @@ export var websocket;
         commands;
         events;
         rate_limit_cache;
-        _clear_caches_timeout;
+        _clear_caches_interval;
         constructor({ ip = null, port = 8000, https = null, rate_limit = {
             limit: 5,
             interval: 60,
@@ -184,7 +186,8 @@ export var websocket;
             else {
                 this.server.listen(this.port, listen_callback);
             }
-            this._clear_caches();
+            // Clear caches interval
+            this._clear_caches_interval = setInterval(() => this._clear_caches(), 60 * 5 * 1000);
         }
         /*  @docs:
          *  @title: Stop
@@ -192,7 +195,7 @@ export var websocket;
          */
         async stop() {
             return new Promise((resolve) => {
-                clearTimeout(this._clear_caches_timeout);
+                clearInterval(this._clear_caches_interval);
                 let closed = 0;
                 this.wss.clients.forEach(client => {
                     client.close();
@@ -236,21 +239,6 @@ export var websocket;
             this.commands.set(command, callback);
         }
         /*  @docs:
-         *  @title: Send
-         *  @descr:
-         *      Send data through the websocket.
-         *      When responding on a request use the same message id to create a response.
-         *      Each message should have a message id so a request/response system can be created.
-         */
-        async send({ stream, command, id = Math.random().toString(36).substr(2, 32), data }) {
-            stream.send(bson.serialize({
-                command,
-                id,
-                data,
-            }));
-            return id;
-        }
-        /*  @docs:
          *  @title: Await response
          *  @descr: Wait for a message to be filled out.
          *  @note: This only works when there is a single response message, any more response messages will be lost.
@@ -277,15 +265,20 @@ export var websocket;
                 wait();
             });
         }
-        /*  @docs:
-         *  @title: Request
-         *  @descr: Send a command and expect a single response.
-         *  @note: This only works when there is a single response message, any more response messages will be lost.
+        /**
+         * Send a command and expect a single response.
          */
         async request({ stream, command, data, timeout = 60000 }) {
-            const id = await this.send({ stream, command, data });
+            const id = await this.send_helper({ stream, command, data });
             return await this.await_response({ stream, id, timeout });
         }
+        /**
+         * Send a response to a received command.
+         */
+        async respond({ stream, id, data, }) {
+            await this.send_helper({ stream, id, data });
+        }
+        /** Clear all caches. */
         _clear_caches() {
             const now = Date.now();
             this.streams.forEach((client, id) => {
@@ -300,7 +293,21 @@ export var websocket;
                     this.streams.delete(id);
                 }
             });
-            this._clear_caches_timeout = setTimeout(() => this._clear_caches(), 3600 * 1000);
+        }
+        /**
+         * Send data through the websocket.
+         * Either a request command when `command` is defined,
+         * or a response when `command` is undefined and `id` is defined.
+         * Note that `id` should always be defined in a sent response,
+         * but it can be auto generated when sending a request command.
+         */
+        async send_helper({ stream, command, id = Math.random().toString(36).substring(2, 32), data }) {
+            stream.send(bson.serialize({
+                command,
+                id,
+                data,
+            }));
+            return id;
         }
     }
     websocket.Server = Server;
@@ -497,22 +504,7 @@ export var websocket;
             await this.await_till_connected();
             this.stream?.send(data);
         }
-        /*  @docs:
-         *  @title: Send
-         *  @descr:
-         *      Send data through the websocket.
-         *      When responding on a request use the same message id to create a response.
-         *      Each message should have a message id so a request/response system can be created.
-         */
-        async send({ command, id = Math.random().toString(36).substring(2, 32), data }) {
-            await this.await_till_connected();
-            this.stream?.send(bson.serialize({
-                command,
-                id,
-                data
-            }));
-            return id;
-        }
+        /** Await till the stream is connected. */
         async await_till_connected(timeout = 60000) {
             if (this.connected) {
                 return;
@@ -564,14 +556,34 @@ export var websocket;
                 wait();
             });
         }
-        /*  @docs:
-         *  @title: Request
-         *  @descr: Send a command and expect a single response.
-         *  @note: This only works when there is a single response message, any more response messages will be lost.
+        /**
+         * Send a command and expect a single response.
          */
         async request({ command, data, timeout = 60000 }) {
-            const id = await this.send({ command, data });
+            const id = await this.send_helper({ command, data });
             return await this.await_response({ id, timeout });
+        }
+        /**
+         * Send a response to a received command.
+         */
+        async respond({ id, data, }) {
+            await this.send_helper({ id, data });
+        }
+        /**
+         * Send data through the websocket.
+         * Either a request command when `command` is defined,
+         * or a response when `command` is undefined and `id` is defined.
+         * Note that `id` should always be defined in a sent response,
+         * but it can be auto generated when sending a request command.
+         */
+        async send_helper({ command, id = Math.random().toString(36).substring(2, 32), data }) {
+            await this.await_till_connected();
+            this.stream?.send(bson.serialize({
+                command,
+                id,
+                data
+            }));
+            return id;
         }
     }
     websocket.Client = Client;

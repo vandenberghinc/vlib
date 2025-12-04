@@ -406,6 +406,8 @@ export class Module {
             ctx = Package.Context.merge(ctx, this.override_ctx, true);
         }
         // Logs.
+        if (typeof ctx.debug === "number")
+            debug.level.set(ctx.debug);
         debug.raw(Color.cyan_bold(`\nCommencing ${this.name} unit tests.`));
         // Variables.
         let failed = 0, succeeded = 0;

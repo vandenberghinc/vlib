@@ -10,6 +10,7 @@ import { SourceLoc } from './source_loc.js';
 import { ActiveLogLevel, Directive, LogMode, ParsedDirectives } from './directives.js';
 import { Spinners } from "./spinners.js";
 import { ObjectUtils } from "../../primitives/object.js";
+import { inspect } from "node:util";
 
 /** * Whether the current environment is a web browser. */
 const web_env = typeof window !== 'undefined' && typeof window.document !== 'undefined';
@@ -20,21 +21,6 @@ const web_env = typeof window !== 'undefined' && typeof window.document !== 'und
  */
 export type Args = (Directive | Error | any)[];
 
-export namespace Pipe {
-    /**
-     * Pipe info class.
-     * @attr data - Castable to string by `.join()`.
-     */
-    export type Info = {
-        data?: never;
-        ignored: true;
-        log_mode: LogMode;
-    } | {
-        data: any[];
-        ignored?: false;
-        log_mode: LogMode;
-    };
-}
 /** 
  * Pipe class.
  * Responsible for logging data to a pipe function, typically `console.log`.
@@ -184,17 +170,60 @@ export class Pipe<
                 // convert symbols to strings.
                 this.push_arg(msg, file_msg, item.toString());
             }
+            // Convert errors.
             else if (item instanceof Error) {
-                // convert errors.
-                let add = (item.stack ?? item.message);
-                if (log_mode === Directive.warn && add.startsWith("Error: ")) {
-                    add = "Warning: " + add.slice(7);
-                }
-                if (log_mode === Directive.warn) {
-                    this.push_arg(msg, file_msg, add.replace(/^Warning: /gm, `${Color.yellow("Warning")}: `));
+                if (web_env) {
+                    // Without color for web env.
+                    const add = Pipe.format_error(item, {
+                        colored: false,
+                        depth: 5,
+                        type: log_mode === Directive.warn ? "warning" : "error",
+                    });
+                    this.push_arg(msg, file_msg, add);
                 } else {
-                    this.push_arg(msg, file_msg, add.replace(/^Error: /gm, `${Color.red("Error")}: `));
+
+                    // With color.
+                    let add = Pipe.format_error(item, {
+                        colored: true,
+                        depth: 5,
+                        type: log_mode === Directive.warn ? "warning" : "error",
+                    });
+                    this.push_arg(msg, undefined, add);
+
+                    // Without color.
+                    if (file_msg != null) {
+                        const add = Pipe.format_error(item, {
+                            colored: false,
+                            depth: 5,
+                            type: log_mode === Directive.warn ? "warning" : "error",
+                        });
+                        this.push_arg([], file_msg, add);
+                    }
                 }
+
+                // // Format the error the same way Node does for console.log/console.error.
+                // // But add colors for Error red or yellow.
+                // import { inspect } from "node:util";
+                // let add = inspect(item, {
+                //     depth: 5,
+                //     colors: true,
+                // });
+                // if (log_mode === Directive.warn) {
+                //     add = add.replaceAll(/(^|^\s*cause: )Error: /gm, (m, g1) => `${g1}${Color.yellow("Error")}: `);
+                //     this.push_arg(msg, undefined, add);
+                // } else {
+                //     add = add.replaceAll(/(^|^\s*cause: )Error: /gm, (m, g1) => `${g1}${Color.red("Error")}: `);
+                //     this.push_arg(msg, undefined, add);
+                // }
+
+                // // Without colors for file logging.
+                // if (file_msg != null) {
+                //     const add = inspect(item, {
+                //         depth: 5,
+                //         colors: false,
+                //     });
+                //     this.push_arg([], file_msg, add);
+                // }
             }
             // else if (Array.isArray(item)) {
             //     this.push_arg(msg, file_msg, "[ARRAY]");
@@ -234,11 +263,14 @@ export class Pipe<
                     }
                     // fallthrough to default handling.
                 }
+
+                // Suffix with Error/Warning on first arg only.
+                // DEPRECATED: moved to format_error() let users do this themselves or it will create weird outputs.
+                // if (msg.length === start_msg_len && (log_mode === Directive.error || log_mode === Directive.warn)) {
+                //     this.push_arg(msg, file_msg, log_mode === Directive.error ? `${Color.red("Error")}: ` : `${Color.yellow("Warning")}: `);
+                // }
                 
                 // Default handling.
-                if (msg.length === start_msg_len && (log_mode === Directive.error || log_mode === Directive.warn)) {
-                    this.push_arg(msg, file_msg, log_mode === Directive.error ? `${Color.red("Error")}: ` : `${Color.yellow("Warning")}: `);
-                }
                 if (this._transform) {
                     const transformed = this._transform(item);
                     if (transformed === Directive.ignore) { item = transformed; }
@@ -299,7 +331,8 @@ export class Pipe<
         while (
             // trim trailing spaces.
             msg.length > 0 &&
-            (msg[msg.length - 1].length === 0 || msg[msg.length - 1].endsWith(' '))
+            typeof msg[msg.length - 1] === "string" &&
+            (msg[msg.length - 1].length === 0 || msg[msg.length - 1][msg[msg.length - 1].length - 1] === " ")
         ) {
             if (msg[msg.length - 1].length <= 1) { msg.length--; }
             else { msg[msg.length - 1] = msg[msg.length - 1].trimEnd(); }
@@ -399,9 +432,10 @@ export class Pipe<
                 msg.push(`[${id}] `);
             }
 
-
-            // trim trailing spaces.
+            // Trim trailing spaces.
             this.trim_trailing_spaces(msg);
+
+            // Add suffix.
             if (msg.length > 1) { msg.push(": "); }
             msg.push(Colors.end);
         }
@@ -460,7 +494,6 @@ export class Pipe<
     log(...args: (Directive | Error | any)[]): void {
         this.ensure_out_err();
         const r = this.pipe(args);
-        // console.log("Pipe.log", r);
         if (r.ignored || !r.data) { return; }
         if (
             this._out === console.log
@@ -545,6 +578,104 @@ export class Pipe<
     //     this.log(Mode.debug, new SourceLoc(1), level, ...args);
     // }
 }
+export namespace Pipe {
+    /**
+     * Pipe info class.
+     * @attr data - Castable to string by `.join()`.
+     */
+    export type Info = {
+        data?: never;
+        ignored: true;
+        log_mode: LogMode;
+    } | {
+        data: any[];
+        ignored?: false;
+        log_mode: LogMode;
+    };
+
+    /**
+     * Format an error into a string with optional colors and depth.
+     * Similar to node utils, but for node and browser.
+     */
+    export function format_error(err: Error, options?: {
+        /** Color mode. */
+        colored?: boolean;
+        /** The max depth for objects and causes. */
+        depth?: number;
+        /** The current depth. */
+        current_depth?: number;
+        /** The indent size. */
+        indent?: number;
+        /** The console type, warning or error. */
+        type?: "warning" | "error";
+    }): string {
+
+        // Setup.
+        const max_depth = options?.depth ?? 5;
+        const current_depth = options?.current_depth ?? 0;
+        const indent_size = options?.indent ?? 2;
+        const start_indent = current_depth * indent_size;
+        const attrs_indent = " ".repeat(start_indent + indent_size);
+        const colored = options?.colored ?? false;
+
+        // Format stack.
+        let data = err.stack ?? `${err.name}: ${err.message}`;
+        data = data.split("\n").map((line, index) => {
+            if (index === 0) return line;
+            line = line.trimStart();
+            if (colored && line.startsWith("at ")) {
+                line = Colors.gray + line + Colors.end;
+            }
+            return attrs_indent + line;
+        }).join("\n");
+        if (colored) {
+            if (options?.type === "warning") {
+                data = data.replaceAll(/^Error: /gm, `${Color.yellow("Error")}: `);
+            } else {
+                data = data.replaceAll(/^Error: /gm, `${Color.red("Error")}: `);
+            }
+        }
+
+        // Format attributes.
+        let keys = Object.keys(err);
+        if (err.cause != null) keys.push("cause");
+        let index = -1;
+        for (const key of keys) {
+            ++index;
+            if (key === "name" || key === "message" || key === "stack" || (
+                key === "cause" && index < keys.length - 1 // ensure cause is only processed at the end.
+            )) { continue; }
+            const raw_value = (err as any)[key];
+            let value: string;
+            if (raw_value instanceof Error) {
+                if (current_depth + 1 >= max_depth) {
+                    value = "[Truncated Error]";
+                } else {
+                    value = Pipe.format_error(raw_value, {
+                        colored,
+                        depth: max_depth,
+                        current_depth: current_depth + 1,
+                        indent: indent_size,
+                        type: options?.type,
+                    });
+                }
+            } else {
+                value = ObjectUtils.stringify(raw_value, {
+                    indent: indent_size,
+                    start_indent: current_depth + 1,
+                    max_depth: max_depth === -1 ? undefined : max_depth,
+                    max_length: 10_000,
+                    json: false,
+                    colored,
+                });
+            }
+            data += `\n${attrs_indent}${key}: ${value}`;
+            // data += `\n${attrs_indent}${colored ? Color.cyan(key) : key}: ${value}`;
+        };
+        return data;
+    }
+
+}
 
 // Default pipe instance.
 export const pipe = new Pipe({
@@ -557,6 +688,12 @@ export const pipe = new Pipe({
 // pipe.log(0, "Im shown");
 // pipe.log(1, "Im not shown");
 // process.exit(1)
+
+// const err_1 = new Error("This is test error 1.");
+// err_1.cause = new Error("This is test error 2.");
+// (err_1 as any).somevalue = 42;
+// pipe.error("Something happened: ", err_1);
+// pipe.warn("Something happened: ", err_1);
 
 // pipe.log("from pipe.log: Log", " statement", " with", " some", " text");
 // pipe.debug("from pipe.debug: Debug", " statement", " with", " some", " text");

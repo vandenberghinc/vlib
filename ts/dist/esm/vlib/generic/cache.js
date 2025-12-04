@@ -11,8 +11,9 @@
 export class Cache {
     // Attributes.
     max_size;
-    limit;
+    max_bytes;
     ttl;
+    sliding_ttl;
     optimize_memory_checks;
     map;
     last_access_times;
@@ -20,26 +21,40 @@ export class Cache {
     cached_memory_size;
     memory_size_dirty;
     // Constructor.
-    constructor({ max_size = undefined, limit = undefined, ttl = undefined, cleanup_interval = 10000, optimize_memory_checks = true, } = {}) {
+    constructor({ max_size = undefined, max_bytes = undefined, ttl = undefined, cleanup_interval = 60_000, optimize_memory_checks = true, } = {}) {
         // Checks.
         if (max_size !== undefined && max_size <= 0)
             throw new Error("max_size must be positive");
-        if (limit !== undefined && limit <= 0)
+        if (max_bytes !== undefined && max_bytes <= 0)
             throw new Error("limit must be positive");
-        if (ttl !== undefined && ttl <= 0)
-            throw new Error("ttl must be positive");
         // Attributes.
         this.max_size = max_size;
-        this.limit = limit;
-        this.ttl = ttl;
+        this.max_bytes = max_bytes;
         this.optimize_memory_checks = optimize_memory_checks;
         this.map = new Map();
         this.last_access_times = new Map();
         this.cleanup_interval_id = undefined;
         this.cached_memory_size = 0;
         this.memory_size_dirty = false;
+        // Set TTL.
+        if (typeof ttl === 'number') {
+            if (ttl <= 0)
+                throw new Error("ttl must be positive");
+            this.ttl = ttl;
+            this.sliding_ttl = true;
+        }
+        else if (typeof ttl === 'object' && ttl !== null) {
+            if (ttl.duration <= 0)
+                throw new Error("ttl.duration must be positive");
+            this.ttl = ttl.duration;
+            this.sliding_ttl = ttl.sliding ?? true;
+        }
+        else {
+            this.ttl = undefined;
+            this.sliding_ttl = true;
+        }
         // Start cleanup interval if we have TTL or memory limit with optimization
-        if (this.ttl !== undefined || (this.limit !== undefined && this.optimize_memory_checks)) {
+        if (this.ttl !== undefined || (this.max_bytes !== undefined && this.optimize_memory_checks)) {
             this._start_cleanup_interval(cleanup_interval);
         }
     }
@@ -71,11 +86,12 @@ export class Cache {
                 }
             }
             // Handle memory limit enforcement
-            if (this.limit !== undefined && this.optimize_memory_checks && this.memory_size_dirty) {
+            if (this.max_bytes !== undefined && this.optimize_memory_checks && this.memory_size_dirty) {
                 this._enforce_memory_limit();
                 this.memory_size_dirty = false;
             }
         }, cleanup_interval);
+        this.cleanup_interval_id.unref?.(); // tell nodejs not to block process exit if this is still running.
     }
     /**
      * Stop the cleanup interval.
@@ -104,7 +120,7 @@ export class Cache {
             }
         }
         // Check memory-based limit
-        if (this.limit !== undefined) {
+        if (this.max_bytes !== undefined) {
             if (this.optimize_memory_checks) {
                 // Just mark as dirty for deferred checking
                 this.memory_size_dirty = true;
@@ -120,12 +136,12 @@ export class Cache {
      * This is the expensive operation that may be deferred.
      */
     _enforce_memory_limit() {
-        if (this.limit === undefined)
+        if (this.max_bytes === undefined)
             return;
         while (this.map.size > 0) {
             const total_size = this._get_total_memory_size();
             this.cached_memory_size = total_size;
-            if (total_size <= this.limit) {
+            if (total_size <= this.max_bytes) {
                 break;
             }
             const oldest_key = this.map.keys().next().value;
@@ -136,13 +152,6 @@ export class Cache {
                 break;
             }
         }
-    }
-    /**
-     * Update the last access time for a key.
-     * @param key - The key to update
-     */
-    _update_last_access_time(key) {
-        this.last_access_times.set(key, Date.now());
     }
     /**
      * Estimate the memory size of a value in bytes.
@@ -231,7 +240,9 @@ export class Cache {
      */
     set(key, value) {
         this.map.set(key, value);
-        this._update_last_access_time(key);
+        if (this.ttl !== undefined && (this.sliding_ttl || !this.last_access_times.has(key))) {
+            this.last_access_times.set(key, Date.now());
+        }
         this._check_and_remove_oldest();
         return this;
     }
@@ -242,7 +253,9 @@ export class Cache {
      */
     get(key) {
         if (this.map.has(key)) {
-            this._update_last_access_time(key);
+            if (this.ttl !== undefined && (this.sliding_ttl || !this.last_access_times.has(key))) {
+                this.last_access_times.set(key, Date.now());
+            }
             return this.map.get(key);
         }
         return undefined;

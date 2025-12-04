@@ -10,24 +10,30 @@
  */
 export declare class Cache<K extends string | number | symbol = string, V = any> {
     private max_size;
-    private limit;
+    private max_bytes;
     private ttl;
+    private sliding_ttl;
     private optimize_memory_checks;
     private map;
     private last_access_times;
     private cleanup_interval_id;
     private cached_memory_size;
     private memory_size_dirty;
-    constructor({ max_size, limit, ttl, cleanup_interval, optimize_memory_checks, }?: {
+    constructor({ max_size, max_bytes, ttl, cleanup_interval, optimize_memory_checks, }?: {
         /** The max entries allowed in the cache, once exceeded items will be popped. */
         max_size?: number;
-        /** Time to live for each entry in msec. */
-        ttl?: number;
+        /** The time to live for each entry in msec, by default sliding unless specified otherwise */
+        ttl?: number | {
+            /** A sliding TTL or static, defaults to `true`. */
+            sliding?: boolean;
+            /** The time to live for each entry in msec. */
+            duration: number;
+        };
         /**
          * The total memory limit in bytes for the entire cache, once exceeded items will be popped.
          * Note that the memory size is estimated and may not be exact.
          */
-        limit?: number;
+        max_bytes?: number;
         /**
          * Optimize memory usage checks by performing the check inside the interval loop
          * instead of inside the {@link set} method.
@@ -55,11 +61,6 @@ export declare class Cache<K extends string | number | symbol = string, V = any>
      * This is the expensive operation that may be deferred.
      */
     private _enforce_memory_limit;
-    /**
-     * Update the last access time for a key.
-     * @param key - The key to update
-     */
-    private _update_last_access_time;
     /**
      * Estimate the memory size of a value in bytes.
      * @param value - The value to measure

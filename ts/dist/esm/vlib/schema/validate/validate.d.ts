@@ -4,7 +4,7 @@
  *
  * @todo create Compiled function for validating each entry
  */
-import { Entries, TupleEntries, ValueEntries } from "../infer/entry.js";
+import { Entries, Entry, TupleEntries, ValueEntries } from "../infer/entry.js";
 import { ValidatorEntry } from "./validator_entries.js";
 import { MutableObject } from "../../types/literals.js";
 /** Base object or array. */
@@ -122,28 +122,11 @@ declare namespace State {
     function with_override<Throw extends boolean>(state: State, override: Partial<State.Opts<Throw>>): State;
 }
 /**
- * Perform validation on an array or object.
- * For instance the `root` data object.
- * But also for validating the content of an validated object or array.
- * Note that this function does not infer, the outer function should
- * capture the entry/entries as a const generic and infer it.
- * @private
- */
-export declare function validate_object<const T extends ObjOrArr>(data: T, 
-/**
- * A minimum entry with the schema info
- * Class `ValidatorEntry` must be castable to this parameter type.
- */
-entry: MinimumEntry | ValidatorEntry, 
-/** Validation options for the current entry. */
-state: State): ValidateResponse<any, any>;
-/**
  * The validator class.
  * A pre-constructed entry-like object containing all information
  * required to validate data. This class is used to avoid the overhead
  * of creating a new `Validator` object each time.
- *
- * @private
+ * @docs
  */
 export declare class Validator<Data extends ObjOrArr, Throw extends boolean = false, const Sch extends Entries.Opts = Entries.Opts, const Val extends ValueEntries.Opts = ValueEntries.Opts, const Tpl extends TupleEntries.Opts = TupleEntries.Opts> {
     /**
@@ -172,6 +155,7 @@ export declare class Validator<Data extends ObjOrArr, Throw extends boolean = fa
      * Validate the given data against the entry.
      * @param data The data to validate.
      * @param state Optionally provide a state object to override the current state.
+     * @docs
      */
     validate<const T extends ObjOrArr>(data: T, state?: Partial<State.Opts<Throw>>): ValidateResponse.Thrown<Data, Throw, Sch, Val, Tpl>;
 }
@@ -183,7 +167,27 @@ export declare namespace Validator {
     type Opts<Data extends ObjOrArr = ObjOrArr, Throw extends boolean = boolean, Sch extends Entries.Opts = Entries.Opts, Val extends ValueEntries.Opts = ValueEntries.Opts, Tpl extends TupleEntries.Opts = TupleEntries.Opts> = ConstructorParameters<typeof Validator<Data, Throw, Sch, Val, Tpl>>[0];
 }
 /**
+ * Perform validation on a single entry inside an object or array.
+ * @returns A validation response containing the validated data or an error.
+ * @docs
+ */
+export declare function validate_entry<Throw extends boolean = false>(value: any, entry: Entry | ValidatorEntry<any, any>, state?: State.Opts<Throw>): ValidateResponse<any, any>;
+/**
+ * Perform validation on a single entry inside an object or array.
+ * @returns A validation response containing the validated data or an error.
+ * @docs
+ */
+export declare function validate_object<const T extends ObjOrArr>(data: T, 
+/**
+ * A minimum entry with the schema info
+ * Class `ValidatorEntry` must be castable to this parameter type.
+ */
+entry: Entry | ValidatorEntry<any, any>, 
+/** Validation options for the current entry. */
+state?: State.Opts): ValidateResponse<any, any>;
+/**
  * Perform validation a given array or object.
+ * @docs
  */
 export declare function validate<Data extends ObjOrArr, Throw extends boolean = false, const Sch extends Entries.Opts = Entries.Opts, const Val extends ValueEntries.Opts = ValueEntries.Opts, const Tpl extends TupleEntries.Opts = TupleEntries.Opts>(data: Data, val: 
 /**
@@ -199,13 +203,16 @@ Validator<Data, Throw, Sch, Val, Tpl>
  * The object response form of validation operations.
  * Note that this is not always the returned type of the `validate()` function,
  * but rather the type of the response object when `throw` is `false`.
+ * @docs
  */
 export type ValidateResponse<Mode extends "error" | "success", Output extends object = object> = Mode extends "error" ? {
     error: string;
+    raw_error: string;
     invalid_fields: Record<string, string>;
     data?: never;
 } : Mode extends "success" ? {
     error?: never;
+    raw_error?: never;
     invalid_fields?: never;
     data: Output;
 } : never;
@@ -218,12 +225,18 @@ export declare namespace ValidateResponse {
      */
     type Thrown<Data extends ObjOrArr, Throw extends boolean = false, Sch extends Entries.Opts = Entries.Opts, Val extends ValueEntries.Opts = ValueEntries.Opts, Tpl extends TupleEntries.Opts = TupleEntries.Opts> = Throw extends true ? InferOutput<Data, Sch, Val, Tpl> : ValidateResponse<"error"> | ValidateResponse<"success", InferOutput<Data, Sch, Val, Tpl>>;
 }
-/** A user facing error class for user-facing errors from `validate` when `throw` is `true`. */
+/**
+ * A user facing error class for user-facing errors from `validate` when `throw` is `true`.
+ * @docs
+ */
 export declare class ValidateError<O extends object> extends globalThis.Error {
     info: ValidateResponse<"error", O>;
     constructor(info: ValidateResponse<"error", O>);
 }
-/** Error thrown when the user incorrectly utilizes the schema module. */
+/**
+ * Error thrown when the user incorrectly utilizes the schema module.
+ * @docs
+ */
 export declare class InvalidUsageError extends globalThis.Error {
     constructor(msg: string);
 }

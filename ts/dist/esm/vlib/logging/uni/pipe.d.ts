@@ -8,21 +8,6 @@ import { ActiveLogLevel, Directive, LogMode, ParsedDirectives } from './directiv
  * Purely for denoting types that are handled differently such as directives and `Error` instances.
  */
 export type Args = (Directive | Error | any)[];
-export declare namespace Pipe {
-    /**
-     * Pipe info class.
-     * @attr data - Castable to string by `.join()`.
-     */
-    type Info = {
-        data?: never;
-        ignored: true;
-        log_mode: LogMode;
-    } | {
-        data: any[];
-        ignored?: false;
-        log_mode: LogMode;
-    };
-}
 /**
  * Pipe class.
  * Responsible for logging data to a pipe function, typically `console.log`.
@@ -219,5 +204,36 @@ export declare class Pipe<Accumulated extends boolean = boolean, Logged extends 
      */
     warn(level: number | any, ...errs: Args): void;
     warning(level: number | any, ...errs: Args): void;
+}
+export declare namespace Pipe {
+    /**
+     * Pipe info class.
+     * @attr data - Castable to string by `.join()`.
+     */
+    type Info = {
+        data?: never;
+        ignored: true;
+        log_mode: LogMode;
+    } | {
+        data: any[];
+        ignored?: false;
+        log_mode: LogMode;
+    };
+    /**
+     * Format an error into a string with optional colors and depth.
+     * Similar to node utils, but for node and browser.
+     */
+    function format_error(err: Error, options?: {
+        /** Color mode. */
+        colored?: boolean;
+        /** The max depth for objects and causes. */
+        depth?: number;
+        /** The current depth. */
+        current_depth?: number;
+        /** The indent size. */
+        indent?: number;
+        /** The console type, warning or error. */
+        type?: "warning" | "error";
+    }): string;
 }
 export declare const pipe: Pipe<boolean, boolean>;

@@ -97,7 +97,10 @@ Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived :
     /**
      * Verify the attribute, optionally return an error string.
      */
-    verify?: (attr: V, parent: P, key?: IndexOrKey<P>) => string | void | null | undefined;
+    verify?: (attr: V, parent: P, key?: IndexOrKey<P>) => void | null | undefined | string | {
+        error: string;
+        raw?: string;
+    };
     /**
      * Pre process the attribute.
      * The callback should return the updated value.

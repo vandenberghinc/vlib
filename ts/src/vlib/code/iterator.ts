@@ -1023,11 +1023,17 @@ export class Iterator<Src extends Source = Source> {
      * When `lang` is defined, the position must be greater than or equal to the current position.
      * @throws An error when the position is out of bounds, or when jumping to a past position with a language defined.
      */
-    jump_to(n: number): void {
+    jump_to(n: number, opts?: {
+        /**
+         * Wheter to advance, only advances when a language context is defined.
+         * @default true
+         */
+        advance?: boolean,
+    }): void {
         if (n < 0 || n >= this.end) {
             throw new Error(`Cannot jump to position ${n}, must be between 0 and ${this.end - 1}.`);
         }
-        if (this.lang.has_patterns) {
+        if (this.lang.has_patterns && opts?.advance !== false) {
             if (n < this.pos) {
                 throw new Error(`Cannot jump to a past position ${n} < ${this.pos} when language is defined.`);
             }

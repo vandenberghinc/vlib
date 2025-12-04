@@ -15,7 +15,7 @@ export declare namespace System {
      * @param bytes The number of bytes
      * @docs
     */
-    function format_bytes(bytes: number): string;
+    function format_bytes(bytes: string | number): string;
     /**
      * Get the system CPU usage.
      * @returns Returns a number containing the current cpu usage in percentage

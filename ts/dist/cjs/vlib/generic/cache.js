@@ -23,8 +23,9 @@ module.exports = __toCommonJS(stdin_exports);
 class Cache {
   // Attributes.
   max_size;
-  limit;
+  max_bytes;
   ttl;
+  sliding_ttl;
   optimize_memory_checks;
   map;
   last_access_times;
@@ -32,23 +33,34 @@ class Cache {
   cached_memory_size;
   memory_size_dirty;
   // Constructor.
-  constructor({ max_size = void 0, limit = void 0, ttl = void 0, cleanup_interval = 1e4, optimize_memory_checks = true } = {}) {
+  constructor({ max_size = void 0, max_bytes = void 0, ttl = void 0, cleanup_interval = 6e4, optimize_memory_checks = true } = {}) {
     if (max_size !== void 0 && max_size <= 0)
       throw new Error("max_size must be positive");
-    if (limit !== void 0 && limit <= 0)
+    if (max_bytes !== void 0 && max_bytes <= 0)
       throw new Error("limit must be positive");
-    if (ttl !== void 0 && ttl <= 0)
-      throw new Error("ttl must be positive");
     this.max_size = max_size;
-    this.limit = limit;
-    this.ttl = ttl;
+    this.max_bytes = max_bytes;
     this.optimize_memory_checks = optimize_memory_checks;
     this.map = /* @__PURE__ */ new Map();
     this.last_access_times = /* @__PURE__ */ new Map();
     this.cleanup_interval_id = void 0;
     this.cached_memory_size = 0;
     this.memory_size_dirty = false;
-    if (this.ttl !== void 0 || this.limit !== void 0 && this.optimize_memory_checks) {
+    if (typeof ttl === "number") {
+      if (ttl <= 0)
+        throw new Error("ttl must be positive");
+      this.ttl = ttl;
+      this.sliding_ttl = true;
+    } else if (typeof ttl === "object" && ttl !== null) {
+      if (ttl.duration <= 0)
+        throw new Error("ttl.duration must be positive");
+      this.ttl = ttl.duration;
+      this.sliding_ttl = ttl.sliding ?? true;
+    } else {
+      this.ttl = void 0;
+      this.sliding_ttl = true;
+    }
+    if (this.ttl !== void 0 || this.max_bytes !== void 0 && this.optimize_memory_checks) {
       this._start_cleanup_interval(cleanup_interval);
     }
   }
@@ -76,11 +88,12 @@ class Cache {
           this.delete(key);
         }
       }
-      if (this.limit !== void 0 && this.optimize_memory_checks && this.memory_size_dirty) {
+      if (this.max_bytes !== void 0 && this.optimize_memory_checks && this.memory_size_dirty) {
         this._enforce_memory_limit();
         this.memory_size_dirty = false;
       }
     }, cleanup_interval);
+    this.cleanup_interval_id.unref?.();
   }
   /**
    * Stop the cleanup interval.
@@ -106,7 +119,7 @@ class Cache {
         }
       }
     }
-    if (this.limit !== void 0) {
+    if (this.max_bytes !== void 0) {
       if (this.optimize_memory_checks) {
         this.memory_size_dirty = true;
       } else {
@@ -119,12 +132,12 @@ class Cache {
    * This is the expensive operation that may be deferred.
    */
   _enforce_memory_limit() {
-    if (this.limit === void 0)
+    if (this.max_bytes === void 0)
       return;
     while (this.map.size > 0) {
       const total_size = this._get_total_memory_size();
       this.cached_memory_size = total_size;
-      if (total_size <= this.limit) {
+      if (total_size <= this.max_bytes) {
         break;
       }
       const oldest_key = this.map.keys().next().value;
@@ -134,13 +147,6 @@ class Cache {
         break;
       }
     }
-  }
-  /**
-   * Update the last access time for a key.
-   * @param key - The key to update
-   */
-  _update_last_access_time(key) {
-    this.last_access_times.set(key, Date.now());
   }
   /**
    * Estimate the memory size of a value in bytes.
@@ -223,7 +229,9 @@ class Cache {
    */
   set(key, value) {
     this.map.set(key, value);
-    this._update_last_access_time(key);
+    if (this.ttl !== void 0 && (this.sliding_ttl || !this.last_access_times.has(key))) {
+      this.last_access_times.set(key, Date.now());
+    }
     this._check_and_remove_oldest();
     return this;
   }
@@ -234,7 +242,9 @@ class Cache {
    */
   get(key) {
     if (this.map.has(key)) {
-      this._update_last_access_time(key);
+      if (this.ttl !== void 0 && (this.sliding_ttl || !this.last_access_times.has(key))) {
+        this.last_access_times.set(key, Date.now());
+      }
       return this.map.get(key);
     }
     return void 0;

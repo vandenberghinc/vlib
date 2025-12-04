@@ -13,8 +13,9 @@ export class Cache<K extends string | number | symbol = string, V = any> {
 
     // Attributes.
     private max_size: number | undefined;
-    private limit: number | undefined;
+    private max_bytes: number | undefined;
     private ttl: number | undefined;
+    private sliding_ttl: boolean;
     private optimize_memory_checks: boolean;
     private map: Map<K, V>;
     private last_access_times: Map<K, number>;
@@ -25,20 +26,25 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     // Constructor.
     constructor({
         max_size = undefined,
-        limit = undefined,
+        max_bytes = undefined,
         ttl = undefined,
-        cleanup_interval = 10000,
+        cleanup_interval = 60_000,
         optimize_memory_checks = true,
     }: {
         /** The max entries allowed in the cache, once exceeded items will be popped. */
         max_size?: number;
-        /** Time to live for each entry in msec. */
-        ttl?: number;
+        /** The time to live for each entry in msec, by default sliding unless specified otherwise */
+        ttl?: number | {
+            /** A sliding TTL or static, defaults to `true`. */
+            sliding?: boolean
+            /** The time to live for each entry in msec. */
+            duration: number
+        };
         /**
          * The total memory limit in bytes for the entire cache, once exceeded items will be popped.
          * Note that the memory size is estimated and may not be exact.
          */
-        limit?: number;
+        max_bytes?: number;
         /**
          * Optimize memory usage checks by performing the check inside the interval loop
          * instead of inside the {@link set} method.
@@ -50,13 +56,11 @@ export class Cache<K extends string | number | symbol = string, V = any> {
 
         // Checks.
         if (max_size !== undefined && max_size <= 0) throw new Error("max_size must be positive");
-        if (limit !== undefined && limit <= 0) throw new Error("limit must be positive");
-        if (ttl !== undefined && ttl <= 0) throw new Error("ttl must be positive");
+        if (max_bytes !== undefined && max_bytes <= 0) throw new Error("limit must be positive");
 
         // Attributes.
         this.max_size = max_size;
-        this.limit = limit;
-        this.ttl = ttl;
+        this.max_bytes = max_bytes;
         this.optimize_memory_checks = optimize_memory_checks;
         this.map = new Map<K, V>();
         this.last_access_times = new Map<K, number>();
@@ -64,8 +68,23 @@ export class Cache<K extends string | number | symbol = string, V = any> {
         this.cached_memory_size = 0;
         this.memory_size_dirty = false;
 
+        // Set TTL.
+        if (typeof ttl === 'number') {
+            if (ttl <= 0) throw new Error("ttl must be positive");
+            this.ttl = ttl;
+            this.sliding_ttl = true;
+        } else if (typeof ttl === 'object' && ttl !== null) {
+            if (ttl.duration <= 0) throw new Error("ttl.duration must be positive");
+            this.ttl = ttl.duration;
+            this.sliding_ttl = ttl.sliding ?? true;
+        } else {
+            this.ttl = undefined;
+            this.sliding_ttl = true;
+        }
+
+
         // Start cleanup interval if we have TTL or memory limit with optimization
-        if (this.ttl !== undefined || (this.limit !== undefined && this.optimize_memory_checks)) {
+        if (this.ttl !== undefined || (this.max_bytes !== undefined && this.optimize_memory_checks)) {
             this._start_cleanup_interval(cleanup_interval);
         }
     }
@@ -102,11 +121,12 @@ export class Cache<K extends string | number | symbol = string, V = any> {
             }
 
             // Handle memory limit enforcement
-            if (this.limit !== undefined && this.optimize_memory_checks && this.memory_size_dirty) {
+            if (this.max_bytes !== undefined && this.optimize_memory_checks && this.memory_size_dirty) {
                 this._enforce_memory_limit();
                 this.memory_size_dirty = false;
             }
         }, cleanup_interval);
+        this.cleanup_interval_id.unref?.(); // tell nodejs not to block process exit if this is still running.
     }
 
 
@@ -139,7 +159,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
         }
 
         // Check memory-based limit
-        if (this.limit !== undefined) {
+        if (this.max_bytes !== undefined) {
             if (this.optimize_memory_checks) {
                 // Just mark as dirty for deferred checking
                 this.memory_size_dirty = true;
@@ -155,13 +175,13 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * This is the expensive operation that may be deferred.
      */
     private _enforce_memory_limit(): void {
-        if (this.limit === undefined) return;
+        if (this.max_bytes === undefined) return;
 
         while (this.map.size > 0) {
             const total_size = this._get_total_memory_size();
             this.cached_memory_size = total_size;
 
-            if (total_size <= this.limit) {
+            if (total_size <= this.max_bytes) {
                 break;
             }
 
@@ -174,13 +194,6 @@ export class Cache<K extends string | number | symbol = string, V = any> {
         }
     }
 
-    /**
-     * Update the last access time for a key.
-     * @param key - The key to update
-     */
-    private _update_last_access_time(key: K): void {
-        this.last_access_times.set(key, Date.now());
-    }
 
     /**
      * Estimate the memory size of a value in bytes.
@@ -271,7 +284,9 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      */
     public set(key: K, value: V): this {
         this.map.set(key, value);
-        this._update_last_access_time(key);
+        if (this.ttl !== undefined && (this.sliding_ttl || !this.last_access_times.has(key))) {
+            this.last_access_times.set(key, Date.now());
+        }
         this._check_and_remove_oldest();
         return this;
     }
@@ -283,7 +298,9 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      */
     public get(key: K): V | undefined {
         if (this.map.has(key)) {
-            this._update_last_access_time(key);
+            if (this.ttl !== undefined && (this.sliding_ttl || !this.last_access_times.has(key))) {
+                this.last_access_times.set(key, Date.now());
+            }
             return this.map.get(key);
         }
         return undefined;

@@ -196,11 +196,28 @@ namespace State {
 // Utility funcs.
 
 /** Create an error object. */
-function create_error(state: State, field: string, message: string): ValidateResponse<"error"> {
+function create_error(
+    /** The state info. */
+    state: State,
+    /** The field name. */
+    field: string,
+    /** 
+     * The full message including the field name, formatted like `Attribute 'name' is required.`
+     * Suitable for REST API responses, logs, etc.
+     */
+    message: string,
+    /**
+     * The raw message without field name etc, formatted like `Invalid lenght, must be at least N chars.`
+     * For instance suitable for showing in a UI beneath an invalid input field.
+     * This will not include the shared error prefix.
+     */
+    raw: string,
+): ValidateResponse<"error"> {
     return {
         error: state.shared.error_prefix + message,
+        raw_error: raw,
         invalid_fields: {
-            [field]: state.shared.error_prefix + message,
+            [field]: raw,
         },
     };
 }
@@ -255,7 +272,7 @@ function check_type(
                 return false;
             }
             if (entry.requires_validation) {
-                const res = validate_object(
+                const res = validate_object_helper(
                     object[obj_key],
                     entry,
                     {
@@ -276,11 +293,21 @@ function check_type(
             // Check min max items.
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                    `Invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                );
             }
             if (typeof entry.max === "number" && object[obj_key].length > entry.max) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                    `Invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                );
             }
             return true;
         }
@@ -291,7 +318,7 @@ function check_type(
                 return false;
             }
             if (entry.requires_validation) {
-                const res = validate_object(
+                const res = validate_object_helper(
                     object[obj_key],
                     entry,
                     {
@@ -312,11 +339,21 @@ function check_type(
             // Check min max items.
             if (typeof entry.min === "number" && key_length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                    `Invalid object entries length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                );
             }
             if (typeof entry.max === "number" && key_length > entry.max) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid array length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                    `Invalid object entries length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                );
             }
             return true;
         }
@@ -328,11 +365,21 @@ function check_type(
             }
             if (typeof entry.min === "number" && object[obj_key].length < entry.min) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid string length [${object[obj_key].length}], the minimum length is [${entry.min}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid string length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                    `Invalid string length [${object[obj_key].length}], the minimum length is [${entry.min}].`,
+                );
             }
             if (typeof entry.max === "number" && object[obj_key].length > entry.max) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid string length [${object[obj_key].length}], the maximum length is [${entry.max}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid string length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                    `Invalid string length [${object[obj_key].length}], the maximum length is [${entry.max}].`,
+                );
             }
             if (type !== typeof object[obj_key]) {
                 return false;
@@ -353,11 +400,21 @@ function check_type(
             }
             if (typeof entry.min === "number" && object[obj_key] < entry.min) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an value [${object[obj_key].length}], the minimum is [${entry.min}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid value [${object[obj_key].length}], the minimum is [${entry.min}].`,
+                    `Invalid value [${object[obj_key].length}], the minimum is [${entry.min}].`,
+                );
             }
             if (typeof entry.max === "number" && object[obj_key] > entry.max) {
                 const field = `${state.parent}${obj_key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid value [${object[obj_key].length}], the maximum is [${entry.max}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid value [${object[obj_key].length}], the maximum is [${entry.max}].`,
+                    `Invalid value [${object[obj_key].length}], the maximum is [${entry.max}].`,
+                );
             }
             return true;
         }
@@ -376,8 +433,11 @@ function check_type(
     }
 }
 
-/** Validate a value ban entry. */
-function validate_entry(
+/**
+ * Perform validation on a single entry inside an object or array.
+ * @internal
+ */
+function validate_entry_helper(
     state: State,
     entry: ValidatorEntry,
     key: string | number,
@@ -410,6 +470,7 @@ function validate_entry(
     // console.log(`Validating entry '${field}' with value:`, object[key], "and entry:", entry);
 
     // Do a type check.
+    // console.log("Validating key:", {key}, "with value:", {value: object[key], required: entry.is_required(object) });
     if (
         // Only when type is defined and not "any".
         entry.type && entry.type !== "any"
@@ -442,11 +503,21 @@ function validate_entry(
             if (correct_type === false) {
                 const field = `${state.parent}${key}`;
                 const current_type = value_type(object[key]);
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid type '${current_type}', the valid type is ${entry.type_name("")}.`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid type '${current_type}', the valid type is ${entry.type_name("")}.`,
+                    `Invalid type '${current_type}', the valid type is ${entry.type_name("")}.`,
+                );
             }
             else if (is_empty && entry.is_required(object) && entry.default !== "") {
                 const field = `${state.parent}${key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is an empty string.`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' is empty.`,
+                    `Invalid value, may not be empty.`,
+                );
             }
         }
 
@@ -462,11 +533,21 @@ function validate_entry(
             else if (res === false) {
                 const field = `${state.parent}${key}`;
                 const current_type = value_type(object[key]);
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid type '${current_type}', the valid type is ${entry.type_name("")}.`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid type '${current_type}', the valid type is ${entry.type_name("")}.`,
+                    `Invalid type '${current_type}', the valid type is ${entry.type_name("")}.`,
+                );
             }
             else if (res === "empty" && entry.is_required(object) && entry.default !== "") {
                 const field = `${state.parent}${key}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is an empty string.`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' is empty.`,
+                    `Invalid value, may not be empty.`,
+                );
             }
         }
         else {
@@ -487,7 +568,12 @@ function validate_entry(
     if (entry.charset && typeof object[key] === "string") {
         if (!entry.charset.test(object[key])) {
             const field = `${state.parent}${key}`;
-            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid charset, expected: ${entry.charset.toString()}.`);
+            return create_error(
+                state,
+                field,
+                `${get_field_type(state, entry, true)} '${field}' has an invalid charset, expected: ${entry.charset.toString()}.`,
+                `Invalid charset, expected: ${entry.charset.toString()}.`,
+            );
         }
     }
 
@@ -503,7 +589,12 @@ function validate_entry(
                 }
                 return `'${item.toString()}'`;
             }).join(", ");
-            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' must be one of the following enumerated values [${joined}].`);
+            return create_error(
+                state,
+                field,
+                `${get_field_type(state, entry, true)} '${field}' must be one of the following enumerated values [${joined}].`,
+                `Invalid value, must be one of the following enumerated values [${joined}].`,
+            );
         }
     }
 
@@ -511,7 +602,21 @@ function validate_entry(
     if (typeof entry.verify === "function") {
         const err = entry.verify(object[key], object, key);
         if (err) {
-            return create_error(state, `${state.parent}${key}`, err);
+            if (typeof err === "object") {
+                return create_error(
+                    state,
+                    `${state.parent}${key}`,
+                    err.error,
+                    err.raw ?? err.error,
+                );
+            } else {
+                return create_error(
+                    state,
+                    `${state.parent}${key}`,
+                    err,
+                    err,
+                );
+            }
         }
     }
 
@@ -529,10 +634,10 @@ function validate_entry(
  * For instance the `root` data object.
  * But also for validating the content of an validated object or array.
  * Note that this function does not infer, the outer function should
- * capture the entry/entries as a const generic and infer it. 
- * @private
+ * capture the entry / entries as a const generic and infer it. 
+ * @internal
  */
-export function validate_object<const T extends ObjOrArr>(
+function validate_object_helper<const T extends ObjOrArr>(
     data: T,
     /**
      * A minimum entry with the schema info
@@ -551,12 +656,17 @@ export function validate_object<const T extends ObjOrArr>(
             // Check if the array is a tuple.
             if (data.length !== entry.tuple_schema.length) {
                 const field = `${state.parent || "tuple"}`;
-                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid tuple length [${data.length}], expected [${entry.tuple_schema.length}].`);
+                return create_error(
+                    state,
+                    field,
+                    `${get_field_type(state, entry, true)} '${field}' has an invalid tuple length [${data.length}], expected [${entry.tuple_schema.length}].`,
+                    `Invalid tuple length [${data.length}], expected [${entry.tuple_schema.length}].`,
+                );
             }
 
             // Iterate array.
             for (let index = 0; index < data.length; index++) {
-                const err = validate_entry(state, entry.tuple_schema[index], index, data);
+                const err = validate_entry_helper(state, entry.tuple_schema[index], index, data);
                 if (err) { return err; }
             }
         }
@@ -567,7 +677,7 @@ export function validate_object<const T extends ObjOrArr>(
 
             // Iterate array.
             for (let index = 0; index < data.length; index++) {
-                const err = validate_entry(state, entry.value_schema, index, data);
+                const err = validate_entry_helper(state, entry.value_schema, index, data);
                 if (err) { return err; }
             }
         }
@@ -588,7 +698,7 @@ export function validate_object<const T extends ObjOrArr>(
             for (let i = 0; i < keys.length; i++) {
 
                 // Verify the values of the object by scheme.
-                const err = validate_entry(state, entry.value_schema, keys[i], data);
+                const err = validate_entry_helper(state, entry.value_schema, keys[i], data);
                 if (err) { return err; }
             }
         }
@@ -624,7 +734,8 @@ export function validate_object<const T extends ObjOrArr>(
                         return create_error(state,
                             field,
                             `${get_field_type(state, entry, true)} '${field}' is not allowed` +
-                            (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : ".")
+                            (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : "."),
+                            "Not allowed" + (suggested_key ? `, did you mean '${suggested_key}'?` : ".")
                         );
                     }
                 }
@@ -670,11 +781,21 @@ export function validate_object<const T extends ObjOrArr>(
                             const required = schema_entry.required(data);
                             if (required) {
                                 const field = `${state.parent}${entry_key}`;
-                                return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' should be a defined value${schema_entry.type_name(" of type ")}.`);
+                                return create_error(
+                                    state,
+                                    field,
+                                    `${get_field_type(state, entry, true)} '${field}' should be a defined value${schema_entry.type_name(" of type ")}.`,
+                                    `Invalid value, should be a defined value${schema_entry.type_name(" of type ")}.`,
+                                );
                             }
                         } else {
                             const field = `${state.parent}${entry_key}`;
-                            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' should be a defined value${schema_entry.type_name(" of type ")}.`);
+                            return create_error(
+                                state,
+                                field,
+                                `${get_field_type(state, entry, true)} '${field}' should be a defined value${schema_entry.type_name(" of type ")}.`,
+                                `Invalid value, should be a defined value${schema_entry.type_name(" of type ")}.`,
+                            );
                         }
                     }
 
@@ -683,7 +804,7 @@ export function validate_object<const T extends ObjOrArr>(
                 }
 
                 // Verify value.
-                const err = validate_entry(state, schema_entry, entry_key, data);
+                const err = validate_entry_helper(state, schema_entry, entry_key, data);
                 if (err) { return err; }
             }
         }
@@ -696,7 +817,6 @@ export function validate_object<const T extends ObjOrArr>(
     return { data };
 }
 
-
 // ------------------------------------------------------------
 // The validator.
 
@@ -705,8 +825,7 @@ export function validate_object<const T extends ObjOrArr>(
  * A pre-constructed entry-like object containing all information
  * required to validate data. This class is used to avoid the overhead 
  * of creating a new `Validator` object each time.
- * 
- * @private
+ * @docs
  */
 export class Validator<
     Data extends ObjOrArr,
@@ -758,6 +877,7 @@ export class Validator<
      * Validate the given data against the entry.
      * @param data The data to validate.
      * @param state Optionally provide a state object to override the current state.
+     * @docs
      */
     validate<const T extends ObjOrArr>(
         data: T,
@@ -766,13 +886,13 @@ export class Validator<
         type Res = ValidateResponse.Thrown<Data, Throw, Sch, Val, Tpl>;
         let res: ValidateResponse<any, any>;
         if (state == null) {
-            res = validate_object(
+            res = validate_object_helper(
                 data,
                 this.entry,
                 this.state,
             );
         } else {
-            res = validate_object(
+            res = validate_object_helper(
                 data,
                 this.entry,
                 State.with_override(this.state, state),
@@ -791,33 +911,6 @@ export class Validator<
         }
         return res as Res;
     }
-
-    // DEPRECATED
-    // Since this is a browser+nodejs file and the JSON schema is only supported in nodejs
-    // /**
-    //  * Create a JSON schema from the provided options.
-    //  * This is only supported for object schemas using the {@link Schemas.schema} option 
-    //  * passed to the constructor.
-    //  * @param opts The options for creating the JSON schema, 
-    //  *             see {@link CreateJSONSchemaOpts} for more info.
-    //  * @throws {InvalidUsageError} When no `schema` field is provided in the constructor options.
-    //  */
-    // async create_json_schema(
-    //     opts: RequiredKeys<Omit<CreateJSONSchemaOpts, "schema">, "output">
-    // ): Promise<object> {
-    //     if (this.schemas.schema == null) {
-    //         throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-    //     }
-    //     return create_json_schema({ ...(opts ?? {}), schema: this.schemas.schema });
-    // }
-    // create_json_schema_sync(
-    //     opts?: Omit<CreateJSONSchemaOpts<Sch>, "schema">
-    // ): object {
-    //     if (this.schemas.schema == null) {
-    //         throw new InvalidUsageError("Cannot create JSON schema, no 'schema' field provided in the constructor options.");
-    //     }
-    //     return create_json_schema_sync({ ...(opts ?? {}), schema: this.schemas.schema });
-    // }
 }
 export namespace Validator {
 
@@ -838,8 +931,60 @@ export namespace Validator {
 // ------------------------------------------------------------
 // Public validation funcs.
 
+
+/**
+ * Perform validation on a single entry inside an object or array.
+ * @returns A validation response containing the validated data or an error.
+ * @docs
+ */
+export function validate_entry<Throw extends boolean = false>(
+    value: any,
+    entry: Entry | ValidatorEntry<any, any>,
+    state?: State.Opts<Throw>
+): ValidateResponse<any, any> {
+    if (!(entry instanceof ValidatorEntry)) {
+        entry = new ValidatorEntry(entry);
+    }
+    const obj = { value };
+    const res = validate_entry_helper(
+        State.create(state),
+        entry,
+        "value",
+        obj,
+    );
+    if (res) { return res; } // error.
+    return { data: obj.value };
+}
+
+
+/**
+ * Perform validation on a single entry inside an object or array.
+ * @returns A validation response containing the validated data or an error.
+ * @docs
+ */
+export function validate_object<const T extends ObjOrArr>(
+    data: T,
+    /**
+     * A minimum entry with the schema info
+     * Class `ValidatorEntry` must be castable to this parameter type.
+     */
+    entry: Entry | ValidatorEntry<any, any>,
+    /** Validation options for the current entry. */
+    state?: State.Opts,
+): ValidateResponse<any, any> {
+    if (!(entry instanceof ValidatorEntry)) {
+        entry = new ValidatorEntry(entry);
+    }
+    return validate_object_helper(
+        data,
+        entry,
+        State.create(state),
+    )
+}
+
 /**
  * Perform validation a given array or object.
+ * @docs
  */
 export function validate<
     Data extends ObjOrArr,
@@ -884,6 +1029,7 @@ export function validate<
  * The object response form of validation operations.
  * Note that this is not always the returned type of the `validate()` function,
  * but rather the type of the response object when `throw` is `false`.
+ * @docs
  */
 export type ValidateResponse<
     Mode extends "error" | "success",
@@ -891,11 +1037,13 @@ export type ValidateResponse<
 > =
     Mode extends "error" ? {
         error: string;
+        raw_error: string;
         invalid_fields: Record<string, string>;
         data?: never;
     }
     : Mode extends "success" ? {
         error?: never;
+        raw_error?: never;
         invalid_fields?: never;
         data: Output;
     }
@@ -924,7 +1072,10 @@ export namespace ValidateResponse {
 // ------------------------------------------------------------
 // Errors.
 
-/** A user facing error class for user-facing errors from `validate` when `throw` is `true`. */
+/**
+ * A user facing error class for user-facing errors from `validate` when `throw` is `true`.
+ * @docs
+ */
 export class ValidateError<O extends object> extends globalThis.Error {
     constructor(public info: ValidateResponse<"error", O>) {
         super(info.error);
@@ -933,7 +1084,10 @@ export class ValidateError<O extends object> extends globalThis.Error {
     }
 }
 
-/** Error thrown when the user incorrectly utilizes the schema module. */
+/**
+ * Error thrown when the user incorrectly utilizes the schema module.
+ * @docs
+ */
 export class InvalidUsageError extends globalThis.Error {
     constructor(msg: string) {
         super(msg);

@@ -2,11 +2,14 @@
  * @author Daan van den Bergh
  * @copyright © 2025 Daan van den Bergh. All rights reserved.
  */
+// External imports.
+import * as pathlib from 'path';
 import * as esbuild from 'esbuild';
 import { Path } from "../../vlib/index.js";
 // Imports.
 import { resolve_path, create_esbuild_err } from "./bundle.js";
 import { ImportGraphPlugin } from './import_graph.js';
+import { ImportTracer } from './trace_imports.js';
 /**
  * Inspect & debug a bundle.
  * @param options The bundle options.
@@ -21,12 +24,20 @@ export async function inspect_bundle(options) {
         outfile = outfile.path;
     let build_result = undefined;
     let secondary_build_result = undefined;
-    const graph = new ImportGraphPlugin({ track_externals: true });
+    const use_import_graph = false;
+    const graph = use_import_graph
+        ? new ImportGraphPlugin({ track_externals: true })
+        : undefined;
+    const import_tracer = !use_import_graph
+        ? new ImportTracer()
+        : undefined;
     // Capture the context.
     let plugins = [];
     if (opts.plugins)
         plugins = [...opts.plugins];
-    plugins.push(graph.plugin, {
+    if (graph)
+        plugins.push(graph.plugin);
+    plugins.push({
         name: 'capture-result',
         setup(build) {
             build.onEnd(result => { secondary_build_result = result; });
@@ -97,15 +108,29 @@ export async function inspect_bundle(options) {
     let import_chains;
     const get_import_chains = () => {
         import_chains = [];
-        for (let i = 0; i < errors.length; i++) {
-            const p = errors[i].file_name;
-            if (!p)
-                continue;
-            const g = graph.get_import_chains(p);
-            if (!g)
-                continue;
-            // const last = import_chains[import_chains.length - 1];
-            import_chains.push(g);
+        if (graph) {
+            for (let i = 0; i < errors.length; i++) {
+                const p = errors[i].file_name;
+                if (!p)
+                    continue;
+                const g = graph.get_import_chains(p);
+                if (!g)
+                    continue;
+                // const last = import_chains[import_chains.length - 1];
+                import_chains.push(g);
+            }
+        }
+        else {
+            // use a batch for caching.
+            const traces = [];
+            for (const e of errors) {
+                if (e.file_name) {
+                    for (const input of include) {
+                        traces.push({ from: pathlib.resolve(input.toString()), to: pathlib.resolve(e.file_name) });
+                    }
+                }
+            }
+            import_chains = import_tracer.trace(traces);
         }
         return import_chains;
     };
@@ -122,7 +147,9 @@ export async function inspect_bundle(options) {
         },
         inputs,
         import_chains: get_import_chains,
-        format_import_chains: () => graph.format_import_chains(get_import_chains()),
+        format_import_chains: () => use_import_graph
+            ? graph.format_import_chains(get_import_chains())
+            : import_tracer.format_import_chains(get_import_chains()),
         metafile: build_result?.metafile ? esbuild.analyzeMetafileSync(build_result.metafile, { verbose: false }) : undefined,
         debug({ limit, filter, }) {
             const lines = [];
@@ -134,12 +161,22 @@ export async function inspect_bundle(options) {
                     continue;
                 lines.push(e.data);
                 if (e.file_name) {
-                    const chain = graph.get_import_chains(e.file_name);
-                    if (chain) {
-                        const g = graph.format_import_chains([chain], "    ", 10);
-                        lines.push(...g);
-                        if (g.length > 0) {
-                            lines.push(""); // add an empty line after the import chain
+                    const error_chains = use_import_graph
+                        ? [graph.get_import_chains(e.file_name)]
+                        : import_tracer.trace(include.map(p => ({ from: pathlib.resolve(p.toString()), to: pathlib.resolve(e.file_name) })));
+                    // console.log("Error chains for", e.file_name, ":", error_chains);
+                    // const error_chains = import_chains?.filter(c => c.target === e.file_name);
+                    if (error_chains?.length) {
+                        for (const chain of error_chains) {
+                            if (!chain || !chain.found || chain.chains.length === 0)
+                                continue;
+                            const g = use_import_graph
+                                ? graph.format_import_chains([chain], "    ", 10)
+                                : import_tracer.format_import_chains([chain], "    ", 10);
+                            lines.push(...g);
+                            if (g.length > 0) {
+                                lines.push(""); // add an empty line after the import chain
+                            }
                         }
                     }
                 }

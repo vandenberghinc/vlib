@@ -115,14 +115,28 @@ class Pipe {
       } else if (typeof item === "symbol") {
         this.push_arg(msg, file_msg, item.toString());
       } else if (item instanceof Error) {
-        let add = item.stack ?? item.message;
-        if (log_mode === import_directives.Directive.warn && add.startsWith("Error: ")) {
-          add = "Warning: " + add.slice(7);
-        }
-        if (log_mode === import_directives.Directive.warn) {
-          this.push_arg(msg, file_msg, add.replace(/^Warning: /gm, `${import_colors.Color.yellow("Warning")}: `));
+        if (web_env) {
+          const add = Pipe.format_error(item, {
+            colored: false,
+            depth: 5,
+            type: log_mode === import_directives.Directive.warn ? "warning" : "error"
+          });
+          this.push_arg(msg, file_msg, add);
         } else {
-          this.push_arg(msg, file_msg, add.replace(/^Error: /gm, `${import_colors.Color.red("Error")}: `));
+          let add = Pipe.format_error(item, {
+            colored: true,
+            depth: 5,
+            type: log_mode === import_directives.Directive.warn ? "warning" : "error"
+          });
+          this.push_arg(msg, void 0, add);
+          if (file_msg != null) {
+            const add2 = Pipe.format_error(item, {
+              colored: false,
+              depth: 5,
+              type: log_mode === import_directives.Directive.warn ? "warning" : "error"
+            });
+            this.push_arg([], file_msg, add2);
+          }
         }
       } else {
         if (item && typeof item === "object") {
@@ -147,9 +161,6 @@ class Pipe {
             }
             return;
           }
-        }
-        if (msg.length === start_msg_len && (log_mode === import_directives.Directive.error || log_mode === import_directives.Directive.warn)) {
-          this.push_arg(msg, file_msg, log_mode === import_directives.Directive.error ? `${import_colors.Color.red("Error")}: ` : `${import_colors.Color.yellow("Warning")}: `);
         }
         if (this._transform) {
           const transformed2 = this._transform(item);
@@ -205,7 +216,7 @@ class Pipe {
   trim_trailing_spaces(msg) {
     while (
       // trim trailing spaces.
-      msg.length > 0 && (msg[msg.length - 1].length === 0 || msg[msg.length - 1].endsWith(" "))
+      msg.length > 0 && typeof msg[msg.length - 1] === "string" && (msg[msg.length - 1].length === 0 || msg[msg.length - 1][msg[msg.length - 1].length - 1] === " ")
     ) {
       if (msg[msg.length - 1].length <= 1) {
         msg.length--;
@@ -371,6 +382,72 @@ class Pipe {
     this.log(import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...errs);
   }
 }
+(function(Pipe2) {
+  function format_error(err, options) {
+    const max_depth = options?.depth ?? 5;
+    const current_depth = options?.current_depth ?? 0;
+    const indent_size = options?.indent ?? 2;
+    const start_indent = current_depth * indent_size;
+    const attrs_indent = " ".repeat(start_indent + indent_size);
+    const colored = options?.colored ?? false;
+    let data = err.stack ?? `${err.name}: ${err.message}`;
+    data = data.split("\n").map((line, index2) => {
+      if (index2 === 0)
+        return line;
+      line = line.trimStart();
+      if (colored && line.startsWith("at ")) {
+        line = import_colors.Colors.gray + line + import_colors.Colors.end;
+      }
+      return attrs_indent + line;
+    }).join("\n");
+    if (colored) {
+      if (options?.type === "warning") {
+        data = data.replaceAll(/^Error: /gm, `${import_colors.Color.yellow("Error")}: `);
+      } else {
+        data = data.replaceAll(/^Error: /gm, `${import_colors.Color.red("Error")}: `);
+      }
+    }
+    let keys = Object.keys(err);
+    if (err.cause != null)
+      keys.push("cause");
+    let index = -1;
+    for (const key of keys) {
+      ++index;
+      if (key === "name" || key === "message" || key === "stack" || key === "cause" && index < keys.length - 1) {
+        continue;
+      }
+      const raw_value = err[key];
+      let value;
+      if (raw_value instanceof Error) {
+        if (current_depth + 1 >= max_depth) {
+          value = "[Truncated Error]";
+        } else {
+          value = Pipe2.format_error(raw_value, {
+            colored,
+            depth: max_depth,
+            current_depth: current_depth + 1,
+            indent: indent_size,
+            type: options?.type
+          });
+        }
+      } else {
+        value = import_object.ObjectUtils.stringify(raw_value, {
+          indent: indent_size,
+          start_indent: current_depth + 1,
+          max_depth: max_depth === -1 ? void 0 : max_depth,
+          max_length: 1e4,
+          json: false,
+          colored
+        });
+      }
+      data += `
+${attrs_indent}${key}: ${value}`;
+    }
+    ;
+    return data;
+  }
+  Pipe2.format_error = format_error;
+})(Pipe || (Pipe = {}));
 const pipe = new Pipe({
   log_level: 0,
   out: console.log,

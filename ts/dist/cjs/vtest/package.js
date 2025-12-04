@@ -207,7 +207,12 @@ Executed ${mods.length} test modules.`));
       if (typeof this.config.ctx.debug === "number" && this.config.ctx.debug >= 1) {
         import_vlib.log.marker(`Importing unit test module: ${p}`);
       }
-      await import(abs);
+      try {
+        await import(abs);
+      } catch (err) {
+        import_vlib.log.error(`Failed to import unit test module: ${p}`);
+        throw err;
+      }
     }
     if (import_module.Modules.length === 0) {
       throw new Error("No unit tests defined, add unit tests using the 'vtest.Module.add()` function.");
@@ -219,7 +224,7 @@ Executed ${mods.length} test modules.`));
   let Context;
   (function(Context2) {
     Context2.Schema = {
-      $schema: "any",
+      $schema: { type: "any", required: false },
       module: { type: ["string", "array"], required: false },
       target: { type: "string", required: false },
       debug: { type: ["string", "number"], required: false },
@@ -290,7 +295,7 @@ var Config;
     throw: false,
     unknown: false,
     schema: {
-      $schema: "any",
+      $schema: { type: "any", required: false },
       output: { type: "string", required: true },
       include: {
         type: "array",

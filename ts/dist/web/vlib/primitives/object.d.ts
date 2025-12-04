@@ -80,6 +80,15 @@ export declare namespace ObjectUtils {
      * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
      */
     function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U;
+    /**
+     * Runtime implementation of TypeScript's Pick utility type.
+     * Creates a new object with only the specified keys from the source object.
+     *
+     * @param obj - The source object to pick properties from
+     * @param keys - Array of keys to pick from the source object
+     * @returns A new object containing only the specified properties
+     */
+    function pick<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K>;
     /** Stringify options. */
     interface StringifyOpts {
         /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */
