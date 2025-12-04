@@ -103,23 +103,22 @@ export class Base<
     /** The strict mode, when `true` some additional checks are performed. */
     strict: Strict.Cast<S>;
 
-    /** The expected type, returned type will be auto casted to the mapped type. @attr */
+    /** The expected type, returned type will be auto casted to the mapped type. */
     type: undefined | T;
 
-    /** The default value to return when not found. @attr */
+    /** The default value to return when not found. */
     def: NoDef | undefined | Cast.Cast<T>;
 
-    /** The id attribute for the `id` variant. @attr */
+    /** The id attribute for the `id` variant. */
     id: Variant.If<V, "id", Or | And>;
 
     /**
      * The index number for the `index` variant.
      * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
-     * @attr
      */
     index: Variant.If<V, "index", number, never>;
 
-    /** When searching for this argument, exclude args found that start with a `-` prefix, so basically to ignore --arg like values. @attr */
+    /** When searching for this argument, exclude args found that start with a `-` prefix, so basically to ignore --arg like values. */
     exclude_dash: boolean;
 
     /** Enumerate. */

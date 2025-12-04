@@ -34,19 +34,18 @@ class Base {
   variant;
   /** The strict mode, when `true` some additional checks are performed. */
   strict;
-  /** The expected type, returned type will be auto casted to the mapped type. @attr */
+  /** The expected type, returned type will be auto casted to the mapped type. */
   type;
-  /** The default value to return when not found. @attr */
+  /** The default value to return when not found. */
   def;
-  /** The id attribute for the `id` variant. @attr */
+  /** The id attribute for the `id` variant. */
   id;
   /**
    * The index number for the `index` variant.
    * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
-   * @attr
    */
   index;
-  /** When searching for this argument, exclude args found that start with a `-` prefix, so basically to ignore --arg like values. @attr */
+  /** When searching for this argument, exclude args found that start with a `-` prefix, so basically to ignore --arg like values. */
   exclude_dash;
   /** Enumerate. */
   enum;

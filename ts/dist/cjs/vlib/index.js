@@ -71,7 +71,7 @@ var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
 __reExport(stdin_exports, require("./generic/zip.js"), module.exports);
 Error.stackTraceLimit = 25;
-const version = "1.6.33";
+const version = "1.6.34";
 const print = (...args) => import_index_m_node2.log.raw(0, ...args);
 const error = (...args) => import_index_m_node2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);

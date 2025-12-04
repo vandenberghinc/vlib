@@ -864,6 +864,10 @@ export class Iterator {
         }
         else {
             this.pos = n;
+            if (opts?.line != null)
+                this.line = opts.line;
+            if (opts?.col != null)
+                this.col = opts.col;
             this.init();
         }
     }

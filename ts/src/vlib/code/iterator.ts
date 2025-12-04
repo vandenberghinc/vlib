@@ -1029,6 +1029,16 @@ export class Iterator<Src extends Source = Source> {
          * @default true
          */
         advance?: boolean,
+        /**
+         * When not advancing, a line number can be set.
+         * This should reflect the line number at the given offset position.
+         */
+        line?: number,
+        /**
+         * When not advancing, a column number can be set.
+         * This should reflect the column number at the given offset position.
+         */
+        col?: number,
     }): void {
         if (n < 0 || n >= this.end) {
             throw new Error(`Cannot jump to position ${n}, must be between 0 and ${this.end - 1}.`);
@@ -1040,6 +1050,8 @@ export class Iterator<Src extends Source = Source> {
             this.advance_to(n);
         } else {
             this.pos = n;
+            if (opts?.line != null) this.line = opts.line;
+            if (opts?.col != null) this.col = opts.col;
             this.init();
         }
     }

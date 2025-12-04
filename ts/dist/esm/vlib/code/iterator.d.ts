@@ -309,6 +309,16 @@ export declare class Iterator<Src extends Source = Source> {
          * @default true
          */
         advance?: boolean;
+        /**
+         * When not advancing, a line number can be set.
+         * This should reflect the line number at the given offset position.
+         */
+        line?: number;
+        /**
+         * When not advancing, a column number can be set.
+         * This should reflect the column number at the given offset position.
+         */
+        col?: number;
     }): void;
     /** Consume a string match. */
     consume_optional(s: string): void;
