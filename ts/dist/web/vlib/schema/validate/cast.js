@@ -2,7 +2,11 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-/** Cast types. */
+/**
+ * Cast types.
+ * @nav Schema
+ * @docs
+ */
 export var Cast;
 (function (Cast) {
     function boolean(str, opts) {
@@ -58,6 +62,7 @@ export var Cast;
      * Returns true if `s` is a valid signed decimal integer or float:
      *   [+|-]?digits[.digits]?
      * No exponents, no hex, no leading/trailing whitespace.
+     * @docs
      */
     function is_number(s) {
         const len = s.length;

@@ -55,6 +55,8 @@
  *
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
+ *
+ * @docs
  */
 export declare class GlobPattern {
     /** The original glob pattern. */
@@ -64,31 +66,44 @@ export declare class GlobPattern {
     /**
      * Create a new glob pattern matcher.
      * @param pattern - The glob pattern to compile.
+     * @docs
      */
     constructor(pattern: string);
-    /** Get the length. */
+    /**
+     * Get the length.
+     * @docs
+     */
     get length(): number;
     /**
      * Update the pattern on the current instance.
      * @param pattern - The new glob pattern.
+     * @docs
      */
     update(pattern: string): void;
     /**
      * Test a value against the glob pattern.
      * @param value - The string to test.
      * @returns True when the value matches the pattern.
-     * @funcs 2
+     * @docs
      */
     test(value: string): boolean;
+    /**
+     * Test a value against the glob pattern.
+     * @param value - The string to test.
+     * @returns True when the value matches the pattern.
+     * @docs
+     */
     match(value: string): boolean;
     /**
      * Filter an array of values by this pattern.
      * @param values - The values to filter.
      * @returns The matched values.
+     * @docs
      */
     filter(values: string[]): string[];
     /**
      * Static helper to directly match a value.
+     * @docs
      */
     static matches(pattern: string, value: string): boolean;
     /**
@@ -96,12 +111,14 @@ export declare class GlobPattern {
      * wildcard characters) or just a regular path.
      * @param str - The string to inspect.
      * @returns True if `str` looks like a glob pattern; false otherwise.
+     * @docs
      */
     static is(str: string): boolean;
     /**
      * Compile a glob pattern to a regular expression.
      * @param pattern - The pattern to compile.
      * @returns The compiled regular expression.
+     * @docs
      */
     private static compile;
     /** To string */
@@ -117,22 +134,29 @@ export declare class GlobPattern {
  *
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
+ *
+ * @docs
  */
 export declare class GlobPatternList {
     items: GlobPatternList.T[];
     /**
-     *
+     * Construct a new glob pattern list.
      * @param list A single glob pattern or an array of glob patterns.
+     * @docs
      */
     constructor(list: GlobPatternList.T | GlobPatternList.T[]);
     /** Initialize a list item. */
     private static init_list_item;
-    /** Get the length. */
+    /**
+     * Get the length.
+     * @docs
+     */
     get length(): number;
     /**
      * Test if a value matches any of the glob patterns in the list.
      * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
      * @param value - The string to test.
+     * @docs
      */
     match(value: string): boolean;
     test(value: string): boolean;
@@ -141,9 +165,13 @@ export declare class GlobPatternList {
      * Test if a value matches all glob patterns in the list.
      * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
      * @param value - The string to test.
+     * @docs
      */
     every(value: string): boolean;
-    /** Check if an array contains either a string glob patern or a GlobPattern instance. */
+    /**
+     * Check if an array contains either a string glob patern or a GlobPattern instance.
+     * @docs
+     */
     static is(list: GlobPatternList.T[]): boolean;
     /** To string */
     toString(): string;

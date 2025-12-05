@@ -23,6 +23,7 @@
  * console.log(mul(3, 4));        // 12
  * console.log(mul.description()); // 'Multiply two numbers'
  * ```
+ * @docs
  */
 export class Callable {
     constructor() {

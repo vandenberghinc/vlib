@@ -34,7 +34,10 @@ export declare namespace Utils {
      */
     function hash(data: string | Buffer, algo?: string, format?: crypto.BinaryToTextEncoding): string;
     function hash(data: string | Buffer, algo?: string, format?: false): crypto.Hash;
-    /** Load the version from a npm package.json or any other json file that has a `version: string` attribute. */
+    /**
+     * Load the version from a npm package.json or any other json file that has a `version: string` attribute.
+     * @docs
+     */
     function load_npm_package_version(package_json_path: string, def?: string): any;
     /**
      * Get __dirname from `import` for ESM modules.
@@ -45,7 +48,6 @@ export declare namespace Utils {
      * const __dirname = vlib.Utils.__dirname(import.meta);
      * ```
      * @deprecated use import.meta.dirname node20+.
-     * @libris
      */
     function __dirname(import_meta: {
         url: string;
@@ -54,45 +56,44 @@ export declare namespace Utils {
      * Get __filename from `import` for ESM modules.
      * @warning This function should only be used in ESM modules.
      * @param import_meta The default `import` variable for ESM modules.
+     * @deprecated use import.meta.filename node20+.
      */
     function __filename(import_meta: {
         url: string;
     }): string;
-    /** Safe exit with a traceable log message and status code */
+    /**
+     * Safe exit with a traceable log message and status code
+     * @docs
+     */
     function safe_exit(code?: number, message?: string): void;
     /**
      * Print arguments to console without inserting spaces.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print(...args: any[]): void;
     /**
      * Print arguments to console error without inserting spaces.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function printe(...args: any[]): void;
     /**
      * Print text with a blue marker prefix.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_marker(...args: any[]): void;
     /**
      * Print text with a yellow warning prefix.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_warning(...args: any[]): void;
     /**
      * Print text with a red error prefix to stderr.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_error(...args: any[]): void;
 }

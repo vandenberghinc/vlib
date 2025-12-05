@@ -4,6 +4,8 @@
  */
 /**
  * Error thrown for daemon-related failures.
+ *
+ * @docs
  */
 export declare class DaemonError extends Error {
     constructor(...args: any[]);
@@ -52,9 +54,10 @@ export declare namespace Daemon {
     }
 }
 /**
- *  Daemon type.
+ * Daemon type.
  *
- *  @nav System
+ * @nav System
+ * @docs
  */
 export declare class Daemon {
     private name;

@@ -5,9 +5,15 @@
  * @note FRONTEND - This file should also be accessable from the frontend.
  */
 
+/**
+ * String utilities.
+ * @name String
+ * @docs
+ */
 namespace StringUtils {
     /**
      * Removes common indentation from multiline strings.
+     * @docs
      */
     export function dedent(data: string | String, allow_empty_first_line = false): string {
         
@@ -39,6 +45,7 @@ namespace StringUtils {
 
     /**
      * Returns the first character of the string.
+     * @docs
      */
     export function first(data: string | String): string | undefined {
         return (data as string)[0];
@@ -46,6 +53,7 @@ namespace StringUtils {
 
     /**
      * Returns the last character of the string.
+     * @docs
      */
     export function last(data: string | String): string | undefined {
         const s = data as string;
@@ -54,6 +62,7 @@ namespace StringUtils {
 
     /**
      * Gets the first non-whitespace character. Optionally ignores newline as whitespace.
+     * @docs
      */
     export function first_non_whitespace(data: string | String, line_break = false): string | null {
         const s = data as string;
@@ -68,6 +77,7 @@ namespace StringUtils {
 
     /**
      * Gets the last non-whitespace character. Optionally ignores newline as whitespace.
+     * @docs
      */
     export function last_non_whitespace(data: string | String, line_break = false): string | null {
         const s = data as string;
@@ -82,6 +92,7 @@ namespace StringUtils {
 
     /**
      * Gets the first character not in the exclude list, starting from an index.
+     * @docs
      */
     export function first_not_of(data: string | String, exclude: string[] = [], start_index = 0): string | null {
         const s = data as string;
@@ -93,6 +104,7 @@ namespace StringUtils {
 
     /**
      * Gets the index of the first character not in the exclude list, starting from an index.
+     * @docs
      */
     export function first_index_not_of(data: string | String, exclude: string[] = [], start_index = 0): number | null {
         const s = data as string;
@@ -104,6 +116,7 @@ namespace StringUtils {
 
     /**
      * Gets the last character not in the exclude list, searching backward.
+     * @docs
      */
     export function last_not_of(data: string | String, exclude: string[] = [], start_index: number = -1): string | null {
         const s = data as string;
@@ -116,6 +129,7 @@ namespace StringUtils {
 
     /**
      * Gets the index of the last character not in the exclude list, searching backward.
+     * @docs
      */
     export function last_index_not_of(data: string | String, exclude: string[] = [], start_index: number = -1): number | null {
         const s = data as string;
@@ -128,6 +142,7 @@ namespace StringUtils {
 
     /**
      * Inserts a substring at the given index.
+     * @docs
      */
     export function insert(data: string | String, index: number, substr: string): string {
         const s = data as string;
@@ -136,6 +151,7 @@ namespace StringUtils {
 
     /**
      * Removes characters between start and end indices.
+     * @docs
      */
     export function remove_indices(data: string | String, start: number, end: number): string {
         const s = data as string;
@@ -144,6 +160,7 @@ namespace StringUtils {
 
     /**
      * Replaces characters between start and end indices with the given substring.
+     * @docs
      */
     export function replace_indices(data: string | String, substr: string, start: number, end: number): string {
         const s = data as string;
@@ -152,6 +169,7 @@ namespace StringUtils {
 
     /**
      * Checks if the string starts with the given substring at an optional index.
+     * @docs
      */
     export function eq_first(data: string | String, substr: string, start_index = 0): boolean {
         const s = data as string;
@@ -161,6 +179,7 @@ namespace StringUtils {
 
     /**
      * Checks if the string ends with the given substring.
+     * @docs
      */
     export function eq_last(data: string | String, substr: string): boolean {
         const s = data as string;
@@ -170,6 +189,7 @@ namespace StringUtils {
 
     /**
      * Ensures the string ends with one of the given characters, appending the first if not.
+     * @docs
      */
     export function ensure_last(data: string | String, ensure_last: string): string {
         const s = data as string;
@@ -179,6 +199,7 @@ namespace StringUtils {
 
     /**
      * Returns true if all characters are uppercase (digits optional).
+     * @docs
      */
     export function is_uppercase(data: string | String, allow_digits = false): boolean {
         const set = allow_digits ? is_uppercase_plus_num_set : charset.uppercase_set;
@@ -189,7 +210,10 @@ namespace StringUtils {
     }
     const is_uppercase_plus_num_set = new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(''));
 
-    /** Charsets. */
+    /**
+     * Charsets.
+     * @docs
+     */
     export const charset = {
 
         /** All uppercase alphabetical characters. */
@@ -207,6 +231,7 @@ namespace StringUtils {
 
     /**
      * Capitalizes only the first letter of the string.
+     * @docs
      */
     export function capitalize_word(data: string | String): string {
         const s = data as string;
@@ -216,6 +241,7 @@ namespace StringUtils {
 
     /**
      * Capitalizes the first letter of each word separated by whitespace.
+     * @docs
      */
     export function capitalize_words(data: string | String): string {
         return (data as string).split(/(\s+)/).map(part => /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('');
@@ -223,6 +249,7 @@ namespace StringUtils {
 
     /**
      * Removes all instances of the given character(s) from the string.
+     * @docs
      */
     export function drop(data: string | String, char: string | string[]): string {
         const exclude = Array.isArray(char) ? char : [char];
@@ -231,6 +258,7 @@ namespace StringUtils {
 
     /**
      * Returns the reversed string.
+     * @docs
      */
     export function reverse(data: string | String): string {
         return (data as string).split('').reverse().join('');
@@ -241,6 +269,7 @@ namespace StringUtils {
      * @param length The length of the random string, default is 32.
      * @param charset Optional custom character set to use, default is alphanumeric.
      *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
+     * @docs
     */
    export function random(length = 32, charset?: string): string {
        let result = '';
@@ -253,10 +282,9 @@ namespace StringUtils {
     }
     const default_random_charset: string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    /*
-
     /**
      * Returns true if the string contains only digits.
+     * @docs
      */
     export function is_integer_string(data: string | String): boolean {
         return /^[0-9]+$/.test(data as string);
@@ -264,6 +292,7 @@ namespace StringUtils {
 
     /**
      * Returns true if the string is a valid floating-point representation.
+     * @docs
      */
     export function is_floating_string(data: string | String): boolean {
         return /^[0-9]*\.[0-9]+$/.test(data as string);
@@ -271,6 +300,7 @@ namespace StringUtils {
 
     /**
      * Returns info or boolean about numeric string (integer/floating).
+     * @docs
      */
     export function is_numeric_string(data: string | String, info = false): boolean | { integer: boolean; floating: boolean } {
         const s = data as string;
@@ -283,6 +313,8 @@ namespace StringUtils {
      * Removes matching quotes from the ends of the string.
      * 
      * @param data The string to unquote.
+     * 
+     * @docs
      */
     export function unquote(data: string | String): string {
         const s = data as string;
@@ -290,14 +322,16 @@ namespace StringUtils {
         return s;
     }
 
+    export function quote(data: undefined | null | string | String, def: undefined): undefined | string
+    export function quote(data: undefined | null | string | String, def?: string | String): string
     /**
      * Wraps the string in quotes if not already quoted.
      * @returns the default string when the data is an empty string or null/undefined.
      * @param data The string to quote.
      * @param def Optional default value to return if data is null/undefined, default is `""`.
+     * 
+     * @docs
      */
-    export function quote(data: undefined | null | string | String, def: undefined): undefined | string
-    export function quote(data: undefined | null | string | String, def?: string | String): string
     export function quote(data: undefined | null | string | String, def: string | String = '""'): undefined | string {
         if (!data) {
             return def instanceof String ? def.valueOf() : def

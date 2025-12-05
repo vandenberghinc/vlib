@@ -5,12 +5,15 @@
  * @note FRONTEND - This file should also be accessable from the frontend.
  */
 /**
- * Refactored array utilities: namespace-based implementations.
+ * Array utilities.
+ * @name Array
+ * @docs
  */
 export var ArrayUtils;
 (function (ArrayUtils) {
     /**
      * Appends items to the array.
+     * @docs
      */
     function append(arr, ...items) {
         return arr.push(...items);
@@ -18,6 +21,7 @@ export var ArrayUtils;
     ArrayUtils.append = append;
     /**
      * Executes a handler for each element in the array.
+     * @docs
      */
     function walk(arr, handler) {
         return arr.forEach(handler);
@@ -25,6 +29,7 @@ export var ArrayUtils;
     ArrayUtils.walk = walk;
     /**
      * Gets the first element of the array.
+     * @docs
      */
     function first(arr) {
         return arr[0];
@@ -32,6 +37,7 @@ export var ArrayUtils;
     ArrayUtils.first = first;
     /**
      * Gets the last element of the array.
+     * @docs
      */
     function last(arr) {
         return arr[arr.length - 1];
@@ -39,6 +45,7 @@ export var ArrayUtils;
     ArrayUtils.last = last;
     /**
      * Iteration function for arrays.
+     * @docs
      */
     function iterate(arr, start, end, handler) {
         if (typeof start === "function") {
@@ -61,6 +68,7 @@ export var ArrayUtils;
     /**
      * Is any array, mutable or readonly.
      * Since Array.isArray only supports mutable arrays.
+     * @docs
      */
     function is_any(x) {
         return Array.isArray(x);
@@ -68,6 +76,7 @@ export var ArrayUtils;
     ArrayUtils.is_any = is_any;
     /**
      * Iterate an array reversed.
+     * @docs
      */
     function iterate_reversed(arr, start, end, handler) {
         if (handler == null && start != null) {
@@ -89,6 +98,7 @@ export var ArrayUtils;
     ArrayUtils.iterate_reversed = iterate_reversed;
     /**
      * Drop an item by value.
+     * @docs
      */
     function drop(arr, item) {
         const dropped = [];
@@ -101,6 +111,7 @@ export var ArrayUtils;
     ArrayUtils.drop = drop;
     /**
      * Drop an item by index.
+     * @docs
      */
     function drop_index(arr, index) {
         const dropped = [];
@@ -113,6 +124,7 @@ export var ArrayUtils;
     ArrayUtils.drop_index = drop_index;
     /**
      * Drop duplicate items from an array.
+     * @docs
      */
     function drop_duplicates(arr) {
         return arr.reduce((acc, val) => {
@@ -137,6 +149,7 @@ export var ArrayUtils;
     ArrayUtils.truncate = truncate;
     /**
      * Limit from end, always creates a new array.
+     * @docs
      */
     function limit_from_end(arr, limit) {
         const limited = [];
@@ -153,6 +166,7 @@ export var ArrayUtils;
     ArrayUtils.limit_from_end = limit_from_end;
     /**
      * Remove all items equal to the given item.
+     * @docs
      */
     function remove(arr, item) {
         const removed = [];
@@ -166,6 +180,7 @@ export var ArrayUtils;
     /**
      * Returns `true` when `needle` appears in `haystack` as a **contiguous**
      * sub-array, scanning from `from` (default 0) up to `to` (inclusive).
+     * @docs
      */
     function eq(haystack, needle, from = 0, to = haystack.length - 1) {
         if (needle.length === 0)
@@ -185,6 +200,7 @@ export var ArrayUtils;
     ArrayUtils.eq = eq;
     /**
      * Check if two arrays or nested structures are equal.
+     * @docs
      */
     function deep_eq(x, y) {
         const compare = (a, b) => {
@@ -229,6 +245,7 @@ export var ArrayUtils;
     ArrayUtils.deep_eq = deep_eq;
     /**
      * Divide into nested arrays.
+     * @docs
      */
     function divide(arr, x) {
         if (typeof x !== 'number' || x <= 0) {

@@ -27,7 +27,9 @@ Error.stackTraceLimit = 100;
  * @param version {string} The cli's version.
  * @param notes {array[string]} The cli's notes.
  * @param commands {array[object]} Array of command objects.
+ * 
  * @nav CLI
+ * @docs
 */
 export class CLI<
     S extends Strict = Strict,
@@ -83,6 +85,7 @@ export class CLI<
      * @param main The main command for when no specific command is detected.
      * @param commands The list of commands.
      * @param strict Whether to throw an error when an unknown command is detected, defaults to false.
+     * @docs
      */
     constructor(
         {
@@ -675,7 +678,7 @@ export class CLI<
 
     /**
      * Check if the CLI has an argument index or id(s).
-     * @libris
+     * @docs
      */
     has(id: number | string | string[] | Or | And | Arg.Base): boolean {
         if (id instanceof Arg.Base) {
@@ -699,7 +702,7 @@ export class CLI<
      * 
      * @param q The argument query. See {@link Arg.Query} for information.
      * 
-     * @libris
+     * @docs
      */
     info<
         const O extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">    
@@ -816,7 +819,7 @@ export class CLI<
      * {Get}
      * Get an argument.
      * @param query The argument get options. See {@link Arg.Base} for option information.
-     * @libris
+     * @docs
      */
     get<
         const Q extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">,
@@ -853,6 +856,7 @@ export class CLI<
      * Create a CLI error.
      * This error is specially handled by the CLI when executing a command.
      * Therefore it will be dumped pretty when thrown inside a command.
+     * @docs
      */
     error(err: string | CLIError, opts?: {
         docs?: true | string, // show docs (boolean) or raw docs input (string), defaults to `false`.
@@ -1080,6 +1084,8 @@ export class CLI<
      *           Dont allow passing this in constructor opts.
      *           This is so we can infer the args using InferArgs.
      *           That doesnt work when passing a commands array to the constructor.
+     * 
+     * @docs
      */
     main<const A extends Command.Args<S> = Command.Args<S>>(
         main: Main.Opts<S, Main.Variant, A>
@@ -1104,6 +1110,8 @@ export class CLI<
      *           Dont allow passing this in constructor opts.
      *           This is so we can infer the args using InferArgs.
      *           That doesnt work when passing a commands array to the constructor.
+     * 
+     * @docs
      */
     command<const A extends Command.Args<S> = Command.Args<S>>(
         cmd: Command.Opts<S, Command.Variant, A>
@@ -1118,7 +1126,7 @@ export class CLI<
     /**
      * Start the cli.
      * 
-     * @libris
+     * @docs
      */
     async start(): Promise<void> {
         try {
@@ -1288,7 +1296,8 @@ export const cli = new CLI({ _sys: true, strict: true });
 /**
  * Get an argument.
  * @param query The argument get options. See {@link Arg.Base} for option information.
- * @libris
+ * @nav CLI/Arguments
+ * @docs
  */
 export function get<
     const A extends Arg.Base | Arg.Base.Opts = Arg.Base.Opts<"loose", "query", Arg.Variant, "string">,
@@ -1301,7 +1310,8 @@ export function get<
 
 /**
  * Check if an argument is present.
- * @libris
+ * @nav CLI/Arguments
+ * @docs
  */
 export function present(id: number | string | string[] | Or | And | Arg.Base): boolean {
     return cli.has(id);

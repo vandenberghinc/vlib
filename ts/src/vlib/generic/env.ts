@@ -10,12 +10,15 @@ import * as Scheme from '../schema/index.m.node.js';
 
 /**
  * Manages loading, caching, and syncing of environment variables.
+ * 
+ * @nav System
+ * @docs
  */
 export namespace Env {
-    
 
     /**
      * Supported environment variable types.
+     * @docs
      */
     export type EnvType =
         | 'string'
@@ -57,6 +60,7 @@ export namespace Env {
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      * @param opts.override - When true, existing environment variables will be overridden by those in the .env file.
+     * @docs
      */
     export function from(
         path: string,
@@ -94,21 +98,23 @@ export namespace Env {
 
     /**
      * Check whether an environment variable is set.
+     * @docs
      */
     export function has(name: string): boolean {
         return map.has(name);
     }
 
-    /**
-     * Retrieve an environment variable.
-     * Optionally with type parsing, and error throwing on undefined.
-     */
     export function get<T = string>(name: string): string | undefined;
     export function get<T = string>(name: string, throw_err: true): string;
     export function get<T = string>(name: string, type: GetOptions['type']): string;
     export function get<T>(options: GetOptions & { throw: true }): string | T;
     export function get<T>(options: GetOptions & { throw?: false, type: NonNullable<GetOptions['type']> }): T | undefined;
     export function get<T>(options: GetOptions & { throw: true,   type: NonNullable<GetOptions['type']> }): T;
+    /**
+     * Retrieve an environment variable.
+     * Optionally with type parsing, and error throwing on undefined.
+     * @docs
+     */
     export function get<T>(...args: any[]): string | T | undefined {
 
         // Init arguments.
@@ -171,6 +177,7 @@ export namespace Env {
 
     /**
      * Set or update an environment variable (both in cache and in process.env).
+     * @docs
      */
     export function set(name: string, value: any): void {
         const string_value =

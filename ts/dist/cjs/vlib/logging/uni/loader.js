@@ -55,6 +55,8 @@ class Loader {
    * @param opts.show_percent display percentage number (default true)
    * @param opts.show_count display [current/max] (default false)
    * @param opts.timestamps Show timestamps (default: true).
+   *
+   * @docs
    */
   constructor(prefix, opts) {
     this.prefix = prefix ?? "";
@@ -70,6 +72,8 @@ class Loader {
   }
   /**
    * Start the loader: resets to minimum and renders initial bar.
+   *
+   * @docs
    */
   start() {
     this.current_value = this.min_value;
@@ -78,6 +82,8 @@ class Loader {
   /**
    * Advance the loader by `step` (default = 1) and re-render.
    * @param step Amount to increment (default 1).
+   *
+   * @docs
    */
   next(step = 1) {
     this.update(this.current_value + step);
@@ -86,6 +92,8 @@ class Loader {
    * Set the loader to an absolute value and re-render.
    * Clamps between min and max.
    * @param value New progress value.
+   *
+   * @docs
    */
   update(value) {
     this.current_value = Math.min(this.max_value, Math.max(this.min_value, value));
@@ -93,6 +101,8 @@ class Loader {
   }
   /**
    * Stop the loader without success/failure, clearing the line.
+   *
+   * @docs
    */
   stop() {
     process.stdout.write("\r\x1B[K");
@@ -100,6 +110,8 @@ class Loader {
   /**
    * Stop the loader and mark as succeeded.
    * @param message Optional completion message.
+   *
+   * @docs
    */
   success(message) {
     this.stop();
@@ -111,6 +123,8 @@ class Loader {
   /**
    * Stop the loader and mark as failed.
    * @param message Optional error message.
+   *
+   * @docs
    */
   error(message) {
     this.stop();
@@ -122,6 +136,8 @@ class Loader {
   /**
    * Update the prefix message.
    * @param prefix New prefix text.
+   *
+   * @docs
    */
   set_prefix(prefix) {
     this.prefix = prefix;
@@ -129,12 +145,16 @@ class Loader {
   }
   /**
    * Get the current progress ratio in [0,1].
+   *
+   * @docs
    */
   get ratio() {
     return (this.current_value - this.min_value) / (this.max_value - this.min_value);
   }
   /**
    * Get the current percentage (0–100).
+   *
+   * @docs
    */
   get percent() {
     return Math.round(this.ratio * 100);

@@ -7,23 +7,17 @@ import * as os from 'os';
 
 type IPFamily = 'ipv4' | 'ipv6';
 
-/*  @docs:
-    @chapter: System
-    @title: Network
-    @desc: The network class.
+/**
+ * The network class.
+ * @nav System
+ * @docs
 */
 export class Network {
-    /*  @docs:
-        @title: Private IP
-        @desc: Retrieve the device's private ip
-        @return: 
-            @type: string
-            @desc: Returns the ip as string
-        @param: 
-            @name: family
-            @type: string
-            @desc: The ip family, `ipv4` or `ipv6`
-    */
+    /**
+     * Retrieve the device's private ip
+     * @returns Returns the ip as string
+     * @param family The ip family, `ipv4` or `ipv6`
+     */
     public static private_ip(family: IPFamily = "ipv4"): string {
         const interfaces = os.networkInterfaces();
         for (const i in interfaces) {

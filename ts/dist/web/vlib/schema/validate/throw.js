@@ -14,6 +14,8 @@ import { ObjectUtils } from "../../index.web.js";
  * Converts `null` to "null", `undefined` to "undefined",
  * And tries to detect primitive array and object types.
  * @returns The string representation of the value type.
+ * @nav Schema/Utils
+ * @docs
  */
 export function value_type(value) {
     if (value === null) {

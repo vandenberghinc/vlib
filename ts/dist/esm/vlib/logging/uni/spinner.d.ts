@@ -12,6 +12,9 @@
  * // do work…
  * loader.succeed("Build complete");
  * ```
+ *
+ * @nav Logging/Spinners
+ * @docs
  */
 export declare class Spinner {
     /** The spinner frames to cycle through. */
@@ -39,6 +42,8 @@ export declare class Spinner {
      * @param opts.start Optional default message to display when starting the spinner with `start()` or by `auto_start`.
      * @param opts.success Optional default message to display when stopping the spinner with `success()`.
      * @param opts.stop Optional default message to display when stopping the spinner with `stop()`.
+     *
+     * @docs
      */
     constructor(opts: string | {
         message: string;
@@ -49,47 +54,62 @@ export declare class Spinner {
         stop?: string;
         success?: string;
     });
-    /** Is running. */
+    /**
+     * Is running.
+     * @docs
+     */
     get running(): boolean;
+    /**
+     * Is running.
+     * @docs
+     */
     get is_running(): boolean;
     /**
      * Start rendering the spinner to stdout.
      * If already started, this is a no-op.
+     * @docs
      */
     start(): void;
     /**
      * Stop the spinner without marking success or failure.
      * Clears the current line.
+     * @docs
      */
     stop(message?: string): void;
     /**
      * Pause the spinner, preserving the current frame.
      * If not running, this is a no-op.
+     * @docs
      */
     pause(): void;
     /**
      * Pause, then call callback, then resume the spinner.
      * Allowing for safe logging during the spinner.
+     * @docs
      */
     safe_log(cb: () => void): void;
     /**
      * Resume the spinner from a paused state.
      * If already running, this is a no-op.
+     * @docs
      */
     resume(): void;
     /**
      * Stop the spinner and mark it as succeeded.
      * @param message Optional message to display after the success mark.
+     * @docs
      */
     success(message?: string): void;
     /**
      * Stop the spinner and mark it as failed.
      * @param message Optional message to display after the failure mark.
+     * @docs
      */
     error(message?: string): void;
     /**
      * Update the prefix message shown alongside the spinner.
      * @param prefix The new prefix text.
+     * @docs
      */
     set_prefix(prefix: string): void;
     /**

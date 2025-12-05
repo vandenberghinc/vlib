@@ -10,13 +10,14 @@
 import { Path } from '../generic/path.js';
 /**
  * Zip utilities for working with zip files.
- * @warning This module might still be slightly unsafe due too its experimental and internal nature.
- *          Therfore, this module will be subject to future change.
+ * @warning This is still experimental and might therefore be subject to future change.
  * @experimental
+ * @docs
  */
 export declare namespace Zip {
     /**
      * Represents a single entry in a zip archive.
+     * @docs
      */
     interface Entry {
         /** Entry path within the archive. */
@@ -32,13 +33,21 @@ export declare namespace Zip {
      * @param file - Path to the zip file to extract.
      * @param dest - Destination directory where files will be extracted.
      * @throws {Error} If the zip file doesn't exist, is corrupted, or contains path‑traversal entries.
+     *
+     * @docs
      */
     function extract(file: string | Path, dest: string | Path): Promise<void>;
     /**
      * List all entries contained in a zip file.
+     *
+     * @docs
      */
     function list(file: string | Path): Promise<Entry[]>;
-    /** Options for creating a zip through the {@link create} function. */
+    /**
+     * Options for creating a zip through the {@link create} function.
+     *
+     * @docs
+     */
     interface CreateOpts {
         /**
          * Custom archive entry name. String for custom name, false to exclude root directory name, undefined for original name.
@@ -79,14 +88,20 @@ export declare namespace Zip {
     }
     /**
      * Create a zip archive from one or more sources.
+     *
+     * @docs
      */
     function create(sources: string | Path | (string | Path)[], destination: string | Path, options?: CreateOpts): Promise<void>;
     /**
      * Create a zip archive from a single file.
+     *
+     * @docs
      */
     function create_from_file(source_file: string | Path, destination: string | Path, archive_name?: string, compression_level?: number): Promise<void>;
     /**
      * Create a zip archive from a directory.
+     *
+     * @docs
      */
     function create_from_directory(source_dir: string | Path, destination: string | Path, include_root_folder?: boolean, compression_level?: number, exclude_patterns?: string[]): Promise<void>;
 }

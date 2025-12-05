@@ -4,6 +4,7 @@
  */
 
 /**
+ * {System Browser}
  * The system module.
  * @nav System
  * @docs

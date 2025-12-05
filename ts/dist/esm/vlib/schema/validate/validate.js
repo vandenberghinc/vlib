@@ -525,6 +525,7 @@ state) {
  * A pre-constructed entry-like object containing all information
  * required to validate data. This class is used to avoid the overhead
  * of creating a new `Validator` object each time.
+ * @nav Schema
  * @docs
  */
 export class Validator {
@@ -594,6 +595,7 @@ export class Validator {
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export function validate_entry(value, entry, state) {
@@ -610,6 +612,7 @@ export function validate_entry(value, entry, state) {
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export function validate_object(data, 
@@ -627,6 +630,7 @@ state) {
 }
 /**
  * Perform validation a given array or object.
+ * @nav Schema
  * @docs
  */
 export function validate(data, val) {
@@ -647,6 +651,7 @@ export function validate(data, val) {
 // Errors.
 /**
  * A user facing error class for user-facing errors from `validate` when `throw` is `true`.
+ * @nav Schema/Errors
  * @docs
  */
 export class ValidateError extends globalThis.Error {
@@ -660,6 +665,7 @@ export class ValidateError extends globalThis.Error {
 }
 /**
  * Error thrown when the user incorrectly utilizes the schema module.
+ * @nav Schema/Errors
  * @docs
  */
 export class InvalidUsageError extends globalThis.Error {

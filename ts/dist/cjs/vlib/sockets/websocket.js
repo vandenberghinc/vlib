@@ -27,7 +27,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  websocket: () => websocket
+  WebSocket: () => WebSocket,
+  websocket: () => WebSocket
 });
 module.exports = __toCommonJS(stdin_exports);
 var http = __toESM(require("http"));
@@ -36,8 +37,8 @@ var bson = __toESM(require("bson"));
 var url = __toESM(require("url"));
 var import_ws = __toESM(require("ws"));
 globalThis.WebSocket = import_ws.default;
-var websocket;
-(function(websocket2) {
+var WebSocket;
+(function(WebSocket2) {
   class Server {
     port;
     ip;
@@ -51,6 +52,10 @@ var websocket;
     events;
     rate_limit_cache;
     _clear_caches_interval;
+    /**
+     * Construct a new server instance.
+     * @docs
+     */
     constructor({ ip = null, port = 8e3, https: https2 = null, rate_limit = {
       limit: 5,
       interval: 60
@@ -66,9 +71,9 @@ var websocket;
       this.events = /* @__PURE__ */ new Map();
       this.rate_limit_cache = /* @__PURE__ */ new Map();
     }
-    /*  @docs:
-     *  @title: Start
-     *  @descr: Start the server.
+    /**
+     * Start the server.
+     * @docs
      */
     start() {
       if (this.server === null) {
@@ -174,9 +179,9 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       }
       this._clear_caches_interval = setInterval(() => this._clear_caches(), 60 * 5 * 1e3);
     }
-    /*  @docs:
-     *  @title: Stop
-     *  @descr: Stop the server.
+    /**
+     * Stop the server.
+     * @docs
      */
     async stop() {
       return new Promise((resolve) => {
@@ -199,34 +204,28 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         });
       });
     }
-    /*  @docs:
-     *  @title: Event callback
-     *  @descr:
-     *      Set an event callback.
-     *
-     *      The following callbacks can be set:
-     *      - listen: (address) => {}
-     *      - open: (stream) => {}
-     *      - close: (stream, code, reason) => {}
-     *      - error: (stream, error) => {}
+    /**
+     * Set an event callback.
+     * @docs
      */
     on_event(event, callback) {
       this.events.set(event, callback);
     }
-    /*  @docs:
-     *  @title: Command
-     *  @descr:
-     *      Set a command callback.
-     *      Will be called when an incoming message has the specified command type.
-     *      The function can take the following arguments: `(stream, id, data) => {}`.
+    /**
+     * Set a command callback.
+     * Will be called when an incoming message has the specified command type.
+     * The function can take the following arguments: `(stream, id, data) => {}`.
+     *
+     * @docs
      */
     on(command, callback) {
       this.commands.set(command, callback);
     }
-    /*  @docs:
-     *  @title: Await response
-     *  @descr: Wait for a message to be filled out.
-     *  @note: This only works when there is a single response message, any more response messages will be lost.
+    /**
+     * Wait for a message to be filled out.
+     * @note This only works when there is a single response message, any more response messages will be lost.
+     *
+     * @docs
      */
     async await_response({ stream, id, timeout = 6e4, step = 10 }) {
       let elapsed = 0;
@@ -250,6 +249,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send a command and expect a single response.
+     * @docs
      */
     async request({ stream, command, data, timeout = 6e4 }) {
       const id = await this.send_helper({ stream, command, data });
@@ -257,6 +257,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send a response to a received command.
+     * @docs
      */
     async respond({ stream, id, data }) {
       await this.send_helper({ stream, id, data });
@@ -292,7 +293,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       return id;
     }
   }
-  websocket2.Server = Server;
+  WebSocket2.Server = Server;
   class Client {
     url;
     api_key;
@@ -305,6 +306,10 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     connected = false;
     try_reconnect = true;
     auto_ping_timeout;
+    /**
+     * Construct a new client instance.
+     * @docs
+     */
     constructor({ url: url2 = "wss://localhost:8080", api_key = null, reconnect = {
       interval: 10,
       max_interval: 3e4
@@ -331,9 +336,9 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       this.events = /* @__PURE__ */ new Map();
       this.messages = /* @__PURE__ */ new Map();
     }
-    /*  @docs:
-     *  @title: Connect
-     *  @descr: Connect the websocket
+    /**
+     * Connect the websocket
+     * @docs
      */
     async connect() {
       return new Promise((resolve) => {
@@ -397,11 +402,10 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         }
       });
     }
-    /*  @docs:
-     *  @title: Disconnect
-     *  @descr:
-     *      Disconnect from the server.
-     *      Automatically calls `close()`.
+    /**
+     * Disconnect from the server.
+     * Automatically calls `close()`.
+     * @docs
      */
     disconnect() {
       this.try_reconnect = false;
@@ -410,38 +414,34 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         clearTimeout(this.auto_ping_timeout);
       }
     }
-    /*  @docs:
-     *  @title: Event callback
-     *  @descr:
-     *      Set an event callback.
-     *      The following callbacks can be set:
-     *      - open: (stream) => {}
-     *      - error: (stream, error) => {}
-     *      - reconnect: (stream, code, reason) => {}
-     *      - close: (stream, code, reason) => {}
+    /**
+     * Set an event callback.
+     * @docs
      */
     on_event(event, callback) {
       this.events.set(event, callback);
     }
-    /*  @docs:
-     *  @title: Command callback
-     *  @descr:
-     *      Set a command callback.
-     *      Will be called when an incoming message has the specified command type.
-     *      The function can take the following arguments: `(stream, id, data) => {}`.
+    /**
+     * Set a command callback.
+     * Will be called when an incoming message has the specified command type.
+     * The function can take the following arguments: `(stream, id, data) => {}`.
+     * @docs
      */
     on(command, callback) {
       this.commands.set(command, callback);
     }
-    /*  @docs:
-     *  @title: Send raw
-     *  @descr: Send raw data through the websocket.
+    /**
+     * Send raw data through the websocket.
+     * @docs
      */
     async send_raw(data) {
       await this.await_till_connected();
       this.stream?.send(data);
     }
-    /** Await till the stream is connected. */
+    /**
+     * Await till the stream is connected.
+     * @docs
+     */
     async await_till_connected(timeout = 6e4) {
       if (this.connected) {
         return;
@@ -464,10 +464,10 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         is_connected();
       });
     }
-    /*  @docs:
-     *  @title: Await response
-     *  @descr: Wait for a message to be filled out.
-     *  @note: This only works when there is a single response message, any more response messages will be lost.
+    /**
+     * Wait for a message to be filled out.
+     * @note This only works when there is a single response message, any more response messages will be lost.
+     * @docs
      */
     async await_response({ id, timeout = 6e4, step = 10 }) {
       let elapsed = 0;
@@ -491,6 +491,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send a command and expect a single response.
+     * @docs
      */
     async request({ command, data, timeout = 6e4 }) {
       const id = await this.send_helper({ command, data });
@@ -498,6 +499,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send a response to a received command.
+     * @docs
      */
     async respond({ id, data }) {
       await this.send_helper({ id, data });
@@ -519,9 +521,10 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       return id;
     }
   }
-  websocket2.Client = Client;
-})(websocket || (websocket = {}));
+  WebSocket2.Client = Client;
+})(WebSocket || (WebSocket = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  WebSocket,
   websocket
 });

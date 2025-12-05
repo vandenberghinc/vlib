@@ -5,11 +5,12 @@
 
 import * as cp from 'child_process';
 
-/*  @docs:
-    @chapter: System
-    @title: Process
-    @desc: The process class, used to start a child process.
-*/
+/**
+ * {Process}
+ * The process class, used to start a child process.
+ * @nav System
+ * @docs
+ */
 export class Proc {
 
     // Attributes.
@@ -27,53 +28,40 @@ export class Proc {
         this.debug = debug;
     }
 
-    /*  @docs:
-        @title: On output
-        @desc: The on output event, can be overridden when required.
-    */
+    /**
+     * The on output event, can be overridden when required.
+     * @docs
+     */
     on_output(data: string): void {
     }
 
-    /*  @docs:
-        @title: On error
-        @desc: The on error event, can be overridden when required.
-    */
+    /**
+     * The on error event, can be overridden when required.
+     * @docs
+     */
     on_error(data: string): void {
     }
 
-    /*  @docs:
-        @title: On exit
-        @desc: The on exit event, can be overridden when required.
-    */
+    /**
+     * The on exit event, can be overridden when required.
+     * @docs
+     */
     on_exit(code: number | null): void {
     }
 
-    /*  @docs:
-        @title: Start
-        @desc: Start a command.
-        @param:
-            @name: command
-            @desc: The command program.
-        @param:
-            @name: args
-            @desc: The command arguments.
-        @param:
-            @name: working_directory
-            @desc: The working directory path.
-        @param:
-            @name: interactive
-            @desc: Enable interactive mode.
-            @experimental: true
-        @param:
-            @name: detached
-            @desc: Enable detached mode.
-        @param:
-            @name: env
-            @desc: The environment variables.
-            @type: object
-        @param:
-            @name: colors
-            @desc: Enable colors.
+    // @todo add @experimental to interactive parameter
+    /**
+     * Start a command.
+     * @param command The command program.
+     * @param args The command arguments.
+     *     @desc The command arguments.
+     * @param working_directory The working directory path.
+     * @param interactive Enable interactive mode (experimental).
+     * @param detached Enable detached mode.
+     * @param env The environment variables.
+     * @param colors Enable colors.
+     * 
+     * @docs
     */
     start(
         {
@@ -186,10 +174,10 @@ export class Proc {
         return this.promise as Promise<number>;
     }
 
-    /*  @docs:
-        @title: Write
-        @desc: Write data to the stdin.
-    */
+    /**
+     * Write data to the stdin.
+     * @docs
+     */
     write(data: string | Buffer): this {
         if (this.proc != null && this.proc.stdin) {
             this.proc.stdin.write(data);
@@ -197,11 +185,11 @@ export class Proc {
         return this;
     }
 
-    /*  @docs:
-        @title: Join
-        @desc: Wait till the process if finished.
-        @note: This function must be awaited.
-    */
+    /**
+     * Wait till the process if finished.
+     * @note This function must be awaited.
+     * @docs
+     */
     async join(): Promise<void> {
         return new Promise<void>(async (resolve) => {
             await this.promise;
@@ -209,10 +197,10 @@ export class Proc {
         });
     }
 
-    /*  @docs:
-        @title: Kill
-        @desc: Signal the process with a SIGINT signal.
-    */
+    /**
+     * Signal the process with a SIGINT signal.
+     * @docs
+     */
     kill(signal: NodeJS.Signals = "SIGINT"): this {
         if (this.proc == null) { return this; }
         this.proc.kill(signal);

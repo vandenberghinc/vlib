@@ -55,6 +55,8 @@
  *
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
+ *
+ * @docs
  */
 export class GlobPattern {
     /** The original glob pattern. */
@@ -64,16 +66,21 @@ export class GlobPattern {
     /**
      * Create a new glob pattern matcher.
      * @param pattern - The glob pattern to compile.
+     * @docs
      */
     constructor(pattern) {
         this.pattern = pattern;
         this.regex = GlobPattern.compile(pattern);
     }
-    /** Get the length. */
+    /**
+     * Get the length.
+     * @docs
+     */
     get length() { return this.pattern.length; }
     /**
      * Update the pattern on the current instance.
      * @param pattern - The new glob pattern.
+     * @docs
      */
     update(pattern) {
         this.pattern = pattern;
@@ -83,12 +90,18 @@ export class GlobPattern {
      * Test a value against the glob pattern.
      * @param value - The string to test.
      * @returns True when the value matches the pattern.
-     * @funcs 2
+     * @docs
      */
     test(value) {
         const normalized = value.replace(/\\/g, '/');
         return this.regex.test(normalized);
     }
+    /**
+     * Test a value against the glob pattern.
+     * @param value - The string to test.
+     * @returns True when the value matches the pattern.
+     * @docs
+     */
     match(value) {
         const normalized = value.replace(/\\/g, '/');
         return this.regex.test(normalized);
@@ -97,12 +110,14 @@ export class GlobPattern {
      * Filter an array of values by this pattern.
      * @param values - The values to filter.
      * @returns The matched values.
+     * @docs
      */
     filter(values) {
         return values.filter(v => this.test(v));
     }
     /**
      * Static helper to directly match a value.
+     * @docs
      */
     static matches(pattern, value) {
         return new GlobPattern(pattern).test(value);
@@ -112,6 +127,7 @@ export class GlobPattern {
      * wildcard characters) or just a regular path.
      * @param str - The string to inspect.
      * @returns True if `str` looks like a glob pattern; false otherwise.
+     * @docs
      */
     static is(str) {
         // If the string contains any of: *, ?, [, ], {, or }
@@ -133,6 +149,7 @@ export class GlobPattern {
      * Compile a glob pattern to a regular expression.
      * @param pattern - The pattern to compile.
      * @returns The compiled regular expression.
+     * @docs
      */
     static compile(pattern) {
         pattern = pattern.replace(/\\/g, '/');
@@ -248,12 +265,15 @@ export class GlobPattern {
  *
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
+ *
+ * @docs
  */
 export class GlobPatternList {
     items;
     /**
-     *
+     * Construct a new glob pattern list.
      * @param list A single glob pattern or an array of glob patterns.
+     * @docs
      */
     constructor(list) {
         this.items = Array.isArray(list) ? list.map(GlobPatternList.init_list_item) : [GlobPatternList.init_list_item(list)];
@@ -264,12 +284,16 @@ export class GlobPatternList {
             ? item
             : new GlobPattern(item));
     }
-    /** Get the length. */
+    /**
+     * Get the length.
+     * @docs
+     */
     get length() { return this.items.length; }
     /**
      * Test if a value matches any of the glob patterns in the list.
      * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
      * @param value - The string to test.
+     * @docs
      */
     match(value) {
         return this.items.some(p => typeof p === "string" ? p === value : p.test(value));
@@ -284,11 +308,15 @@ export class GlobPatternList {
      * Test if a value matches all glob patterns in the list.
      * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
      * @param value - The string to test.
+     * @docs
      */
     every(value) {
         return this.items.every(p => typeof p === "string" ? p === value : p.test(value));
     }
-    /** Check if an array contains either a string glob patern or a GlobPattern instance. */
+    /**
+     * Check if an array contains either a string glob patern or a GlobPattern instance.
+     * @docs
+     */
     static is(list) {
         return list.some(item => item instanceof GlobPattern || GlobPattern.is(item));
     }

@@ -2,7 +2,26 @@
  * @author Daan van den Bergh
  * @copyright © 2022 - 2025 Daan van den Bergh.
  */
-/** A map of events. */
+/**
+ * Create a map of events.
+ * @example
+ * ```ts
+ * const events = new Events<{
+ *   'data': (data: string) => void;
+ *   'error': (error: Error) => void;
+ * }>();
+ * events.add("data", (data) => {
+ *   console.log("Data received:", data);
+ * });
+ * events.add("error", (error) => {
+ *   console.error("Error occurred:", error);
+ * });
+ * ...
+ * events.trigger("data", "Hello World!");
+ * ```
+ * @nav Events
+ * @docs
+ */
 export class Events extends Map {
     constructor() {
         super();

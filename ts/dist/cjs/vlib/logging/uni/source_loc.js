@@ -30,7 +30,10 @@ class SourceLoc {
   id = "<unknown>:?:?";
   abs_id = "<unknown>:?:?";
   adjust;
-  /** Constructor. */
+  /**
+   * Constructor.
+   * @docs
+   */
   constructor(adjust = 0) {
     this.adjust = adjust;
     if (typeof Error.prepareStackTrace === "function") {
@@ -124,7 +127,10 @@ class SourceLoc {
     this.abs_id = `${this.file}${suffix}`;
   }
   // ------------------------------------------------------------------------
-  /** Is unknown. */
+  /**
+   * Is unknown.
+   * @docs
+   */
   is_unknown() {
     return this.file === "<unknown>" && this.filename === "<unknown>";
   }

@@ -3,54 +3,61 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * Options for incrementing or decrementing date values
+ * Types for the {@link Date} class.
  */
-interface IncrementOptions {
-    /** Number of seconds to add or subtract */
-    seconds?: number;
-    /** Number of minutes to add or subtract */
-    minutes?: number;
-    /** Number of hours to add or subtract */
-    hours?: number;
-    /** Number of days to add or subtract */
-    days?: number;
-    /** Number of weeks to add or subtract */
-    weeks?: number;
-    /** Number of months to add or subtract */
-    months?: number;
-    /** Number of years to add or subtract */
-    years?: number;
-}
-/**
- * Options for constructing a Date object with named parameters
- */
-interface DateConstructorOptions {
-    /** The year value (e.g., 2024) */
-    year?: number;
-    /** The month value (0-11, where 0 is January) */
-    month?: number;
-    /** The day of the month (1-31) */
-    date?: number;
-    /** The hour value (0-23) */
-    hours?: number;
-    /** The minute value (0-59) */
-    minutes?: number;
-    /** The second value (0-59) */
-    seconds?: number;
-    /** The millisecond value (0-999) */
-    ms?: number;
+export declare namespace Date {
+    /**
+     * Options for constructing a Date object with named parameters
+     * @docs
+     */
+    interface Opts {
+        /** The year value (e.g., 2024) */
+        year?: number;
+        /** The month value (0-11, where 0 is January) */
+        month?: number;
+        /** The day of the month (1-31) */
+        date?: number;
+        /** The hour value (0-23) */
+        hours?: number;
+        /** The minute value (0-59) */
+        minutes?: number;
+        /** The second value (0-59) */
+        seconds?: number;
+        /** The millisecond value (0-999) */
+        ms?: number;
+    }
+    /**
+     * Options for incrementing or decrementing date values
+     * @docs
+     */
+    interface IncrementOpts {
+        /** Number of seconds to add or subtract */
+        seconds?: number;
+        /** Number of minutes to add or subtract */
+        minutes?: number;
+        /** Number of hours to add or subtract */
+        hours?: number;
+        /** Number of days to add or subtract */
+        days?: number;
+        /** Number of weeks to add or subtract */
+        weeks?: number;
+        /** Number of months to add or subtract */
+        months?: number;
+        /** Number of years to add or subtract */
+        years?: number;
+    }
 }
 /**
  * A wrapper around the global Date object that extends its functionality.
+ * @docs
  */
 export declare class Date extends globalThis.Date {
-    /** Constructors. */
     constructor();
     constructor(value: number | string);
     constructor(valueOfDate: globalThis.Date | Date);
-    constructor(options: DateConstructorOptions);
+    constructor(options: Date.Opts);
     constructor(year: number, month: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number);
-    constructor(valueOrYearOrOptions?: string | number | globalThis.Date | DateConstructorOptions, month?: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number);
+    constructor(value_date_opts_or_year?: string | number | globalThis.Date | Date.Opts, month?: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number);
     /**
      * Format a date object to a string using various format specifiers
      * @param {string} format - The date format string using % specifiers (e.g., %Y-%m-%d)
@@ -68,6 +75,8 @@ export declare class Date extends globalThis.Date {
      * @param unix_seconds  UNIX timestamp in **seconds** since epoch.
      * @param locale        Optional BCP-47 locale (e.g. "en-US", "nl-NL").
      * @param time_zone     Optional IANA time zone (e.g. "Europe/Amsterdam").
+     *
+     * @docs
      */
     format_locale({ locale, time_zone, show_timezone, }: {
         locale?: string;
@@ -82,6 +91,8 @@ export declare class Date extends globalThis.Date {
      * - Returns `undefined` if no locale can be determined.
      *
      * @returns A BCP-47 locale string (e.g. "en-US") or `undefined`.
+     *
+     * @docs
      */
     static detect_locale(): string | undefined;
     /**
@@ -91,6 +102,8 @@ export declare class Date extends globalThis.Date {
      * reflects the user's local time zone (e.g. "Europe/Amsterdam").
      *
      * @returns An IANA time zone string, or `undefined` if detection fails.
+     *
+     * @docs
      */
     static detect_time_zone(): string | undefined;
     /**
@@ -205,17 +218,16 @@ export declare class Date extends globalThis.Date {
     year_end(): Date;
     /**
      * Create a new date incremented by the specified amounts
-     * @param {IncrementOptions} options - Object containing increment values for various time units
+     * @param {Date.IncrementOpts} options - Object containing increment values for various time units
      * @returns {Date} A new date object incremented by the specified amounts
      * @docs
      */
-    increment({ seconds, minutes, hours, days, weeks, months, years }: IncrementOptions): Date;
+    increment({ seconds, minutes, hours, days, weeks, months, years }: Date.IncrementOpts): Date;
     /**
      * Create a new date decremented by the specified amounts
-     * @param {IncrementOptions} options - Object containing decrement values for various time units
+     * @param {Date.IncrementOpts} options - Object containing decrement values for various time units
      * @returns {Date} A new date object decremented by the specified amounts
      * @docs
      */
-    decrement({ seconds, minutes, hours, days, weeks, months, years }: IncrementOptions): Date;
+    decrement({ seconds, minutes, hours, days, weeks, months, years }: Date.IncrementOpts): Date;
 }
-export {};

@@ -8,6 +8,9 @@ import * as readline from 'readline';
  * Prompt a question from the user
  * @param question The question to display
  * @returns The user's response
+ *
+ * @nav Logging
+ * @docs
  */
 export async function prompt(question) {
     return new Promise((resolve, reject) => {
@@ -38,6 +41,9 @@ const yes_set = new Set(["y", "yes", "ok"]);
  * @param question The question to display
  * @param yes The set of lowercased yes responses, defaults to `["y", "yes", "ok"]`.
  * @returns The user's response, yes or no.
+ *
+ * @nav Logging
+ * @docs
  */
 export async function confirm(question, yes = yes_set) {
     return yes_set.has((await prompt(question + " (y/n) ")).toLowerCase().trim());

@@ -8,6 +8,13 @@ import { Logger } from "./logger.js";
 /**
  * The callable debug class.
  * A wrapper for a logger class with `debug` level set to `true`.
+ *
+ * @example
+ * const debug = new Debug(1);
+ * if (debug.on(1)) debug("Hello World!");
+ *
+ * @nav Logging
+ * @docs
  */
 export class Debug extends Logger {
     constructor(opts) {
@@ -31,6 +38,9 @@ export class Debug extends Logger {
 }
 /**
  * A global debug instance.
+ *
+ * @nav Logging
+ * @docs
  */
 export const debug = new Debug({ level: 0 });
 // ------------------ Benchmark. ------------------

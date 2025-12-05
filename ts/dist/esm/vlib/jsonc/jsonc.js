@@ -8,6 +8,7 @@ import { Path } from '../generic/path.js';
 /**
  * JSONC - A parser for json5 syntax with comments.
  * This includes a data insertion save function that preserves the original comments and formatting.
+ * @docs
  */
 export var JSONC;
 (function (JSONC) {
@@ -15,6 +16,7 @@ export var JSONC;
      * Parse a JSONC file.
      * @param data - The JSONC string form data to parse into an object.
      * @returns The parsed JSON object.
+    * @docs
      */
     function parse(data) {
         return commentjson.parse(data, undefined, true);
@@ -24,14 +26,23 @@ export var JSONC;
      * Load and parse a file.
      *
      * @param path The path to load.
+     * @returns The parsed JSON object.
      *
-     * @funcs 2
+     * @docs
      */
     async function load(path) {
         const p = path instanceof Path ? path : new Path(path);
         return parse(await p.load({ type: "string" }));
     }
     JSONC.load = load;
+    /**
+     * Load and parse a file synchronously.
+     *
+     * @param path The path to load.
+     * @returns The parsed JSON object.
+     *
+     * @docs
+     */
     function load_sync(path) {
         const p = path instanceof Path ? path : new Path(path);
         return parse(p.load_sync({ type: "string" }));
@@ -45,7 +56,7 @@ export var JSONC;
      * @param path The path to load
      * @param obj The object to save.
      *
-     * @funcs 2
+     * @docs
      */
     async function save(path, obj) {
         const p = path instanceof Path ? path : new Path(path);
@@ -56,6 +67,16 @@ export var JSONC;
         await p.save(insert_into_file(file, obj));
     }
     JSONC.save = save;
+    /**
+     * Save a JSONC file synchronously.
+     *
+     * Automatically loads the old file and calls `insert_into_file` on the old file with the new data.
+     *
+     * @param path The path to load
+     * @param obj The object to save.
+     *
+     * @docs
+     */
     function save_sync(path, obj) {
         const p = path instanceof Path ? path : new Path(path);
         if (!p.exists()) {
@@ -69,6 +90,8 @@ export var JSONC;
      * Inserts a JSON object into a JSONC file while preserving comments and formatting.
      * @param file_content - The original JSONC file content including comments and formatting.
      * @param obj - The object to insert into the file content.
+     *
+     * @docs
      */
     function insert_into_file(file_content, obj) {
         // Capture original blank line indices

@@ -8,6 +8,9 @@ import { FilePipe } from "./file_pipe.js";
 /**
  * Extension of the Logger class providing file logging capabilities,
  * while still printing to the console.
+ *
+ * @nav Logging
+ * @docs
  */
 export declare class FileLogger extends Logger<false, false, FilePipe> {
     /**

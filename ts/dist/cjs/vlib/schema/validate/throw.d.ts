@@ -12,6 +12,8 @@ import { Merge } from "../../types/types.js";
  * Converts `null` to "null", `undefined` to "undefined",
  * And tries to detect primitive array and object types.
  * @returns The string representation of the value type.
+ * @nav Schema/Utils
+ * @docs
  */
 export declare function value_type(value: any): string;
 /**
@@ -25,7 +27,8 @@ export interface ThrowType {
 }
 /**
  * Throw an error for undefined arguments
- * @libris
+ * @nav Schema/Utils
+ * @docs
  */
 export declare function throw_undefined(name: string, type?: ThrowType["type"], throw_err?: true): never;
 export declare function throw_undefined(name: string, type: ThrowType["type"], throw_err: false): string;
@@ -37,7 +40,8 @@ export declare function throw_undefined(opts: Merge<ThrowType, {
 }>): string;
 /**
  * Throw an error for invalid type arguments
- * @libris
+ * @nav Schema/Utils
+ * @docs
  */
 export declare function throw_invalid_type(name: string, value?: any, type?: ThrowType["type"], throw_err?: true): never;
 export declare function throw_invalid_type(name: string, value: any, type: ThrowType["type"], throw_err: false): string;

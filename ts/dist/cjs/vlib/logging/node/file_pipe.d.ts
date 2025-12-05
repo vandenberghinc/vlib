@@ -12,6 +12,8 @@ import { Pipe } from '../uni/pipe.js';
  * Also streams different, parseable messages to the files.
  * Later these can be extracted into a structured list of log messages.
  * This could be used to extract or search for specific log messages,
+ *
+ * @nav Logging
  * @docs
  */
 export declare class FilePipe extends Pipe<false, true> {

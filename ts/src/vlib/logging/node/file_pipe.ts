@@ -22,6 +22,8 @@ import { Spinners } from '../uni/spinners.js';
  * Also streams different, parseable messages to the files.
  * Later these can be extracted into a structured list of log messages.
  * This could be used to extract or search for specific log messages,
+ * 
+ * @nav Logging
  * @docs
  */
 export class FilePipe extends Pipe<false, true> {
@@ -193,7 +195,7 @@ export class FilePipe extends Pipe<false, true> {
      * Stop the logger and close the file streams.
      * @docs
      */
-    public stop(): void {
+    stop(): void {
         if (this.log_stream) {
             // console.log("Closing log stream.");
             this.log_stream.close();
@@ -210,7 +212,7 @@ export class FilePipe extends Pipe<false, true> {
      * @param error_path The path to a new error path, or `undefined` to reset the error stream.
      * @docs
      */
-    public assign_paths(log_path?: string, error_path?: string): void {
+    assign_paths(log_path?: string, error_path?: string): void {
 
         // Init or reset log stream.
         if (this.log_stream) this.log_stream.close();
@@ -246,7 +248,7 @@ export class FilePipe extends Pipe<false, true> {
      *      Any other directives are allowed before the first non-directive / local log level argument.
      * @docs
      */
-    public log(...args: (Directive | Error | any)[]): void {
+    log(...args: (Directive | Error | any)[]): void {
         let {
             local_level, active_log_level,
             is_raw, log_mode: mode, loc, local_level_arg_index

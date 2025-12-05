@@ -3,7 +3,11 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 
-/** Cast types. */
+/**
+ * Cast types.
+ * @nav Schema
+ * @docs
+ */
 export namespace Cast {
 
     /**
@@ -99,6 +103,7 @@ export namespace Cast {
      * Returns true if `s` is a valid signed decimal integer or float:
      *   [+|-]?digits[.digits]?
      * No exponents, no hex, no leading/trailing whitespace.
+     * @docs
      */
     export function is_number(s: string): boolean {
         const len = s.length;
@@ -148,7 +153,6 @@ export namespace Cast {
         // We must have consumed the whole string
         return i === len;
     }
-  
 
 }
 export { Cast as cast }; // snake_case compatibility.

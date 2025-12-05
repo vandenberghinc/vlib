@@ -40,7 +40,7 @@ function levenshtein_distance(a: string, b: string): number {
 
 /**
  * Attempts to find the *closest* valid attribute for a mistyped one.
- *
+ * 
  * @param incorrect_name
  *      The invalid / mistyped attribute name.
  * @param valid_names
@@ -53,6 +53,8 @@ function levenshtein_distance(a: string, b: string): number {
  * @returns
  *      The *best match* when its similarity is **≥ similarity_threshold**;
  *      otherwise `undefined`.
+ * 
+ * @internal
  */
 export function suggest_attribute(
     incorrect_name: string,

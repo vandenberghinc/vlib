@@ -60,6 +60,8 @@ class Spinner {
    * @param opts.start Optional default message to display when starting the spinner with `start()` or by `auto_start`.
    * @param opts.success Optional default message to display when stopping the spinner with `success()`.
    * @param opts.stop Optional default message to display when stopping the spinner with `stop()`.
+   *
+   * @docs
    */
   constructor(opts) {
     if (typeof opts === "string") {
@@ -75,16 +77,24 @@ class Spinner {
       this.start();
     }
   }
-  /** Is running. */
+  /**
+   * Is running.
+   * @docs
+   */
   get running() {
     return this.interval_handle != null;
   }
+  /**
+   * Is running.
+   * @docs
+   */
   get is_running() {
     return this.interval_handle != null;
   }
   /**
    * Start rendering the spinner to stdout.
    * If already started, this is a no-op.
+   * @docs
    */
   start() {
     if (this.interval_handle)
@@ -104,6 +114,7 @@ class Spinner {
   /**
    * Stop the spinner without marking success or failure.
    * Clears the current line.
+   * @docs
    */
   stop(message) {
     if (!this.interval_handle)
@@ -122,6 +133,7 @@ class Spinner {
   /**
    * Pause the spinner, preserving the current frame.
    * If not running, this is a no-op.
+   * @docs
    */
   pause() {
     if (!this.interval_handle)
@@ -134,6 +146,7 @@ class Spinner {
   /**
    * Pause, then call callback, then resume the spinner.
    * Allowing for safe logging during the spinner.
+   * @docs
    */
   safe_log(cb) {
     this.pause();
@@ -143,6 +156,7 @@ class Spinner {
   /**
    * Resume the spinner from a paused state.
    * If already running, this is a no-op.
+   * @docs
    */
   resume() {
     if (this.interval_handle)
@@ -156,6 +170,7 @@ class Spinner {
   /**
    * Stop the spinner and mark it as succeeded.
    * @param message Optional message to display after the success mark.
+   * @docs
    */
   success(message) {
     message ??= this.success_message;
@@ -167,6 +182,7 @@ class Spinner {
   /**
    * Stop the spinner and mark it as failed.
    * @param message Optional message to display after the failure mark.
+   * @docs
    */
   error(message) {
     this.stop();
@@ -177,6 +193,7 @@ class Spinner {
   /**
    * Update the prefix message shown alongside the spinner.
    * @param prefix The new prefix text.
+   * @docs
    */
   set_prefix(prefix) {
     this.prefix = prefix;

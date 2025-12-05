@@ -10,6 +10,9 @@ import { Color, Colors } from "../generic/colors.js";
 
 /**
  * An CLI error.
+ * 
+ * @nav CLI/Errors
+ * @docs
  */
 export class CLIError extends globalThis.Error {
 

@@ -15,9 +15,9 @@ import { Path } from '../generic/path.js';
 import { GlobPatternList } from '../generic/glob_pattern.js';
 /**
  * Zip utilities for working with zip files.
- * @warning This module might still be slightly unsafe due too its experimental and internal nature.
- *          Therfore, this module will be subject to future change.
+ * @warning This is still experimental and might therefore be subject to future change.
  * @experimental
+ * @docs
  */
 export var Zip;
 (function (Zip) {
@@ -27,6 +27,8 @@ export var Zip;
      * @param file - Path to the zip file to extract.
      * @param dest - Destination directory where files will be extracted.
      * @throws {Error} If the zip file doesn't exist, is corrupted, or contains path‑traversal entries.
+     *
+     * @docs
      */
     async function extract(file, dest) {
         const zip_path = new Path(file);
@@ -56,6 +58,8 @@ export var Zip;
     Zip.extract = extract;
     /**
      * List all entries contained in a zip file.
+     *
+     * @docs
      */
     async function list(file) {
         const zip_path = new Path(file);
@@ -82,6 +86,8 @@ export var Zip;
     Zip.list = list;
     /**
      * Create a zip archive from one or more sources.
+     *
+     * @docs
      */
     async function create(sources, destination, options = {}) {
         // Normalize inputs.
@@ -177,6 +183,8 @@ export var Zip;
     // Convenience wrappers
     /**
      * Create a zip archive from a single file.
+     *
+     * @docs
      */
     async function create_from_file(source_file, destination, archive_name, compression_level = 9) {
         const source = new Path(source_file);
@@ -191,6 +199,8 @@ export var Zip;
     Zip.create_from_file = create_from_file;
     /**
      * Create a zip archive from a directory.
+     *
+     * @docs
      */
     async function create_from_directory(source_dir, destination, include_root_folder = true, compression_level = 9, exclude_patterns = []) {
         const source = new Path(source_dir);

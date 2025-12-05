@@ -18,6 +18,9 @@ import { Color } from "../../generic/colors.js";
  * @template D The 'debug' mode flag, defaults to `false`.
  * @template R The 'raw' mode flag, defaults to `false`.
  * @template P The pipe type, defaults to `Pipe<boolean, true>`.
+ * 
+ * @nav Logging
+ * @docs
  */
 export class Logger<
     D extends boolean = boolean,
@@ -57,6 +60,8 @@ export class Logger<
      * @param opts.raw When `true`, timestamps will not be shown on log messages.
      * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
      *                  This attribute is required when a custom `P` generic is provided.
+     * 
+     * @docs
      */
     constructor(opts: {
         level?: number | ActiveLogLevel,
@@ -83,7 +88,7 @@ export class Logger<
      *        The data to log.
      *        The first number is treated as the local log level.
      *        Any other directives are allowed before the first non-directive / local log level argument.
-     * @funcs 2
+     * @docs
      */
     call(log_level: number | Args[0], ...args: Args): void {
         this.pipe.log(this.level, this.debug_flag, this.raw_flag, new SourceLoc(2), log_level, ...args);
@@ -94,6 +99,8 @@ export class Logger<
      * @param local_level The local log level to check against the active log level.
      * @param active_level Optionally provide an active log level to check against.
      * @returns `true` if the local level is active, otherwise `false`.
+     * 
+     * @docs
      */
     on(local_level: number, active_level?: number): boolean {
         return active_level == null ? local_level <= this.level.n : local_level <= active_level;
@@ -102,6 +109,8 @@ export class Logger<
     /**
      * Log a message in raw mode.
      * @param args Log arguments to pass to the pipe.
+     * 
+     * @docs
      */
     raw(level: number | any, ...args: Args): void {
         this.pipe.log(this.debug_flag, this.raw_flag, new SourceLoc(1), level, ...args); // do not use console.log here since we join args without a space unlike console.log.
@@ -115,6 +124,8 @@ export class Logger<
      * Log error data to the console and file streams when defined.
      * This automatically prepends the `Mode.raw` directive.
      * @param args The data to log.
+     * 
+     * @docs
      */
     error(...args: Args): void {
         this.pipe.log(-1, this.raw_flag, Directive.error, new SourceLoc(1), ...args);
@@ -126,7 +137,7 @@ export class Logger<
      * This automatically prepends the `Mode.raw` directive.
      * @param level The log level or the first argument to log.
      * @param errs The data to log.
-     * @funcs 2
+     * @docs
      */
     warn(level: number | any, ...args: Args): void {
         this.pipe.log(this.raw_flag, Directive.warn, new SourceLoc(1), level, ...args);
@@ -139,6 +150,7 @@ export class Logger<
      * Update the log level of this debug instance.
      * @param value The log level to set for this debug instance.
      * @returns The debug instance itself for chaining.
+     * @docs
      */
     set(value: number): this {
         this.level.set(value);
@@ -155,6 +167,7 @@ export class Logger<
      *      The number of function calls to go back in the call stack for the creation of the SourceLoc.
      *      By default the source location will be created for the location of where this function is called.
      * @returns A new SourceLoc instance.
+     * @docs
      */
     loc(lookback: number = 0): SourceLoc {
         return new SourceLoc(1 + lookback);
@@ -164,12 +177,17 @@ export class Logger<
      * Forward the `Pipe.join()` function to the pipe instance.
      * @param args The arguments to pass to the `Pipe.join()` function.
      * @returns The joined string.
+     * @docs
      */
     join(...args: Args): string {
         return this.pipe.join(...args);
     }
 
-    /** Create a marker log message. */
+    /**
+     * Create a marker log message.
+     * @param args The arguments to pass to the `Pipe.join()` function.
+     * @docs
+     */
     marker(level: number | any, ...args: Args): void {
         if (typeof level === "number") {
             this.pipe.log(level, this.debug_flag, this.raw_flag, new SourceLoc(1), Color.blue(">>> "), ...args);
@@ -182,5 +200,7 @@ export class Logger<
 
 /**
  * A global log instance.
+ * @nav Logging
+ * @docs
  */
 export const log: Logger = new Logger({ level: 0, debug: false, raw: true });

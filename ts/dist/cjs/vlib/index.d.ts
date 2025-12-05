@@ -16,7 +16,7 @@ export * as CLI from "./cli/index.m.js";
 export * as cli from "./cli/index.m.js";
 /** sockets/ */
 export * from "./sockets/request.js";
-export * from "./sockets/websocket.deprecated.js";
+export * from "./sockets/websocket.js";
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** generic/ */

@@ -10,6 +10,7 @@ import { Path } from '../generic/path.js';
 /**
  * JSONC - A parser for json5 syntax with comments.
  * This includes a data insertion save function that preserves the original comments and formatting.
+ * @docs
  */
 export namespace JSONC {
 
@@ -17,6 +18,7 @@ export namespace JSONC {
      * Parse a JSONC file.
      * @param data - The JSONC string form data to parse into an object.
      * @returns The parsed JSON object.
+    * @docs
      */
     export function parse<T extends any[] | Record<any, any> = any>(data: string): T {
         return commentjson.parse(data, undefined, true) as any as T;
@@ -26,13 +28,22 @@ export namespace JSONC {
      * Load and parse a file.
      * 
      * @param path The path to load.
+     * @returns The parsed JSON object.
      * 
-     * @funcs 2
+     * @docs
      */
     export async function load<T extends any[] | Record<any, any> = any>(path: string | Path): Promise<T> {
         const p = path instanceof Path ? path : new Path(path);
         return parse<T>(await p.load({ type: "string" }));
     }
+    /**
+     * Load and parse a file synchronously.
+     * 
+     * @param path The path to load.
+     * @returns The parsed JSON object.
+     * 
+     * @docs
+     */
     export function load_sync<T extends any[] | Record<any, any> = any>(path: string | Path): T {
         const p = path instanceof Path ? path : new Path(path);
         return parse<T>(p.load_sync({ type: "string" }));
@@ -46,7 +57,7 @@ export namespace JSONC {
      * @param path The path to load
      * @param obj The object to save.
      * 
-     * @funcs 2
+     * @docs
      */
     export async function save(path: string | Path, obj: Record<string, any>): Promise<void> {
         const p = path instanceof Path ? path  : new Path(path);
@@ -56,6 +67,17 @@ export namespace JSONC {
         const file = await p.load({ type: "string" });
         await p.save(insert_into_file(file, obj));
     }
+
+    /**
+     * Save a JSONC file synchronously.
+     * 
+     * Automatically loads the old file and calls `insert_into_file` on the old file with the new data.
+     * 
+     * @param path The path to load
+     * @param obj The object to save.
+     * 
+     * @docs
+     */
     export function save_sync(path: string | Path, obj: Record<string, any>): void {
         const p = path instanceof Path ? path : new Path(path);
         if (!p.exists()) {
@@ -69,6 +91,8 @@ export namespace JSONC {
      * Inserts a JSON object into a JSONC file while preserving comments and formatting.
      * @param file_content - The original JSONC file content including comments and formatting.
      * @param obj - The object to insert into the file content.
+     * 
+     * @docs
      */
     export function insert_into_file(file_content: string, obj: Record<string, any>): string {
 

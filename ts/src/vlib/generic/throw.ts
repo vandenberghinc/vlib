@@ -12,6 +12,7 @@
  * const value: string = map.my_key ?? vlib.throw(`Key not found`);
  * ```
  * @name throw
+ * @docs
  */
 function throw_(error: string | Error): never {
     if (error instanceof Error) {

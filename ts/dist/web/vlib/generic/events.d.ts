@@ -11,17 +11,54 @@
  *   'error': (error: Error) => void;
  * }
  * ```
+ * @nav Events
+ * @docs
  */
 export type EventsMeta = Record<string, (...args: any) => any>;
-/** Event name. */
+/**
+ * Event name.
+ * @nav Events
+ * @docs
+ */
 export type EventName<M extends EventsMeta> = keyof M;
-/** Event callback. */
+/**
+ * Event callback.
+ * @nav Events
+ * @docs
+ */
 export type EventCallback<M extends EventsMeta, N extends keyof M> = M[N];
-/** Event parameters. */
+/**
+ * Event parameters.
+ * @nav Events
+ * @docs
+ */
 export type EventParams<M extends EventsMeta, N extends keyof M> = Parameters<M[N]>;
-/** Event result type. */
+/**
+ * Event result type.
+ * @nav Events
+ * @docs
+ */
 export type EventResult<M extends EventsMeta, N extends keyof M> = ReturnType<M[N]>;
-/** A map of events. */
+/**
+ * Create a map of events.
+ * @example
+ * ```ts
+ * const events = new Events<{
+ *   'data': (data: string) => void;
+ *   'error': (error: Error) => void;
+ * }>();
+ * events.add("data", (data) => {
+ *   console.log("Data received:", data);
+ * });
+ * events.add("error", (error) => {
+ *   console.error("Error occurred:", error);
+ * });
+ * ...
+ * events.trigger("data", "Hello World!");
+ * ```
+ * @nav Events
+ * @docs
+ */
 export declare class Events<M extends EventsMeta> extends Map<EventName<M>, Array<EventCallback<M, EventName<M>>>> {
     constructor();
     /** Check if an event exists. */

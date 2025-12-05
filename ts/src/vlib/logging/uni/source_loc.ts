@@ -5,7 +5,9 @@
 
 /**
  * Source location.
- * @note Accessable in the frontend web library as well.
+ * @note Accessible in the frontend web library as well.
+ * @nav Logging
+ * @docs
  */
 export class SourceLoc {
 
@@ -19,7 +21,10 @@ export class SourceLoc {
     public abs_id: string | "<unknown>:?:?" = "<unknown>:?:?";
     private adjust: number;
 
-    /** Constructor. */
+    /**
+     * Constructor.
+     * @docs
+     */
     constructor(adjust = 0) {
         this.adjust = adjust;
         if (typeof Error.prepareStackTrace === "function") {
@@ -171,7 +176,10 @@ export class SourceLoc {
 
     // ------------------------------------------------------------------------
 
-    /** Is unknown. */
+    /**
+     * Is unknown.
+     * @docs
+     */
     is_unknown() {
         return this.file === "<unknown>" && this.filename === "<unknown>";
     }

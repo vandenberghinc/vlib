@@ -5,7 +5,7 @@ const tests = new import_vtest.Module({ name: "vlib/minify/object" });
 tests.add({
   id: "minify:1",
   expect: "success",
-  callback: () => (0, import_object.object)({
+  callback: () => import_object.Object.minify({
     object: {
       hello: "world",
       foo: { bar: "baz", foo: { a: "b", c: "d", e: { f: "g" } }, a: ["a", "b", "c"] },
@@ -27,7 +27,7 @@ tests.add({
 tests.add({
   id: "minify:2",
   expect: "success",
-  callback: () => (0, import_object.object)({
+  callback: () => import_object.Object.minify({
     object: {
       hello: "world",
       foo: { bar: "baz", foo: { a: "b", c: "d", e: { f: "g" } }, a: ["a", "b", "c"] },
@@ -93,8 +93,8 @@ tests.add({
   id: "expand:1",
   expect: "success",
   callback: () => {
-    const minified = (0, import_object.object)({ object: original_obj, flat_scheme });
-    const expanded = import_object.object.expand({ object: minified, flat_scheme });
+    const minified = import_object.Object.minify({ object: original_obj, flat_scheme });
+    const expanded = import_object.Object.expand({ object: minified, flat_scheme });
     return { expanded };
   }
 });
@@ -125,8 +125,8 @@ tests.add({
   id: "expand:2",
   expect: "success",
   callback: () => {
-    const minified = (0, import_object.object)({ object: original_obj, scheme: nested_scheme });
-    const expanded = import_object.object.expand({ object: minified, scheme: nested_scheme });
+    const minified = import_object.Object.minify({ object: original_obj, scheme: nested_scheme });
+    const expanded = import_object.Object.expand({ object: minified, scheme: nested_scheme });
     return { expanded };
   }
 });

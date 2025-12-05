@@ -23,6 +23,9 @@
  * }
  * loader.succeed("Download complete");
  * ```
+ *
+ * @nav Logging
+ * @docs
  */
 export declare class Loader {
     /** Minimum value of the range. */
@@ -57,6 +60,8 @@ export declare class Loader {
      * @param opts.show_percent display percentage number (default true)
      * @param opts.show_count display [current/max] (default false)
      * @param opts.timestamps Show timestamps (default: true).
+     *
+     * @docs
      */
     constructor(prefix?: string, opts?: {
         min?: number;
@@ -70,44 +75,62 @@ export declare class Loader {
     });
     /**
      * Start the loader: resets to minimum and renders initial bar.
+     *
+     * @docs
      */
     start(): void;
     /**
      * Advance the loader by `step` (default = 1) and re-render.
      * @param step Amount to increment (default 1).
+     *
+     * @docs
      */
     next(step?: number): void;
     /**
      * Set the loader to an absolute value and re-render.
      * Clamps between min and max.
      * @param value New progress value.
+     *
+     * @docs
      */
     update(value: number): void;
     /**
      * Stop the loader without success/failure, clearing the line.
+     *
+     * @docs
      */
     stop(): void;
     /**
      * Stop the loader and mark as succeeded.
      * @param message Optional completion message.
+     *
+     * @docs
      */
     success(message?: string): void;
     /**
      * Stop the loader and mark as failed.
      * @param message Optional error message.
+     *
+     * @docs
      */
     error(message?: string): void;
     /**
      * Update the prefix message.
      * @param prefix New prefix text.
+     *
+     * @docs
      */
     set_prefix(prefix: string): void;
     /**
      * Get the current progress ratio in [0,1].
+     *
+     * @docs
      */
     get ratio(): number;
     /**
      * Get the current percentage (0–100).
+     *
+     * @docs
      */
     get percent(): number;
     /**

@@ -21,6 +21,10 @@ __export(stdin_exports, {
 });
 module.exports = __toCommonJS(stdin_exports);
 class Date extends globalThis.Date {
+  /**
+   * Construct a new date instance.
+   * @docs
+   */
   constructor() {
     if (arguments.length === 0) {
       super();
@@ -283,6 +287,8 @@ class Date extends globalThis.Date {
    * @param unix_seconds  UNIX timestamp in **seconds** since epoch.
    * @param locale        Optional BCP-47 locale (e.g. "en-US", "nl-NL").
    * @param time_zone     Optional IANA time zone (e.g. "Europe/Amsterdam").
+   *
+   * @docs
    */
   format_locale({ locale, time_zone, show_timezone = false }) {
     const resolved_locale = locale ?? Date.detect_locale();
@@ -311,6 +317,8 @@ class Date extends globalThis.Date {
    * - Returns `undefined` if no locale can be determined.
    *
    * @returns A BCP-47 locale string (e.g. "en-US") or `undefined`.
+   *
+   * @docs
    */
   static detect_locale() {
     if (typeof navigator !== "undefined") {
@@ -341,6 +349,8 @@ class Date extends globalThis.Date {
    * reflects the user's local time zone (e.g. "Europe/Amsterdam").
    *
    * @returns An IANA time zone string, or `undefined` if detection fails.
+   *
+   * @docs
    */
   static detect_time_zone() {
     try {
@@ -572,7 +582,7 @@ class Date extends globalThis.Date {
   }
   /**
    * Create a new date incremented by the specified amounts
-   * @param {IncrementOptions} options - Object containing increment values for various time units
+   * @param {Date.IncrementOpts} options - Object containing increment values for various time units
    * @returns {Date} A new date object incremented by the specified amounts
    * @docs
    */
@@ -594,7 +604,7 @@ class Date extends globalThis.Date {
   }
   /**
    * Create a new date decremented by the specified amounts
-   * @param {IncrementOptions} options - Object containing decrement values for various time units
+   * @param {Date.IncrementOpts} options - Object containing decrement values for various time units
    * @returns {Date} A new date object decremented by the specified amounts
    * @docs
    */

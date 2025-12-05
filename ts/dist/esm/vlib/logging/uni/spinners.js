@@ -4,12 +4,20 @@
  */
 /**
  * A module to manage multiple active spinners.
+ * @nav Logging/Spinners
+ * @docs
  */
 export var Spinners;
 (function (Spinners) {
-    /** The list of active spinners (multi type but for now just one). */
+    /**
+     * The list of active spinners (multi type but for now just one).
+     * @docs
+     */
     Spinners.active = [];
-    /** Check if there is an active spinner running. */
+    /**
+     * Check if there is an active spinner running.
+     * @docs
+     */
     function has_active() {
         return Spinners.active.some(spinner => spinner.running);
     }
@@ -17,6 +25,7 @@ export var Spinners;
     /**
      * Add an active spinner.
      * @param spinner The spinner to add.
+     * @docs
      */
     function add(spinner) {
         Spinners.active.push(spinner);
@@ -25,6 +34,7 @@ export var Spinners;
     /**
      * Remove an active spinner when present.
      * @param spinner The spinner to remove.
+     * @docs
      */
     function remove(spinner) {
         const index = Spinners.active.indexOf(spinner);
@@ -33,7 +43,10 @@ export var Spinners;
         }
     }
     Spinners.remove = remove;
-    /** Pause all running spinners */
+    /**
+     * Pause all running spinners
+     * @docs
+     */
     function pause_all() {
         for (const spinner of Spinners.active) {
             if (spinner.running) {
@@ -42,7 +55,10 @@ export var Spinners;
         }
     }
     Spinners.pause_all = pause_all;
-    /** Resume the last active spinner if any. */
+    /**
+     * Resume the last active spinner if any.
+     * @docs
+     */
     function resume_last() {
         if (Spinners.active.length > 0) {
             const last_spinner = Spinners.active[Spinners.active.length - 1];
@@ -55,6 +71,7 @@ export var Spinners;
     /**
      * Almost ensure a safe print after this func is executed.
      * By resetting the last dumped line if there is an active spinner.
+     * @docs
      */
     function ensure_safe_print() {
         if (Spinners.active.some(spinner => spinner.running)) {
@@ -62,7 +79,10 @@ export var Spinners;
         }
     }
     Spinners.ensure_safe_print = ensure_safe_print;
-    /** Clear the current line. */
+    /**
+     * Clear the current line.
+     * @docs
+     */
     function clear_current_line() {
         process.stdout.write('\r\x1b[K'); // Clear the current line
     }

@@ -4,6 +4,11 @@
  *
  * @note FRONTEND - This file should also be accessable from the frontend.
  */
+/**
+ * Number utilities.
+ * @name Number
+ * @docs
+ */
 var NumberUtils;
 (function (NumberUtils) {
     /**
@@ -11,6 +16,7 @@ var NumberUtils;
      * @param x The lower bound.
      * @param y The upper bound.
      * @returns A random integer between x and y.
+     * @docs
      */
     function random(x, y) {
         if (typeof x !== 'number' || typeof y !== 'number' || x >= y) {

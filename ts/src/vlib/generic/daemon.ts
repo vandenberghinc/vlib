@@ -13,6 +13,8 @@ const is_root = os.userInfo().uid === 0;
 
 /**
  * Error thrown for daemon-related failures.
+ * 
+ * @docs
  */
 export class DaemonError extends Error {
     constructor(...args: any[]) {
@@ -66,9 +68,10 @@ export namespace Daemon {
 }
 
 /** 
- *  Daemon type.
+ * Daemon type.
  * 
- *  @nav System
+ * @nav System
+ * @docs
  */
 export class Daemon {
     private name: string;

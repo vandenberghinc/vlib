@@ -2,7 +2,11 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-/** Cast types. */
+/**
+ * Cast types.
+ * @nav Schema
+ * @docs
+ */
 export declare namespace Cast {
     /**
      * Cast a boolean string to a boolean value.
@@ -54,6 +58,7 @@ export declare namespace Cast {
      * Returns true if `s` is a valid signed decimal integer or float:
      *   [+|-]?digits[.digits]?
      * No exponents, no hex, no leading/trailing whitespace.
+     * @docs
      */
     function is_number(s: string): boolean;
 }

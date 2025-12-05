@@ -28,6 +28,8 @@ export interface CreateJSONSchemaOpts<S extends Entries.Opts = Entries.Opts> {
  * Generate a draft-07 JSON-Schema for a validator definition.
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
+ * @nav Schema
+ * @docs
  */
 export declare function create_json_schema_sync<const S extends Entries.Opts = Entries.Opts>(opts: CreateJSONSchemaOpts<S>): object;
 /**
@@ -36,5 +38,7 @@ export declare function create_json_schema_sync<const S extends Entries.Opts = E
  * Therefore, for this function the {@link CreateJSONSchemaOpts.output} option is required.
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
+ * @nav Schema
+ * @docs
  */
 export declare function create_json_schema<const S extends Entries.Opts = Entries.Opts>(opts: RequiredKeys<CreateJSONSchemaOpts<S>, "output">): Promise<object>;

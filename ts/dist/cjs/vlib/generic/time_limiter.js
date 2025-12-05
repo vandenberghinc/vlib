@@ -25,19 +25,21 @@ class TimeLimiter {
   _limit;
   _counts;
   _expiration;
+  /**
+   * Construct a new time limiter instance.
+   * @docs
+   */
   constructor({ duration = 60 * 1e3, limit = 10 } = {}) {
     this._duration = duration;
     this._limit = limit;
     this._counts = 0;
     this._expiration = Date.now() + this._duration;
   }
-  /*  @docs:
-      @title: Limit
-      @desc: Check if the current process is within the limit of the specified time frame.
-      @returns:
-          @type: boolean
-          @desc: Returns true if the process is within limits, false otherwise
-  */
+  /**
+   * Check if the current process is within the limit of the specified time frame.
+   * @returns Returns true if the process is within limits, false otherwise
+   * @docs
+   */
   limit() {
     const now = Date.now();
     if (now > this._expiration) {

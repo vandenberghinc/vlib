@@ -3,7 +3,11 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * NodeClipboard: native clipboard operations for Node.js environments.
+ * {Node.js}
+ * Native clipboard operations for Node.js environments.
+ *
+ * @nav Clipboard
+ * @docs
  */
 export var Clipboard;
 (function (Clipboard) {
@@ -11,6 +15,8 @@ export var Clipboard;
     let exec_fn = null;
     /**
      * Initialize high-performance library or fallback for Node.js.
+     *
+     * @internal
      */
     async function init() {
         if (node_clipboard !== null || exec_fn !== null)
@@ -37,6 +43,8 @@ export var Clipboard;
     }
     /**
      * Copy data to the system clipboard (Node.js).
+     *
+     * @docs
      */
     async function set(data) {
         const text = typeof data === 'string' ? data : JSON.stringify(data);
@@ -63,6 +71,8 @@ export var Clipboard;
     Clipboard.set = set;
     /**
      * Read data from the system clipboard (Node.js).
+     *
+     * @docs
      */
     async function get(opts) {
         await init();

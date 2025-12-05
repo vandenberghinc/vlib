@@ -29,18 +29,23 @@ class GlobPattern {
   /**
    * Create a new glob pattern matcher.
    * @param pattern - The glob pattern to compile.
+   * @docs
    */
   constructor(pattern) {
     this.pattern = pattern;
     this.regex = GlobPattern.compile(pattern);
   }
-  /** Get the length. */
+  /**
+   * Get the length.
+   * @docs
+   */
   get length() {
     return this.pattern.length;
   }
   /**
    * Update the pattern on the current instance.
    * @param pattern - The new glob pattern.
+   * @docs
    */
   update(pattern) {
     this.pattern = pattern;
@@ -50,12 +55,18 @@ class GlobPattern {
    * Test a value against the glob pattern.
    * @param value - The string to test.
    * @returns True when the value matches the pattern.
-   * @funcs 2
+   * @docs
    */
   test(value) {
     const normalized = value.replace(/\\/g, "/");
     return this.regex.test(normalized);
   }
+  /**
+   * Test a value against the glob pattern.
+   * @param value - The string to test.
+   * @returns True when the value matches the pattern.
+   * @docs
+   */
   match(value) {
     const normalized = value.replace(/\\/g, "/");
     return this.regex.test(normalized);
@@ -64,12 +75,14 @@ class GlobPattern {
    * Filter an array of values by this pattern.
    * @param values - The values to filter.
    * @returns The matched values.
+   * @docs
    */
   filter(values) {
     return values.filter((v) => this.test(v));
   }
   /**
    * Static helper to directly match a value.
+   * @docs
    */
   static matches(pattern, value) {
     return new GlobPattern(pattern).test(value);
@@ -79,6 +92,7 @@ class GlobPattern {
    * wildcard characters) or just a regular path.
    * @param str - The string to inspect.
    * @returns True if `str` looks like a glob pattern; false otherwise.
+   * @docs
    */
   static is(str) {
     for (let i = 0, n = str.length; i < n; ++i) {
@@ -103,6 +117,7 @@ class GlobPattern {
    * Compile a glob pattern to a regular expression.
    * @param pattern - The pattern to compile.
    * @returns The compiled regular expression.
+   * @docs
    */
   static compile(pattern) {
     pattern = pattern.replace(/\\/g, "/");
@@ -207,8 +222,9 @@ class GlobPattern {
 class GlobPatternList {
   items;
   /**
-   *
+   * Construct a new glob pattern list.
    * @param list A single glob pattern or an array of glob patterns.
+   * @docs
    */
   constructor(list) {
     this.items = Array.isArray(list) ? list.map(GlobPatternList.init_list_item) : [GlobPatternList.init_list_item(list)];
@@ -217,7 +233,10 @@ class GlobPatternList {
   static init_list_item(item) {
     return item instanceof GlobPattern || !GlobPattern.is(item) ? item : new GlobPattern(item);
   }
-  /** Get the length. */
+  /**
+   * Get the length.
+   * @docs
+   */
   get length() {
     return this.items.length;
   }
@@ -225,6 +244,7 @@ class GlobPatternList {
    * Test if a value matches any of the glob patterns in the list.
    * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
    * @param value - The string to test.
+   * @docs
    */
   match(value) {
     return this.items.some((p) => typeof p === "string" ? p === value : p.test(value));
@@ -239,11 +259,15 @@ class GlobPatternList {
    * Test if a value matches all glob patterns in the list.
    * @note This method does not resolve the `value` path, even when `opts.absolute` is true.
    * @param value - The string to test.
+   * @docs
    */
   every(value) {
     return this.items.every((p) => typeof p === "string" ? p === value : p.test(value));
   }
-  /** Check if an array contains either a string glob patern or a GlobPattern instance. */
+  /**
+   * Check if an array contains either a string glob patern or a GlobPattern instance.
+   * @docs
+   */
   static is(list) {
     return list.some((item) => item instanceof GlobPattern || GlobPattern.is(item));
   }

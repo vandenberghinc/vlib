@@ -6,11 +6,14 @@
  */
 
 /**
- * Refactored array utilities: namespace-based implementations.
+ * Array utilities.
+ * @name Array
+ * @docs
  */
 export namespace ArrayUtils {
     /**
      * Appends items to the array.
+     * @docs
      */
     export function append<T>(arr: T[], ...items: T[]): number {
         return arr.push(...items);
@@ -18,6 +21,7 @@ export namespace ArrayUtils {
 
     /**
      * Executes a handler for each element in the array.
+     * @docs
      */
     export function walk<T>(arr: T[], handler: (item: T, index: number, array: T[]) => void): void {
         return arr.forEach(handler);
@@ -25,6 +29,7 @@ export namespace ArrayUtils {
 
     /**
      * Gets the first element of the array.
+     * @docs
      */
     export function first<T>(arr: T[]): T | undefined {
         return arr[0];
@@ -32,6 +37,7 @@ export namespace ArrayUtils {
 
     /**
      * Gets the last element of the array.
+     * @docs
      */
     export function last<T>(arr: T[]): T | undefined {
         return arr[arr.length - 1];
@@ -39,6 +45,7 @@ export namespace ArrayUtils {
 
     /**
      * Iteration function for arrays.
+     * @docs
      */
     export function iterate<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => R): R | null {
         if (typeof start === "function") {
@@ -59,6 +66,7 @@ export namespace ArrayUtils {
     /**
      * Is any array, mutable or readonly.
      * Since Array.isArray only supports mutable arrays.
+     * @docs
      */
     export function is_any<T>(x: any): x is T[] | readonly T[] {
         return Array.isArray(x);
@@ -66,6 +74,7 @@ export namespace ArrayUtils {
 
     /**
      * Iterate an array reversed.
+     * @docs
      */
     export function iterate_reversed<T, R>(arr: T[], start: any, end?: any, handler?: (item: T) => R): R | null {
         if (handler == null && start != null) {
@@ -85,6 +94,7 @@ export namespace ArrayUtils {
 
     /**
      * Drop an item by value.
+     * @docs
      */
     export function drop<T>(arr: T[], item: T): T[] {
         const dropped: T[] = [];
@@ -96,6 +106,7 @@ export namespace ArrayUtils {
 
     /**
      * Drop an item by index.
+     * @docs
      */
     export function drop_index<T>(arr: T[], index: number): T[] {
         const dropped: T[] = [];
@@ -107,6 +118,7 @@ export namespace ArrayUtils {
 
     /**
      * Drop duplicate items from an array.
+     * @docs
      */
     export function drop_duplicates<T>(arr: T[]): T[] {
         return arr.reduce((acc: T[], val) => {
@@ -130,6 +142,7 @@ export namespace ArrayUtils {
 
     /**
      * Limit from end, always creates a new array.
+     * @docs
      */
     export function limit_from_end<T>(arr: T[], limit: number): T[] {
         const limited: T[] = [];
@@ -145,6 +158,7 @@ export namespace ArrayUtils {
 
     /**
      * Remove all items equal to the given item.
+     * @docs
      */
     export function remove<T>(arr: T[], item: T): T[] {
         const removed: T[] = [];
@@ -157,6 +171,7 @@ export namespace ArrayUtils {
     /**
      * Returns `true` when `needle` appears in `haystack` as a **contiguous**
      * sub-array, scanning from `from` (default 0) up to `to` (inclusive).
+     * @docs
      */
     export function eq<T>(
         haystack: readonly T[],
@@ -180,6 +195,7 @@ export namespace ArrayUtils {
 
     /**
      * Check if two arrays or nested structures are equal.
+     * @docs
      */
     export function deep_eq(x: any[], y: any[]): boolean {
         const compare = (a: any, b: any): boolean => {
@@ -215,6 +231,7 @@ export namespace ArrayUtils {
 
     /**
      * Divide into nested arrays.
+     * @docs
      */
     export function divide<T>(arr: T[], x: number): T[][] {
         if (typeof x !== 'number' || x <= 0) {

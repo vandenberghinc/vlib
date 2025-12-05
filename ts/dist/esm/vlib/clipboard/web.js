@@ -3,11 +3,17 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * BrowserClipboard: native clipboard operations for browser environments.
+ * {Browser}
+ * Native clipboard operations for browser environments.
+ *
+ * @nav Clipboard
+ * @docs
  */
 export class Clipboard {
     /**
      * Copy data to the system clipboard (browser).
+     *
+     * @docs
      */
     static async set(data) {
         const text = typeof data === 'string' ? data : JSON.stringify(data);
@@ -18,6 +24,8 @@ export class Clipboard {
     }
     /**
      * Read data from the system clipboard (browser).
+     *
+     * @docs
      */
     static async get(opts) {
         if (!navigator.clipboard?.readText) {

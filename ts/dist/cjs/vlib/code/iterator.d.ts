@@ -5,6 +5,9 @@
 /**
  * We use a source file for the iterator state so we can perform shallow copies of states.
  * Without copying the entire data string.
+ *
+ * @nav Code Iterator/Types
+ * @docs
  */
 export interface Source {
     /** The data string. */
@@ -12,6 +15,9 @@ export interface Source {
 }
 /**
  * Iterator location interface.
+ *
+ * @nav Code Iterator/Types
+ * @docs
  */
 export type Location<S extends Source = Source> = {
     /** Line number (1 based). */
@@ -25,6 +31,9 @@ export type Location<S extends Source = Source> = {
 };
 /**
  * The iterator language options.
+ *
+ * @nav Code Iterator
+ * @docs
  */
 export declare class Language {
     /** Options. */
@@ -108,6 +117,9 @@ export declare namespace Language {
  *      it.advance(); // consume the end of line
  *  }
  *  ```
+ *
+ * @nav Code Iterator
+ * @docs
  */
 export declare class Iterator<Src extends Source = Source> {
     /**
@@ -167,8 +179,9 @@ export declare class Iterator<Src extends Source = Source> {
     is_regex: undefined | Iterator.IsRegex;
     /** Depth trackings. */
     depth: Iterator.Depth;
-    /**d
+    /**
      * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
+     * @docs
      */
     constructor(
     /**
@@ -194,7 +207,10 @@ export declare class Iterator<Src extends Source = Source> {
     });
     /** Is code, not string, comment or regex. */
     get is_code(): boolean;
-    /** Create a (semi-deep) copy clone of all attributes except for the `source` attribute. */
+    /**
+     * Create a (semi-deep) copy clone of all attributes except for the `source` attribute.
+     * @docs
+     */
     clone(): Iterator<Src>;
     /**
      * Restore an earlier state.
@@ -203,11 +219,13 @@ export declare class Iterator<Src extends Source = Source> {
      * Performs a shallow copy of the `source` and `lang` attributes.
      * @param opts The state to restore.
      * @returns The current state instance for method chaining.
+     * @docs
      */
     restore(it: Iterator<Src>): this;
     /**
      * Reset the state to the start of the source data.
      * @returns The current state instance for method chaining.
+     * @docs
      */
     reset(): this;
     /**
@@ -215,6 +233,7 @@ export declare class Iterator<Src extends Source = Source> {
      * Basically assigning the position to the end of the source data.
      * The iterator can choose wether to advance or not.
      * @returns The current state instance for method chaining.
+     * @docs
      */
     stop(): this;
     /**
@@ -227,6 +246,7 @@ export declare class Iterator<Src extends Source = Source> {
      * @param language The new language context to switch to.
      * @param forced Whether to force the language switch, defaults to `false`.
      *               When `true`, the language switch will be performed even if the current state is inside a string, comment or regex literal.
+     * @docs
      */
     switch_language(language: Language | Language.Opts | DefaultLanguageName, forced?: boolean): Language | undefined | string;
     /**
@@ -250,12 +270,15 @@ export declare class Iterator<Src extends Source = Source> {
      */
     private set_defaults;
     /**
-     * Initialize the auto computed state attributes.
+     * (Re)initialize the auto computed state attributes.
+     * @note This method is called automatically inside the constructor.
      *
      * @dev_note
      *      We use separate `advance()` and `init()` methods.
      *      Mainly to ensure we dont assign a value to the the value of the next pos, as is required in advance.
      *      While init() needs to assign for the exact current pos.
+     *
+     * @docs
      */
     init(): void;
     /**
@@ -267,6 +290,8 @@ export declare class Iterator<Src extends Source = Source> {
      *      We use separate `advance()` and `init()` methods.
      *      Mainly to ensure we dont assign a value to the the value of the next pos, as is required in advance.
      *      While init() needs to assign for the exact current pos.
+     *
+     * @docs
      */
     advance(): void;
     /**
@@ -276,22 +301,36 @@ export declare class Iterator<Src extends Source = Source> {
      * @param ctx The context to advance.
      */
     private minor_advance;
-    /** Peek characters at the current position + adjust. */
+    /**
+     * Peek characters at the current position + adjust.
+     * @docs
+     */
     peek(adjust: number): string;
-    /** Get a char at at a specific position, does not check indexes. */
+    /**
+     * Get a char at at a specific position, does not check indexes.
+     * @docs
+     */
     at(pos: number): string;
     /**
      * Get a char code at at a specific position, does not check indexes.
      * @returns the character code of the character at the specified position in the source data, or NaN if the position is out of bounds.
+     * @docs
      */
     char_code_at(pos: number): number;
-    /** Capture the current location. */
+    /**
+     * Capture the current location.
+     * @docs
+     */
     loc(): Location<Src>;
-    /** Advance a number of positions. */
+    /**
+     * Advance a number of positions.
+     * @docs
+     */
     advance_n(n: number): void;
     /**
      * Advance to a given future position.
      * When execution is finished, the position will be set to the given position.
+     * @docs
      */
     advance_to(n: number): void;
     /**
@@ -302,6 +341,7 @@ export declare class Iterator<Src extends Source = Source> {
      * The `this.pos` will be set to the given position, and the state will be initialized.
      * When `lang` is defined, the position must be greater than or equal to the current position.
      * @throws An error when the position is out of bounds, or when jumping to a past position with a language defined.
+     * @docs
      */
     jump_to(n: number, opts?: {
         /**
@@ -320,30 +360,48 @@ export declare class Iterator<Src extends Source = Source> {
          */
         col?: number;
     }): void;
-    /** Consume a string match. */
+    /**
+     * Consume a string match.
+     * @docs
+     */
     consume_optional(s: string): void;
-    /** Consume inline whitespace (excluding line breaks). */
+    /**
+     * Consume inline whitespace (excluding line breaks).
+     * @docs
+     */
     consume_inline_whitespace(): void;
-    /** Consume whitespace (including line breaks). */
+    /**
+     * Consume whitespace (including line breaks).
+     * @docs
+     */
     consume_whitespace(): void;
-    /** Consume a single optional end of line char. */
+    /**
+     * Consume a single optional end of line char.
+     * @docs
+     */
     consume_eol(): void;
-    /** Consume one or multiple optional end of line's*. */
+    /**
+     * Consume one or multiple optional end of line's*.
+     * @docs
+     */
     consume_eols(): void;
     /**
      * Consume while.
      * This function breaks without advancing when `fn` returns a false-like value, or when there is no data left.
+     * @docs
      */
     consume_while<S extends boolean = false>(fn: Iterator.Visit<Src>, slice?: S): S extends true ? string : void;
     /**
      * Consume util, reversed of `consume_while`.
      * Automatically checks `this.avail` and breaks when there is no data left.
+     * @docs
      */
     consume_until<S extends boolean = false>(fn: Iterator.Visit<Src>, slice?: S): S extends true ? string : void;
     /**
      * Consume the entire line till (not including) the end of line.
      * Automatically checks `this.avail` and breaks when there is no data left.
      * @note This does not consume the end of line character.
+     * @docs
      */
     consume_line<S extends boolean = false>(slice?: S): S extends true ? string : void;
     /**
@@ -354,6 +412,8 @@ export declare class Iterator<Src extends Source = Source> {
     *
     * @param slice If true, returns the consumed comment content.
     * @returns The consumed comment string when slice is true.
+    *
+    * @docs
     */
     consume_comment<S extends boolean = false>(slice?: S): S extends true ? string : void;
     /**
@@ -361,6 +421,7 @@ export declare class Iterator<Src extends Source = Source> {
      * The iterator will automatically advance to the next position, if the callback has not advanced the iterator.
      * If iteration will stop if the callback returns exactly `false`, not when a falsy value is returned.
      * @returns The current iterator instance for method chaining.
+     * @docs
      */
     walk(fn: Iterator.Visit<Src>): this;
     /**
@@ -369,6 +430,8 @@ export declare class Iterator<Src extends Source = Source> {
      * A reached state can be restored using `this.restore(new_state)`.
      * Automatically checks `state.avail` and breaks when there is no data left.
      * @returns The sliced content if `slice` is true, otherwise the cloned iterator, stopped at the matched position or eof.
+     *
+     * @docs
      */
     while<Slice extends boolean = false>(fn: Iterator.Visit<Src>, slice?: Slice): Slice extends true ? string : Iterator<Src>;
     /**
@@ -377,6 +440,8 @@ export declare class Iterator<Src extends Source = Source> {
      * A reached state can be restored using `this.restore(new_state)`.
      * Automatically checks `state.avail` and breaks when there is no data left.
      * @returns The sliced content if `slice` is true, otherwise the cloned iterator, stopped at the matched position or eof.
+     *
+     * @docs
      */
     until<Slice extends boolean = false>(fn: Iterator.Visit<Src>, slice?: Slice): Slice extends true ? string : Iterator<Src>;
     /**
@@ -384,44 +449,60 @@ export declare class Iterator<Src extends Source = Source> {
      * accounts for multiple backslashes.
      * @param index The index of the character to check, note that this should not be the index of the `\\` itself.
      * @returns `true` if the character at the index is escaped by its preceding `\\`, `false` otherwise.
+     *
+     * @docs
      */
     is_escaped_at(index: number): boolean;
     /**
      * Is a linebreak (line terminator), a.k.a is this char one of the provided line terminators chars.
      * @param c The character or index of the character to check.
      * @note Use `this.is_linebreak` to check the char at the current position, instead of this method.
+     *
+     * @docs
      */
     is_linebreak(c: string | number): boolean;
     /**
      * Is whitespace, so including the line terminators and normal whitespace chars.
      * @param c The character or index of the character to check.
      * @note Use `this.is_whitespace` to check the char at the current position, instead of this method.
+     *
+     * @docs
      */
     is_whitespace_at(c: string | number): boolean;
     /**
      * Is whitespace, so only the inline whitespace chars, not the line terminators.
      * @param c The character or index of the character to check.
      * @note Use `this.is_inline_whitespace` to check the char at the current position, instead of this method.
+     *
+     * @docs
      */
     is_inline_whitespace_at(c: number | string): boolean;
     /**
      * Is alphanumeric char [a-zA-Z0-9]
      * @param c The character or index of the character to check.
+     *
+     * @docs
      */
     is_alphanumeric(c?: string | number): boolean;
     /**
      * Is lowercase char [a-z]
      * @param c The character or index of the character to check.
+     *
+     * @docs
      */
     is_lowercase(c?: string | number): boolean;
     /**
      * Is uppercase char [A-Z]
      * @param c The character or index of the character to check.
+     *
+     * @docs
      */
     is_uppercase(c?: string | number): boolean;
     /**
      * Is a numeric char [0-9]
      * @param c The character or index of the character to check.
+     *
+     * @docs
      */
     is_numeric(c?: string | number): boolean;
     /**
@@ -429,21 +510,31 @@ export declare class Iterator<Src extends Source = Source> {
      * i.e. anything _other_ than [A-Za-z0-9_$].
      * Avoids regex for maximum performance.
      * @param c A single-character string or the index of the character.
+     *
+     * @docs
      */
     is_word_boundary(c?: string | number): boolean;
-    /** Starts with check at current position */
+    /**
+     * Starts with check at current position
+     *
+     * @docs
+     */
     match_prefix(s: string, start?: number): boolean;
-    /** cache of “sticky” regexes so we only compile them once */
+    /** Cache of “sticky” regexes so we only compile them once */
     private _match_reg_cache;
     /**
      * Try to match `re` exactly at `start` (defaults to current pos).
      * @returns the match array (with captures) or undefined.
+     *
+     * @docs
      */
     match_regex(re: RegExp, start?: number): RegExpExecArray | undefined;
     /**
      * Get the index of the next end of line, or -1 if not found.
      * @param next If set to `1`, returns the next EOL index;
      *             `2` returns the second next EOL; etc.
+     *
+     * @docs
      */
     find_next_eol(next?: number): number;
     /**
@@ -452,6 +543,8 @@ export declare class Iterator<Src extends Source = Source> {
      * @param start The index to start searching from, defaults to `this.pos`.
      * @param end The end index to stop searching at, defaults to the `this.source.data.length`.
      * @returns The index of the next end of line, or -1 if not found.
+     *
+     * @docs
      */
     find_next_eol_fast(start?: number, end?: number): number;
     /**
@@ -461,6 +554,8 @@ export declare class Iterator<Src extends Source = Source> {
      * @note The state passed to the function is NOT the current state, but a copy of the state at the start index.
      * @returns The found character that matched the function, or undefined if not found.
      * @dev_note For now we dont support a start index, since we would need to jump() a state without knowing the line etc.
+     *
+     * @docs
      */
     find(fn: Iterator.Visit<Src>, end?: -1 | number): string | undefined;
     /**
@@ -469,42 +564,94 @@ export declare class Iterator<Src extends Source = Source> {
      * @param end The end index to stop searching at, defaults to the `this.end` attribute. When set to `-1`, it will immediately return `-1`.
      * @returns The index of the found character that matched the function, or undefined if not found.
      * @dev_note For now we dont support a start index, since we would need to jump() a state without knowing the line etc.
+     *
+     * @docs
      */
     find_index(fn: Iterator.Visit<Src>, end?: -1 | number): number;
     /**
      * Peek at the first character of the next line.
      * @param skip Optionally use a filter to skip over first characters, if the skip function returns true the index will be incremented, till the next end of line is reached.
      * @returns The first character of the next line, or an empty string if there is no next line.
+     *
+     * @docs
      */
     first_niw_of_next_line(): string;
-    /** Get the first non whitespace char looking from index `start`, defaults to `this.pos` */
+    /**
+     * Get the first non whitespace char looking from index `start`, defaults to `this.pos`
+     *
+     * @docs
+     */
     first_non_whitespace(start?: number): string | undefined;
-    /** Get the first non whitespace char looking from index `start`, defaults to `this.pos` */
+    /**
+     * Get the first non whitespace char looking from index `start`, defaults to `this.pos`
+     *
+     * @docs
+     */
     first_non_inline_whitespace(start?: number): string | undefined;
     /**
      * Increment the index until a non-whitespace char is found, stops if the char at the index is not inline whitespace.
      * @param index The index to start incrementing from.
      * @param end The end index to stop incrementing at, defaults to the `this.end` attribute.
+     * @returns The incremented index.
+     * @docs
      */
     incr_on_whitespace(index: number, end?: number): number;
+    /**
+     * Increment the index until a non-inline-whitespace char is found, stops if the char at the index is not inline whitespace.
+     * @param index The index to start incrementing from.
+     * @param end The end index to stop incrementing at, defaults to the `this.end` attribute.
+     * @returns The incremented index.
+     * @docs
+     */
     incr_on_inline_whitespace(index: number, end?: number): number;
-    /** Decrement the index until a non-whitespace char is found, stops if the char at the index is not inline whitespace. */
+    /**
+     * Decrement the index until a non-whitespace char is found, stops if the char at the index is not inline whitespace.
+     * @param index The index to start decrementing from.
+     * @param min_index The minimum index to stop decrementing at.
+     * @param plus_1_when_decremented Whether to add 1 to the index if it was decremented.
+     * @returns The decremented index.
+     * @docs
+     */
     decr_on_whitespace(index: number, min_index: number, plus_1_when_decremented?: boolean): number;
+    /**
+     * Decrement the index until a non-inline-whitespace char is found, stops if the char at the index is not inline whitespace.
+     * @param index The index to start decrementing from.
+     * @param min_index The minimum index to stop decrementing at.
+     * @param plus_1_when_decremented Whether to add 1 to the index if it was decremented.
+     * @returns The decremented index.
+     * @docs
+     */
     decr_on_inline_whitespace(index: number, min_index: number, plus_1_when_decremented?: boolean): number;
-    /** Slice the current line till the current position or till the end of the line without consuming. */
+    /**
+     * Slice the current line till the current position or till the end of the line without consuming.
+     * @docs
+     */
     slice_line(opts?: {
         full?: boolean;
     }): string;
-    /** Slice the next line. */
+    /**
+     * Slice the next line.
+     * @docs
+     */
     slice_next_line(): string;
-    /** Slice content */
+    /**
+     * Slice content
+     * @docs
+     */
     slice(start: number, end: number): string;
-    /** Get debug info about the (minimized) cursor position. */
+    /**
+     * Get debug info about the (minimized) cursor position.
+     * @docs
+     */
     debug_cursor(): object;
-    /** Debug methods */
+    /**
+     * Debug methods
+     * @docs
+     */
     debug_dump_code(title: string, code: string, colored?: boolean): string;
     /**
      * Split source data into lines.
+     * @docs
      */
     static split_lines(source: string | {
         data: string;
@@ -512,14 +659,22 @@ export declare class Iterator<Src extends Source = Source> {
 }
 /** Iterator types. */
 export declare namespace Iterator {
-    /** Is string type, used to track the string context. */
+    /**
+     * Is string type, used to track the string context.
+     * @nav Code Iterator/Types
+     * @docs
+     */
     interface IsStr {
         /** the opening char. */
         open: string;
         /** current offset for matching the close pattern. */
         pos: number;
     }
-    /** Is comment type, used for tracking the comment context. */
+    /**
+     * Is comment type, used for tracking the comment context.
+     * @nav Code Iterator/Types
+     * @docs
+     */
     interface IsComment {
         /** comment type. */
         type: 'line' | 'block';
@@ -528,14 +683,22 @@ export declare namespace Iterator {
         /** current offset for matching the close pattern. */
         pos: number;
     }
-    /** Is regex type, used for tracking the regex context. */
+    /**
+     * Is regex type, used for tracking the regex context.
+     * @nav Code Iterator/Types
+     * @docs
+     */
     interface IsRegex {
         open: string;
         close: string;
         /** current offset for matching the close pattern. */
         pos: number;
     }
-    /** Depth info type */
+    /**
+     * Depth info type
+     * @nav Code Iterator/Types
+     * @docs
+     */
     interface Depth {
         /** Parentheses: round brackets `(` and `)`. */
         parenth: number;
@@ -556,6 +719,8 @@ export declare namespace Iterator {
 }
 /**
  * Default `Iterator.opts` for common languages.
+ * @nav Code Iterator
+ * @docs
  */
 export declare const Languages: Record<string, Language>;
 export declare const languages: Record<string, Language>;

@@ -8,6 +8,8 @@
  * Supports both count-based and memory-based size limiting with automatic eviction of oldest entries.
  * @template K - The type of cache keys
  * @template V - The type of cache values
+ * 
+ * @docs
  */
 export class Cache<K extends string | number | symbol = string, V = any> {
 
@@ -23,7 +25,10 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     private cached_memory_size: number;
     private memory_size_dirty: boolean;
 
-    // Constructor.
+    /**
+     * Construct a new cache instance.
+     * @docs
+     */
     constructor({
         max_size = undefined,
         max_bytes = undefined,
@@ -262,6 +267,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     /**
      * Get the current size of the cache.
      * @returns The number of items in the cache
+     * @docs
      */
     public get size(): number {
         return this.map.size;
@@ -271,6 +277,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * Check if a key exists in the cache.
      * @param key - The key to check
      * @returns True if the key exists, false otherwise
+     * @docs
      */
     public has(key: K): boolean {
         return this.map.has(key);
@@ -281,6 +288,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * @param key - The key to set
      * @param value - The value to store
      * @returns The cache instance for method chaining
+     * @docs
      */
     public set(key: K, value: V): this {
         this.map.set(key, value);
@@ -295,6 +303,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * Retrieve a value from the cache by key.
      * @param key - The key to retrieve
      * @returns The stored value or undefined if not found
+     * @docs
      */
     public get(key: K): V | undefined {
         if (this.map.has(key)) {
@@ -310,6 +319,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * Remove an item from the cache.
      * @param key - The key to remove
      * @returns True if an element was removed, false otherwise
+     * @docs
      */
     public delete(key: K): boolean {
         const deletion_result = this.map.delete(key);
@@ -323,6 +333,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     /**
      * Remove all items from the cache.
      * @returns The cache instance for method chaining
+     * @docs
      */
     public clear(): this {
         this.map.clear();
@@ -335,6 +346,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     /**
      * Stop the cache, clear all items and stop the cleanup interval.
      * @returns The cache instance for method chaining
+     * @docs
      */
     public stop(): this {
         this.clear();
@@ -345,6 +357,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     /**
      * Get an iterator of all cache keys.
      * @returns An iterator of all keys in the cache
+     * @docs
      */
     public keys(): IterableIterator<K> {
         return this.map.keys();
@@ -353,6 +366,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
     /**
      * Get an iterator of all cache values.
      * @returns An iterator of all values in the cache
+     * @docs
      */
     public values(): IterableIterator<V> {
         return this.map.values();
@@ -362,6 +376,7 @@ export class Cache<K extends string | number | symbol = string, V = any> {
      * Get the current estimated memory usage of the cache.
      * When `optimize_memory_checks` is true, this may return a cached value.
      * @returns The memory usage in bytes
+     * @docs
      */
     public get_memory_usage(): number {
         if (this.optimize_memory_checks && !this.memory_size_dirty) {

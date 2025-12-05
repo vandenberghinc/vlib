@@ -2,7 +2,11 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-/** Types for default `Map` class. */
+/**
+ * Types for default `Map` class.
+ * @nav Types
+ * @docs
+ */
 export declare namespace Map {
     /**
      * Extracts the value type from a Map.
@@ -11,6 +15,8 @@ export declare namespace Map {
      * @example
      *   type MyMap   = Map<string, number>;
      *   type ValueOf = MapValue<MyMap>; // number
+     *
+     * @docs
      */
     type Value<M extends Map<any, any>> = M extends Map<any, infer V> ? V : never;
     /**
@@ -20,6 +26,8 @@ export declare namespace Map {
      * @example
      *   type MyMap = Map<string, number>;
      *   type KeyOf = MapKey<MyMap>; // string
+     *
+     * @docs
      */
     type Key<M extends Map<any, any>> = M extends Map<infer K, any> ? K : never;
 }

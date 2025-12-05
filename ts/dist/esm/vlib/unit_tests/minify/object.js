@@ -1,13 +1,13 @@
 "use strict";
 // Imports.
 import { Module } from "../../../vtest/index.js";
-import { object as minify } from '../../minify/object.js';
+import { Object as minify } from '../../minify/object.js';
 // Unit test module name.
 const tests = new Module({ name: "vlib/minify/object" });
 // -------------------------------------------------------------------
 // Unit tests for minify()
 tests.add({
-    id: "minify:1", expect: "success", callback: () => minify({
+    id: "minify:1", expect: "success", callback: () => minify.minify({
         object: {
             hello: 'world',
             foo: { bar: 'baz', foo: { a: 'b', c: 'd', e: { f: 'g' } }, a: ['a', 'b', 'c'] },
@@ -27,7 +27,7 @@ tests.add({
     })
 });
 tests.add({
-    id: "minify:2", expect: "success", callback: () => minify({
+    id: "minify:2", expect: "success", callback: () => minify.minify({
         object: {
             hello: 'world',
             foo: { bar: 'baz', foo: { a: 'b', c: 'd', e: { f: 'g' } }, a: ['a', 'b', 'c'] },
@@ -93,7 +93,7 @@ const flat_scheme = {
 };
 tests.add({
     id: "expand:1", expect: "success", callback: () => {
-        const minified = minify({ object: original_obj, flat_scheme });
+        const minified = minify.minify({ object: original_obj, flat_scheme });
         const expanded = minify.expand({ object: minified, flat_scheme });
         return { expanded };
     }
@@ -123,7 +123,7 @@ const nested_scheme = {
 };
 tests.add({
     id: "expand:2", expect: "success", callback: () => {
-        const minified = minify({ object: original_obj, scheme: nested_scheme });
+        const minified = minify.minify({ object: original_obj, scheme: nested_scheme });
         const expanded = minify.expand({ object: minified, scheme: nested_scheme });
         return { expanded };
     }

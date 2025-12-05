@@ -5,10 +5,15 @@
 
 /**
  * A module to manage multiple active spinners.
+ * @nav Logging/Spinners
+ * @docs
  */
 export namespace Spinners {
 
-    /** The list of active spinners (multi type but for now just one). */
+    /**
+     * The list of active spinners (multi type but for now just one).
+     * @docs
+     */
     export const active: Spinner[] = [];
 
     /** Universal spinner interface which all spinners should honour. */
@@ -18,7 +23,10 @@ export namespace Spinners {
         resume: () => void;
     }
 
-    /** Check if there is an active spinner running. */
+    /**
+     * Check if there is an active spinner running.
+     * @docs
+     */
     export function has_active(): boolean {
         return active.some(spinner => spinner.running);
     }
@@ -26,6 +34,7 @@ export namespace Spinners {
     /**
      * Add an active spinner.
      * @param spinner The spinner to add.
+     * @docs
      */
     export function add(spinner: Spinner): void {
         active.push(spinner);
@@ -34,6 +43,7 @@ export namespace Spinners {
     /** 
      * Remove an active spinner when present.
      * @param spinner The spinner to remove.
+     * @docs
      */
     export function remove(spinner: Spinner): void {
         const index = active.indexOf(spinner);
@@ -42,7 +52,10 @@ export namespace Spinners {
         }
     }
 
-    /** Pause all running spinners */
+    /**
+     * Pause all running spinners
+     * @docs
+     */
     export function pause_all(): void {
         for (const spinner of active) {
             if (spinner.running) {
@@ -51,7 +64,10 @@ export namespace Spinners {
         }
     }
 
-    /** Resume the last active spinner if any. */
+    /**
+     * Resume the last active spinner if any.
+     * @docs
+     */
     export function resume_last(): void {
         if (active.length > 0) {
             const last_spinner = active[active.length - 1];
@@ -64,6 +80,7 @@ export namespace Spinners {
     /**
      * Almost ensure a safe print after this func is executed.
      * By resetting the last dumped line if there is an active spinner.
+     * @docs
      */
     export function ensure_safe_print(): void {
         if (active.some(spinner => spinner.running)) {
@@ -71,7 +88,10 @@ export namespace Spinners {
         }
     }
 
-    /** Clear the current line. */
+    /**
+     * Clear the current line.
+     * @docs
+     */
     export function clear_current_line(): void {
         process.stdout.write('\r\x1b[K'); // Clear the current line
     }

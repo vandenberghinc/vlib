@@ -4,58 +4,66 @@
  */
 
 /**
- * Options for incrementing or decrementing date values
+ * Types for the {@link Date} class.
  */
-interface IncrementOptions {
-    /** Number of seconds to add or subtract */
-    seconds?: number;
-    /** Number of minutes to add or subtract */
-    minutes?: number;
-    /** Number of hours to add or subtract */
-    hours?: number;
-    /** Number of days to add or subtract */
-    days?: number;
-    /** Number of weeks to add or subtract */
-    weeks?: number;
-    /** Number of months to add or subtract */
-    months?: number;
-    /** Number of years to add or subtract */
-    years?: number;
-}
+export namespace Date {
 
-/**
- * Options for constructing a Date object with named parameters
- */
-interface DateConstructorOptions {
-    /** The year value (e.g., 2024) */
-    year?: number;
-    /** The month value (0-11, where 0 is January) */
-    month?: number;
-    /** The day of the month (1-31) */
-    date?: number;
-    /** The hour value (0-23) */
-    hours?: number;
-    /** The minute value (0-59) */
-    minutes?: number;
-    /** The second value (0-59) */
-    seconds?: number;
-    /** The millisecond value (0-999) */
-    ms?: number;
+    /**
+     * Options for constructing a Date object with named parameters
+     * @docs
+     */
+    export interface Opts {
+        /** The year value (e.g., 2024) */
+        year?: number;
+        /** The month value (0-11, where 0 is January) */
+        month?: number;
+        /** The day of the month (1-31) */
+        date?: number;
+        /** The hour value (0-23) */
+        hours?: number;
+        /** The minute value (0-59) */
+        minutes?: number;
+        /** The second value (0-59) */
+        seconds?: number;
+        /** The millisecond value (0-999) */
+        ms?: number;
+    }
+
+    /**
+     * Options for incrementing or decrementing date values
+     * @docs
+     */
+    export interface IncrementOpts {
+        /** Number of seconds to add or subtract */
+        seconds?: number;
+        /** Number of minutes to add or subtract */
+        minutes?: number;
+        /** Number of hours to add or subtract */
+        hours?: number;
+        /** Number of days to add or subtract */
+        days?: number;
+        /** Number of weeks to add or subtract */
+        weeks?: number;
+        /** Number of months to add or subtract */
+        months?: number;
+        /** Number of years to add or subtract */
+        years?: number;
+    }
 }
 
 /**
  * A wrapper around the global Date object that extends its functionality.
+ * @docs
  */
 export class Date extends globalThis.Date {
 
-    /** Constructors. */
     constructor();
     constructor(value: number | string);
     constructor(valueOfDate: globalThis.Date | Date);  // You were missing this one
-    constructor(options: DateConstructorOptions);
+    constructor(options: Date.Opts);
     constructor(year: number, month: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number);
     constructor(
-        valueOrYearOrOptions?: string | number | globalThis.Date | DateConstructorOptions,
+        value_date_opts_or_year?: string | number | globalThis.Date | Date.Opts,
         month?: number,
         date?: number,
         hours?: number,
@@ -63,6 +71,10 @@ export class Date extends globalThis.Date {
         seconds?: number,
         ms?: number
     );
+    /**
+     * Construct a new date instance.
+     * @docs
+     */
     constructor() {
         if (arguments.length === 0) {
             super();
@@ -70,7 +82,7 @@ export class Date extends globalThis.Date {
             const arg = arguments[0];
             if (typeof arg === 'object' && arg !== null && !(arg instanceof globalThis.Date) && 'year' in arg) {
                 // Object-based constructor
-                const opts = arg as DateConstructorOptions;
+                const opts = arg as Date.Opts;
                 super(
                     opts.year !== undefined ? opts.year : new globalThis.Date().getFullYear(),
                     opts.month !== undefined ? opts.month : 0,
@@ -420,6 +432,8 @@ export class Date extends globalThis.Date {
      * @param unix_seconds  UNIX timestamp in **seconds** since epoch.
      * @param locale        Optional BCP-47 locale (e.g. "en-US", "nl-NL").
      * @param time_zone     Optional IANA time zone (e.g. "Europe/Amsterdam").
+     * 
+     * @docs
      */
     format_locale({
         locale,
@@ -457,6 +471,8 @@ export class Date extends globalThis.Date {
      * - Returns `undefined` if no locale can be determined.
      *
      * @returns A BCP-47 locale string (e.g. "en-US") or `undefined`.
+     * 
+     * @docs
      */
     static detect_locale(): string | undefined {
         // Browser environment
@@ -495,6 +511,8 @@ export class Date extends globalThis.Date {
      * reflects the user's local time zone (e.g. "Europe/Amsterdam").
      *
      * @returns An IANA time zone string, or `undefined` if detection fails.
+     * 
+     * @docs
      */
     static detect_time_zone(): string | undefined {
         try {
@@ -746,7 +764,7 @@ export class Date extends globalThis.Date {
 
     /**
      * Create a new date incremented by the specified amounts
-     * @param {IncrementOptions} options - Object containing increment values for various time units
+     * @param {Date.IncrementOpts} options - Object containing increment values for various time units
      * @returns {Date} A new date object incremented by the specified amounts
      * @docs
      */
@@ -758,7 +776,7 @@ export class Date extends globalThis.Date {
         weeks = 0,
         months = 0,
         years = 0
-    }: IncrementOptions): Date {
+    }: Date.IncrementOpts): Date {
         const date = new Date(this.getTime());
         if (seconds > 0) date.setSeconds(date.getSeconds() + seconds);
         if (minutes > 0) date.setMinutes(date.getMinutes() + minutes);
@@ -771,7 +789,7 @@ export class Date extends globalThis.Date {
 
     /**
      * Create a new date decremented by the specified amounts
-     * @param {IncrementOptions} options - Object containing decrement values for various time units
+     * @param {Date.IncrementOpts} options - Object containing decrement values for various time units
      * @returns {Date} A new date object decremented by the specified amounts
      * @docs
      */
@@ -783,7 +801,7 @@ export class Date extends globalThis.Date {
         weeks = 0,
         months = 0,
         years = 0
-    }: IncrementOptions): Date {
+    }: Date.IncrementOpts): Date {
         const date = new Date(this.getTime());
         if (seconds > 0) date.setSeconds(date.getSeconds() - seconds);
         if (minutes > 0) date.setMinutes(date.getMinutes() - minutes);

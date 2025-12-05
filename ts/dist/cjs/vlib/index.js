@@ -52,7 +52,7 @@ module.exports = __toCommonJS(stdin_exports);
 var CLI = __toESM(require("./cli/index.m.js"));
 var cli = __toESM(require("./cli/index.m.js"));
 __reExport(stdin_exports, require("./sockets/request.js"), module.exports);
-__reExport(stdin_exports, require("./sockets/websocket.deprecated.js"), module.exports);
+__reExport(stdin_exports, require("./sockets/websocket.js"), module.exports);
 __reExport(stdin_exports, require("./primitives/index.uni.js"), module.exports);
 __reExport(stdin_exports, require("./generic/index.js"), module.exports);
 var Logging = __toESM(require("./logging/index.m.node.js"));
@@ -98,7 +98,7 @@ const warning = warn;
   warn,
   warning,
   ...require("./sockets/request.js"),
-  ...require("./sockets/websocket.deprecated.js"),
+  ...require("./sockets/websocket.js"),
   ...require("./primitives/index.uni.js"),
   ...require("./generic/index.js"),
   ...require("./jsonc/jsonc.js"),

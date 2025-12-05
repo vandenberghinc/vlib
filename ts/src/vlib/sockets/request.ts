@@ -7,7 +7,7 @@ import * as https from 'https';
 import * as http2 from 'http2';
 import * as zlib from 'zlib';
 
-interface RequestOptions {
+interface RequestOpts {
     host: string;
     port?: number | null;
     endpoint?: string;
@@ -15,7 +15,7 @@ interface RequestOptions {
     headers?: Record<string, any>;
     params?: string | Record<string, any> | any[];
     compress?: boolean;
-    decompress?: boolean;
+    // decompress?: boolean;
     query?: boolean;
     json?: boolean;
     reject_unauthorized?: boolean;
@@ -31,64 +31,24 @@ interface RequestResponse {
     json: () => any;
 }
 
-/*  @docs
-    @chapter: Sockets
-    @title: Request
-    @description:
-        Make a request
-    @param:
-        @name: host
-        @desc: The host name.
-        @type: string
-    @param:
-        @name: port
-        @desc: The port.
-        @type: number
-    @param:
-        @name: endpoint
-        @desc: The endpoint url.
-        @type: string
-    @param:
-        @name: method
-        @desc: The request method.
-        @type: string
-    @param:
-        @name: headers
-        @desc: The request headers.
-        @type: object
-    @param:
-        @name: params
-        @desc: The params string, array or object. When the method is `GET` and `query` is `true` then only an `object` type is allowed for parameter `params`.
-        @type: string, array or object.
-    @param:
-        @name: compress
-        @desc: Compress the params.
-        @type: boolean
-    @param:
-        @name: decompress
-        @desc: Automatically decompress the response when it is compressed.
-        @type: boolean
-    @param:
-        @name: query
-        @desc: Automatically add the params as query string when the method is `GET`.
-        @type: boolean
-    @param:
-        @name: json
-        @desc: Try to parse the response body to json.
-        @type: boolean
-    @param:
-        @name: reject_unauthorized
-        @desc: Reject unauthorized tls certificates.
-        @type: boolean
-    @param:
-        @name: delay
-        @desc: Wait a number of milliseconds after the request, can be useful for rate-limiting.
-        @type: null, number
-    @param:
-        @name: http2
-        @desc: Use http/2.
-        @type: boolean
-*/
+/**
+ * Make a request
+ * @param host The host name.
+ * @param port The port.
+ * @param endpoint The endpoint url.
+ * @param method The request method.
+ * @param headers The request headers.
+ * @param params The params string, array or object. When the method is `GET` and `query` is `true` then only an `object` type is allowed for parameter `params`.
+ * @param compress Compress the params.
+ * @param query Automatically add the params as query string when the method is `GET`.
+ * @param json Try to parse the response body to json.
+ * @param reject_unauthorized Reject unauthorized tls certificates.
+ * @param delay Wait a number of milliseconds after the request, can be useful for rate-limiting.
+ * @param http2 Use http/2.
+ * 
+ * @nav Sockets
+ * @docs
+ */
 export async function request({
     host,
     port = null,
@@ -97,13 +57,13 @@ export async function request({
     headers = {},
     params = undefined,
     compress = false,
-    decompress = true,
+    // decompress = true,
     query = true,
     json = false,
     reject_unauthorized = true,
     delay = null,
     http2: use_http2 = false,
-}: RequestOptions): Promise<RequestResponse> {
+}: RequestOpts): Promise<RequestResponse> {
     return new Promise((resolve) => {
         // Uppercase method.
         method = method.toUpperCase();

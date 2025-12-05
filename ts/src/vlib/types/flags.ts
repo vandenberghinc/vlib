@@ -11,6 +11,9 @@
  * HasFlag<Flags, K> returns `true` if and only if
  * The union type `Flags` contains at least one of the members in `K`.
  * Otherwise it returns `false`.
+ * 
+ * @nav Types/Flags
+ * @docs
  */
 export type HasFlag<
     Flags extends string,
@@ -24,6 +27,9 @@ export type HasFlag<
  * `HasFlag<Flags, K>` is `true`, otherwise it returns `Missing`.
  * 
  * Can be used to cast a flag to a value type, or return a default value if the flag is not present.
+ * 
+ * @nav Types/Flags
+ * @docs
  */
 export type CastFlag<
     Flags extends string,
@@ -35,14 +41,17 @@ export type CastFlag<
     : Default;
 
 /**
-* RemoveAndAdd<Flags, Remove, Add>
-*
-* Remove all members of `Remove` from `Flags`, then include any in `Add`.
-*
-* @example
-*   type Flags = "a" | "b" | "c";
-*   type X1 = RemoveFlag<Flags, "b">;          // "a" | "c"
-*   type X2 = RemoveFlag<Flags, "b", "d">;     // "a" | "c" | "d"
+ * RemoveAndAdd<Flags, Remove, Add>
+ *
+ * Remove all members of `Remove` from `Flags`, then include any in `Add`.
+ *
+ * @example
+ *   type Flags = "a" | "b" | "c";
+ *   type X1 = RemoveFlag<Flags, "b">;          // "a" | "c"
+ *   type X2 = RemoveFlag<Flags, "b", "d">;     // "a" | "c" | "d"
+ * 
+ * @nav Types/Flags
+ * @docs
 */
 export type RemoveFlag<
     Flags extends string,
@@ -60,6 +69,9 @@ export type RemoveFlag<
  *  - `Keys` here is a union of string‐literals (e.g. `"command"|"option"|"query"`).
  *  - If multiple members of `Keys` appear in `Flags`, you will get back a union of all matches.
  *  - If you want “exactly one must match,” you must ensure your `Flags`→`Keys` intersection can never produce more than one member, or else you’ll wind up with a multi‐member union.
+ * 
+ * @nav Types/Flags
+ * @docs
  */
 export type ExtractFlag<
     Flags extends string,
@@ -84,6 +96,9 @@ export type ExtractFlag<
  * @template Else  The type to return when there is no overlap (defaults to `never`).
  * 
  * @note Use a separate class from `IfFlags` since this is more strict and 100% ts safe.
+ * 
+ * @nav Types/Flags
+ * @docs
  */
 export type IfFlag<
     F extends string,
@@ -104,6 +119,9 @@ export type IfFlag<
  * @template K  Multiple flag names to test for—any overlap with `F` triggers the `Then` branch.
  * @template Then  The type to return when `F` and `K` overlap.
  * @template Else  The type to return when there is no overlap (defaults to `never`).
+ * 
+ * @nav Types/Flags
+ * @docs
  */
 export type IfFlags<
     F extends string,

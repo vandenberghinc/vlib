@@ -26,6 +26,9 @@
  * type NeverX = Neverify<Union, 'x'>;
  * // => { x: never; y: string } | { x: never; z: boolean }
  * ```
+ *
+ * @nav Types
+ * @docs
  */
 export type Neverify<T, K extends keyof T> = T extends any ? Omit<T, K> & Partial<{
     [P in K]: never;
@@ -50,10 +53,16 @@ export type Neverify<T, K extends keyof T> = T extends any ? Omit<T, K> & Partia
  * //   | { a: number; b: boolean }
  * //   | { a: number; c: Date; b: string }
  * ```
+ *
+ * @nav Types
+ * @docs
  */
 export type Merge<T, U extends object | never> = [U] extends [never] ? T : U extends object ? Omit<T, keyof U> & U : T;
 /**
  * Merge alias for semantic clarity: override properties of T with U.
+ *
+ * @nav Types
+ * @docs
  */
 export type Override<T, U extends object> = Merge<T, U>;
 /**
@@ -75,6 +84,9 @@ export type Override<T, U extends object> = Merge<T, U>;
  * type FooOptA = Optional<Foo, 'a'>;
  * // { a?: string; b?: number; c: boolean; }
  * ```
+ *
+ * @nav Types
+ * @docs
  */
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 /**
@@ -99,12 +111,18 @@ export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * type BarReqXY = RequiredKeys<Bar, 'x' | 'y'>;
  * // { x: string; y: number; z: boolean; }
  * ```
+ *
+ * @nav Types
+ * @docs
 */
 export type RequiredKeys<T extends object, K extends keyof T> = T extends any ? Omit<T, K> & Required<Pick<T, K>> : never;
 /**
  * Utility type to make all properties of T required, except for the specified keys K.
  * This is useful when you want to enforce that all properties are required,
  * except for a few specific ones that can remain optional.
+ *
+ * @nav Types
+ * @docs
  */
 export type RequiredExcept<T extends object, K extends keyof T> = Required<Omit<T, K>> & Pick<T, K>;
 /**
@@ -130,6 +148,9 @@ export type RequiredExcept<T extends object, K extends keyof T> = Required<Omit<
  * // Valid: { id: "1", phone: "555-0123" }
  * // Invalid: { id: "1", address: "123 St" } // missing email/phone
  * ```
+ *
+ * @nav Types
+ * @docs
  */
 export type AtLeastOneOf<T, K extends keyof T> = T & {
     [P in K]: Required<Pick<T, P>>;
@@ -155,6 +176,9 @@ export type AtLeastOneOf<T, K extends keyof T> = T & {
  * // Valid: { remote: "https://api.com" }
  * // Invalid: { local: "/path", remote: "https://api.com" } // can't mix
  * ```
+ *
+ * @nav Types
+ * @docs
  */
 export type ExactlyOneOf<T extends object> = {
     [K in keyof T]: Pick<T, K> & Partial<Record<Exclude<keyof T, K>, never>>;
@@ -162,21 +186,35 @@ export type ExactlyOneOf<T extends object> = {
 /**
  * Is never.
  * Equal to `[T] extends [never]`
+ *
+ * @nav Types
+ * @docs
  */
 export type IsNever<T> = [T] extends [never] ? true : false;
 /**
  * Utility type to ensure that only the keys of `T` may be defined.
  * All other keys are set to `never?`.
  * This is useful to ensure that no other keys than those in `T` are allowed.
+ *
+ * @nav Types
+ * @docs
  */
 export type NoOtherKeys<T extends object> = T & {
     [K in Exclude<keyof any, keyof T>]?: never;
 };
-/** Recursively make all properties required */
+/**
+ * Recursively make all properties required
+ * @nav Types
+ * @docs
+ */
 export type DeepRequired<T> = {
     [P in keyof T]-?: DeepRequired<T[P]>;
 };
-/** Recursively make all properties optional */
+/**
+ * Recursively make all properties optional
+ * @nav Types
+ * @docs
+ */
 export type DeepOptional<T> = {
     [P in keyof T]?: DeepOptional<T[P]>;
 };

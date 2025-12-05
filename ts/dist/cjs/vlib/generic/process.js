@@ -42,50 +42,37 @@ class Proc {
   constructor({ debug = false } = {}) {
     this.debug = debug;
   }
-  /*  @docs:
-      @title: On output
-      @desc: The on output event, can be overridden when required.
-  */
+  /**
+   * The on output event, can be overridden when required.
+   * @docs
+   */
   on_output(data) {
   }
-  /*  @docs:
-      @title: On error
-      @desc: The on error event, can be overridden when required.
-  */
+  /**
+   * The on error event, can be overridden when required.
+   * @docs
+   */
   on_error(data) {
   }
-  /*  @docs:
-      @title: On exit
-      @desc: The on exit event, can be overridden when required.
-  */
+  /**
+   * The on exit event, can be overridden when required.
+   * @docs
+   */
   on_exit(code) {
   }
-  /*  @docs:
-      @title: Start
-      @desc: Start a command.
-      @param:
-          @name: command
-          @desc: The command program.
-      @param:
-          @name: args
-          @desc: The command arguments.
-      @param:
-          @name: working_directory
-          @desc: The working directory path.
-      @param:
-          @name: interactive
-          @desc: Enable interactive mode.
-          @experimental: true
-      @param:
-          @name: detached
-          @desc: Enable detached mode.
-      @param:
-          @name: env
-          @desc: The environment variables.
-          @type: object
-      @param:
-          @name: colors
-          @desc: Enable colors.
+  // @todo add @experimental to interactive parameter
+  /**
+   * Start a command.
+   * @param command The command program.
+   * @param args The command arguments.
+   *     @desc The command arguments.
+   * @param working_directory The working directory path.
+   * @param interactive Enable interactive mode (experimental).
+   * @param detached Enable detached mode.
+   * @param env The environment variables.
+   * @param colors Enable colors.
+   *
+   * @docs
   */
   start({ command = "", args = [], working_directory = void 0, interactive = true, detached = false, env = void 0, colors = false, opts = {} }) {
     this.out = void 0;
@@ -170,31 +157,31 @@ class Proc {
     });
     return this.promise;
   }
-  /*  @docs:
-      @title: Write
-      @desc: Write data to the stdin.
-  */
+  /**
+   * Write data to the stdin.
+   * @docs
+   */
   write(data) {
     if (this.proc != null && this.proc.stdin) {
       this.proc.stdin.write(data);
     }
     return this;
   }
-  /*  @docs:
-      @title: Join
-      @desc: Wait till the process if finished.
-      @note: This function must be awaited.
-  */
+  /**
+   * Wait till the process if finished.
+   * @note This function must be awaited.
+   * @docs
+   */
   async join() {
     return new Promise(async (resolve) => {
       await this.promise;
       resolve();
     });
   }
-  /*  @docs:
-      @title: Kill
-      @desc: Signal the process with a SIGINT signal.
-  */
+  /**
+   * Signal the process with a SIGINT signal.
+   * @docs
+   */
   kill(signal = "SIGINT") {
     if (this.proc == null) {
       return this;

@@ -7,6 +7,8 @@
  * Supports both count-based and memory-based size limiting with automatic eviction of oldest entries.
  * @template K - The type of cache keys
  * @template V - The type of cache values
+ *
+ * @docs
  */
 export declare class Cache<K extends string | number | symbol = string, V = any> {
     private max_size;
@@ -19,6 +21,10 @@ export declare class Cache<K extends string | number | symbol = string, V = any>
     private cleanup_interval_id;
     private cached_memory_size;
     private memory_size_dirty;
+    /**
+     * Construct a new cache instance.
+     * @docs
+     */
     constructor({ max_size, max_bytes, ttl, cleanup_interval, optimize_memory_checks, }?: {
         /** The max entries allowed in the cache, once exceeded items will be popped. */
         max_size?: number;
@@ -75,12 +81,14 @@ export declare class Cache<K extends string | number | symbol = string, V = any>
     /**
      * Get the current size of the cache.
      * @returns The number of items in the cache
+     * @docs
      */
     get size(): number;
     /**
      * Check if a key exists in the cache.
      * @param key - The key to check
      * @returns True if the key exists, false otherwise
+     * @docs
      */
     has(key: K): boolean;
     /**
@@ -88,44 +96,52 @@ export declare class Cache<K extends string | number | symbol = string, V = any>
      * @param key - The key to set
      * @param value - The value to store
      * @returns The cache instance for method chaining
+     * @docs
      */
     set(key: K, value: V): this;
     /**
      * Retrieve a value from the cache by key.
      * @param key - The key to retrieve
      * @returns The stored value or undefined if not found
+     * @docs
      */
     get(key: K): V | undefined;
     /**
      * Remove an item from the cache.
      * @param key - The key to remove
      * @returns True if an element was removed, false otherwise
+     * @docs
      */
     delete(key: K): boolean;
     /**
      * Remove all items from the cache.
      * @returns The cache instance for method chaining
+     * @docs
      */
     clear(): this;
     /**
      * Stop the cache, clear all items and stop the cleanup interval.
      * @returns The cache instance for method chaining
+     * @docs
      */
     stop(): this;
     /**
      * Get an iterator of all cache keys.
      * @returns An iterator of all keys in the cache
+     * @docs
      */
     keys(): IterableIterator<K>;
     /**
      * Get an iterator of all cache values.
      * @returns An iterator of all values in the cache
+     * @docs
      */
     values(): IterableIterator<V>;
     /**
      * Get the current estimated memory usage of the cache.
      * When `optimize_memory_checks` is true, this may return a cached value.
      * @returns The memory usage in bytes
+     * @docs
      */
     get_memory_usage(): number;
 }

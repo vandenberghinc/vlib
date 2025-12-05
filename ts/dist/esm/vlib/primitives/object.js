@@ -3,9 +3,17 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Color, Colors } from "../generic/colors.js";
+/**
+ * Object utilities.
+ * @name Object
+ * @docs
+ */
 export var ObjectUtils;
 (function (ObjectUtils) {
-    /** Check if an object is a raw plain `object` so with the prototype of Object. */
+    /**
+     * Check if an object is a raw plain `object` so with the prototype of Object.
+     * @docs
+     */
     ObjectUtils.is_plain = (val) => val !== null && typeof val === 'object' && !Array.isArray(val)
         && Object.getPrototypeOf(val) === Object.prototype;
     // Internal helper: deep equality / change detection
@@ -62,6 +70,7 @@ export var ObjectUtils;
      * @param x The first value to compare.
      * @param y The second value to compare.
      * @returns True if x and y are deeply equal, false otherwise.
+     * @docs
      */
     function eq(x, y) {
         return obj_eq(x, y);
@@ -69,6 +78,7 @@ export var ObjectUtils;
     ObjectUtils.eq = eq;
     /**
      * Create a partial copy of an object with only the specified keys.
+     * @docs
      */
     function partial_copy(obj, keys) {
         const out = {};
@@ -83,6 +93,7 @@ export var ObjectUtils;
     /**
      * Perform a shallow copy of an object.
      * Recursively copies all nested arrays and `raw` objects, not functions, classes or other non-primitive types.
+     * @docs
      */
     function shallow_copy(input) {
         const visit = (value) => {
@@ -122,6 +133,7 @@ export var ObjectUtils;
      * Using {@link structuredClone} when available.
      * @param obj The object to deep copy.
      * @returns A deep copy of the object.
+     * @docs
      */
     function deep_copy(obj) {
         if (typeof globalThis.structuredClone === "function") {
@@ -132,6 +144,7 @@ export var ObjectUtils;
     ObjectUtils.deep_copy = deep_copy;
     /**
      * Deeply freezes an object recursively.
+     * @docs
      */
     function deep_freeze(obj) {
         Object.freeze(obj);
@@ -156,6 +169,7 @@ export var ObjectUtils;
      * @param defaults The base object containing default values.
      * @param overrides The object containing values to override defaults.
      * @returns A new object that is the deep merge of defaults and overrides.
+     * @docs
      */
     function deep_merge(defaults, overrides) {
         const is_object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -204,6 +218,7 @@ export var ObjectUtils;
      * @param y The modified object.
      * @param include_nested Whether to include nested changed keys.
      * @returns An array of changed keys or null if no changes.
+     * @docs
      */
     function detect_changes(x, y, include_nested = false) {
         return obj_eq(x, y, true, include_nested);
@@ -214,6 +229,7 @@ export var ObjectUtils;
     * @param obj The object to modify.
     * @param remove_keys An array of keys to remove.
     * @returns The modified object.
+    * @docs
     */
     function delete_recursively(obj, remove_keys = []) {
         function clean(o) {
@@ -244,6 +260,7 @@ export var ObjectUtils;
      * @param x The target object to expand.
      * @param y The source object with properties to add to x.
      * @returns The expanded object x.
+     * @docs
      */
     function expand(x, y) {
         const keys = Object.keys(y);
@@ -256,6 +273,7 @@ export var ObjectUtils;
     /**
      * Merge two objects in place.
      * Can be useful for casting an options object to an initialization object.
+     * @docs
      */
     function merge(ref, override) {
         for (const key in Object.keys(override)) {
@@ -268,6 +286,7 @@ export var ObjectUtils;
     ObjectUtils.merge = merge;
     /**
      * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     * @docs
      */
     function merge_missing(ref, override) {
         for (const key in Object.keys(override)) {
@@ -285,6 +304,7 @@ export var ObjectUtils;
      * @param obj - The source object to pick properties from
      * @param keys - Array of keys to pick from the source object
      * @returns A new object containing only the specified properties
+     * @docs
      */
     function pick(obj, ...keys) {
         const result = {};
@@ -478,6 +498,8 @@ export var ObjectUtils;
      * @param opts The options for stringification. See {@link StringifyOpts} for more information.
      *
      * @note That when `opts.json` is true, it still might produce an invalid JSON string since it produces a string that shows circular references as `[Circular X]` etc.
+     *
+     * @docs
      */
     function stringify(value, opts) {
         if (opts?.filter && typeof value === 'object' && value !== null) {
@@ -498,6 +520,8 @@ export var ObjectUtils;
     ObjectUtils.stringify = stringify;
     /**
      * Filter an object by a callback.
+     *
+     * @docs
      */
     function filter(...args) {
         const obj = args[0];
@@ -588,6 +612,8 @@ export var ObjectUtils;
      *   }
      * ); // -> { a: 10, b: 20 }
      * ```
+     *
+     * @docs
      */
     function transform(obj, visitor) {
         const out = {};
@@ -794,8 +820,7 @@ export { ObjectUtils as object }; // for snake_case compatibility
 // }
 // // Perform a deep copy on any type, except it does not support classes, only primitive objects.
 // /*  @docs:
-//     @nav: Frontend
-//     @chapter: Utils
+//     @nav: Frontend/Utils
 //     @title: Deep copy
 //     @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
 //  */

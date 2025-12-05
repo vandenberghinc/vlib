@@ -4,10 +4,14 @@
  */
 /**
  * Manages loading, caching, and syncing of environment variables.
+ *
+ * @nav System
+ * @docs
  */
 export declare namespace Env {
     /**
      * Supported environment variable types.
+     * @docs
      */
     type EnvType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'string_array' | 'number_array' | 'boolean_array';
     /**
@@ -30,6 +34,7 @@ export declare namespace Env {
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      * @param opts.override - When true, existing environment variables will be overridden by those in the .env file.
+     * @docs
      */
     function from(path: string, opts?: {
         refresh?: boolean;
@@ -38,12 +43,9 @@ export declare namespace Env {
     const import_file: typeof from;
     /**
      * Check whether an environment variable is set.
+     * @docs
      */
     function has(name: string): boolean;
-    /**
-     * Retrieve an environment variable.
-     * Optionally with type parsing, and error throwing on undefined.
-     */
     function get<T = string>(name: string): string | undefined;
     function get<T = string>(name: string, throw_err: true): string;
     function get<T = string>(name: string, type: GetOptions['type']): string;
@@ -60,6 +62,7 @@ export declare namespace Env {
     }): T;
     /**
      * Set or update an environment variable (both in cache and in process.env).
+     * @docs
      */
     function set(name: string, value: any): void;
 }

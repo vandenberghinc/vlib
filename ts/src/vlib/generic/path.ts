@@ -137,7 +137,8 @@ const multi_dot_extensions_regex = new RegExp(
 
 /** 
  * The path class.
- * @libris
+ * @nav System
+ * @docs
  */
 export class Path {
 
@@ -150,6 +151,13 @@ export class Path {
     private _base?: Path;
     private _abs?: Path;
 
+    /**
+     * Construct a new path instance.
+     * @param path The file path as a string or another Path instance.
+     * @param clean Whether to clean the path by removing redundant slashes and dots.
+     * @param stats Optional file system stats associated with the path.
+     * @docs
+     */
     constructor(
         path: string | Path,
         clean: boolean = true,
@@ -192,6 +200,10 @@ export class Path {
     // ---------------------------------------------------------
     // Utils.
 
+    /**
+     * Trim the file path in place.
+     * @docs
+     */
     trim(): void {
         let start = 0, end = this.path.length;
         for (let i = 0; i < this.path.length; i++) {
@@ -218,10 +230,17 @@ export class Path {
         }
     }
 
-    /** To string. */
+    /**
+     * Cast the file path to a string.
+     * @docs
+     */
     toString(): string {
         return this.path;
     }
+    /**
+     * Cast the file path to a string.
+     * @docs
+     */
     str(): string {
         return this.path;
     }
@@ -241,6 +260,7 @@ export class Path {
     /**
      * Get the user's home directory path.
      * @returns {Path} A new Path instance pointing to the user's home directory.
+     * @docs
      */
     static home(): Path {
         return new Path(os.homedir());
@@ -249,6 +269,7 @@ export class Path {
     /**
      * Get the current working directory path.
      * @returns {Path} A new Path instance pointing to the current working directory.
+     * @docs
      */
     static cwd(): Path {
         return new Path(process.cwd());
@@ -257,6 +278,7 @@ export class Path {
     /**
      * Get the temporary directory path.
      * @returns {Path} A new Path instance pointing to the system's temporary directory.
+     * @docs
      */
     static tmp(): Path {
         return new Path(os.tmpdir());
@@ -275,6 +297,7 @@ export class Path {
     /**
      * Get the current operating system's path separator.
      * @returns {string} The path separator used by the current operating system ('/' for Unix-like, '\\' for Windows).
+     * @docs
      */
     static sep(): string {
         return pathlib.sep;
@@ -284,6 +307,7 @@ export class Path {
      * Find the common base path between an array of paths.
      * @param {string[]} paths - Array of path strings to analyze.
      * @returns {string|undefined} Returns a string when a common base path has been found, or undefined otherwise.
+     * @docs
      */
     static find_common_base_path(paths: string[]): string | undefined {
         if (!Array.isArray(paths) || paths.length === 0) {
@@ -326,7 +350,10 @@ export class Path {
         return split_first_path.slice(0, common_length).join(separator);
     }
 
-    /** Check if a path exists. */
+    /**
+     * Check if a path exists.
+     * @docs
+     */
     static exists(path: string): boolean {
         return fs.existsSync(path);
     }
@@ -335,6 +362,7 @@ export class Path {
      * Ensure a path exists; throw an error if not.
      * @param path Path to check.
      * @param err_prefix Optional prefix for the error message.
+     * @docs
      */
     static ensure_exists_err(path: string | Path, err_prefix = ""): void {
         path = new Path(path);
@@ -349,10 +377,16 @@ export class Path {
     /**
      * Get the length of the current path string.
      * @returns {number} The number of characters in the path string.
+     * @docs
      */
     get length(): number {
         return this.path.length;
     }
+    /**
+     * Get the length of the current path string.
+     * @returns {number} The number of characters in the path string.
+     * @docs
+     */
     get len(): number {
         return this.path.length;
     }
@@ -361,6 +395,7 @@ export class Path {
      * Get the file system stats for the current path.
      * @returns {fs.Stats} The file system stats object with modified time properties.
      * @throws Error if the path does not exist or cannot be accessed.
+     * @docs
      */
     get stat(): fs.Stats {
         if (this._stat !== undefined) {
@@ -377,6 +412,7 @@ export class Path {
     /**
      * Get the device identifier where the file resides.
      * @returns {number} The numeric device identifier.
+     * @docs
      */
     get dev(): number {
         return this.stat.dev;
@@ -385,6 +421,7 @@ export class Path {
     /**
      * Get the file system specific inode number.
      * @returns {number} The inode number of the file.
+     * @docs
      */
     get ino(): number {
         return this.stat.ino;
@@ -393,6 +430,7 @@ export class Path {
     /**
      * Get the file mode bits (permission and type).
      * @returns {number} The file mode bits.
+     * @docs
      */
     get mode(): number {
         return this.stat.mode;
@@ -401,6 +439,7 @@ export class Path {
     /**
      * Get the number of hard links to the file.
      * @returns {number} The number of hard links.
+     * @docs
      */
     get nlink(): number {
         return this.stat.nlink;
@@ -409,6 +448,7 @@ export class Path {
     /**
      * Get the user identifier of the file's owner.
      * @returns {number} The numeric user ID.
+     * @docs
      */
     get uid(): number {
         return this.stat.uid;
@@ -417,6 +457,7 @@ export class Path {
     /**
      * Get the group identifier of the file's group.
      * @returns {number} The numeric group ID.
+     * @docs
      */
     get gid(): number {
         return this.stat.gid;
@@ -425,6 +466,7 @@ export class Path {
     /**
      * Get the device identifier for special files.
      * @returns {number} The device identifier for special files.
+     * @docs
      */
     get rdev(): number {
         return this.stat.rdev;
@@ -433,6 +475,7 @@ export class Path {
     /**
      * Get the total size in bytes. For directories, calculates size recursively.
      * @returns {number} Total size in bytes.
+     * @docs
      */
     get size(): number {
         if (this.stat.isDirectory()) {
@@ -455,6 +498,7 @@ export class Path {
     /**
      * Get the file system block size for I/O operations.
      * @returns {number} Block size in bytes.
+     * @docs
      */
     get blksize(): number {
         return this.stat.blksize;
@@ -463,6 +507,7 @@ export class Path {
     /**
      * Get the number of blocks allocated to the file.
      * @returns {number} Number of allocated blocks.
+     * @docs
      */
     get blocks(): number {
         return this.stat.blocks;
@@ -471,6 +516,7 @@ export class Path {
     /**
      * Get the last access time of the file (in milliseconds).
      * @returns {number} Milliseconds representing the last access time.
+     * @docs
      */
     get atime(): number {
         return this.stat.atimeMs;
@@ -479,6 +525,7 @@ export class Path {
     /**
      * Get the last modification time of the file (in milliseconds).
      * @returns {number} Milliseconds representing the last modification time.
+     * @docs
      */
     get mtime(): number {
         return this.stat.mtimeMs;
@@ -487,6 +534,7 @@ export class Path {
     /**
      * Get the last change time of the file metadata (in milliseconds).
      * @returns {number} Milliseconds representing the last change time.
+     * @docs
      */
     get ctime(): number {
         return this.stat.ctimeMs;
@@ -495,6 +543,7 @@ export class Path {
     /**
      * Get the creation time of the file (in milliseconds).
      * @returns {number} Milliseconds representing the file creation time.
+     * @docs
      */
     get birthtime(): number {
         return this.stat.birthtimeMs;
@@ -504,6 +553,7 @@ export class Path {
      * Get disk usage information for the directory.
      * @throws {Error} If the path is not a directory.
      * @returns {Promise<{available: number; free: number; total: number}>} Object containing disk space information in bytes.
+     * @docs
      */
     async disk_usage(): Promise<undefined | { available: number; free: number; total: number }> {
         if (!this.is_dir()) {
@@ -524,6 +574,7 @@ export class Path {
      * Get available disk space for the directory.
      * @throws {Error} If the path is not a directory.
      * @returns {Promise<number>} Number of bytes available to the current user.
+     * @docs
      */
     async available_space(): Promise<number | undefined> {
         if (!this.is_dir()) {
@@ -546,9 +597,10 @@ export class Path {
     // Reset.
     // Should be called when the operating system's path has changed.
     // This does not reset the assigned path.
-    
+
     /**
      * Equals another string or path.
+     * @docs
      */
     eq(path: string | Path): boolean {
         if (path instanceof Path) {
@@ -560,6 +612,7 @@ export class Path {
     /**
      * Reset internal caches except path string.
      * @returns {this} The Path instance for chaining.
+     * @docs
      */
     reset(): this {
         this._stat = undefined;
@@ -575,7 +628,8 @@ export class Path {
     }
 
     /** 
-     * Check if the path is a directory
+     * Check if the path is a file.
+     * @docs
      */
     is_file(): boolean {
         return this.stat.isFile();
@@ -588,7 +642,8 @@ export class Path {
     }
 
     /** 
-     * Check if the path is a directory
+     * Check if the path is a directory.
+     * @docs
      */
     is_dir(): boolean {
         return this.stat.isDirectory();
@@ -606,6 +661,7 @@ export class Path {
      * Get the base path of this path, correctly handling escaped separators.
      * @param back - Number of directory levels to traverse up (default: 1).
      * @returns The parent Path instance, or undefined if at root.
+     * @docs
      */
     base(back: number = 1): Path | undefined {
         const data = this.path;
@@ -635,18 +691,27 @@ export class Path {
         return undefined;
     }
 
-    /** Convert to a POSIX-style Path. */
+    /**
+     * Convert to a POSIX-style Path.
+     * @docs
+     */
     posix(): Path {
         return new Path(this.path.split(pathlib.sep).join('/'), false);
     }
-    /** Static: convert `path` to a POSIX-style Path. */
+    /**
+     * Convert `path` to a POSIX-style Path.
+     * @docs
+     */
     static posix(path: string | Path): Path {
         if (path instanceof Path) {
             return new Path(path.path.split(pathlib.sep).join('/'), false);
         }
         return new Path(path.split(pathlib.sep).join('/'), false);
     }
-    /** Static: return `path` as a POSIX-style string. */
+    /**
+     * Return `path` as a POSIX-style string.
+     * @docs
+     */
     static posix_str(path: string | Path): string {
         if (path instanceof Path) {
             return path.path.split(pathlib.sep).join('/');
@@ -654,11 +719,11 @@ export class Path {
         return path.split(pathlib.sep).join('/');
     }
 
-
     /**
      * Get the full name of the path, including the file extension.
      * @param with_ext - Whether to include the file extension in the returned name (default: true).
      * @returns The full name of the path, with or without the extension.
+     * @docs
      */
     full_name(with_ext: boolean = true): string {
         if (with_ext && this._full_name !== undefined) {
@@ -696,7 +761,10 @@ export class Path {
         return with_ext ? this._full_name : this._name;
     }
 
-    /** Get the name of the file path without the extension. */
+    /**
+     * Get the name of the file path without the extension.
+     * @docs
+     */
     name(): string {
         if (this._name !== undefined) {
             return this._name;
@@ -708,6 +776,7 @@ export class Path {
     /**
      * Get the extension of the path, with correct multi-dot extension support.
      * @returns The file extension, including leading dot, or empty string if none.
+     * @docs
      */
     extension(): string {
         if (this._extension !== undefined) {
@@ -743,7 +812,6 @@ export class Path {
 
     /**
      * Copy the path to another location
-     * @funcs 2
      * @docs
      */
     async cp(destination: string | Path): Promise<void> {
@@ -764,6 +832,10 @@ export class Path {
             });
         });
     }
+    /**
+     * Copy the path to another location synchronously.
+     * @docs
+     */
     cp_sync(destination: string | Path): void {
         if (destination == null) {
             throw new Error("Define parameter \"destination\".");
@@ -799,7 +871,6 @@ export class Path {
 
     /**
      * Delete the path
-     * @funcs 2
      * @docs
      */
     async del({ recursive = false } = {}): Promise<void> {
@@ -827,6 +898,10 @@ export class Path {
             }
         });
     }
+    /**
+     * Delete the path synchronously.
+     * @docs
+     */
     del_sync({ recursive = false } = {}): this {
         if (this.exists()) {
             if (this.is_dir()) {
@@ -897,6 +972,12 @@ export class Path {
             });
         });
     }
+    /**
+     * Create a directory synchronously.
+     * @param opts.recursive Whether to create parent directories if they do not exist, defaults to `false`
+     *        Note that using `recursive: false` has slight performance benefits.
+     * @docs
+     */
     mkdir_sync(opts?: { recursive?: boolean }): this {
         if (this.exists()) {
             return this;
@@ -915,6 +996,7 @@ export class Path {
 
     /**
      * Relative.
+     * @docs
      */
     relative(child: string | Path): Path {
         if (child instanceof Path) {
@@ -927,6 +1009,7 @@ export class Path {
      * Return the quoted representation of the path.
      * @param def The default value to return when the path is undefined.
      *            See {@link StringUtils.quote} for more information.
+     * @docs
      */
     quote(def: undefined): undefined | Path
     quote(def?: string | String | Path): Path
@@ -946,16 +1029,12 @@ export class Path {
 
     /**
      * Return the unquoted representation of the path.
+     * @docs
      */
     unquote(): Path {
         return new Path(StringUtils.unquote(this.path), false);
     }
 
-    /**
-     * Load the data from the path
-     * @funcs 2
-     * @docs
-     */
     // async load<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): Promise<R>;
     // async load<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): Promise<R>;
     // async load<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): Promise<R>;
@@ -963,6 +1042,10 @@ export class Path {
     // async load<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): Promise<R>;
     // async load<R extends Record<any, any> = Record<any, any>>(opts: { type: "object", encoding?: BufferEncoding }): Promise<R>;
     // async load<R extends any[] | Record<any, any> = any[] | Record<any, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): Promise<R>;
+    /**
+     * Load the data from the path.
+     * @docs
+     */
     async load<T extends LoadSaveTypeName = "string">({
         type = "string" as T,
         encoding = undefined
@@ -1005,6 +1088,11 @@ export class Path {
     // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
     // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
     // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
+
+    /**
+     * Load the data from the path synchronously.
+     * @docs
+     */
     load_sync<T extends LoadSaveTypeName = "string">({
         type = "string" as T,
         encoding = undefined,
@@ -1034,13 +1122,12 @@ export class Path {
         }
     }
 
-    /**
-     * Save data to the path
-     * @funcs 2
-     * @docs
-     */
     async save(data: any, opts: { type: LoadSaveTypeName }): Promise<void>
     async save(data: string | Buffer, opts?: { type?: LoadSaveTypeName }): Promise<void>
+    /**
+     * Save data to the path.
+     * @docs
+     */
     async save(data: any, opts?: { type?: LoadSaveTypeName }): Promise<void> {
         if (opts?.type) {
             if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
@@ -1074,6 +1161,10 @@ export class Path {
     }
     save_sync(data: any, opts: { type: Exclude<LoadSaveTypeName, "jsonc"> }): this
     save_sync(data: string | Buffer, opts?: { type?: Exclude<LoadSaveTypeName, "jsonc"> }): this
+    /**
+     * Save data to the path synchronously.
+     * @docs
+     */
     save_sync(data: any, opts?: { type?: Exclude<LoadSaveTypeName, "jsonc"> }): this {
         if (opts?.type) {
             if (opts.type == null || opts.type === "buffer" || opts.type === "undefined") {
@@ -1106,6 +1197,8 @@ export class Path {
      *
      * @param callback Optional callback invoked with each line and its index.
      * @returns Promise resolving to an array of all lines in the file.
+     * 
+     * @docs
      */
     public async read_lines(
         callback?: (line: string, index: number) => void
@@ -1126,15 +1219,6 @@ export class Path {
         return lines;
     }
 
-    /** 
-    * Get the child paths of a directory
-    * @throws An error when the path is not a directory
-    * @param recursive Get all paths recursively.
-    * @param exclude A list of exclude paths, an exact match will be checked when a `string[]` array is provided.
-    *                However, glob- and regex patterns can be utilized as well by providing an `ExcludeList` class.
-    * @param absolute Get the absolute paths instead of relative paths.
-    * @param string Get all paths as raw strings instead of Path objects
-    */
     async paths(opts?: {
         recursive?: boolean;
         absolute?: boolean;
@@ -1147,6 +1231,17 @@ export class Path {
         exclude?: Path.ExcludeList | string[]
         string: true;
     }): Promise<string[]>;
+    /** 
+    * Get the child paths of a directory
+    * @throws An error when the path is not a directory
+    * @param recursive Get all paths recursively.
+    * @param exclude A list of exclude paths, an exact match will be checked when a `string[]` array is provided.
+    *                However, glob- and regex patterns can be utilized as well by providing an `ExcludeList` class.
+    * @param absolute Get the absolute paths instead of relative paths.
+    * @param string Get all paths as raw strings instead of Path objects
+    * 
+    * @docs
+    */
     async paths({
         recursive = false,
         absolute = true,
@@ -1268,6 +1363,8 @@ export class Path {
      * @param opts.only_directories Match only directories. Defaults to false.
      * @param opts.unique Remove duplicate results. Defaults to true.
      * @param opts.stats Get the file stats for each matched path. Defaults to false.
+     * 
+     * @docs
      */
     static async glob<O extends Path.glob.Opts = Path.glob.Opts>(
         patterns: string | string[],
@@ -1296,6 +1393,7 @@ export class Path {
 
     /**
      * Synchronously match file paths using glob patterns.
+     * @docs
      */
     static glob_sync<O extends Path.glob.Opts = Path.glob.Opts>(
         patterns: string | string[],

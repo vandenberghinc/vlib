@@ -4,13 +4,15 @@
  */
 import { System as WebSystem } from './web.js';
 /**
+ * {System Node.js}
  * The system module.
- * @chapter System
- * @parse false
+ * @nav System
  * @docs
  */
 export declare namespace System {
-    /** Aliases. */
+    /**
+     * Aliases.
+     */
     const format_bytes: typeof WebSystem.format_bytes;
     /**
      * Get the system CPU usage.

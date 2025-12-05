@@ -14,6 +14,9 @@ import { SourceLoc } from "./source_loc.js";
  * @template D The 'debug' mode flag, defaults to `false`.
  * @template R The 'raw' mode flag, defaults to `false`.
  * @template P The pipe type, defaults to `Pipe<boolean, true>`.
+ *
+ * @nav Logging
+ * @docs
  */
 export declare class Logger<D extends boolean = boolean, R extends boolean = boolean, P extends Pipe<boolean, true> = Pipe<boolean, true>> extends Callable<Args, void> {
     /** The active log level. */
@@ -44,6 +47,8 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      * @param opts.raw When `true`, timestamps will not be shown on log messages.
      * @param opts.pipe The pipe instance to use for logging, defaults to a new `Pipe<boolean, true>`.
      *                  This attribute is required when a custom `P` generic is provided.
+     *
+     * @docs
      */
     constructor(opts: {
         level?: number | ActiveLogLevel;
@@ -58,7 +63,7 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      *        The data to log.
      *        The first number is treated as the local log level.
      *        Any other directives are allowed before the first non-directive / local log level argument.
-     * @funcs 2
+     * @docs
      */
     call(log_level: number | Args[0], ...args: Args): void;
     /**
@@ -66,11 +71,15 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      * @param local_level The local log level to check against the active log level.
      * @param active_level Optionally provide an active log level to check against.
      * @returns `true` if the local level is active, otherwise `false`.
+     *
+     * @docs
      */
     on(local_level: number, active_level?: number): boolean;
     /**
      * Log a message in raw mode.
      * @param args Log arguments to pass to the pipe.
+     *
+     * @docs
      */
     raw(level: number | any, ...args: Args): void;
     dump(level: number | any, ...args: Args): void;
@@ -79,6 +88,8 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      * Log error data to the console and file streams when defined.
      * This automatically prepends the `Mode.raw` directive.
      * @param args The data to log.
+     *
+     * @docs
      */
     error(...args: Args): void;
     /**
@@ -87,7 +98,7 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      * This automatically prepends the `Mode.raw` directive.
      * @param level The log level or the first argument to log.
      * @param errs The data to log.
-     * @funcs 2
+     * @docs
      */
     warn(level: number | any, ...args: Args): void;
     warning(level: number | any, ...args: Args): void;
@@ -95,6 +106,7 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      * Update the log level of this debug instance.
      * @param value The log level to set for this debug instance.
      * @returns The debug instance itself for chaining.
+     * @docs
      */
     set(value: number): this;
     update(value: number): this;
@@ -104,18 +116,26 @@ export declare class Logger<D extends boolean = boolean, R extends boolean = boo
      *      The number of function calls to go back in the call stack for the creation of the SourceLoc.
      *      By default the source location will be created for the location of where this function is called.
      * @returns A new SourceLoc instance.
+     * @docs
      */
     loc(lookback?: number): SourceLoc;
     /**
      * Forward the `Pipe.join()` function to the pipe instance.
      * @param args The arguments to pass to the `Pipe.join()` function.
      * @returns The joined string.
+     * @docs
      */
     join(...args: Args): string;
-    /** Create a marker log message. */
+    /**
+     * Create a marker log message.
+     * @param args The arguments to pass to the `Pipe.join()` function.
+     * @docs
+     */
     marker(level: number | any, ...args: Args): void;
 }
 /**
  * A global log instance.
+ * @nav Logging
+ * @docs
  */
 export declare const log: Logger;

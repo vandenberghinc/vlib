@@ -81,6 +81,7 @@ class CLI {
    * @param main The main command for when no specific command is detected.
    * @param commands The list of commands.
    * @param strict Whether to throw an error when an unknown command is detected, defaults to false.
+   * @docs
    */
   constructor({
     name = "CLI",
@@ -454,7 +455,7 @@ class CLI {
   }
   /**
    * Check if the CLI has an argument index or id(s).
-   * @libris
+   * @docs
    */
   has(id) {
     if (id instanceof Arg.Base) {
@@ -476,7 +477,7 @@ class CLI {
    *
    * @param q The argument query. See {@link Arg.Query} for information.
    *
-   * @libris
+   * @docs
    */
   info(q, _s_index, _command) {
     const query = typeof q === "string" || Array.isArray(q) || q instanceof import_query.Or || q instanceof import_query.And ? new Arg.Query({ id: q, type: "string" }, this.strict) : q instanceof Arg.Base ? q : new Arg.Query(q, this.strict);
@@ -538,7 +539,7 @@ class CLI {
    * {Get}
    * Get an argument.
    * @param query The argument get options. See {@link Arg.Base} for option information.
-   * @libris
+   * @docs
    */
   get(query) {
     const res = this.info(query);
@@ -558,6 +559,7 @@ class CLI {
    * Create a CLI error.
    * This error is specially handled by the CLI when executing a command.
    * Therefore it will be dumped pretty when thrown inside a command.
+   * @docs
    */
   error(err, opts) {
     if (err instanceof import_error.CLIError) {
@@ -743,6 +745,8 @@ Examples:
    *           Dont allow passing this in constructor opts.
    *           This is so we can infer the args using InferArgs.
    *           That doesnt work when passing a commands array to the constructor.
+   *
+   * @docs
    */
   main(main) {
     if (this._main) {
@@ -765,6 +769,8 @@ Examples:
    *           Dont allow passing this in constructor opts.
    *           This is so we can infer the args using InferArgs.
    *           That doesnt work when passing a commands array to the constructor.
+   *
+   * @docs
    */
   command(cmd) {
     const c = cmd instanceof import_command.Command ? cmd : new import_command.Command(cmd, this.strict);
@@ -777,7 +783,7 @@ Examples:
   /**
    * Start the cli.
    *
-   * @libris
+   * @docs
    */
   async start() {
     try {

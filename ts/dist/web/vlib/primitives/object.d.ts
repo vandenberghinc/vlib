@@ -3,23 +3,34 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 import { Truthy } from "../types/truthy.js";
+/**
+ * Object utilities.
+ * @name Object
+ * @docs
+ */
 export declare namespace ObjectUtils {
-    /** Check if an object is a raw plain `object` so with the prototype of Object. */
+    /**
+     * Check if an object is a raw plain `object` so with the prototype of Object.
+     * @docs
+     */
     const is_plain: (val: any) => val is Record<string, any>;
     /**
      * Performs a deep equality check between two values.
      * @param x The first value to compare.
      * @param y The second value to compare.
      * @returns True if x and y are deeply equal, false otherwise.
+     * @docs
      */
     function eq(x: any, y: any): boolean;
     /**
      * Create a partial copy of an object with only the specified keys.
+     * @docs
      */
     function partial_copy<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
     /**
      * Perform a shallow copy of an object.
      * Recursively copies all nested arrays and `raw` objects, not functions, classes or other non-primitive types.
+     * @docs
      */
     function shallow_copy<T>(input: T): T;
     /**
@@ -28,10 +39,12 @@ export declare namespace ObjectUtils {
      * Using {@link structuredClone} when available.
      * @param obj The object to deep copy.
      * @returns A deep copy of the object.
+     * @docs
      */
     function deep_copy<T>(obj: T): T;
     /**
      * Deeply freezes an object recursively.
+     * @docs
      */
     function deep_freeze<T>(obj: T): T;
     /**
@@ -46,6 +59,7 @@ export declare namespace ObjectUtils {
      * @param defaults The base object containing default values.
      * @param overrides The object containing values to override defaults.
      * @returns A new object that is the deep merge of defaults and overrides.
+     * @docs
      */
     function deep_merge<T extends Record<string, any>, U extends Record<string, any>>(defaults: T, overrides: U): T & U;
     /**
@@ -54,6 +68,7 @@ export declare namespace ObjectUtils {
      * @param y The modified object.
      * @param include_nested Whether to include nested changed keys.
      * @returns An array of changed keys or null if no changes.
+     * @docs
      */
     function detect_changes(x: any, y: any, include_nested?: boolean): string[] | null;
     /**
@@ -61,6 +76,7 @@ export declare namespace ObjectUtils {
     * @param obj The object to modify.
     * @param remove_keys An array of keys to remove.
     * @returns The modified object.
+    * @docs
     */
     function delete_recursively<T>(obj: T, remove_keys?: string[]): T;
     /**
@@ -69,15 +85,18 @@ export declare namespace ObjectUtils {
      * @param x The target object to expand.
      * @param y The source object with properties to add to x.
      * @returns The expanded object x.
+     * @docs
      */
     function expand<T extends object, U extends object>(x: T, y: U): T & U;
     /**
      * Merge two objects in place.
      * Can be useful for casting an options object to an initialization object.
+     * @docs
      */
     function merge<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U;
     /**
      * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     * @docs
      */
     function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U;
     /**
@@ -87,9 +106,13 @@ export declare namespace ObjectUtils {
      * @param obj - The source object to pick properties from
      * @param keys - Array of keys to pick from the source object
      * @returns A new object containing only the specified properties
+     * @docs
      */
     function pick<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K>;
-    /** Stringify options. */
+    /**
+     * Stringify options.
+     * @docs
+     */
     interface StringifyOpts {
         /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */
         indent?: number | false | -1;
@@ -116,11 +139,15 @@ export declare namespace ObjectUtils {
      * @param opts The options for stringification. See {@link StringifyOpts} for more information.
      *
      * @note That when `opts.json` is true, it still might produce an invalid JSON string since it produces a string that shows circular references as `[Circular X]` etc.
+     *
+     * @docs
      */
     function stringify(value: any, opts?: StringifyOpts): string;
     /**
     * Filter options.
     * Also used by `Color`.
+    *
+    * @docs
     */
     interface FilterOpts {
         /**
@@ -136,10 +163,14 @@ export declare namespace ObjectUtils {
     }
     /**
      * Filter callback type.
+     *
+     * @docs
      */
     type FilterCallback = (value: any, key: string, parents?: [string, any][]) => boolean;
     /**
      * Filter an object by a callback.
+     *
+     * @docs
      */
     function filter(...args: [Record<string, any>, FilterCallback | (FilterOpts & {
         callback: FilterCallback;
@@ -169,6 +200,8 @@ export declare namespace ObjectUtils {
      *   }
      * ); // -> { a: 10, b: 20 }
      * ```
+     *
+     * @docs
      */
     function transform<T extends Record<any, any>, O extends Record<any, any> = Record<any, any>>(obj: T, visitor: (value: T[keyof T], key: keyof T, out: O, original: T) => Truthy): O;
 }

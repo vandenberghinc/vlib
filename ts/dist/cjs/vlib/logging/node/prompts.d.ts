@@ -7,6 +7,9 @@
  * Prompt a question from the user
  * @param question The question to display
  * @returns The user's response
+ *
+ * @nav Logging
+ * @docs
  */
 export declare function prompt(question: string): Promise<string>;
 /**
@@ -15,5 +18,8 @@ export declare function prompt(question: string): Promise<string>;
  * @param question The question to display
  * @param yes The set of lowercased yes responses, defaults to `["y", "yes", "ok"]`.
  * @returns The user's response, yes or no.
+ *
+ * @nav Logging
+ * @docs
  */
 export declare function confirm(question: string, yes?: Set<string>): Promise<boolean>;

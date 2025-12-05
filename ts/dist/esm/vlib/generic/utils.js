@@ -73,7 +73,10 @@ export var Utils;
     }
     Utils.hash = hash;
     const _npm_package_version_cache = new Map();
-    /** Load the version from a npm package.json or any other json file that has a `version: string` attribute. */
+    /**
+     * Load the version from a npm package.json or any other json file that has a `version: string` attribute.
+     * @docs
+     */
     function load_npm_package_version(package_json_path, def = "1.0.0") {
         if (_npm_package_version_cache.has(package_json_path)) {
             return _npm_package_version_cache.get(package_json_path);
@@ -96,7 +99,6 @@ export var Utils;
      * const __dirname = vlib.Utils.__dirname(import.meta);
      * ```
      * @deprecated use import.meta.dirname node20+.
-     * @libris
      */
     function __dirname(import_meta) {
         return dirname(fileURLToPath(import_meta.url));
@@ -106,12 +108,16 @@ export var Utils;
      * Get __filename from `import` for ESM modules.
      * @warning This function should only be used in ESM modules.
      * @param import_meta The default `import` variable for ESM modules.
+     * @deprecated use import.meta.filename node20+.
      */
     function __filename(import_meta) {
         return fileURLToPath(import_meta.url);
     }
     Utils.__filename = __filename;
-    /** Safe exit with a traceable log message and status code */
+    /**
+     * Safe exit with a traceable log message and status code
+     * @docs
+     */
     function safe_exit(code = 1, message) {
         const id = new SourceLoc(1).abs_id;
         if (message) {
@@ -127,7 +133,6 @@ export var Utils;
      * Print arguments to console without inserting spaces.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print(...args) {
         console.log(args.join(""));
@@ -137,7 +142,6 @@ export var Utils;
      * Print arguments to console error without inserting spaces.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function printe(...args) {
         console.error(args.join(""));
@@ -147,7 +151,6 @@ export var Utils;
      * Print text with a blue marker prefix.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_marker(...args) {
         print(Colors.blue, ">>> ", Colors.end, ...args);
@@ -157,7 +160,6 @@ export var Utils;
      * Print text with a yellow warning prefix.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_warning(...args) {
         print(Colors.yellow, ">>> ", Colors.end, ...args);
@@ -167,7 +169,6 @@ export var Utils;
      * Print text with a red error prefix to stderr.
      * @deprecated use the `logging/Logger` module instead.
      * @param args Arguments to print
-     * @docs
      */
     function print_error(...args) {
         printe(Colors.red, ">>> ", Colors.end, ...args);

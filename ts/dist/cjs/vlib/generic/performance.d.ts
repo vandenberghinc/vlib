@@ -13,6 +13,7 @@ export declare class Performance {
     /**
      * Create a new Performance measurement utility.
      * @param name Optional name for this performance tracker.
+     * @docs
      */
     constructor(name?: string);
     /**

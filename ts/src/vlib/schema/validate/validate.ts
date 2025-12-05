@@ -825,6 +825,7 @@ function validate_object_helper<const T extends ObjOrArr>(
  * A pre-constructed entry-like object containing all information
  * required to validate data. This class is used to avoid the overhead 
  * of creating a new `Validator` object each time.
+ * @nav Schema
  * @docs
  */
 export class Validator<
@@ -935,6 +936,7 @@ export namespace Validator {
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export function validate_entry<Throw extends boolean = false>(
@@ -960,6 +962,7 @@ export function validate_entry<Throw extends boolean = false>(
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export function validate_object<const T extends ObjOrArr>(
@@ -984,6 +987,7 @@ export function validate_object<const T extends ObjOrArr>(
 
 /**
  * Perform validation a given array or object.
+ * @nav Schema
  * @docs
  */
 export function validate<
@@ -1029,6 +1033,7 @@ export function validate<
  * The object response form of validation operations.
  * Note that this is not always the returned type of the `validate()` function,
  * but rather the type of the response object when `throw` is `false`.
+ * @nav Schema
  * @docs
  */
 export type ValidateResponse<
@@ -1074,6 +1079,7 @@ export namespace ValidateResponse {
 
 /**
  * A user facing error class for user-facing errors from `validate` when `throw` is `true`.
+ * @nav Schema/Errors
  * @docs
  */
 export class ValidateError<O extends object> extends globalThis.Error {
@@ -1086,6 +1092,7 @@ export class ValidateError<O extends object> extends globalThis.Error {
 
 /**
  * Error thrown when the user incorrectly utilizes the schema module.
+ * @nav Schema/Errors
  * @docs
  */
 export class InvalidUsageError extends globalThis.Error {

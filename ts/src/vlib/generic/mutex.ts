@@ -22,6 +22,8 @@
  *   }
  * }
  * ```
+ * 
+ * @docs
  */
 export class Mutex {
     
@@ -42,6 +44,8 @@ export class Mutex {
      *   mutex.unlock();
      * }
      * ```
+     * 
+     * @docs
      */
     public async lock(): Promise<void> {
         if (!this._locked) {
@@ -56,6 +60,8 @@ export class Mutex {
 
     /**
      * Release the mutex, allowing the next waiter (if any) to acquire it.
+     * 
+     * @docs
      */
     public unlock(): void {
         if (this._queue.length > 0) {
@@ -69,6 +75,7 @@ export class Mutex {
     /**
      * Execute the callback under exclusive lock, auto-releasing on completion.
      * @param callback Function to run while holding the mutex.
+     * @docs
      */
     public async run_exclusive<T>(callback: () => Promise<T> | T): Promise<T> {
         await this.lock();
@@ -81,16 +88,22 @@ export class Mutex {
 
     /**
      * Check if the mutex is currently locked.
+     * @docs
      */
     public locked(): boolean {
         return this._locked;
     }
+    /**
+     * Check if the mutex is currently locked.
+     * @docs
+     */
     public is_locked(): boolean {
         return this._locked;
     }
 
     /**
      * Number of queued waiters.
+     * @docs
      */
     public waiting(): number {
         return this._queue.length;

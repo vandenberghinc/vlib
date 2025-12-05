@@ -7,6 +7,13 @@ import { Logger } from "./logger.js";
 /**
  * The callable debug class.
  * A wrapper for a logger class with `debug` level set to `true`.
+ *
+ * @example
+ * const debug = new Debug(1);
+ * if (debug.on(1)) debug("Hello World!");
+ *
+ * @nav Logging
+ * @docs
  */
 export declare class Debug extends Logger<true> {
     constructor(opts: ActiveLogLevel | number | {
@@ -16,5 +23,8 @@ export declare class Debug extends Logger<true> {
 }
 /**
  * A global debug instance.
+ *
+ * @nav Logging
+ * @docs
  */
 export declare const debug: Debug;

@@ -4,7 +4,9 @@
  */
 /**
  * Source location.
- * @note Accessable in the frontend web library as well.
+ * @note Accessible in the frontend web library as well.
+ * @nav Logging
+ * @docs
  */
 export declare class SourceLoc {
     /** Attributes. */
@@ -16,12 +18,18 @@ export declare class SourceLoc {
     id: string | "<unknown>:?:?";
     abs_id: string | "<unknown>:?:?";
     private adjust;
-    /** Constructor. */
+    /**
+     * Constructor.
+     * @docs
+     */
     constructor(adjust?: number);
     /** Helpers. */
     private _captureWithCallSite;
     private _captureWithStackString;
-    /** Is unknown. */
+    /**
+     * Is unknown.
+     * @docs
+     */
     is_unknown(): boolean;
     /** Assign as unknown. */
     private _as_unknown;

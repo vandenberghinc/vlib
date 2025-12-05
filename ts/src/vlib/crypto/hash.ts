@@ -13,6 +13,9 @@ import * as crypto from 'crypto';
  * @param data - The data to hash, can be a string or a Buffer.
  * @param algo - The hashing algorithm to use, defaults to "sha256".
  * @param format - The output format, can be "hex", "base64", or false to return a Hash object.
+ * 
+ * @nav Crypto
+ * @docs
  */
 export function hash(data: string | Buffer, algo?: string, format?: crypto.BinaryToTextEncoding): string
 export function hash(data: string | Buffer, algo?: string, format?: false): crypto.Hash

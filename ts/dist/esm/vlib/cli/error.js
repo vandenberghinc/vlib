@@ -6,6 +6,9 @@ import { Spinners } from "../logging/uni/spinners.js";
 import { Color, Colors } from "../generic/colors.js";
 /**
  * An CLI error.
+ *
+ * @nav CLI/Errors
+ * @docs
  */
 export class CLIError extends globalThis.Error {
     /** The error name. */

@@ -4,10 +4,16 @@
  *
  * @note FRONTEND - This file should also be accessable from the frontend.
  */
+/**
+ * String utilities.
+ * @name String
+ * @docs
+ */
 var StringUtils;
 (function (StringUtils) {
     /**
      * Removes common indentation from multiline strings.
+     * @docs
      */
     function dedent(data, allow_empty_first_line = false) {
         // Allow empty first line.
@@ -36,6 +42,7 @@ var StringUtils;
     StringUtils.dedent = dedent;
     /**
      * Returns the first character of the string.
+     * @docs
      */
     function first(data) {
         return data[0];
@@ -43,6 +50,7 @@ var StringUtils;
     StringUtils.first = first;
     /**
      * Returns the last character of the string.
+     * @docs
      */
     function last(data) {
         const s = data;
@@ -51,6 +59,7 @@ var StringUtils;
     StringUtils.last = last;
     /**
      * Gets the first non-whitespace character. Optionally ignores newline as whitespace.
+     * @docs
      */
     function first_non_whitespace(data, line_break = false) {
         const s = data;
@@ -65,6 +74,7 @@ var StringUtils;
     StringUtils.first_non_whitespace = first_non_whitespace;
     /**
      * Gets the last non-whitespace character. Optionally ignores newline as whitespace.
+     * @docs
      */
     function last_non_whitespace(data, line_break = false) {
         const s = data;
@@ -79,6 +89,7 @@ var StringUtils;
     StringUtils.last_non_whitespace = last_non_whitespace;
     /**
      * Gets the first character not in the exclude list, starting from an index.
+     * @docs
      */
     function first_not_of(data, exclude = [], start_index = 0) {
         const s = data;
@@ -91,6 +102,7 @@ var StringUtils;
     StringUtils.first_not_of = first_not_of;
     /**
      * Gets the index of the first character not in the exclude list, starting from an index.
+     * @docs
      */
     function first_index_not_of(data, exclude = [], start_index = 0) {
         const s = data;
@@ -103,6 +115,7 @@ var StringUtils;
     StringUtils.first_index_not_of = first_index_not_of;
     /**
      * Gets the last character not in the exclude list, searching backward.
+     * @docs
      */
     function last_not_of(data, exclude = [], start_index = -1) {
         const s = data;
@@ -116,6 +129,7 @@ var StringUtils;
     StringUtils.last_not_of = last_not_of;
     /**
      * Gets the index of the last character not in the exclude list, searching backward.
+     * @docs
      */
     function last_index_not_of(data, exclude = [], start_index = -1) {
         const s = data;
@@ -129,6 +143,7 @@ var StringUtils;
     StringUtils.last_index_not_of = last_index_not_of;
     /**
      * Inserts a substring at the given index.
+     * @docs
      */
     function insert(data, index, substr) {
         const s = data;
@@ -137,6 +152,7 @@ var StringUtils;
     StringUtils.insert = insert;
     /**
      * Removes characters between start and end indices.
+     * @docs
      */
     function remove_indices(data, start, end) {
         const s = data;
@@ -145,6 +161,7 @@ var StringUtils;
     StringUtils.remove_indices = remove_indices;
     /**
      * Replaces characters between start and end indices with the given substring.
+     * @docs
      */
     function replace_indices(data, substr, start, end) {
         const s = data;
@@ -153,6 +170,7 @@ var StringUtils;
     StringUtils.replace_indices = replace_indices;
     /**
      * Checks if the string starts with the given substring at an optional index.
+     * @docs
      */
     function eq_first(data, substr, start_index = 0) {
         const s = data;
@@ -163,6 +181,7 @@ var StringUtils;
     StringUtils.eq_first = eq_first;
     /**
      * Checks if the string ends with the given substring.
+     * @docs
      */
     function eq_last(data, substr) {
         const s = data;
@@ -173,6 +192,7 @@ var StringUtils;
     StringUtils.eq_last = eq_last;
     /**
      * Ensures the string ends with one of the given characters, appending the first if not.
+     * @docs
      */
     function ensure_last(data, ensure_last) {
         const s = data;
@@ -183,6 +203,7 @@ var StringUtils;
     StringUtils.ensure_last = ensure_last;
     /**
      * Returns true if all characters are uppercase (digits optional).
+     * @docs
      */
     function is_uppercase(data, allow_digits = false) {
         const set = allow_digits ? is_uppercase_plus_num_set : StringUtils.charset.uppercase_set;
@@ -194,7 +215,10 @@ var StringUtils;
     }
     StringUtils.is_uppercase = is_uppercase;
     const is_uppercase_plus_num_set = new Set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split(''));
-    /** Charsets. */
+    /**
+     * Charsets.
+     * @docs
+     */
     StringUtils.charset = {
         /** All uppercase alphabetical characters. */
         uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -208,6 +232,7 @@ var StringUtils;
     };
     /**
      * Capitalizes only the first letter of the string.
+     * @docs
      */
     function capitalize_word(data) {
         const s = data;
@@ -218,6 +243,7 @@ var StringUtils;
     StringUtils.capitalize_word = capitalize_word;
     /**
      * Capitalizes the first letter of each word separated by whitespace.
+     * @docs
      */
     function capitalize_words(data) {
         return data.split(/(\s+)/).map(part => /^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('');
@@ -225,6 +251,7 @@ var StringUtils;
     StringUtils.capitalize_words = capitalize_words;
     /**
      * Removes all instances of the given character(s) from the string.
+     * @docs
      */
     function drop(data, char) {
         const exclude = Array.isArray(char) ? char : [char];
@@ -233,6 +260,7 @@ var StringUtils;
     StringUtils.drop = drop;
     /**
      * Returns the reversed string.
+     * @docs
      */
     function reverse(data) {
         return data.split('').reverse().join('');
@@ -243,6 +271,7 @@ var StringUtils;
      * @param length The length of the random string, default is 32.
      * @param charset Optional custom character set to use, default is alphanumeric.
      *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
+     * @docs
     */
     function random(length = 32, charset) {
         let result = '';
@@ -258,10 +287,9 @@ var StringUtils;
     }
     StringUtils.random = random;
     const default_random_charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    /*
-
     /**
      * Returns true if the string contains only digits.
+     * @docs
      */
     function is_integer_string(data) {
         return /^[0-9]+$/.test(data);
@@ -269,6 +297,7 @@ var StringUtils;
     StringUtils.is_integer_string = is_integer_string;
     /**
      * Returns true if the string is a valid floating-point representation.
+     * @docs
      */
     function is_floating_string(data) {
         return /^[0-9]*\.[0-9]+$/.test(data);
@@ -276,6 +305,7 @@ var StringUtils;
     StringUtils.is_floating_string = is_floating_string;
     /**
      * Returns info or boolean about numeric string (integer/floating).
+     * @docs
      */
     function is_numeric_string(data, info = false) {
         const s = data;
@@ -288,6 +318,8 @@ var StringUtils;
      * Removes matching quotes from the ends of the string.
      *
      * @param data The string to unquote.
+     *
+     * @docs
      */
     function unquote(data) {
         const s = data;
@@ -296,6 +328,14 @@ var StringUtils;
         return s;
     }
     StringUtils.unquote = unquote;
+    /**
+     * Wraps the string in quotes if not already quoted.
+     * @returns the default string when the data is an empty string or null/undefined.
+     * @param data The string to quote.
+     * @param def Optional default value to return if data is null/undefined, default is `""`.
+     *
+     * @docs
+     */
     function quote(data, def = '""') {
         if (!data) {
             return def instanceof String ? def.valueOf() : def;

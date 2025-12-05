@@ -9,6 +9,8 @@ import { Proc } from "./process.js";
 const is_root = os.userInfo().uid === 0;
 /**
  * Error thrown for daemon-related failures.
+ *
+ * @docs
  */
 export class DaemonError extends Error {
     constructor(...args) {
@@ -16,9 +18,10 @@ export class DaemonError extends Error {
     }
 }
 /**
- *  Daemon type.
+ * Daemon type.
  *
- *  @nav System
+ * @nav System
+ * @docs
  */
 export class Daemon {
     name;

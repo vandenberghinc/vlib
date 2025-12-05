@@ -17,5 +17,7 @@
  * @returns
  *      The *best match* when its similarity is **≥ similarity_threshold**;
  *      otherwise `undefined`.
+ *
+ * @internal
  */
 export declare function suggest_attribute(incorrect_name: string, valid_names: string[], similarity_threshold?: number): string | undefined;

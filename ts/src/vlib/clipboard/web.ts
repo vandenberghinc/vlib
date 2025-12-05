@@ -7,11 +7,17 @@
 import { ClipboardReadOptions } from './types.js';
 
 /**
- * BrowserClipboard: native clipboard operations for browser environments.
+ * {Browser}
+ * Native clipboard operations for browser environments.
+ * 
+ * @nav Clipboard
+ * @docs
  */
 export class Clipboard {
     /**
      * Copy data to the system clipboard (browser).
+     * 
+     * @docs
      */
     static async set(data: any): Promise<void> {
         const text = typeof data === 'string' ? data : JSON.stringify(data);
@@ -23,6 +29,8 @@ export class Clipboard {
 
     /**
      * Read data from the system clipboard (browser).
+     * 
+     * @docs
      */
     static async get<T = any>(opts?: ClipboardReadOptions): Promise<T> {
         if (!navigator.clipboard?.readText) {

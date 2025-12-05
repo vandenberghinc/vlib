@@ -6,9 +6,17 @@
 import { Truthy } from "../types/truthy.js";
 import { Color, Colors } from "../generic/colors.js";
 
+/**
+ * Object utilities.
+ * @name Object
+ * @docs
+ */
 export namespace ObjectUtils {
 
-    /** Check if an object is a raw plain `object` so with the prototype of Object. */
+    /**
+     * Check if an object is a raw plain `object` so with the prototype of Object.
+     * @docs
+     */
     export const is_plain = (val: any): val is Record<string, any> =>
         val !== null && typeof val === 'object' && !Array.isArray(val)
         && Object.getPrototypeOf(val) === Object.prototype;
@@ -74,6 +82,7 @@ export namespace ObjectUtils {
      * @param x The first value to compare.
      * @param y The second value to compare.
      * @returns True if x and y are deeply equal, false otherwise.
+     * @docs
      */
     export function eq(x: any, y: any): boolean {
         return obj_eq(x, y) as boolean;
@@ -81,6 +90,7 @@ export namespace ObjectUtils {
 
     /**
      * Create a partial copy of an object with only the specified keys.
+     * @docs
      */
     export function partial_copy<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
         const out: Partial<T> = {};
@@ -96,6 +106,7 @@ export namespace ObjectUtils {
     /**
      * Perform a shallow copy of an object.
      * Recursively copies all nested arrays and `raw` objects, not functions, classes or other non-primitive types.
+     * @docs
      */
     export function shallow_copy<T>(input: T): T {
 
@@ -137,6 +148,7 @@ export namespace ObjectUtils {
      * Using {@link structuredClone} when available.
      * @param obj The object to deep copy.
      * @returns A deep copy of the object.
+     * @docs
      */
     export function deep_copy<T>(obj: T): T {
         if (typeof globalThis.structuredClone === "function") {
@@ -147,6 +159,7 @@ export namespace ObjectUtils {
 
     /**
      * Deeply freezes an object recursively.
+     * @docs
      */
     export function deep_freeze<T>(obj: T): T {
         Object.freeze(obj);
@@ -171,6 +184,7 @@ export namespace ObjectUtils {
      * @param defaults The base object containing default values.
      * @param overrides The object containing values to override defaults.
      * @returns A new object that is the deep merge of defaults and overrides.
+     * @docs
      */
     export function deep_merge<T extends Record<string, any>, U extends Record<string, any>>(
         defaults: T,
@@ -223,6 +237,7 @@ export namespace ObjectUtils {
      * @param y The modified object.
      * @param include_nested Whether to include nested changed keys.
      * @returns An array of changed keys or null if no changes.
+     * @docs
      */
     export function detect_changes(x: any, y: any, include_nested = false): string[] | null {
         return obj_eq(x, y, true, include_nested) as string[] | null;
@@ -233,6 +248,7 @@ export namespace ObjectUtils {
     * @param obj The object to modify.
     * @param remove_keys An array of keys to remove.
     * @returns The modified object.
+    * @docs
     */
     export function delete_recursively<T>(obj: T, remove_keys: string[] = []): T {
         function clean(o: any): void {
@@ -260,6 +276,7 @@ export namespace ObjectUtils {
      * @param x The target object to expand.
      * @param y The source object with properties to add to x.
      * @returns The expanded object x.
+     * @docs
      */
     export function expand<T extends object, U extends object>(x: T, y: U): T & U {
         const keys = Object.keys(y) as (keyof U)[];
@@ -272,6 +289,7 @@ export namespace ObjectUtils {
     /**
      * Merge two objects in place.
      * Can be useful for casting an options object to an initialization object.
+     * @docs
      */
     export function merge<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
         for (const key in Object.keys(override)) {
@@ -284,6 +302,7 @@ export namespace ObjectUtils {
 
     /**
      * Merge two objects in place, but only if the key does not exist in the first object or if its `undefined`.
+     * @docs
      */
     export function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
         for (const key in Object.keys(override)) {
@@ -301,6 +320,7 @@ export namespace ObjectUtils {
      * @param obj - The source object to pick properties from
      * @param keys - Array of keys to pick from the source object
      * @returns A new object containing only the specified properties
+     * @docs
      */
     export function pick<T extends object, K extends keyof T>(
         obj: T,
@@ -318,7 +338,10 @@ export namespace ObjectUtils {
     // ---------------------------------------------------------
     // Stringify functions.
 
-    /** Stringify options. */
+    /**
+     * Stringify options.
+     * @docs
+     */
     export interface StringifyOpts {
         /** The indent size, amount of spaces per indent level, defaults to `4`. Use `false` or `-1` to disable all indentation. */
         indent?: number | false | -1;
@@ -557,6 +580,8 @@ export namespace ObjectUtils {
      * @param opts The options for stringification. See {@link StringifyOpts} for more information.
      * 
      * @note That when `opts.json` is true, it still might produce an invalid JSON string since it produces a string that shows circular references as `[Circular X]` etc.
+     * 
+     * @docs
      */
     export function stringify(value: any, opts?: StringifyOpts): string {
         if (opts?.filter && typeof value === 'object' && value !== null) {
@@ -587,6 +612,8 @@ export namespace ObjectUtils {
     /**
     * Filter options.
     * Also used by `Color`.
+    * 
+    * @docs
     */
     export interface FilterOpts {
         /**
@@ -603,11 +630,15 @@ export namespace ObjectUtils {
 
     /**
      * Filter callback type.
+     * 
+     * @docs
      */
     export type FilterCallback = (value: any, key: string, parents?: [string, any][]) => boolean;
 
     /**
      * Filter an object by a callback.
+     * 
+     * @docs
      */
     export function filter(...args:
         | [Record<string, any>, FilterCallback | (FilterOpts & { callback: FilterCallback })]
@@ -715,6 +746,8 @@ export namespace ObjectUtils {
      *   }
      * ); // -> { a: 10, b: 20 }
      * ```
+     * 
+     * @docs
      */
     export function transform<
         T extends Record<any, any>,
@@ -947,8 +980,7 @@ export { ObjectUtils as object }; // for snake_case compatibility
 
 // // Perform a deep copy on any type, except it does not support classes, only primitive objects.
 // /*  @docs:
-//     @nav: Frontend
-//     @chapter: Utils
+//     @nav: Frontend/Utils
 //     @title: Deep copy
 //     @desc: Perform a deep copy on any type, it does not support classes, only primitive objects.
 //  */

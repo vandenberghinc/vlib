@@ -11,6 +11,7 @@ import { ObjectUtils } from "../primitives/object.js";
 /**
  * The colors class serving as a container to manage ANSI color codes.
  * We use a seperate class for this so we can also expose ansi codes as static properties.
+ * @docs
  */
 export class Colors {
     // ---------------------------------------------------------
@@ -53,6 +54,7 @@ export class Colors {
 }
 /**
  * The color module.
+ * @docs
  */
 export var Color;
 (function (Color) {
@@ -63,50 +65,89 @@ export var Color;
     const env = typeof window !== 'undefined' && typeof window.document !== 'undefined' ? "html" : "ansi";
     // ---------------------------------------------------------
     // Color functions, wrapping a data argument in a color.
+    /** Create black colored text. */
     Color.black = (data) => `${Colors.black}${data}${Colors.end}`;
+    /** Create red colored text. */
     Color.red = (data) => `${Colors.red}${data}${Colors.end}`;
+    /** Create red+bold colored text. */
     Color.red_bold = (data) => `${Colors.red_bold}${data}${Colors.end}`;
+    /** Create green colored text. */
     Color.green = (data) => `${Colors.green}${data}${Colors.end}`;
+    /** Create green+bold colored text. */
     Color.green_bold = (data) => `${Colors.bold}${Colors.green}${data}${Colors.end}`;
+    /** Create yellow colored text. */
     Color.yellow = (data) => `${Colors.yellow}${data}${Colors.end}`;
+    /** Create yellow+bold colored text. */
     Color.yellow_bold = (data) => `${Colors.bold}${Colors.yellow}${data}${Colors.end}`;
+    /** Create blue colored text. */
     Color.blue = (data) => `${Colors.blue}${data}${Colors.end}`;
+    /** Create blue_b+ld colored text. */
     Color.blue_bold = (data) => `${Colors.bold}${Colors.blue}${data}${Colors.end}`;
+    /** Create magenta colored text. */
     Color.magenta = (data) => `${Colors.magenta}${data}${Colors.end}`;
+    /** Create magent+_bold colored text. */
     Color.magenta_bold = (data) => `${Colors.bold}${Colors.magenta}${data}${Colors.end}`;
+    /** Create cyan colored text. */
     Color.cyan = (data) => `${Colors.cyan}${data}${Colors.end}`;
+    /** Create cyan_b+ld colored text. */
     Color.cyan_bold = (data) => `${Colors.bold}${Colors.cyan}${data}${Colors.end}`;
+    /** Create light_gray colored text. */
     Color.light_gray = (data) => `${Colors.light_gray}${data}${Colors.end}`;
+    /** Create gray colored text. */
     Color.gray = (data) => `${Colors.gray}${data}${Colors.end}`;
+    /** Create bold colored text. */
     Color.bold = (data) => `${Colors.bold}${data}${Colors.end}`;
+    /** Create italic colored text. */
     Color.italic = (data) => `${Colors.italic}${data}${Colors.end}`;
+    /** Create end colored text. */
     Color.end = (data) => `${Colors.end}${data}${Colors.end}`;
+    /** Create purple colored text. */
     Color.purple = (data) => `${Colors.purple}${data}${Colors.end}`;
+    /** Create orange colored text. */
     Color.orange = (data) => `${Colors.orange}${data}${Colors.end}`;
+    /** Create background colored text. */
     Color.bg = {
+        /** Create black background colored text. */
         black: (data) => `${Colors.bg.black}${data}${Colors.end}`,
+        /** Create red background colored text. */
         red: (data) => `${Colors.bg.red}${data}${Colors.end}`,
+        /** Create green background colored text. */
         green: (data) => `${Colors.bg.green}${data}${Colors.end}`,
+        /** Create yellow background colored text. */
         yellow: (data) => `${Colors.bg.yellow}${data}${Colors.end}`,
+        /** Create blue background colored text. */
         blue: (data) => `${Colors.bg.blue}${data}${Colors.end}`,
+        /** Create magenta background colored text. */
         magenta: (data) => `${Colors.bg.magenta}${data}${Colors.end}`,
+        /** Create cyan background colored text. */
         cyan: (data) => `${Colors.bg.cyan}${data}${Colors.end}`,
+        /** Create white background colored text. */
         white: (data) => `${Colors.bg.white}${data}${Colors.end}`,
     };
+    /** Create bright background colored text. */
     Color.bright_bg = {
+        /** Create black bright background colored text. */
         black: (data) => `${Colors.bright_bg.black}${data}${Colors.end}`,
+        /** Create red bright background colored text. */
         red: (data) => `${Colors.bright_bg.red}${data}${Colors.end}`,
+        /** Create green bright background colored text. */
         green: (data) => `${Colors.bright_bg.green}${data}${Colors.end}`,
+        /** Create yellow bright background colored text. */
         yellow: (data) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
+        /** Create blue bright background colored text. */
         blue: (data) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
+        /** Create magenta bright background colored text. */
         magenta: (data) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
+        /** Create cyan bright background colored text. */
         cyan: (data) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
+        /** Create white bright background colored text. */
         white: (data) => `${Colors.bright_bg.white}${data}${Colors.end}`,
     };
     // ---------------------------------------------------------
     // Functions.
     /**
      * Enable ANSI color codes by resetting all color attributes.
+     * @docs
      */
     function enable() {
         if (env === "ansi") {
@@ -187,6 +228,7 @@ export var Color;
     Color.enable = enable;
     /**
      * Disable ANSI color codes by clearing all color attributes.
+     * @docs
      */
     function disable() {
         Colors.black = "";
@@ -231,6 +273,8 @@ export var Color;
      *
      * @param data - The string containing ANSI codes.
      * @returns The cleaned string without colors.
+     *
+     * @docs
      */
     function strip(data) {
         if (env === "ansi") {
@@ -244,12 +288,20 @@ export var Color;
     }
     Color.strip = strip;
     const ansi_sgr_regex = /\x1B\[[0-9;]*m/g; // PCRE-style pre-compiled regex
-    /** Colorize a json object. */
+    /**
+     * Colorize a json object.
+     *
+     * @docs
+     */
     function json(value, opts) {
         return ObjectUtils.stringify(value, { ...(opts ?? {}), colored: true, json: true });
     }
     Color.json = json;
-    /** Colorize an object. */
+    /**
+     * Colorize an object.
+     *
+     * @docs
+     */
     function object(value, opts) {
         return ObjectUtils.stringify(value, { ...(opts ?? {}), colored: true, json: false });
     }
@@ -332,6 +384,8 @@ export var Color;
      *
      * @param data - The string containing ANSI codes.
      * @returns The HTML string with color spans.
+     *
+     * @docs
      */
     function to_html(data) {
         if (data.indexOf('\x1B') === -1)

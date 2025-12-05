@@ -33,7 +33,21 @@ module.exports = __toCommonJS(stdin_exports);
 var https = __toESM(require("https"));
 var http2 = __toESM(require("http2"));
 var zlib = __toESM(require("zlib"));
-async function request({ host, port = null, endpoint = "/", method = "GET", headers = {}, params = void 0, compress = false, decompress = true, query = true, json = false, reject_unauthorized = true, delay = null, http2: use_http2 = false }) {
+async function request({
+  host,
+  port = null,
+  endpoint = "/",
+  method = "GET",
+  headers = {},
+  params = void 0,
+  compress = false,
+  // decompress = true,
+  query = true,
+  json = false,
+  reject_unauthorized = true,
+  delay = null,
+  http2: use_http2 = false
+}) {
   return new Promise((resolve) => {
     method = method.toUpperCase();
     if (query && method === "GET" && params != null) {

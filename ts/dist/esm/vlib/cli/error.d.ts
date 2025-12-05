@@ -4,6 +4,9 @@
  */
 /**
  * An CLI error.
+ *
+ * @nav CLI/Errors
+ * @docs
  */
 export declare class CLIError extends globalThis.Error {
     /** The error name. */

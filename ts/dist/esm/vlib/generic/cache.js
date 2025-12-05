@@ -7,6 +7,8 @@
  * Supports both count-based and memory-based size limiting with automatic eviction of oldest entries.
  * @template K - The type of cache keys
  * @template V - The type of cache values
+ *
+ * @docs
  */
 export class Cache {
     // Attributes.
@@ -20,7 +22,10 @@ export class Cache {
     cleanup_interval_id;
     cached_memory_size;
     memory_size_dirty;
-    // Constructor.
+    /**
+     * Construct a new cache instance.
+     * @docs
+     */
     constructor({ max_size = undefined, max_bytes = undefined, ttl = undefined, cleanup_interval = 60_000, optimize_memory_checks = true, } = {}) {
         // Checks.
         if (max_size !== undefined && max_size <= 0)
@@ -220,6 +225,7 @@ export class Cache {
     /**
      * Get the current size of the cache.
      * @returns The number of items in the cache
+     * @docs
      */
     get size() {
         return this.map.size;
@@ -228,6 +234,7 @@ export class Cache {
      * Check if a key exists in the cache.
      * @param key - The key to check
      * @returns True if the key exists, false otherwise
+     * @docs
      */
     has(key) {
         return this.map.has(key);
@@ -237,6 +244,7 @@ export class Cache {
      * @param key - The key to set
      * @param value - The value to store
      * @returns The cache instance for method chaining
+     * @docs
      */
     set(key, value) {
         this.map.set(key, value);
@@ -250,6 +258,7 @@ export class Cache {
      * Retrieve a value from the cache by key.
      * @param key - The key to retrieve
      * @returns The stored value or undefined if not found
+     * @docs
      */
     get(key) {
         if (this.map.has(key)) {
@@ -264,6 +273,7 @@ export class Cache {
      * Remove an item from the cache.
      * @param key - The key to remove
      * @returns True if an element was removed, false otherwise
+     * @docs
      */
     delete(key) {
         const deletion_result = this.map.delete(key);
@@ -276,6 +286,7 @@ export class Cache {
     /**
      * Remove all items from the cache.
      * @returns The cache instance for method chaining
+     * @docs
      */
     clear() {
         this.map.clear();
@@ -287,6 +298,7 @@ export class Cache {
     /**
      * Stop the cache, clear all items and stop the cleanup interval.
      * @returns The cache instance for method chaining
+     * @docs
      */
     stop() {
         this.clear();
@@ -296,6 +308,7 @@ export class Cache {
     /**
      * Get an iterator of all cache keys.
      * @returns An iterator of all keys in the cache
+     * @docs
      */
     keys() {
         return this.map.keys();
@@ -303,6 +316,7 @@ export class Cache {
     /**
      * Get an iterator of all cache values.
      * @returns An iterator of all values in the cache
+     * @docs
      */
     values() {
         return this.map.values();
@@ -311,6 +325,7 @@ export class Cache {
      * Get the current estimated memory usage of the cache.
      * When `optimize_memory_checks` is true, this may return a cached value.
      * @returns The memory usage in bytes
+     * @docs
      */
     get_memory_usage() {
         if (this.optimize_memory_checks && !this.memory_size_dirty) {

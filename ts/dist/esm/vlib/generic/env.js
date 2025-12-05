@@ -7,6 +7,9 @@ import { config } from 'dotenv';
 import * as Scheme from '../schema/index.m.node.js';
 /**
  * Manages loading, caching, and syncing of environment variables.
+ *
+ * @nav System
+ * @docs
  */
 export var Env;
 (function (Env) {
@@ -30,6 +33,7 @@ export var Env;
      * @param path - The path to the .env file.
      * @param opts.refresh - By default cached files are not reloaded, refresh can be set to true to force a reload.
      * @param opts.override - When true, existing environment variables will be overridden by those in the .env file.
+     * @docs
      */
     function from(path, opts = { refresh: false, override: true }) {
         // Check cache.
@@ -61,11 +65,17 @@ export var Env;
     Env.import_file = from; // Alias for compatibility
     /**
      * Check whether an environment variable is set.
+     * @docs
      */
     function has(name) {
         return Env.map.has(name);
     }
     Env.has = has;
+    /**
+     * Retrieve an environment variable.
+     * Optionally with type parsing, and error throwing on undefined.
+     * @docs
+     */
     function get(...args) {
         // Init arguments.
         let name;
@@ -127,6 +137,7 @@ export var Env;
     Env.get = get;
     /**
      * Set or update an environment variable (both in cache and in process.env).
+     * @docs
      */
     function set(name, value) {
         const string_value = typeof value === 'string' ? value : JSON.stringify(value);

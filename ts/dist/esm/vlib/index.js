@@ -2,6 +2,8 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+// FIX // check in docs if this is nested under `Date`
+// FIX // search and replace all @funcs in docstrings.
 // Set stacktrace limit.
 Error.stackTraceLimit = 25;
 /**
@@ -15,7 +17,7 @@ export * as CLI from "./cli/index.m.js";
 export * as cli from "./cli/index.m.js";
 /** sockets/ */
 export * from "./sockets/request.js";
-export * from "./sockets/websocket.deprecated.js";
+export * from "./sockets/websocket.js";
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** generic/ */

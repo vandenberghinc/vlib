@@ -9,14 +9,16 @@ import * as sysinfo from 'sysinfo';
 import { System as WebSystem } from './web.js';
 
 /**
+ * {System Node.js}
  * The system module.
- * @chapter System
- * @parse false
+ * @nav System
  * @docs
  */
 export namespace System {
 
-    /** Aliases. */
+    /**
+     * Aliases.
+     */
     export const format_bytes = WebSystem.format_bytes;
     
     /**

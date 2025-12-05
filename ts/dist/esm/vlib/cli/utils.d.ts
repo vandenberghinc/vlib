@@ -12,6 +12,9 @@ import { Path } from "../generic/path.js";
  * @param cwd The current working directory to start searching from. Defaults to the current process working directory. Note that this may also be the actual file path to the config instead of the working directory.
  * @param up The number of levels to go up from the current working directory to search for the configuration file. Defaults to 1.
  * @returns The file path that was found, or `undefined` when none of the file path patterns exist.
+ *
+ * @nav CLI/Utils
+ * @docs
  */
 export declare function find_config_path({ name, extension, cwd, up, }: {
     name: string | string[];

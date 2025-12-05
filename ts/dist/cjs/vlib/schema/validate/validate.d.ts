@@ -126,6 +126,7 @@ declare namespace State {
  * A pre-constructed entry-like object containing all information
  * required to validate data. This class is used to avoid the overhead
  * of creating a new `Validator` object each time.
+ * @nav Schema
  * @docs
  */
 export declare class Validator<Data extends ObjOrArr, Throw extends boolean = false, const Sch extends Entries.Opts = Entries.Opts, const Val extends ValueEntries.Opts = ValueEntries.Opts, const Tpl extends TupleEntries.Opts = TupleEntries.Opts> {
@@ -169,12 +170,14 @@ export declare namespace Validator {
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export declare function validate_entry<Throw extends boolean = false>(value: any, entry: Entry | ValidatorEntry<any, any>, state?: State.Opts<Throw>): ValidateResponse<any, any>;
 /**
  * Perform validation on a single entry inside an object or array.
  * @returns A validation response containing the validated data or an error.
+ * @nav Schema
  * @docs
  */
 export declare function validate_object<const T extends ObjOrArr>(data: T, 
@@ -187,6 +190,7 @@ entry: Entry | ValidatorEntry<any, any>,
 state?: State.Opts): ValidateResponse<any, any>;
 /**
  * Perform validation a given array or object.
+ * @nav Schema
  * @docs
  */
 export declare function validate<Data extends ObjOrArr, Throw extends boolean = false, const Sch extends Entries.Opts = Entries.Opts, const Val extends ValueEntries.Opts = ValueEntries.Opts, const Tpl extends TupleEntries.Opts = TupleEntries.Opts>(data: Data, val: 
@@ -203,6 +207,7 @@ Validator<Data, Throw, Sch, Val, Tpl>
  * The object response form of validation operations.
  * Note that this is not always the returned type of the `validate()` function,
  * but rather the type of the response object when `throw` is `false`.
+ * @nav Schema
  * @docs
  */
 export type ValidateResponse<Mode extends "error" | "success", Output extends object = object> = Mode extends "error" ? {
@@ -227,6 +232,7 @@ export declare namespace ValidateResponse {
 }
 /**
  * A user facing error class for user-facing errors from `validate` when `throw` is `true`.
+ * @nav Schema/Errors
  * @docs
  */
 export declare class ValidateError<O extends object> extends globalThis.Error {
@@ -235,6 +241,7 @@ export declare class ValidateError<O extends object> extends globalThis.Error {
 }
 /**
  * Error thrown when the user incorrectly utilizes the schema module.
+ * @nav Schema/Errors
  * @docs
  */
 export declare class InvalidUsageError extends globalThis.Error {

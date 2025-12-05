@@ -6,14 +6,16 @@ import * as os from 'os';
 import * as sysinfo from 'sysinfo';
 import { System as WebSystem } from './web.js';
 /**
+ * {System Node.js}
  * The system module.
- * @chapter System
- * @parse false
+ * @nav System
  * @docs
  */
 export var System;
 (function (System) {
-    /** Aliases. */
+    /**
+     * Aliases.
+     */
     System.format_bytes = WebSystem.format_bytes;
     /**
      * Get the system CPU usage.

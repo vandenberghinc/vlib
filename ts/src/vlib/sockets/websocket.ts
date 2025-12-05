@@ -11,15 +11,24 @@ import * as https from 'https';
 import * as bson from 'bson';
 import * as url from 'url';
 // import * as WebSocket from 'ws';
-import WebSocket, { WebSocketServer } from 'ws';
-globalThis.WebSocket = WebSocket;
+import WebSocketLib, { WebSocketServer } from 'ws';
+globalThis.WebSocket = WebSocketLib;
 
-export namespace websocket {
+
+/**
+ * The websocket utility
+ * @experimental
+ * @docs
+ */
+export namespace WebSocket {
 
     // ------------------------------------------------------
     // Types
 
-    export interface WebSocketMessage {
+    /**
+     * A formatted websocket message.
+     */
+    export interface Message {
         command?: string;
         id?: string;
         data?: any;
@@ -34,51 +43,62 @@ export namespace websocket {
         interval: number;
     }
 
-    type Stream = WebSocket & {
+    type Stream = WebSocketLib & {
         id: string;
         connected: boolean;
-        messages: Map<string, WebSocketMessage>;
+        messages: Map<string, Message>;
     }
 
-    export interface ServerOptions {
-        ip?: string | null;
-        port?: number;
-        https?: https.ServerOptions | null;
-        rate_limit?: RateLimitConfig | false;
-        api_keys?: string[];
-        server?: http.Server | https.Server | null;
+    /**
+     * Nested types for the {@link Server} class.
+     */
+    export namespace Server {
+
+        /** Constructor options for the {@link Server} class. */
+        export interface Opts {
+            ip?: string | null;
+            port?: number;
+            https?: https.ServerOptions | null;
+            rate_limit?: RateLimitConfig | false;
+            api_keys?: string[];
+            server?: http.Server | https.Server | null;
+        }
+
+        /**
+         * The server event callback.
+         * @docs
+         */
+        export type Event = "listen" | "open" | "close" | "error"
+
+        /**
+         * The server event callback.
+         * - listen: (address) => {}
+         * - open: (stream) => {}
+         * - close: (stream, code, reason) => {}
+         * - error: (stream, error) => {}
+         * @docs
+         */
+        export type EventCallback<E extends Event> = 
+            E extends "listen" ? (address: string) => void :
+            E extends "open" ? (stream: Stream) => void :
+            E extends "close" ? (stream: Stream, code: number, reason: string) => void :
+            E extends "error" ? (stream: Stream, error: Error) => void :
+            never;
     }
 
-    /*  @docs:
-        @chapter: Sockets
-        @title: Websocket Server
-        @descr: Websocket server object.
-        @param:
-            @name: ip
-            @descr: The optional server listen ip.
-        @param:
-            @name: port
-            @descr: The server listen post.
-        @param:
-            @name: https
-            @descr: The https settings for `https.createServer`. When left undefined a http server will be used.
-        @param:
-            @name: rate_limit
-            @descr: Rate limit settings for the http upgrade request. Rate limiting can be disabled by defining `rate_limit` as `false`.
-            @type: object, boolean
-            @attr:
-                @name: limit
-                @descr: The limit on the amount of requests in the specified interval.
-            @attr:
-                @name: interval
-                @descr: The rate limit reset interval in seconds.
-        @param:
-            @name: api_keys
-            @descr: An array of allowed client api keys. When no api keys are defined, no authentication will be required.
-        @param:
-            @name: server
-            @descr: Optionally pass the server initialized server object directly. Either an http or https server object.
-    */
+    /**
+     * Websocket server object.
+     * @experimental
+     * @param ip The optional server listen ip.
+     * @param port The server listen post.
+     * @param https The https settings for `https.createServer`. When left undefined a http server will be used.
+     * @param rate_limit Rate limit settings for the http upgrade request. Rate limiting can be disabled by defining `rate_limit` as `false`.
+     * @param rate_limit.limit The limit on the amount of requests in the specified interval.
+     * @param rate_limit.interval The rate limit reset interval in seconds.
+     * @param api_keys An array of allowed client api keys. When no api keys are defined, no authentication will be required.
+     * @param server Optionally pass the server initialized server object directly. Either an http or https server object.
+     * @docs
+     */
     export class Server {
         private port: number;
         private ip?: string | null;
@@ -96,6 +116,10 @@ export namespace websocket {
         }>;
         private _clear_caches_interval?: NodeJS.Timeout;
 
+        /**
+         * Construct a new server instance.
+         * @docs
+         */
         constructor({
             ip = null,
             port = 8000,
@@ -106,7 +130,7 @@ export namespace websocket {
             },
             api_keys = [],
             server = null,
-        }: ServerOptions) {
+        }: Server.Opts) {
             this.port = port;
             this.ip = ip;
             this.https_config = https;
@@ -120,11 +144,11 @@ export namespace websocket {
             this.rate_limit_cache = new Map();
         }
 
-        /*  @docs:
-         *  @title: Start
-         *  @descr: Start the server.
+        /**
+         * Start the server.
+         * @docs
          */
-        public start(): void {
+        start(): void {
             if (this.server === null) {
                 if (this.https_config != null) {
                     this.server = https.createServer(this.https_config, (req, res) => {
@@ -190,7 +214,7 @@ export namespace websocket {
                 this.streams.set(stream.id, stream);
                 stream.messages = new Map();
 
-                stream.on('message', (message: WebSocket.Data) => {
+                stream.on('message', (message: WebSocketLib.Data) => {
                     try {
                         let parsed = bson.deserialize(message as Buffer);
                         if (typeof parsed === 'object') {
@@ -249,9 +273,9 @@ export namespace websocket {
             );
         }
 
-        /*  @docs:
-         *  @title: Stop
-         *  @descr: Stop the server.
+        /**
+         * Stop the server.
+         * @docs
          */
         public async stop(): Promise<void> {
             return new Promise((resolve) => {
@@ -274,36 +298,30 @@ export namespace websocket {
             });
         }
 
-        /*  @docs:
-         *  @title: Event callback
-         *  @descr:
-         *      Set an event callback.
-         *
-         *      The following callbacks can be set:
-         *      - listen: (address) => {}
-         *      - open: (stream) => {}
-         *      - close: (stream, code, reason) => {}
-         *      - error: (stream, error) => {}
+        /**
+         * Set an event callback.
+         * @docs
          */
-        public on_event(event: string, callback: Function): void {
+        public on_event<E extends Server.Event>(event: E, callback: Server.EventCallback<E>): void {
             this.events.set(event, callback);
         }
 
-        /*  @docs:
-         *  @title: Command
-         *  @descr:
-         *      Set a command callback.
-         *      Will be called when an incoming message has the specified command type.
-         *      The function can take the following arguments: `(stream, id, data) => {}`.
+        /**
+         * Set a command callback.
+         * Will be called when an incoming message has the specified command type.
+         * The function can take the following arguments: `(stream, id, data) => {}`.
+         * 
+         * @docs
          */
         public on(command: string, callback: (stream: Stream, id: string, data: any) => void): void {
             this.commands.set(command, callback);
         }
-
-        /*  @docs:
-         *  @title: Await response
-         *  @descr: Wait for a message to be filled out.
-         *  @note: This only works when there is a single response message, any more response messages will be lost.
+        
+        /**
+         * Wait for a message to be filled out.
+         * @note This only works when there is a single response message, any more response messages will be lost.
+         * 
+         * @docs
          */
         public async await_response({
             stream,
@@ -315,7 +333,7 @@ export namespace websocket {
             id: string;
             timeout?: number;
             step?: number;
-        }): Promise<WebSocketMessage> {
+        }): Promise<Message> {
             let elapsed = 0;
             return new Promise((resolve, reject) => {
                 const wait = () => {
@@ -338,6 +356,7 @@ export namespace websocket {
 
         /**
          * Send a command and expect a single response.
+         * @docs
          */
         public async request({
             stream,
@@ -353,13 +372,14 @@ export namespace websocket {
             data: any;
             /** The timeout in milliseconds. */
             timeout?: number;
-        }): Promise<WebSocketMessage> {
+        }): Promise<Message> {
             const id = await this.send_helper({ stream, command, data });
             return await this.await_response({ stream, id, timeout });
         }
 
         /**
          * Send a response to a received command.
+         * @docs
          */
         public async respond({
             stream,
@@ -429,33 +449,51 @@ export namespace websocket {
         attempts?: number;
     }
 
-    /*  @docs:
-        @chapter: Sockets
-        @experimental: true
-        @title: Websocket Client
-        @descr: The websocket client object.
-        @param:
-            @name: address
-            @descr: The address of the server you want to connect to.
-        @param:
-            @name: api_key
-            @descr: The api_key needed by the connection to start the handshake.
-        @param:
-            @name: reconnect
-            @descr: Enable automatic reconnection. Define `false` to disable automatic reconnection, use `true` to enable automatic reconnection with the default options. Or define custom options.
-            @type: boolean, object
-            @attribute:
-                @name: interval
-                @descr: Interval for reconnect attempt
-                @type: type
-            @attribute:
-                @name: max_interval
-                @descr: The maximum interval for a reconnect attempt. The interval gradually backs off on consequent connection failures.
-                @type: type
-        @param:
-            @name: ping
-            @descr: Enable automatic pings to keep the connection alive. Can be either a boolean, or a milliseconds number as the auto ping interval. Default interval is `30000`.
-            @type: boolen, number
+    /**
+     * Nested types for the {@link Client} class.
+     */
+    export namespace Client {
+
+        /** Constructor options for the {@link Client} class. */
+        export interface Opts {
+            url?: string;
+            api_key?: string | null;
+            reconnect?: ReconnectConfig | boolean;
+            ping?: boolean | number;
+        }
+
+        /**
+         * The server event callback.
+         * @docs
+         */
+        export type Event = "open" | "error" | "reconnect" | "close"
+
+        /**
+         * The server event callback.
+         * - open: (stream) => {}
+         * - error: (stream, error) => {}
+         * - reconnect: (stream, code, reason) => {}
+         * - close: (stream, code, reason) => {}
+         * @docs
+         */
+        export type EventCallback<E extends Event> =
+            E extends "open" ? (stream: Stream) => void :
+            E extends "error" ? (stream: Stream, error: Error) => void :
+            E extends "reconnect" ? (stream: Stream, code: number, reason: string) => void :
+            E extends "close" ? (stream: Stream, code: number, reason: string) => void :
+            never;
+    }
+
+    /**
+     * The websocket client object.
+     * @experimental
+     * @param address The address of the server you want to connect to.
+     * @param api_key The api_key needed by the connection to start the handshake.
+     * @param reconnect Enable automatic reconnection. Define `false` to disable automatic reconnection, use `true` to enable automatic reconnection with the default options. Or define custom options.
+     * @param reconnect.interval Interval for reconnect attempt
+     * @param reconnect.max_interval maximum interval for a reconnect attempt. The interval gradually backs off on consequent connection failures.
+     * @param ping Enable automatic pings to keep the connection alive. Can be either a boolean, or a milliseconds number as the auto ping interval. Default interval is `30000`.
+     * @docs
     */
     export class Client {
         private url: string;
@@ -464,12 +502,16 @@ export namespace websocket {
         private auto_ping: number | false;
         private commands: Map<string, (id: string, data: any) => void>;
         private events: Map<string, Function>;
-        private messages: Map<string, WebSocketMessage>;
-        private stream?: WebSocket;
+        private messages: Map<string, Message>;
+        private stream?: WebSocketLib;
         private connected: boolean = false;
         private try_reconnect: boolean = true;
         private auto_ping_timeout?: NodeJS.Timeout;
 
+        /**
+         * Construct a new client instance.
+         * @docs
+         */
         constructor(
             {
                 url = "wss://localhost:8080",
@@ -479,12 +521,7 @@ export namespace websocket {
                     max_interval: 30000,
                 },
                 ping = true,
-            }: {
-                url?: string;
-                api_key?: string | null;
-                reconnect?: ReconnectConfig | boolean;
-                ping?: boolean | number;
-            }
+            }: Client.Opts
         ) {
             this.url = url;
             this.api_key = api_key;
@@ -517,16 +554,16 @@ export namespace websocket {
             this.messages = new Map();
         }
 
-        /*  @docs:
-         *  @title: Connect
-         *  @descr: Connect the websocket
+        /**
+         * Connect the websocket
+         * @docs
          */
         public async connect(): Promise<void> {
             return new Promise((resolve) => {
                 this.try_reconnect = true;
 
                 // Create stream
-                this.stream = new WebSocket(
+                this.stream = new WebSocketLib(
                     this.api_key ? `${this.url}?api_key=${this.api_key}` : this.url
                 );
 
@@ -543,7 +580,7 @@ export namespace websocket {
                 });
 
                 // On message
-                this.stream.on('message', (message: WebSocket.Data) => {
+                this.stream.on('message', (message: WebSocketLib.Data) => {
                     try {
                         let parsed = bson.deserialize(message as Buffer);
 
@@ -608,11 +645,10 @@ export namespace websocket {
             });
         }
 
-        /*  @docs:
-         *  @title: Disconnect
-         *  @descr:
-         *      Disconnect from the server.
-         *      Automatically calls `close()`.
+        /**
+         * Disconnect from the server.
+         * Automatically calls `close()`.
+         * @docs
          */
         public disconnect(): void {
             this.try_reconnect = false;
@@ -622,34 +658,27 @@ export namespace websocket {
             }
         }
 
-        /*  @docs:
-         *  @title: Event callback
-         *  @descr:
-         *      Set an event callback.
-         *      The following callbacks can be set:
-         *      - open: (stream) => {}
-         *      - error: (stream, error) => {}
-         *      - reconnect: (stream, code, reason) => {}
-         *      - close: (stream, code, reason) => {}
+        /**
+         * Set an event callback.
+         * @docs
          */
-        public on_event(event: string, callback: Function): void {
+        public on_event<E extends Client.Event>(event: E, callback: Client.EventCallback<E>): void {
             this.events.set(event, callback);
         }
 
-        /*  @docs:
-         *  @title: Command callback
-         *  @descr:
-         *      Set a command callback.
-         *      Will be called when an incoming message has the specified command type.
-         *      The function can take the following arguments: `(stream, id, data) => {}`.
+        /** 
+         * Set a command callback.
+         * Will be called when an incoming message has the specified command type.
+         * The function can take the following arguments: `(stream, id, data) => {}`.
+         * @docs
          */
         public on(command: string, callback: (id: string, data: any) => void): void {
             this.commands.set(command, callback);
         }
 
-        /*  @docs:
-         *  @title: Send raw
-         *  @descr: Send raw data through the websocket.
+        /** 
+         * Send raw data through the websocket.
+         * @docs
          */
         public async send_raw(data: string | Buffer): Promise<void> {
             await this.await_till_connected();
@@ -657,7 +686,10 @@ export namespace websocket {
         }
 
         
-        /** Await till the stream is connected. */
+        /**
+         * Await till the stream is connected.
+         * @docs
+         */
         public async await_till_connected(timeout: number = 60000): Promise<void> {
             if (this.connected) { return; }
             const step = 10;
@@ -679,10 +711,10 @@ export namespace websocket {
             });
         }
 
-        /*  @docs:
-         *  @title: Await response
-         *  @descr: Wait for a message to be filled out.
-         *  @note: This only works when there is a single response message, any more response messages will be lost.
+        /** 
+         * Wait for a message to be filled out.
+         * @note This only works when there is a single response message, any more response messages will be lost.
+         * @docs
          */
         public async await_response({
             id,
@@ -692,7 +724,7 @@ export namespace websocket {
             id: string;
             timeout?: number;
             step?: number;
-        }): Promise<WebSocketMessage> {
+        }): Promise<Message> {
             let elapsed = 0;
             return new Promise((resolve, reject) => {
                 const wait = () => {
@@ -715,6 +747,7 @@ export namespace websocket {
 
         /**
          * Send a command and expect a single response.
+         * @docs
          */
         public async request({
             command,
@@ -724,13 +757,14 @@ export namespace websocket {
             command: string;
             data: any;
             timeout?: number;
-        }): Promise<WebSocketMessage> {
+        }): Promise<Message> {
             const id = await this.send_helper({ command, data });
             return await this.await_response({ id, timeout });
         }
 
         /**
          * Send a response to a received command.
+         * @docs
          */
         public async respond({
             id,
@@ -771,3 +805,4 @@ export namespace websocket {
     }
 
 }
+export { WebSocket as websocket } // snake_case compatibility

@@ -24,6 +24,8 @@ module.exports = __toCommonJS(stdin_exports);
 class Clipboard {
   /**
    * Copy data to the system clipboard (browser).
+   *
+   * @docs
    */
   static async set(data) {
     const text = typeof data === "string" ? data : JSON.stringify(data);
@@ -34,6 +36,8 @@ class Clipboard {
   }
   /**
    * Read data from the system clipboard (browser).
+   *
+   * @docs
    */
   static async get(opts) {
     if (!navigator.clipboard?.readText) {

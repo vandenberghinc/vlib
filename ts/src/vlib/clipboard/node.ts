@@ -7,7 +7,11 @@
 import { ClipboardReadOptions } from './types.js';
 
 /**
- * NodeClipboard: native clipboard operations for Node.js environments.
+ * {Node.js}
+ * Native clipboard operations for Node.js environments.
+ * 
+ * @nav Clipboard
+ * @docs
  */
 export namespace Clipboard {
     let node_clipboard: typeof import('clipboardy').default | null = null;
@@ -15,6 +19,8 @@ export namespace Clipboard {
 
     /**
      * Initialize high-performance library or fallback for Node.js.
+     * 
+     * @internal
      */
     async function init(): Promise<void> {
         if (node_clipboard !== null || exec_fn !== null) return;
@@ -40,6 +46,8 @@ export namespace Clipboard {
 
     /**
      * Copy data to the system clipboard (Node.js).
+     * 
+     * @docs
      */
     export async function set(data: any): Promise<void> {
         const text = typeof data === 'string' ? data : JSON.stringify(data);
@@ -59,6 +67,8 @@ export namespace Clipboard {
 
     /**
      * Read data from the system clipboard (Node.js).
+     * 
+     * @docs
      */
     export async function get<T = any>(opts?: ClipboardReadOptions): Promise<T> {
         await init();

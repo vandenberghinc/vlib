@@ -7,6 +7,9 @@
  * Returnss a line of `char` repeated to fill the terminal width.
  * @param char The character to repeat.
  * @param default_size The default size to use if the terminal width cannot be determined.
+ * 
+ * @nav Logging
+ * @docs
  */
 export function terminal_divider(char = '=', default_size = 80) {
     // Determine width: prefer .columns, then .getWindowSize(), then default 80

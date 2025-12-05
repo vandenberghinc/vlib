@@ -87,23 +87,39 @@ var Color;
   Color2.purple = (data) => `${Colors.purple}${data}${Colors.end}`;
   Color2.orange = (data) => `${Colors.orange}${data}${Colors.end}`;
   Color2.bg = {
+    /** Create black background colored text. */
     black: (data) => `${Colors.bg.black}${data}${Colors.end}`,
+    /** Create red background colored text. */
     red: (data) => `${Colors.bg.red}${data}${Colors.end}`,
+    /** Create green background colored text. */
     green: (data) => `${Colors.bg.green}${data}${Colors.end}`,
+    /** Create yellow background colored text. */
     yellow: (data) => `${Colors.bg.yellow}${data}${Colors.end}`,
+    /** Create blue background colored text. */
     blue: (data) => `${Colors.bg.blue}${data}${Colors.end}`,
+    /** Create magenta background colored text. */
     magenta: (data) => `${Colors.bg.magenta}${data}${Colors.end}`,
+    /** Create cyan background colored text. */
     cyan: (data) => `${Colors.bg.cyan}${data}${Colors.end}`,
+    /** Create white background colored text. */
     white: (data) => `${Colors.bg.white}${data}${Colors.end}`
   };
   Color2.bright_bg = {
+    /** Create black bright background colored text. */
     black: (data) => `${Colors.bright_bg.black}${data}${Colors.end}`,
+    /** Create red bright background colored text. */
     red: (data) => `${Colors.bright_bg.red}${data}${Colors.end}`,
+    /** Create green bright background colored text. */
     green: (data) => `${Colors.bright_bg.green}${data}${Colors.end}`,
+    /** Create yellow bright background colored text. */
     yellow: (data) => `${Colors.bright_bg.yellow}${data}${Colors.end}`,
+    /** Create blue bright background colored text. */
     blue: (data) => `${Colors.bright_bg.blue}${data}${Colors.end}`,
+    /** Create magenta bright background colored text. */
     magenta: (data) => `${Colors.bright_bg.magenta}${data}${Colors.end}`,
+    /** Create cyan bright background colored text. */
     cyan: (data) => `${Colors.bright_bg.cyan}${data}${Colors.end}`,
+    /** Create white bright background colored text. */
     white: (data) => `${Colors.bright_bg.white}${data}${Colors.end}`
   };
   function enable() {

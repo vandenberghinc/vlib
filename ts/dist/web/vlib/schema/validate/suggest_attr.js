@@ -45,6 +45,8 @@ function levenshtein_distance(a, b) {
  * @returns
  *      The *best match* when its similarity is **≥ similarity_threshold**;
  *      otherwise `undefined`.
+ *
+ * @internal
  */
 export function suggest_attribute(incorrect_name, valid_names, similarity_threshold = 0.7) {
     // Normalise to lower case for case-insensitive comparison.

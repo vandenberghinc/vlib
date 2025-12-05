@@ -21,6 +21,8 @@
  *   }
  * }
  * ```
+ *
+ * @docs
  */
 export declare class Mutex {
     /** Queue of waiting lockers' resolve callbacks */
@@ -38,24 +40,35 @@ export declare class Mutex {
      *   mutex.unlock();
      * }
      * ```
+     *
+     * @docs
      */
     lock(): Promise<void>;
     /**
      * Release the mutex, allowing the next waiter (if any) to acquire it.
+     *
+     * @docs
      */
     unlock(): void;
     /**
      * Execute the callback under exclusive lock, auto-releasing on completion.
      * @param callback Function to run while holding the mutex.
+     * @docs
      */
     run_exclusive<T>(callback: () => Promise<T> | T): Promise<T>;
     /**
      * Check if the mutex is currently locked.
+     * @docs
      */
     locked(): boolean;
+    /**
+     * Check if the mutex is currently locked.
+     * @docs
+     */
     is_locked(): boolean;
     /**
      * Number of queued waiters.
+     * @docs
      */
     waiting(): number;
 }

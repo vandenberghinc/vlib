@@ -124,6 +124,8 @@ const entry_to_json_schema = (entry, state) => {
  * Generate a draft-07 JSON-Schema for a validator definition.
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
+ * @nav Schema
+ * @docs
  */
 export function create_json_schema_sync(opts) {
     // Check schema, just to be sure, since Validator also calls this, which has an optional `schema` field.
@@ -172,6 +174,8 @@ export function create_json_schema_sync(opts) {
  * Therefore, for this function the {@link CreateJSONSchemaOpts.output} option is required.
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
+ * @nav Schema
+ * @docs
  */
 export async function create_json_schema(opts) {
     // Create the schema.
