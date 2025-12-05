@@ -26,7 +26,6 @@ export class Base {
     /**
      * The index number for the `index` variant.
      * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
-     * @attr
      */
     index;
     /**
