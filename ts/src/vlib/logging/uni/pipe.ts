@@ -608,13 +608,15 @@ export namespace Pipe {
         indent?: number;
         /** The console type, warning or error. */
         type?: "warning" | "error";
+        /** The start indent level. */
+        start_indent?: number;
     }): string {
 
         // Setup.
         const max_depth = options?.depth ?? 5;
         const current_depth = options?.current_depth ?? 0;
         const indent_size = options?.indent ?? 2;
-        const start_indent = current_depth * indent_size;
+        const start_indent = ((options?.start_indent ?? 0) * indent_size) + (current_depth * indent_size);
         const attrs_indent = " ".repeat(start_indent + indent_size);
         const colored = options?.colored ?? false;
 
@@ -657,6 +659,7 @@ export namespace Pipe {
                         current_depth: current_depth + 1,
                         indent: indent_size,
                         type: options?.type,
+                        start_indent: options?.start_indent,
                     });
                 }
             } else {

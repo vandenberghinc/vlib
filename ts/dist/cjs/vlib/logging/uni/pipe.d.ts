@@ -234,6 +234,8 @@ export declare namespace Pipe {
         indent?: number;
         /** The console type, warning or error. */
         type?: "warning" | "error";
+        /** The start indent level. */
+        start_indent?: number;
     }): string;
 }
 export declare const pipe: Pipe<boolean, boolean>;

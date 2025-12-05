@@ -97,7 +97,6 @@ export abstract class Base<
     /**
      * The index number for the `index` variant.
      * When defined this ignores the `exclude_dash` option, since it is only used for non-index arguments.
-     * @attr
      */
     index: Mode.If<M, "main", never, Variant.If<V, "index", number, never>>;
 
