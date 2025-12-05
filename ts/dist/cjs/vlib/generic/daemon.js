@@ -56,6 +56,10 @@ class Daemon {
   errors;
   path;
   proc;
+  /**
+   * Construct a new daemon instance.
+   * @docs
+   */
   constructor({ name, user, group = void 0, command, args = [], cwd = void 0, env = {}, description, auto_restart, logs = void 0, errors = void 0 }) {
     if (typeof name !== "string") {
       throw new Error(`Parameter "name" must be a defined value of type "string", not "${typeof name}".`);

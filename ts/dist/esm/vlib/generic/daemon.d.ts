@@ -54,7 +54,7 @@ export declare namespace Daemon {
     }
 }
 /**
- * Daemon type.
+ * The system daemon class.
  *
  * @nav System
  * @docs
@@ -75,6 +75,10 @@ export declare class Daemon {
     private errors?;
     private path;
     private proc;
+    /**
+     * Construct a new daemon instance.
+     * @docs
+     */
     constructor({ name, user, group, command, args, cwd, env, description, auto_restart, logs, errors, }: Daemon.Opts);
     /**
      * Build the platform-specific daemon configuration content.

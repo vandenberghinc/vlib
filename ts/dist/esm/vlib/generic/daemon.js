@@ -18,7 +18,7 @@ export class DaemonError extends Error {
     }
 }
 /**
- * Daemon type.
+ * The system daemon class.
  *
  * @nav System
  * @docs
@@ -39,6 +39,10 @@ export class Daemon {
     errors;
     path;
     proc;
+    /**
+     * Construct a new daemon instance.
+     * @docs
+     */
     constructor({ name, user, group = undefined, command, args = [], cwd = undefined, env = {}, description, auto_restart, logs = undefined, errors = undefined, }) {
         // Check args.
         if (typeof name !== "string") {

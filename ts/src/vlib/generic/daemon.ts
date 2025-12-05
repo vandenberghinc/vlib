@@ -68,7 +68,7 @@ export namespace Daemon {
 }
 
 /** 
- * Daemon type.
+ * The system daemon class.
  * 
  * @nav System
  * @docs
@@ -90,6 +90,10 @@ export class Daemon {
     private path: Path;
     private proc: Proc;
 
+    /**
+     * Construct a new daemon instance.
+     * @docs
+     */
     constructor(
         {
             name,
