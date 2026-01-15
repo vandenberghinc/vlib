@@ -3,7 +3,7 @@
         "project": "vlib",
         "version": "1.1.1",
         "entry": [
-            "ts/vlib/src/index.ts"
+            "ts/src/vlib/index.ts"
         ],
         "exclude": [
             "**/*.js"
@@ -13,7 +13,7 @@
         "project": "vlib-web",
         "version": "1.1.1",
         "entry": [
-            "ts/vlib/src/index.web.ts"
+            "ts/src/vlib/index.web.ts"
         ],
         "exclude": [
             "**/*.js"
@@ -23,7 +23,7 @@
         "project": "vtest",
         "version": "1.1.1",
         "entry": [
-            "ts/vtest/src/index.ts"
+            "ts/src/vtest/index.ts"
         ],
         "exclude": [
             "**/*.js"
@@ -33,7 +33,7 @@
         "project": "vrepo",
         "version": "1.1.1",
         "entry": [
-            "ts/vrepo/src/index.ts"
+            "ts/src/vrepo/index.ts"
         ],
         "exclude": [
             "**/*.js"
@@ -43,7 +43,7 @@
         "project": "vts",
         "version": "1.1.1",
         "entry": [
-            "ts/vts/src/index.ts"
+            "ts/src/vts/index.ts"
         ],
         "exclude": [
             "**/*.js"
