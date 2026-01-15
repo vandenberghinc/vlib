@@ -5,8 +5,8 @@
  * Note that this file only supports nodejs environments.
  */
 import { Path } from "../../generic/path.js";
-import { InvalidUsageError } from "../index.m.web.js";
 import { NoValue, ValidatorEntries } from "./validator_entries.js";
+import { InvalidUsageError } from "../../errors/errors.js";
 // ---------------------------------------------------------------
 // Internal helpers.
 /**

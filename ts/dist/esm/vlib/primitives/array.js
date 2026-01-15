@@ -245,6 +245,9 @@ export var ArrayUtils;
     ArrayUtils.deep_eq = deep_eq;
     /**
      * Divide into nested arrays.
+     * @param arr The array to divide.
+     * @param x The number of nested arrays to create.
+     * @returns The nested arrays.
      * @docs
      */
     function divide(arr, x) {

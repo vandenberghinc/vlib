@@ -65,8 +65,6 @@ export class FilePipe extends Pipe {
      * @param path      The Path instance for the log or error file.
      * @param type Either 'log' or 'error' indicating which stream property to refresh.
      * @param max_bytes Maximum allowed file size in bytes.
-     *
-     * @docs
      */
     async truncate_log_file(path, type, max_bytes) {
         const file_path = path.str();
@@ -110,7 +108,6 @@ export class FilePipe extends Pipe {
     static log_file_pattern = /^\(date=(.*?)\)\s*(?:\(loc=(.*?)\))?\s*(?:\(thread=(.*?)\))?\s*(?:\(level=(.*?)\))?\s*(?:\(type=(.*?)\))?:\s*/;
     /**
      * Parse a log file.
-     * @docs
      */
     async _parse_log_file(path) {
         if (!path.exists()) {

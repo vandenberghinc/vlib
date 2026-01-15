@@ -13,6 +13,7 @@ import { Cast } from "./cast.js";
 import { value_type } from "./throw.js";
 import { MutableObject} from "../../types/literals.js";
 import { suggest_attribute } from "./suggest_attr.js";
+import { InvalidUsageError } from "@vlib/errors/errors.js";
 
 /** Base object or array. */
 type ObjOrArr = any[] | Record<string, any>
@@ -1089,20 +1090,6 @@ export class ValidateError<O extends object> extends globalThis.Error {
         this.message = info.error;
     }
 }
-
-/**
- * Error thrown when the user incorrectly utilizes the schema module.
- * @nav Schema/Errors
- * @docs
- */
-export class InvalidUsageError extends globalThis.Error {
-    constructor(msg: string) {
-        super(msg);
-        this.name = "InvalidUsageError";
-        this.message = msg;
-    }
-}
-
 
 
 

@@ -1204,6 +1204,9 @@ export class Iterator<Src extends Source = Source> {
                 this.stop();
             } else {
                 this.pos = idx + close_pattern.length;
+                this.is_comment = undefined; // reset comment state, since we found the closer.
+                                             // and the init() -> set_defaults() will match by three
+                                             // separate times increasing a counter, which is thus not triggered.
                 this.init();
             }
         }

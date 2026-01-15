@@ -9,6 +9,7 @@ import { SourceLoc } from './source_loc.js';
 import { ActiveLogLevel, Directive } from './directives.js';
 import { Spinners } from "./spinners.js";
 import { ObjectUtils } from "../../primitives/object.js";
+import { format_error } from "../../errors/format.js";
 /** * Whether the current environment is a web browser. */
 const web_env = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 /**
@@ -133,7 +134,7 @@ export class Pipe {
             else if (item instanceof Error) {
                 if (web_env) {
                     // Without color for web env.
-                    const add = Pipe.format_error(item, {
+                    const add = format_error(item, {
                         colored: false,
                         depth: 5,
                         type: log_mode === Directive.warn ? "warning" : "error",
@@ -142,7 +143,7 @@ export class Pipe {
                 }
                 else {
                     // With color.
-                    let add = Pipe.format_error(item, {
+                    let add = format_error(item, {
                         colored: true,
                         depth: 5,
                         type: log_mode === Directive.warn ? "warning" : "error",
@@ -150,7 +151,7 @@ export class Pipe {
                     this.push_arg(msg, undefined, add);
                     // Without color.
                     if (file_msg != null) {
-                        const add = Pipe.format_error(item, {
+                        const add = format_error(item, {
                             colored: false,
                             depth: 5,
                             type: log_mode === Directive.warn ? "warning" : "error",
@@ -472,84 +473,6 @@ export class Pipe {
         this.log(Directive.warn, new SourceLoc(1), level, ...errs);
     }
 }
-(function (Pipe) {
-    /**
-     * Format an error into a string with optional colors and depth.
-     * Similar to node utils, but for node and browser.
-     */
-    function format_error(err, options) {
-        // Setup.
-        const max_depth = options?.depth ?? 5;
-        const current_depth = options?.current_depth ?? 0;
-        const indent_size = options?.indent ?? 2;
-        const start_indent = ((options?.start_indent ?? 0) * indent_size) + (current_depth * indent_size);
-        const attrs_indent = " ".repeat(start_indent + indent_size);
-        const colored = options?.colored ?? false;
-        // Format stack.
-        let data = err.stack ?? `${err.name}: ${err.message}`;
-        data = data.split("\n").map((line, index) => {
-            if (index === 0)
-                return line;
-            line = line.trimStart();
-            if (colored && line.startsWith("at ")) {
-                line = Colors.gray + line + Colors.end;
-            }
-            return attrs_indent + line;
-        }).join("\n");
-        if (colored) {
-            if (options?.type === "warning") {
-                data = data.replaceAll(/^Error: /gm, `${Color.yellow("Error")}: `);
-            }
-            else {
-                data = data.replaceAll(/^Error: /gm, `${Color.red("Error")}: `);
-            }
-        }
-        // Format attributes.
-        let keys = Object.keys(err);
-        if (err.cause != null)
-            keys.push("cause");
-        let index = -1;
-        for (const key of keys) {
-            ++index;
-            if (key === "name" || key === "message" || key === "stack" || (key === "cause" && index < keys.length - 1 // ensure cause is only processed at the end.
-            )) {
-                continue;
-            }
-            const raw_value = err[key];
-            let value;
-            if (raw_value instanceof Error) {
-                if (current_depth + 1 >= max_depth) {
-                    value = "[Truncated Error]";
-                }
-                else {
-                    value = Pipe.format_error(raw_value, {
-                        colored,
-                        depth: max_depth,
-                        current_depth: current_depth + 1,
-                        indent: indent_size,
-                        type: options?.type,
-                        start_indent: options?.start_indent,
-                    });
-                }
-            }
-            else {
-                value = ObjectUtils.stringify(raw_value, {
-                    indent: indent_size,
-                    start_indent: current_depth + 1,
-                    max_depth: max_depth === -1 ? undefined : max_depth,
-                    max_length: 10_000,
-                    json: false,
-                    colored,
-                });
-            }
-            data += `\n${attrs_indent}${key}: ${value}`;
-            // data += `\n${attrs_indent}${colored ? Color.cyan(key) : key}: ${value}`;
-        }
-        ;
-        return data;
-    }
-    Pipe.format_error = format_error;
-})(Pipe || (Pipe = {}));
 // Default pipe instance.
 export const pipe = new Pipe({
     log_level: 0,

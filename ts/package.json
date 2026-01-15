@@ -88,6 +88,7 @@
         "ignore": "^5.3.2",
         "js-beautify": "^1.15.4",
         "json5": "^2.2.3",
+        "jsonc-parser": "^3.3.1",
         "minimatch": "^10.0.1",
         "node-stream-zip": "^1.15.0",
         "sysinfo": "^0.0.1",

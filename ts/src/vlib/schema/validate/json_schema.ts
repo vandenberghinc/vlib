@@ -7,8 +7,9 @@
 
 import { Path } from "@vlib/generic/path.js";
 import { RequiredKeys } from "@vlib/types/types.js";
-import { Entries, InvalidUsageError } from "../index.m.web.js";
+import { Entries } from "../index.m.web.js";
 import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.js";
+import { InvalidUsageError } from "@vlib/errors/errors.js";
 
 // ---------------------------------------------------------------
 // Internal helpers.

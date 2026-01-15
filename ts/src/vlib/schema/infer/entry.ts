@@ -99,7 +99,6 @@ export type Entry<
      * @note this attribute is ignored when the input object is not an array.
      */
     tuple?: (T | DerivedEntry<Derived>)[];
-    // tuple?: TupleEntries.Opts;
     /**
      * A list of valid values for the attribute.
      */
@@ -174,8 +173,9 @@ export type Entry<
     /** Alias for `default`. */
     readonly def?: V | ((obj: any) => V);
 };
-export type DerivedEntry<D extends Entry.Derived = {}> = Entry<CastType, Entry.Type.Cast<CastType>, ObjOrArr, D>;
 
+/** A type alias for `Entry` but only with the `Derived` generic parameter. */
+export type DerivedEntry<D extends Entry.Derived = {}> = Entry<CastType, Entry.Type.Cast<CastType>, ObjOrArr, D>;
 
 /** Types for the `Entry` namespace. */
 export namespace Entry {
@@ -215,6 +215,9 @@ export namespace Entry {
         P extends ObjOrArr = ObjOrArr, // parent object for callbacks.
         D extends Entry.Derived = {},
     > = T | Entry<T, V, P, D>
+
+    /** A type alias for the `Opts` type but only with the `Derived` generic parameter. */
+    export type DerivedOpts<D extends Entry.Derived = {}> = CastType | DerivedEntry<D>
 
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     export type Infer<T extends Opts> = InferEntry<T>;

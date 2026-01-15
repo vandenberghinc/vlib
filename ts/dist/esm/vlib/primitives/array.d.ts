@@ -94,6 +94,9 @@ export declare namespace ArrayUtils {
     function deep_eq(x: any[], y: any[]): boolean;
     /**
      * Divide into nested arrays.
+     * @param arr The array to divide.
+     * @param x The number of nested arrays to create.
+     * @returns The nested arrays.
      * @docs
      */
     function divide<T>(arr: T[], x: number): T[][];

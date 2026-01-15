@@ -11,6 +11,7 @@ import { ObjectUtils } from "../primitives/object.js";
 /**
  * The colors class serving as a container to manage ANSI color codes.
  * We use a seperate class for this so we can also expose ansi codes as static properties.
+ * @nav System
  * @docs
  */
 export class Colors {
@@ -54,6 +55,7 @@ export class Colors {
 }
 /**
  * The color module.
+ * @nav System
  * @docs
  */
 export var Color;

@@ -7,7 +7,7 @@ import { ClipboardReadOptions } from './types.js';
  * {Node.js}
  * Native clipboard operations for Node.js environments.
  *
- * @nav Clipboard
+ * @nav System/Clipboard
  * @docs
  */
 export declare namespace Clipboard {

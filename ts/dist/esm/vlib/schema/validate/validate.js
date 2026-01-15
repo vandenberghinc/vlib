@@ -9,6 +9,7 @@ import { NoValue, ValidatorEntries, ValidatorEntry } from "./validator_entries.j
 import { Cast } from "./cast.js";
 import { value_type } from "./throw.js";
 import { suggest_attribute } from "./suggest_attr.js";
+import { InvalidUsageError } from "../../errors/errors.js";
 export var Schemas;
 (function (Schemas) {
     /**
@@ -661,18 +662,6 @@ export class ValidateError extends globalThis.Error {
         this.info = info;
         this.name = "ValidateError";
         this.message = info.error;
-    }
-}
-/**
- * Error thrown when the user incorrectly utilizes the schema module.
- * @nav Schema/Errors
- * @docs
- */
-export class InvalidUsageError extends globalThis.Error {
-    constructor(msg) {
-        super(msg);
-        this.name = "InvalidUsageError";
-        this.message = msg;
     }
 }
 // ------------------------------------------------------------

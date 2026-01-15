@@ -8,6 +8,7 @@ import WebSocketLib from 'ws';
 /**
  * The websocket utility
  * @experimental
+ * @nav Sockets
  * @docs
  */
 export declare namespace WebSocket {

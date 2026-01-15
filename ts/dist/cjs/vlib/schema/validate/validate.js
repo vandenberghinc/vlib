@@ -17,7 +17,6 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 __export(stdin_exports, {
-  InvalidUsageError: () => InvalidUsageError,
   Schemas: () => Schemas,
   ValidateError: () => ValidateError,
   Validator: () => Validator,
@@ -31,6 +30,7 @@ var import_validator_entries = require("./validator_entries.js");
 var import_cast = require("./cast.js");
 var import_throw = require("./throw.js");
 var import_suggest_attr = require("./suggest_attr.js");
+var import_errors = require("../../errors/errors.js");
 var Schemas;
 (function(Schemas2) {
   Schemas2.is_fast = (value) => {
@@ -195,7 +195,7 @@ function check_type(state, object, obj_key, entry, type) {
       return true;
     }
     default:
-      throw new InvalidUsageError(`Unsupported type '${type.toString()}'.`);
+      throw new import_errors.InvalidUsageError(`Unsupported type '${type.toString()}'.`);
   }
 }
 function validate_entry_helper(state, entry, key, object) {
@@ -260,7 +260,7 @@ function validate_entry_helper(state, entry, key, object) {
         return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is empty.`, `Invalid value, may not be empty.`);
       }
     } else {
-      throw new InvalidUsageError(`Invalid type '${entry.type}' for entry '${state.parent}${key}'. Expected a string or function.`);
+      throw new import_errors.InvalidUsageError(`Invalid type '${entry.type}' for entry '${state.parent}${key}'. Expected a string or function.`);
     }
   }
   if (object[key] === void 0 && entry.default !== import_validator_entries.NoValue) {
@@ -328,7 +328,7 @@ function validate_object_helper(data, entry, state) {
         }
       }
     } else
-      throw new InvalidUsageError(`Invalid scheme for array, expected tuple_schema or value_schema, got: ${entry}`);
+      throw new import_errors.InvalidUsageError(`Invalid scheme for array, expected tuple_schema or value_schema, got: ${entry}`);
   } else if (data != null && typeof data === "object" && !Array.isArray(data)) {
     if (entry.value_schema != null) {
       const keys = Object.keys(data);
@@ -395,7 +395,7 @@ function validate_object_helper(data, entry, state) {
         }
       }
     } else
-      throw new InvalidUsageError(`Invalid scheme for object, expected scheme or value_scheme, got: ${entry}`);
+      throw new import_errors.InvalidUsageError(`Invalid scheme for object, expected scheme or value_scheme, got: ${entry}`);
   }
   return { data };
 }
@@ -482,7 +482,7 @@ function validate(data, val) {
   } else if (val && typeof val === "object") {
     return new Validator(val).validate(data);
   } else
-    throw new InvalidUsageError(`Invalid entry type, expected Validator, got: ${val.toString()}`);
+    throw new import_errors.InvalidUsageError(`Invalid entry type, expected Validator, got: ${val.toString()}`);
 }
 class ValidateError extends globalThis.Error {
   info;
@@ -493,16 +493,8 @@ class ValidateError extends globalThis.Error {
     this.message = info.error;
   }
 }
-class InvalidUsageError extends globalThis.Error {
-  constructor(msg) {
-    super(msg);
-    this.name = "InvalidUsageError";
-    this.message = msg;
-  }
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  InvalidUsageError,
   Schemas,
   ValidateError,
   Validator,

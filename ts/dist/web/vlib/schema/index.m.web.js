@@ -10,5 +10,5 @@ export { Entry, } from "./infer/entry.js";
 // validate/
 export * from "./validate/cast.js";
 export * from "./validate/throw.js";
-export { validate, validate_entry, validate_object, Validator, InvalidUsageError, ValidateError, } from "./validate/validate.js";
+export { validate, validate_entry, validate_object, Validator, ValidateError, } from "./validate/validate.js";
 //# sourceMappingURL=index.m.web.js.map

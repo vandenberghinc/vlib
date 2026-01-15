@@ -57,6 +57,7 @@ __reExport(stdin_exports, require("./search/index.uni.js"), module.exports);
 var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.web.js"), module.exports);
+__reExport(stdin_exports, require("./errors/index.uni.js"), module.exports);
 Error.stackTraceLimit = 25;
 const version = "1.6.35";
 const print = (...args) => import_index_m_web2.log.raw(0, ...args);
@@ -83,5 +84,6 @@ const warning = warn;
   ...require("./primitives/index.uni.js"),
   ...require("./generic/index.web.js"),
   ...require("./search/index.uni.js"),
-  ...require("./clipboard/index.web.js")
+  ...require("./clipboard/index.web.js"),
+  ...require("./errors/index.uni.js")
 });

@@ -6,7 +6,7 @@
  * {Browser}
  * Native clipboard operations for browser environments.
  *
- * @nav Clipboard
+ * @nav System/Clipboard
  * @docs
  */
 export class Clipboard {

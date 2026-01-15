@@ -159,6 +159,7 @@ export declare class GlobPatternList {
      * @docs
      */
     match(value: string): boolean;
+    matches(value: string): boolean;
     test(value: string): boolean;
     some(value: string): boolean;
     /**

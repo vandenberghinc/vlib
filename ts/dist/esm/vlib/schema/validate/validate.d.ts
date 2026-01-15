@@ -239,12 +239,4 @@ export declare class ValidateError<O extends object> extends globalThis.Error {
     info: ValidateResponse<"error", O>;
     constructor(info: ValidateResponse<"error", O>);
 }
-/**
- * Error thrown when the user incorrectly utilizes the schema module.
- * @nav Schema/Errors
- * @docs
- */
-export declare class InvalidUsageError extends globalThis.Error {
-    constructor(msg: string);
-}
 export {};

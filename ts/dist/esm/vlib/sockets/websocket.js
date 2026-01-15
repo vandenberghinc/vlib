@@ -14,6 +14,7 @@ globalThis.WebSocket = WebSocketLib;
 /**
  * The websocket utility
  * @experimental
+ * @nav Sockets
  * @docs
  */
 export var WebSocket;

@@ -5,6 +5,7 @@
 /**
  * Error thrown for daemon-related failures.
  *
+ * @nav System
  * @docs
  */
 export declare class DaemonError extends Error {

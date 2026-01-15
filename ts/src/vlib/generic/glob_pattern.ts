@@ -316,7 +316,11 @@ export class GlobPatternList {
      * @docs
      */
     match(value: string): boolean {
+        if (this.items.length === 0) return false;
         return this.items.some(p => typeof p === "string" ? p === value : p.test(value));
+    }
+    matches(value: string): boolean {
+        return this.match(value);
     }
     test(value: string): boolean {
         return this.match(value);

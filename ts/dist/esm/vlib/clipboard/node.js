@@ -6,7 +6,7 @@
  * {Node.js}
  * Native clipboard operations for Node.js environments.
  *
- * @nav Clipboard
+ * @nav System/Clipboard
  * @docs
  */
 export var Clipboard;

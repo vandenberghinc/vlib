@@ -30,6 +30,18 @@ var NumberUtils;
     return Math.floor(Math.random() * (y - x + 1)) + x;
   }
   NumberUtils2.random = random;
+  function round(value, decimals = 0) {
+    if (!Number.isFinite(value))
+      return value;
+    if (!Number.isFinite(decimals) || decimals === 0) {
+      return value === 0 ? 0 : value > 0 ? Math.floor(value + 0.5) : Math.ceil(value - 0.5);
+    }
+    const factor = Math.pow(10, decimals);
+    const shifted = value * factor;
+    const rounded = shifted === 0 ? 0 : shifted > 0 ? Math.floor(shifted + 0.5) : Math.ceil(shifted - 0.5);
+    return rounded / factor;
+  }
+  NumberUtils2.round = round;
 })(NumberUtils || (NumberUtils = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

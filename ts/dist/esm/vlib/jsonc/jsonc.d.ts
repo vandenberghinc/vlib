@@ -2,6 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+import { type FormattingOptions } from 'jsonc-parser';
 import { Path } from '../generic/path.js';
 /**
  * JSONC - A parser for json5 syntax with comments.
@@ -57,12 +58,22 @@ export declare namespace JSONC {
      */
     function save_sync(path: string | Path, obj: Record<string, any>): void;
     /**
-     * Inserts a JSON object into a JSONC file while preserving comments and formatting.
-     * @param file_content - The original JSONC file content including comments and formatting.
-     * @param obj - The object to insert into the file content.
-     *
-     * @docs
-     */
-    function insert_into_file(file_content: string, obj: Record<string, any>): string;
+ * Merge a JSON object into an existing JSONC document string, treating `obj`
+ * as the canonical root object and preserving comments where possible.
+ *
+ * Semantics (root-level and nested):
+ *   - Properties present in `obj` are created or overwritten in the file
+ *   - Properties missing from `obj` but present in the file are deleted
+ *   - Arrays are replaced wholesale (no element-level diffing)
+ *
+ * If the existing document cannot be parsed as an object, the entire content
+ * is replaced with `obj` while still using jsonc-parser for formatting.
+ *
+ * @param file_content Existing JSONC text (e.g. a VS Code or project config).
+ * @param obj Canonical JSON object to apply to the document.
+ * @param formatting_overrides Optional formatting overrides for jsonc-parser.
+ * @returns Updated JSONC text that can be written back to disk.
+ */
+    function insert_into_file(file_content: string, obj: Record<string, any>, formatting_overrides?: Partial<FormattingOptions>): string;
 }
 export { JSONC as jsonc };

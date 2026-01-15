@@ -818,6 +818,7 @@ class Iterator {
         this.stop();
       } else {
         this.pos = idx + close_pattern.length;
+        this.is_comment = void 0;
         this.init();
       }
     }

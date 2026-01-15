@@ -7,13 +7,6 @@ import { diffLines } from 'diff';
 import { Color } from "../../vlib/index.js";
 /**
  * Detect and log the difference between cached data and new data strings.
- *
- * @param new_data The new data string to compare against the old data.
- * @param old The cached data string to compare against the new data.
- * @param prefix An optional prefix to add to the log messages. When a number is provided, it will be used to create an indent string of that many spaces.
- * @param trim Whether to trim data lines where no edits have been made. Default is true.
- * @param trim_keep The number of lines to keep when trimming unchanged lines. Default is 3.
- *
  */
 export function compute_diff({ new: new_data, old, prefix = "", trim = true, trim_keep = 3 }) {
     if (typeof prefix === 'number') {
@@ -52,7 +45,8 @@ export function compute_diff({ new: new_data, old, prefix = "", trim = true, tri
     const plus_str = Color.green_bold('+');
     const minus_str = Color.red_bold('-');
     let line_nr = 0;
-    diffs.forEach((part, index) => {
+    for (let index = 0; index < diffs.length; ++index) {
+        const part = diffs[index];
         // Line prefix.
         const line_prefix = (part.added
             ? plus_str
@@ -62,7 +56,9 @@ export function compute_diff({ new: new_data, old, prefix = "", trim = true, tri
         let local_line_nr = part.removed ? line_nr : undefined;
         // Dump lines.
         let last_dots = false;
-        diff_lines[index].walk((line, i, arr) => {
+        const iter_diff_lines = diff_lines[index];
+        for (let line_index = 0; index < iter_diff_lines.length; ++index) {
+            const line = iter_diff_lines[line_index];
             if (local_line_nr != null) {
                 ++local_line_nr;
             }
@@ -70,22 +66,24 @@ export function compute_diff({ new: new_data, old, prefix = "", trim = true, tri
                 ++line_nr;
             }
             // skip the final empty split after the last newline
-            if (i === arr.length - 1 && line === '')
-                return;
+            if (line_index === iter_diff_lines.length - 1 && line === '')
+                continue;
             // skip no edit lines.
-            if (trim && !part.added && !part.removed && !(i < trim_keep || i >= arr.length - trim_keep)) {
-                if (!last_dots && (i === trim_keep || i === arr.length - trim_keep - 1)) {
+            if (trim && !part.added && !part.removed && !(line_index < trim_keep || line_index >= iter_diff_lines.length - trim_keep)) {
+                if (!last_dots && (line_index === trim_keep || line_index === iter_diff_lines.length - trim_keep - 1)) {
                     dumped_lines.push(`${whitespace_prefix} ${String().padEnd(max_line_nr_length, ' ')} | ${line_prefix} ${Color.italic("... unchanged ...")}`);
                     last_dots = true;
                 }
-                return;
+                continue;
             }
             // dump line.
             dumped_lines.push(`${whitespace_prefix} ${String(local_line_nr != null ? local_line_nr : line_nr).padEnd(max_line_nr_length, ' ')} | ${line_prefix} ${line}`);
             last_dots = false;
-        });
+        }
+        ;
         --line_nr;
-    });
+    }
+    ;
     return { status: "diff", changes: diffs, diff: dumped_lines.join('\n') };
 }
 //# sourceMappingURL=compute_diff.js.map

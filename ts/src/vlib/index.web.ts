@@ -45,3 +45,6 @@ export * as code from "./code/index.m.uni.js"
 
 /** clipboard/ */
 export * from "./clipboard/index.web.js"
+
+/** errors/ */
+export * from "./errors/index.uni.js"

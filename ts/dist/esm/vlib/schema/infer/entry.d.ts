@@ -143,6 +143,7 @@ Derived extends Entry.Derived = {}> = (Derived extends Entry.Derived ? Derived :
     /** Alias for `default`. */
     readonly def?: V | ((obj: any) => V);
 };
+/** A type alias for `Entry` but only with the `Derived` generic parameter. */
 export type DerivedEntry<D extends Entry.Derived = {}> = Entry<CastType, Entry.Type.Cast<CastType>, ObjOrArr, D>;
 /** Types for the `Entry` namespace. */
 export declare namespace Entry {
@@ -165,6 +166,8 @@ export declare namespace Entry {
     V extends Entry.Type.Cast<T> = Entry.Type.Cast<T>, // value of entry
     P extends ObjOrArr = ObjOrArr, // parent object for callbacks.
     D extends Entry.Derived = {}> = T | Entry<T, V, P, D>;
+    /** A type alias for the `Opts` type but only with the `Derived` generic parameter. */
+    type DerivedOpts<D extends Entry.Derived = {}> = CastType | DerivedEntry<D>;
     /** Extract the value‐type for a normal (named) Scheme.Opts object */
     type Infer<T extends Opts> = InferEntry<T>;
     /** Cast an `Opts` type to an `Entry`. */

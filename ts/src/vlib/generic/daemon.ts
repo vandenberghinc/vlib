@@ -14,6 +14,7 @@ const is_root = os.userInfo().uid === 0;
 /**
  * Error thrown for daemon-related failures.
  * 
+ * @nav System
  * @docs
  */
 export class DaemonError extends Error {

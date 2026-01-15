@@ -8,6 +8,7 @@
 // infer/
 export {
     Entry,
+    DerivedEntry,
     Entries,
     ValueEntries,
     TupleEntries,
@@ -24,7 +25,6 @@ export {
     validate_entry,
     validate_object,
     Validator,
-    InvalidUsageError,
     ValidateError,
     ValidateResponse,
 } from "./validate/validate.js"

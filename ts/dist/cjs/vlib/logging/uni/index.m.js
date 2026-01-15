@@ -21,6 +21,7 @@ __reExport(stdin_exports, require("./source_loc.js"), module.exports);
 __reExport(stdin_exports, require("./logger.js"), module.exports);
 __reExport(stdin_exports, require("./spinner.js"), module.exports);
 __reExport(stdin_exports, require("./loader.js"), module.exports);
+__reExport(stdin_exports, require("../../errors/format.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ...require("./debug.js"),
@@ -29,5 +30,6 @@ __reExport(stdin_exports, require("./loader.js"), module.exports);
   ...require("./source_loc.js"),
   ...require("./logger.js"),
   ...require("./spinner.js"),
-  ...require("./loader.js")
+  ...require("./loader.js"),
+  ...require("../../errors/format.js")
 });

@@ -54,30 +54,35 @@ function compute_diff({ new: new_data, old, prefix = "", trim = true, trim_keep 
   const plus_str = import_vlib.Color.green_bold("+");
   const minus_str = import_vlib.Color.red_bold("-");
   let line_nr = 0;
-  diffs.forEach((part, index) => {
+  for (let index = 0; index < diffs.length; ++index) {
+    const part = diffs[index];
     const line_prefix = part.added ? plus_str : part.removed ? minus_str : " ";
     let local_line_nr = part.removed ? line_nr : void 0;
     let last_dots = false;
-    diff_lines[index].walk((line, i, arr) => {
+    const iter_diff_lines = diff_lines[index];
+    for (let line_index = 0; index < iter_diff_lines.length; ++index) {
+      const line = iter_diff_lines[line_index];
       if (local_line_nr != null) {
         ++local_line_nr;
       } else {
         ++line_nr;
       }
-      if (i === arr.length - 1 && line === "")
-        return;
-      if (trim && !part.added && !part.removed && !(i < trim_keep || i >= arr.length - trim_keep)) {
-        if (!last_dots && (i === trim_keep || i === arr.length - trim_keep - 1)) {
+      if (line_index === iter_diff_lines.length - 1 && line === "")
+        continue;
+      if (trim && !part.added && !part.removed && !(line_index < trim_keep || line_index >= iter_diff_lines.length - trim_keep)) {
+        if (!last_dots && (line_index === trim_keep || line_index === iter_diff_lines.length - trim_keep - 1)) {
           dumped_lines.push(`${whitespace_prefix} ${String().padEnd(max_line_nr_length, " ")} | ${line_prefix} ${import_vlib.Color.italic("... unchanged ...")}`);
           last_dots = true;
         }
-        return;
+        continue;
       }
       dumped_lines.push(`${whitespace_prefix} ${String(local_line_nr != null ? local_line_nr : line_nr).padEnd(max_line_nr_length, " ")} | ${line_prefix} ${line}`);
       last_dots = false;
-    });
+    }
+    ;
     --line_nr;
-  });
+  }
+  ;
   return { status: "diff", changes: diffs, diff: dumped_lines.join("\n") };
 }
 // Annotate the CommonJS export names for ESM import in node:

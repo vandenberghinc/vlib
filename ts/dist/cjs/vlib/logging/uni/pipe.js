@@ -27,6 +27,7 @@ var import_source_loc = require("./source_loc.js");
 var import_directives = require("./directives.js");
 var import_spinners = require("./spinners.js");
 var import_object = require("../../primitives/object.js");
+var import_format = require("../../errors/format.js");
 const web_env = typeof window !== "undefined" && typeof window.document !== "undefined";
 class Pipe {
   /**
@@ -116,21 +117,21 @@ class Pipe {
         this.push_arg(msg, file_msg, item.toString());
       } else if (item instanceof Error) {
         if (web_env) {
-          const add = Pipe.format_error(item, {
+          const add = (0, import_format.format_error)(item, {
             colored: false,
             depth: 5,
             type: log_mode === import_directives.Directive.warn ? "warning" : "error"
           });
           this.push_arg(msg, file_msg, add);
         } else {
-          let add = Pipe.format_error(item, {
+          let add = (0, import_format.format_error)(item, {
             colored: true,
             depth: 5,
             type: log_mode === import_directives.Directive.warn ? "warning" : "error"
           });
           this.push_arg(msg, void 0, add);
           if (file_msg != null) {
-            const add2 = Pipe.format_error(item, {
+            const add2 = (0, import_format.format_error)(item, {
               colored: false,
               depth: 5,
               type: log_mode === import_directives.Directive.warn ? "warning" : "error"
@@ -382,73 +383,6 @@ class Pipe {
     this.log(import_directives.Directive.warn, new import_source_loc.SourceLoc(1), level, ...errs);
   }
 }
-(function(Pipe2) {
-  function format_error(err, options) {
-    const max_depth = options?.depth ?? 5;
-    const current_depth = options?.current_depth ?? 0;
-    const indent_size = options?.indent ?? 2;
-    const start_indent = (options?.start_indent ?? 0) * indent_size + current_depth * indent_size;
-    const attrs_indent = " ".repeat(start_indent + indent_size);
-    const colored = options?.colored ?? false;
-    let data = err.stack ?? `${err.name}: ${err.message}`;
-    data = data.split("\n").map((line, index2) => {
-      if (index2 === 0)
-        return line;
-      line = line.trimStart();
-      if (colored && line.startsWith("at ")) {
-        line = import_colors.Colors.gray + line + import_colors.Colors.end;
-      }
-      return attrs_indent + line;
-    }).join("\n");
-    if (colored) {
-      if (options?.type === "warning") {
-        data = data.replaceAll(/^Error: /gm, `${import_colors.Color.yellow("Error")}: `);
-      } else {
-        data = data.replaceAll(/^Error: /gm, `${import_colors.Color.red("Error")}: `);
-      }
-    }
-    let keys = Object.keys(err);
-    if (err.cause != null)
-      keys.push("cause");
-    let index = -1;
-    for (const key of keys) {
-      ++index;
-      if (key === "name" || key === "message" || key === "stack" || key === "cause" && index < keys.length - 1) {
-        continue;
-      }
-      const raw_value = err[key];
-      let value;
-      if (raw_value instanceof Error) {
-        if (current_depth + 1 >= max_depth) {
-          value = "[Truncated Error]";
-        } else {
-          value = Pipe2.format_error(raw_value, {
-            colored,
-            depth: max_depth,
-            current_depth: current_depth + 1,
-            indent: indent_size,
-            type: options?.type,
-            start_indent: options?.start_indent
-          });
-        }
-      } else {
-        value = import_object.ObjectUtils.stringify(raw_value, {
-          indent: indent_size,
-          start_indent: current_depth + 1,
-          max_depth: max_depth === -1 ? void 0 : max_depth,
-          max_length: 1e4,
-          json: false,
-          colored
-        });
-      }
-      data += `
-${attrs_indent}${key}: ${value}`;
-    }
-    ;
-    return data;
-  }
-  Pipe2.format_error = format_error;
-})(Pipe || (Pipe = {}));
 const pipe = new Pipe({
   log_level: 0,
   out: console.log,

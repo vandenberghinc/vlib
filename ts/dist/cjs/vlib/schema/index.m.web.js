@@ -19,7 +19,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var stdin_exports = {};
 __export(stdin_exports, {
   Entry: () => import_entry.Entry,
-  InvalidUsageError: () => import_validate.InvalidUsageError,
   ValidateError: () => import_validate.ValidateError,
   Validator: () => import_validate.Validator,
   validate: () => import_validate.validate,
@@ -34,7 +33,6 @@ var import_validate = require("./validate/validate.js");
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Entry,
-  InvalidUsageError,
   ValidateError,
   Validator,
   validate,

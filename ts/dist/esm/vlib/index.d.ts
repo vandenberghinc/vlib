@@ -48,3 +48,7 @@ export * as code from "./code/index.m.uni.js";
 export * from "./clipboard/index.js";
 /** zip/ */
 export * from "./generic/zip.js";
+/** threading/ */
+export * from "./threading/index.node.js";
+/** errors/ */
+export * from "./errors/index.uni.js";

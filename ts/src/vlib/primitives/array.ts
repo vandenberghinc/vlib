@@ -231,6 +231,9 @@ export namespace ArrayUtils {
 
     /**
      * Divide into nested arrays.
+     * @param arr The array to divide.
+     * @param x The number of nested arrays to create.
+     * @returns The nested arrays.
      * @docs
      */
     export function divide<T>(arr: T[], x: number): T[][] {

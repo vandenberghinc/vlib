@@ -9,4 +9,5 @@ export * from "./source_loc.js";
 export * from "./logger.js";
 export * from "./spinner.js";
 export * from "./loader.js";
+export * from "../../errors/format.js";
 //# sourceMappingURL=index.m.js.map

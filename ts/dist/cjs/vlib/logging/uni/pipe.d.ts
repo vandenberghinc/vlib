@@ -219,23 +219,5 @@ export declare namespace Pipe {
         ignored?: false;
         log_mode: LogMode;
     };
-    /**
-     * Format an error into a string with optional colors and depth.
-     * Similar to node utils, but for node and browser.
-     */
-    function format_error(err: Error, options?: {
-        /** Color mode. */
-        colored?: boolean;
-        /** The max depth for objects and causes. */
-        depth?: number;
-        /** The current depth. */
-        current_depth?: number;
-        /** The indent size. */
-        indent?: number;
-        /** The console type, warning or error. */
-        type?: "warning" | "error";
-        /** The start indent level. */
-        start_indent?: number;
-    }): string;
 }
 export declare const pipe: Pipe<boolean, boolean>;
