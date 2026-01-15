@@ -50,80 +50,130 @@ var JSONC;
     return parse(p.load_sync({ type: "string" }));
   }
   JSONC2.load_sync = load_sync;
-  async function save(path, obj) {
-    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
-    if (!p.exists()) {
-      throw new Error(`File "${path}" does not exist.`);
-    }
-    const file = await p.load({ type: "string" });
-    await p.save(insert_into_file(file, obj));
-  }
-  JSONC2.save = save;
-  function save_sync(path, obj) {
-    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
-    if (!p.exists()) {
-      throw new Error(`File "${path}" does not exist.`);
-    }
-    const file = p.load_sync({ type: "string" });
-    p.save_sync(insert_into_file(file, obj));
-  }
-  JSONC2.save_sync = save_sync;
-  function insert_into_file(file_content, obj, formatting_overrides = {}) {
-    const is_plain_object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-    if (!is_plain_object(obj)) {
-      throw new TypeError('insert_into_file: "obj" must be a non-null plain object.');
-    }
-    let current_text = file_content.trim().length === 0 ? "{}\n" : file_content;
+  function insert_into_file(file_content, next_value, options = {}) {
+    const insert = options.update ?? false;
+    let current_text = file_content.trim().length === 0 ? "null\n" : file_content;
     const formatting_options = {
-      insertSpaces: true,
-      tabSize: 2,
-      eol: "\n",
-      ...formatting_overrides
+      tabSize: options.indent ?? 2,
+      insertSpaces: options.indent_using_spaces ?? true,
+      eol: options.eol ?? "\n",
+      insertFinalNewline: options.insert_final_eol ?? false,
+      keepLines: options.keep_lines ?? false
     };
     const modification_options = {
       formattingOptions: formatting_options
     };
     const apply_value_at_path = (path, value) => {
       const edits = (0, import_jsonc_parser.modify)(current_text, path, value, modification_options);
-      if (!edits || edits.length === 0) {
+      if (!edits || edits.length === 0)
         return;
-      }
       current_text = (0, import_jsonc_parser.applyEdits)(current_text, edits);
+    };
+    const is_plain_object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    const is_array = (value) => Array.isArray(value);
+    const same_container_type = (a, b) => is_plain_object(a) && is_plain_object(b) || is_array(a) && is_array(b);
+    const merge_object = (old_obj, new_obj, base_path) => {
+      if (!insert) {
+        for (const old_key of Object.keys(old_obj)) {
+          if (!(old_key in new_obj)) {
+            apply_value_at_path(base_path.concat(old_key), void 0);
+          }
+        }
+      }
+      for (const new_key of Object.keys(new_obj)) {
+        const child_path = base_path.concat(new_key);
+        const old_child = old_obj[new_key];
+        const new_child = new_obj[new_key];
+        if (is_plain_object(old_child) && is_plain_object(new_child)) {
+          merge_object(old_child, new_child, child_path);
+          continue;
+        }
+        if (is_array(old_child) && is_array(new_child)) {
+          merge_array(old_child, new_child, child_path);
+          continue;
+        }
+        apply_value_at_path(child_path, new_child);
+      }
+    };
+    const get_value_at_path = (root, path) => {
+      let cur = root;
+      for (const seg of path) {
+        if (cur == null)
+          return void 0;
+        cur = cur[seg];
+      }
+      return cur;
+    };
+    const reparse_current_text = () => (0, import_jsonc_parser.parse)(current_text, void 0, {
+      allowTrailingComma: true,
+      allowEmptyContent: true
+    });
+    const merge_array = (old_arr, new_arr, base_path) => {
+      for (let i = 0; i < new_arr.length; i++) {
+        const child_path = base_path.concat(i);
+        const old_child = i < old_arr.length ? old_arr[i] : void 0;
+        const new_child = new_arr[i];
+        if (is_plain_object(old_child) && is_plain_object(new_child)) {
+          merge_object(old_child, new_child, child_path);
+          continue;
+        }
+        if (is_array(old_child) && is_array(new_child)) {
+          merge_array(old_child, new_child, child_path);
+          continue;
+        }
+        apply_value_at_path(child_path, new_child);
+      }
+      if (old_arr.length > new_arr.length) {
+        const reparsed_root = reparse_current_text();
+        const current_arr = get_value_at_path(reparsed_root, base_path);
+        if (Array.isArray(current_arr)) {
+          apply_value_at_path(base_path, current_arr.slice(0, new_arr.length));
+        } else {
+          apply_value_at_path(base_path, new_arr);
+        }
+      } else if (old_arr.length < new_arr.length) {
+      }
     };
     const parsed_root = (0, import_jsonc_parser.parse)(current_text, void 0, {
       allowTrailingComma: true,
       allowEmptyContent: true
     });
-    if (!is_plain_object(parsed_root)) {
-      apply_value_at_path([], obj);
+    if (!same_container_type(parsed_root, next_value)) {
+      apply_value_at_path([], next_value);
       return current_text;
     }
-    const merge_full_object = (old_value, new_value, base_path) => {
-      const old_keys = Object.keys(old_value);
-      for (const key of old_keys) {
-        if (!(key in new_value)) {
-          const delete_path = base_path.concat(key);
-          apply_value_at_path(delete_path, void 0);
-        }
-      }
-      const new_keys = Object.keys(new_value);
-      for (const key of new_keys) {
-        const child_path = base_path.concat(key);
-        const old_child = old_value[key];
-        const new_child = new_value[key];
-        const old_is_plain = is_plain_object(old_child);
-        const new_is_plain = is_plain_object(new_child);
-        if (old_is_plain && new_is_plain) {
-          merge_full_object(old_child, new_child, child_path);
-        } else {
-          apply_value_at_path(child_path, new_child);
-        }
-      }
-    };
-    merge_full_object(parsed_root, obj, []);
+    if (is_plain_object(parsed_root) && is_plain_object(next_value)) {
+      merge_object(parsed_root, next_value, []);
+      return current_text;
+    }
+    if (is_array(parsed_root) && is_array(next_value)) {
+      merge_array(parsed_root, next_value, []);
+      return current_text;
+    }
+    apply_value_at_path([], next_value);
     return current_text;
   }
   JSONC2.insert_into_file = insert_into_file;
+  async function save(path, obj, options = {}) {
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
+    if (!p.exists()) {
+      throw new Error(`File "${path}" does not exist.`);
+    }
+    const file = await p.load({ type: "string" });
+    const updated_content = insert_into_file(file, obj, { ...options, update: false });
+    await p.save(updated_content);
+  }
+  JSONC2.save = save;
+  async function update(path, obj, options = {}) {
+    const p = path instanceof import_path.Path ? path : new import_path.Path(path);
+    if (!p.exists()) {
+      throw new Error(`File "${path}" does not exist.`);
+    }
+    const file = await p.load({ type: "string" });
+    const updated_content = insert_into_file(file, obj, { ...options, update: true });
+    await p.save(updated_content);
+  }
+  JSONC2.update = update;
 })(JSONC || (JSONC = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
