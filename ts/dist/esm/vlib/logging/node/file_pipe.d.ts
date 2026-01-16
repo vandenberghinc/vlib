@@ -21,7 +21,7 @@ export declare class FilePipe extends Pipe<false, true> {
     error_path?: Path;
     log_stream?: fs.WriteStream;
     err_stream?: fs.WriteStream;
-    max_mb?: number;
+    max_mb: number;
     thread: string;
     /**
      * The inherited `pipe` attribute is never used since this class overrides the `log` method, which is the only place where `pipe` is used.

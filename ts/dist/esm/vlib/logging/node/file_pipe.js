@@ -47,7 +47,7 @@ export class FilePipe extends Pipe {
         this.error_path = undefined;
         this.log_stream = undefined;
         this.err_stream = undefined;
-        this.max_mb = max_mb;
+        this.max_mb = max_mb ?? 100; // 100 MB default
         this.thread = cluster.worker ? cluster.worker.id.toString() : "master";
         // Assign paths.
         if (log_path || error_path) {
@@ -298,7 +298,14 @@ export class FilePipe extends Pipe {
                 if (this._write_count >= this._truncate_interval) {
                     this._write_count = 0;
                     this.truncate_log_file(stream_path, // Path instance (this.log_path or this.error_path)
-                    stream === this.log_stream ? 'log' : 'error', this.max_mb * 1024 * 1024).catch(console.error);
+                    stream === this.log_stream ? 'log' : 'error', this.max_mb * 1024 * 1024).catch(e => {
+                        console.error(e);
+                        Error.stackTraceLimit = 20;
+                        const holder = { stack: "" };
+                        Error.captureStackTrace(holder, SourceLoc);
+                        console.error("Stack trace:", holder.stack);
+                        console.error("Failed to truncate file:");
+                    });
                 }
             });
         }

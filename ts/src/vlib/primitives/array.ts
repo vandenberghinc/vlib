@@ -7,7 +7,6 @@
 
 /**
  * Array utilities.
- * @name Array
  * @docs
  */
 export namespace ArrayUtils {
