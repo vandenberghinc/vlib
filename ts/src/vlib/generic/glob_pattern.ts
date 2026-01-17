@@ -57,6 +57,7 @@
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
  * 
+ * @nav System
  * @docs
  */
 export class GlobPattern {
@@ -280,6 +281,7 @@ export class GlobPattern {
  * @note This class is not meant to glob actual file paths from the filesystem.
  *       Use `vlib.Path.glob()` for that purpose.
  * 
+ * @nav System
  * @docs
  */
 export class GlobPatternList {

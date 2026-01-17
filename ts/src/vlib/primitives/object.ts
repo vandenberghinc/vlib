@@ -9,6 +9,7 @@ import { Color, Colors } from "../generic/colors.js";
 /**
  * Object utilities.
  * @name Object
+ * @nav System
  * @docs
  */
 export namespace ObjectUtils {

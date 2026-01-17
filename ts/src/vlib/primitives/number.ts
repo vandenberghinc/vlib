@@ -9,6 +9,7 @@
 /**
  * Number utilities.
  * @name Number
+ * @nav System
  * @docs
  */
 namespace NumberUtils {

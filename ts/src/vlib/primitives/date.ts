@@ -53,6 +53,8 @@ export namespace Date {
 
 /**
  * A wrapper around the global Date object that extends its functionality.
+ * 
+ * @nav System
  * @docs
  */
 export class Date extends globalThis.Date {

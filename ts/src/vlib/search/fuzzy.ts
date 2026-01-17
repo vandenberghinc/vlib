@@ -34,6 +34,8 @@ export namespace Fuzzy {
      *      The value for the nested key should also be an array of objects and use the same structure for parameter `key`, otherwise it will cause undefined behaviour.
      *      The nested key will be ignored if the nested key does not exist in a target object.
      * 
+     * @nav Search
+     * 
      * @docs
      */
     export function search({

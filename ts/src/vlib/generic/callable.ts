@@ -47,6 +47,8 @@ export interface Callable<T extends any[] = any[], R = any> {
  * console.log(mul(3, 4));        // 12
  * console.log(mul.description()); // 'Multiply two numbers'
  * ```
+ * 
+ * @nav System
  * @docs
  */
 export abstract class Callable<T extends any[] = any[], R = any> {

@@ -8,6 +8,7 @@
 /**
  * String utilities.
  * @name String
+ * @nav System
  * @docs
  */
 namespace StringUtils {
