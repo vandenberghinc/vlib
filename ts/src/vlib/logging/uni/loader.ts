@@ -9,7 +9,7 @@ import { Date } from "../../primitives/date.js";
 /**
  * A CLI percentage‐based progress loader.
  *
- * Example:
+ * @example
  * ```ts
  * const loader = new PercentageLoader("Downloading", {
  *   min: 0,
