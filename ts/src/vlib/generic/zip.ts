@@ -19,6 +19,8 @@ import { GlobPatternList } from '../generic/glob_pattern.js';
  * Zip utilities for working with zip files.
  * @warning This is still experimental and might therefore be subject to future change.
  * @experimental
+ * 
+ * @nav System
  * @docs
  */
 export namespace Zip {

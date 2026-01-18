@@ -11,7 +11,7 @@
  * ...
  * const value: string = map.my_key ?? vlib.throw(`Key not found`);
  * ```
- * @nav Utils
+ * @nav Errors
  * @name throw
  * @docs
  */

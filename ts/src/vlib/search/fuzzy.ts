@@ -162,6 +162,7 @@ export namespace Fuzzy {
      *          So when the query is "aa" and the target is "a" then no match will be given since the "a" count of the target (2) is higher than the "a" count of the query (1).
      *          The function returns `null` when this flag is enabled and detected.
      * 
+     * @nav Search
      * @docs
      */
     export function match(search: string, target: string, allow_exceeding_chars: boolean = true): number | null {
