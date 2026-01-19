@@ -81,7 +81,10 @@ export class Language {
          * Note that when `\r` is present, a subsequent `\r\n` will always be treated as a single line-terminator.
          */
         line_terminators?: string[],
-        /** String literal options. */
+        /**
+         * An array of single chars for string literal options.
+         * @warning Each string literal must be a single char.
+         */
         string?: string[],
         /** Comment options. */
         comment?: {
@@ -642,7 +645,7 @@ export class Iterator<Src extends Source = Source> {
                         line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
                     })
                 }
-                this.is_str = { open: this.char, pos: this.pos }
+                this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
                 return; // stop so we dont match other patterns.
                 // console.log(Color.orange(`Detected string start: ${this.peek} at pos ${this.pos}`));
             }
@@ -654,7 +657,7 @@ export class Iterator<Src extends Source = Source> {
                 && this.char === this.lang.comment.line.open[0]
                 && this.source.data.startsWith(this.lang.comment.line.open, this.pos)
             ) {
-                this.is_comment = { type: 'line', open: this.lang.comment?.line.open, pos: 0 };
+                this.is_comment = { type: 'line', open: this.lang.comment?.line.open, pos: this.pos, line: this.line, col: this.col };
                 return; // stop so we dont match other patterns.
                 // console.log(Color.orange(`Detected line comment at ${this.pos}`));
             }
@@ -669,7 +672,7 @@ export class Iterator<Src extends Source = Source> {
                         (open.length === 1 && this.char === open)
                         || (open.length > 1 && this.source.data.startsWith(open, this.pos))
                     ) {
-                        this.is_comment = { type: 'block', open, close, pos: 0 };
+                        this.is_comment = { type: 'block', open, close, pos: this.pos, line: this.line, col: this.col };
                         return; // stop so we dont match other patterns.
                     }
                 }
@@ -683,7 +686,7 @@ export class Iterator<Src extends Source = Source> {
             ) {
                 for (const [open, close] of this.lang.regex) {
                     if ((open.length === 1 && this.char === open) || (open.length > 1 && this.source.data.startsWith(open, this.pos))) {
-                        this.is_regex = { open, close, pos: 0 };
+                        this.is_regex = { open, close, pos: this.pos, line: this.line, col: this.col };
                         return; // stop so we dont match other patterns.
                     }
                 }
@@ -1824,6 +1827,10 @@ export namespace Iterator {
         open: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
 
     /**
@@ -1832,12 +1839,18 @@ export namespace Iterator {
      * @docs
      */
     export interface IsComment {
-        /** comment type. */
+        /** Comment type. */
         type: 'line' | 'block';
+        /** Opening pattern for the comment. */
         open: string;
+        /** Closing pattern for block comments. */
         close?: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
 
     /**
@@ -1846,10 +1859,16 @@ export namespace Iterator {
      * @docs
      */
     export interface IsRegex {
+        /** the opening char. */
         open: string;
+        /** the closing char. */
         close: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
 
     /**

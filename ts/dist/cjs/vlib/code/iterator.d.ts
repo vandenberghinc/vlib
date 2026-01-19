@@ -68,7 +68,10 @@ export declare class Language {
          * Note that when `\r` is present, a subsequent `\r\n` will always be treated as a single line-terminator.
          */
         line_terminators?: string[];
-        /** String literal options. */
+        /**
+         * An array of single chars for string literal options.
+         * @warning Each string literal must be a single char.
+         */
         string?: string[];
         /** Comment options. */
         comment?: {
@@ -676,6 +679,10 @@ export declare namespace Iterator {
         open: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
     /**
      * Is comment type, used for tracking the comment context.
@@ -683,12 +690,18 @@ export declare namespace Iterator {
      * @docs
      */
     interface IsComment {
-        /** comment type. */
+        /** Comment type. */
         type: 'line' | 'block';
+        /** Opening pattern for the comment. */
         open: string;
+        /** Closing pattern for block comments. */
         close?: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
     /**
      * Is regex type, used for tracking the regex context.
@@ -696,10 +709,16 @@ export declare namespace Iterator {
      * @docs
      */
     interface IsRegex {
+        /** the opening char. */
         open: string;
+        /** the closing char. */
         close: string;
         /** current offset for matching the close pattern. */
         pos: number;
+        /** The opening line number. */
+        line: number;
+        /** The opening column number. */
+        col: number;
     }
     /**
      * Depth info type

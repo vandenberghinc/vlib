@@ -398,15 +398,15 @@ class Iterator {
             line_slice: this.source.data.slice(this.sol_index, this.pos + 1)
           });
         }
-        this.is_str = { open: this.char, pos: this.pos };
+        this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
         return;
       } else if (this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
-        this.is_comment = { type: "line", open: this.lang.comment?.line.open, pos: 0 };
+        this.is_comment = { type: "line", open: this.lang.comment?.line.open, pos: this.pos, line: this.line, col: this.col };
         return;
       } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
         for (const [open, close] of this.lang.comment.block) {
           if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
-            this.is_comment = { type: "block", open, close, pos: 0 };
+            this.is_comment = { type: "block", open, close, pos: this.pos, line: this.line, col: this.col };
             return;
           }
         }
@@ -414,7 +414,7 @@ class Iterator {
       if (this.lang.regex && this.lang.first_regex_chars?.has(this.char)) {
         for (const [open, close] of this.lang.regex) {
           if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
-            this.is_regex = { open, close, pos: 0 };
+            this.is_regex = { open, close, pos: this.pos, line: this.line, col: this.col };
             return;
           }
         }
