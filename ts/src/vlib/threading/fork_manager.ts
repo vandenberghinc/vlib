@@ -28,6 +28,9 @@ import { fileURLToPath } from 'node:url';
  * @typeParam TType - The worker type, `"ephemeral"` or `"persistent"`.
  *
  * @example
+ * {Master Process}
+ * Creating a simple ForkManager to run a worker process.
+ * ```ts
  * // File: master.ts
  * import * as vlib from "@vandenberghinc/vlib"
  *
@@ -56,8 +59,12 @@ import { fileURLToPath } from 'node:url';
  *   const greeting = await say_hello('Ada');
  *   console.log(greeting);
  * })();
+ * ```
  *
  * @example
+ * {Child Process}
+ * Creating the worker handler that runs inside the forked child process.
+ * ```ts
  * // File: hello-worker.ts
  * import * as vlib from "@vandenberghinc/vlib"
  *
@@ -76,6 +83,7 @@ import { fileURLToPath } from 'node:url';
  *
  * // When the handler resolves, the result is sent back to the master process.
  * // The master receives it as the resolved value of `hello_worker.run(...)`.
+ * ```
  * 
  * @nav Threading
  * @docs
