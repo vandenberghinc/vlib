@@ -8,7 +8,10 @@
         "exclude": [
             "**/*.js"
         ],
-        "icon": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png"
+        "icon": {
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png"
+        }
     },
     {
         "project": "vlib-web",
@@ -19,7 +22,10 @@
         "exclude": [
             "**/*.js"
         ],
-        "icon": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png"
+        "icon": {
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png"
+        }
     },
     {
         "project": "vtest",
