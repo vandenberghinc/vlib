@@ -35,7 +35,18 @@
         ],
         "icon": {
             "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
-            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png"
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png",
+            "height": 30
+        },
+        "theme": {
+            "dark": {
+                "extends": "dark",
+                "primary": "#58B684"
+            },
+            "light": {
+                "extends": "light",
+                "primary": "#58B684"
+            }
         }
     },
     {
