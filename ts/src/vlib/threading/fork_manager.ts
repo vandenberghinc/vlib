@@ -42,7 +42,7 @@ import { fileURLToPath } from 'node:url';
  *
  * // Create a worker that runs "./hello-worker.ts" in a separate process.
  * const hello_worker = new vlib.ForkManager<HelloPayload, HelloResult>({
- *   process_path: vlib.ForkManager.resolve_process_path('./hello-worker, import.meta.url),
+ *   process_path: vlib.ForkManager.resolve_process_path('./hello-worker', import.meta.url),
  *   default_timeout: 5_000,
  *   max_concurrency: 1,
  *   name: 'hello-worker',
