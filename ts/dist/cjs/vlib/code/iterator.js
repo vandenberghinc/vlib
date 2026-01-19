@@ -180,6 +180,8 @@ class Iterator {
   is_regex;
   /** Depth trackings. */
   depth;
+  /** Temporary debug system flag. */
+  __debug;
   /**
    * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
    * @docs
@@ -190,6 +192,7 @@ class Iterator {
       this.end = state.end;
       this.lang = state.lang;
       this.exclude_comments = state.exclude_comments;
+      this.__debug = state.__debug ?? false;
       this.pos = state.pos;
       this.line = state.line;
       this.col = state.col;
@@ -226,6 +229,7 @@ class Iterator {
       this.end = opts?.end ?? this.source.data.length;
       this.lang = opts?.language instanceof Language ? opts.language : new Language(opts?.language ?? {});
       this.exclude_comments = opts?.exclude_comments ?? false;
+      this.__debug = opts?.__debug ?? false;
       this.pos = 0;
       this.line = 1;
       this.col = 1;
@@ -387,6 +391,13 @@ class Iterator {
   scan_opening_lang_patterns() {
     if (this.lang.has_patterns && this.is_not_escaped) {
       if (this.lang.string?.has(this.char)) {
+        if (this.__debug) {
+          console.log("DEBUG: detected string start", {
+            char: this.char,
+            pos: this.pos,
+            line_slice: this.source.data.slice(this.sol_index, this.pos + 1)
+          });
+        }
         this.is_str = { open: this.char, pos: this.pos };
         return;
       } else if (this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
@@ -417,6 +428,13 @@ class Iterator {
   scan_closing_lang_patterns() {
     if (this.is_not_escaped && !this.is_code) {
       if (this.is_str && this.is_str.pos !== this.pos && this.char === this.is_str.open) {
+        if (this.__debug) {
+          console.log("DEBUG: detected string end", {
+            char: this.char,
+            pos: this.pos,
+            line_slice: this.source.data.slice(this.sol_index, this.pos + 1)
+          });
+        }
         this.is_str = void 0;
         return;
       } else if (this.is_comment && this.is_comment.type === "block") {

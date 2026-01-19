@@ -33,6 +33,8 @@ export var Fuzzy;
      *      The value for the nested key should also be an array of objects and use the same structure for parameter `key`, otherwise it will cause undefined behaviour.
      *      The nested key will be ignored if the nested key does not exist in a target object.
      *
+     * @nav Search
+     *
      * @docs
      */
     function search({ query, targets = [], limit = 25, case_match = false, allow_exceeding_chars = true, get_matches = false, key = null, nested_key = null, }) {
@@ -132,6 +134,7 @@ export var Fuzzy;
      *          So when the query is "aa" and the target is "a" then no match will be given since the "a" count of the target (2) is higher than the "a" count of the query (1).
      *          The function returns `null` when this flag is enabled and detected.
      *
+     * @nav Search
      * @docs
      */
     function match(search, target, allow_exceeding_chars = true) {

@@ -22,7 +22,7 @@
  *     in (or not in) the specified set, except `/ `.
  *  5. Braced alternation `{ foo, bar, baz } ` expands to a non‐capturing group in the regex,
  *     equivalent to `(?: foo | bar | baz)`.
- *  6. Escape sequences with backslash `\` to match literal special characters (e.g. `\* `, `\?`, `\[`).
+ *  6. Escape sequences with backslash `\\` to match literal special characters (e.g. `\* `, `\?`, `\[`).
  *  7. All backslashes in both patterns and tested strings are normalized to forward slashes (`/ `) before matching,
  *     making glob patterns Unix‐style even on Windows.
  *
@@ -35,7 +35,7 @@
  *
  * Example usage:
  * ```ts
-    * const gp = new GlobPattern("src/**\/*.ts");
+ * const gp = new GlobPattern("src/**\/*.ts");
  * gp.test("src/index.ts");        // true
  * gp.test("src/utils/helper.ts"); // true
  * gp.test("src/utils/helper.js"); // false
@@ -45,7 +45,7 @@
  * "src/app.js",
  * "src/lib/module.ts",
  * "test/spec.ts"
-    * ];
+ * ];
  * // Filters only .ts files under src/ (possibly nested)
  * const tsFiles = gp.filter(files);
  * // tsFiles === ["src/index.ts", "src/lib/module.ts"]

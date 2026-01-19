@@ -24,6 +24,9 @@ import { StdioOptions } from 'node:child_process';
  * @typeParam TType - The worker type, `"ephemeral"` or `"persistent"`.
  *
  * @example
+ * {Master Process}
+ * Creating a simple ForkManager to run a worker process.
+ * ```ts
  * // File: master.ts
  * import * as vlib from "@vandenberghinc/vlib"
  *
@@ -35,7 +38,7 @@ import { StdioOptions } from 'node:child_process';
  *
  * // Create a worker that runs "./hello-worker.ts" in a separate process.
  * const hello_worker = new vlib.ForkManager<HelloPayload, HelloResult>({
- *   process_path: vlib.ForkManager.resolve_process_path('./hello-worker, import.meta.url),
+ *   process_path: vlib.ForkManager.resolve_process_path('./hello-worker', import.meta.url),
  *   default_timeout: 5_000,
  *   max_concurrency: 1,
  *   name: 'hello-worker',
@@ -52,8 +55,12 @@ import { StdioOptions } from 'node:child_process';
  *   const greeting = await say_hello('Ada');
  *   console.log(greeting);
  * })();
+ * ```
  *
  * @example
+ * {Child Process}
+ * Creating the worker handler that runs inside the forked child process.
+ * ```ts
  * // File: hello-worker.ts
  * import * as vlib from "@vandenberghinc/vlib"
  *
@@ -72,6 +79,7 @@ import { StdioOptions } from 'node:child_process';
  *
  * // When the handler resolves, the result is sent back to the master process.
  * // The master receives it as the resolved value of `hello_worker.run(...)`.
+ * ```
  *
  * @nav Threading
  * @docs

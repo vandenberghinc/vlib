@@ -307,6 +307,9 @@ export class Iterator<Src extends Source = Source> {
     /** Depth trackings. */
     depth: Iterator.Depth;
 
+    /** Temporary debug system flag. */
+    __debug: boolean;
+
     /**
      * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
      * @docs
@@ -332,6 +335,11 @@ export class Iterator<Src extends Source = Source> {
              * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator, or when slicing data.
              */
             exclude_comments?: boolean,
+            /**
+             * Temporary debug system flag.
+             * This is reserved for system developers and wont have any effect most of the time.
+             */
+            __debug?: boolean,
         },
     ) {
 
@@ -344,6 +352,7 @@ export class Iterator<Src extends Source = Source> {
             this.end = state.end;
             this.lang = state.lang; // shallow
             this.exclude_comments = state.exclude_comments;
+            this.__debug = state.__debug ?? false;
             
             // Dynamic attributes.
             this.pos = state.pos;
@@ -388,6 +397,7 @@ export class Iterator<Src extends Source = Source> {
                 ? opts.language
                 : new Language(opts?.language ?? {})
             this.exclude_comments = opts?.exclude_comments ?? false;
+            this.__debug = opts?.__debug ?? false;
 
             // Dynamic attributes.
             this.pos = 0;
@@ -625,6 +635,13 @@ export class Iterator<Src extends Source = Source> {
 
             // detect string start
             if (this.lang.string?.has(this.char)) {
+                if (this.__debug) {
+                    console.log("DEBUG: detected string start", {
+                        char: this.char,
+                        pos: this.pos,
+                        line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                    })
+                }
                 this.is_str = { open: this.char, pos: this.pos }
                 return; // stop so we dont match other patterns.
                 // console.log(Color.orange(`Detected string start: ${this.peek} at pos ${this.pos}`));
@@ -689,6 +706,13 @@ export class Iterator<Src extends Source = Source> {
                 && this.is_str.pos !== this.pos
                 && this.char === this.is_str.open
             ) {
+                if (this.__debug) {
+                    console.log("DEBUG: detected string end", {
+                        char: this.char,
+                        pos: this.pos,
+                        line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                    });
+                }
                 // console.log(Color.orange(`Found string end: ${this.peek} at pos ${this.pos} - delim ${this.is_str.open} - open pos ${this.is_str.pos} - data: [${this.source.data.slice(this.is_str.pos, this.pos + 1)}]`));
                 this.is_str = undefined;
                 return; // stop so we dont match other patterns.

@@ -7,6 +7,7 @@
 /**
  * Number utilities.
  * @name Number
+ * @nav System
  * @docs
  */
 declare namespace NumberUtils {

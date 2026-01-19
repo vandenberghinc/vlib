@@ -22,6 +22,7 @@
  * }
  * ```
  *
+ * @nav System
  * @docs
  */
 export class Mutex {

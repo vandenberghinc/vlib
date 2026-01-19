@@ -49,6 +49,8 @@ export declare namespace Date {
 }
 /**
  * A wrapper around the global Date object that extends its functionality.
+ *
+ * @nav System
  * @docs
  */
 export declare class Date extends globalThis.Date {

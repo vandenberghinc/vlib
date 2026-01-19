@@ -5,6 +5,8 @@
 import * as crypto from 'crypto';
 /**
  * The utilities module.
+ *
+ * @nav Utilities
  * @docs
  */
 export declare namespace Utils {

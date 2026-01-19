@@ -10,6 +10,8 @@ import { Path } from './path.js';
 import { SourceLoc } from '../logging/uni/source_loc.js';
 /**
  * The utilities module.
+ *
+ * @nav Utilities
  * @docs
  */
 export var Utils;

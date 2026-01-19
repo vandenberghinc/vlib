@@ -6,6 +6,7 @@ import { Truthy } from "../types/truthy.js";
 /**
  * Object utilities.
  * @name Object
+ * @nav System
  * @docs
  */
 export declare namespace ObjectUtils {

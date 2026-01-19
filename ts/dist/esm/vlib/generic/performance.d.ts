@@ -4,6 +4,8 @@
  */
 /**
  * Performance measurement utility class
+ *
+ * @nav Utilities
  * @docs
  */
 export declare class Performance {

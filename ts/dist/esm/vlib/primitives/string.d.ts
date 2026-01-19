@@ -7,6 +7,7 @@
 /**
  * String utilities.
  * @name String
+ * @nav System
  * @docs
  */
 declare namespace StringUtils {

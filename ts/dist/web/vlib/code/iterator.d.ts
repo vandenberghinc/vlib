@@ -179,6 +179,8 @@ export declare class Iterator<Src extends Source = Source> {
     is_regex: undefined | Iterator.IsRegex;
     /** Depth trackings. */
     depth: Iterator.Depth;
+    /** Temporary debug system flag. */
+    __debug: boolean;
     /**
      * @warning Dont add attribute `data` or update the CodeIterator constructor since that requires the state not to have a `data` attribute.
      * @docs
@@ -204,6 +206,11 @@ export declare class Iterator<Src extends Source = Source> {
          * @note That this only guarantees that comments are excluded for the passed state, not when searching forward manually or through a non state callback iterator, or when slicing data.
          */
         exclude_comments?: boolean;
+        /**
+         * Temporary debug system flag.
+         * This is reserved for system developers and wont have any effect most of the time.
+         */
+        __debug?: boolean;
     });
     /** Is code, not string, comment or regex. */
     get is_code(): boolean;

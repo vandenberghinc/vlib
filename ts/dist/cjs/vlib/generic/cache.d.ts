@@ -8,6 +8,7 @@
  * @template K - The type of cache keys
  * @template V - The type of cache values
  *
+ * @nav System
  * @docs
  */
 export declare class Cache<K extends string | number | symbol = string, V = any> {

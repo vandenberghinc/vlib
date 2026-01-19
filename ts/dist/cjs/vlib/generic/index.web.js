@@ -14,7 +14,7 @@ var __reExport = (target, mod, secondTarget) => (__copyProps(target, mod, "defau
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var stdin_exports = {};
 module.exports = __toCommonJS(stdin_exports);
-__reExport(stdin_exports, require("./throw.js"), module.exports);
+__reExport(stdin_exports, require("../errors/throw.js"), module.exports);
 __reExport(stdin_exports, require("./colors.js"), module.exports);
 __reExport(stdin_exports, require("./mutex.js"), module.exports);
 __reExport(stdin_exports, require("./glob_pattern.js"), module.exports);
@@ -22,7 +22,7 @@ __reExport(stdin_exports, require("./events.js"), module.exports);
 __reExport(stdin_exports, require("./system/web.js"), module.exports);
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  ...require("./throw.js"),
+  ...require("../errors/throw.js"),
   ...require("./colors.js"),
   ...require("./mutex.js"),
   ...require("./glob_pattern.js"),
