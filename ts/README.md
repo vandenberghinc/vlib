@@ -1,8 +1,6 @@
 # VLIB
 <p><em style="color:#6a737d;">Generic development library</em></p>
 
-
-
 **VLib** is an open-source, general-purpose TypeScript library (developed by Van Den Bergh Inc.) providing a broad range of utilities and tools for application development. It aims to serve as a "standard library" extension for TypeScript/JavaScript, delivering functionality from data structures and system utilities to CLI tools and testing frameworks.
 
 ## Documentation.

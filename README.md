@@ -1,7 +1,8 @@
 <!-- <h1 style="display:inline-flex;align-items:flex-start;margin:0;gap:8px;"> -->
   <a href="https://github.com/vandenberghinc/vlib">
+  <!-- src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.256.png" -->
     <img
-      src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v4/icon.256.png"
+        src="https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png"
       width="64" height="64"
       alt="VLib logo"
       style="border-radius:8px;">
