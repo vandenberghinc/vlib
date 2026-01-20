@@ -418,8 +418,6 @@ export type Config = Merge<
 
 /**
  * The unit test configuration module.
- * 
- * @docs
  */
 export namespace Config {
 
