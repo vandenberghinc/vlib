@@ -79,6 +79,7 @@ type CacheRecord = {
  * vtest --config ./vtest.json --interactive
  * ```
  * 
+ * @nav Unit Tests
  * @docs
  */
 export class Module {

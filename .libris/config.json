@@ -70,6 +70,7 @@
             "dark": {
                 "extends": "dark",
                 "primary": "#58B684"
+                // "bg": "#102227"
             },
             "light": {
                 "extends": "light",

@@ -20,6 +20,7 @@ const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
  * @note This class is automatically used when using the `vtest` CLI tool.
  *       However, it can also be used programmatically.
  * 
+ * @nav Unit Tests
  * @docs
  */
 export class Package {
@@ -403,6 +404,7 @@ export namespace Package {
  * 
  * @dev_note Attribute `options` field is kept since this is used for the `extends` field.
  * 
+ * @nav Unit Tests
  * @docs
  */
 export type Config = Merge<
