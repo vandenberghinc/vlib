@@ -16,11 +16,18 @@
         "theme": {
             "dark": {
                 "extends": "dark",
-                "primary": "#58B684"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
+                // "bg": "#102227"
             },
             "light": {
                 "extends": "light",
-                "primary": "#58B684"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
             }
         }
     },
@@ -41,11 +48,17 @@
         "theme": {
             "dark": {
                 "extends": "dark",
-                "primary": "#58B684"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
             },
             "light": {
                 "extends": "light",
-                "primary": "#58B684"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
             }
         }
     },
@@ -69,12 +82,17 @@
         "theme": {
             "dark": {
                 "extends": "dark",
-                "primary": "#58B684"
-                // "bg": "#102227"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
             },
             "light": {
                 "extends": "light",
-                "primary": "#58B684"
+                "primary": "#58B684",
+                "note": {
+                    "bg": "#58B684"
+                }
             }
         }
     },
