@@ -41,6 +41,45 @@ type CacheRecord = {
 /** 
  * Unit test module.
  * @note Should be created at file-level scope.
+ * @example
+ * {Basic Usage}
+ * Create a unit test module and add unit tests to it.
+ * ```ts ./unit_tests/example_module.ts
+ * import { Module } from "@vlib/vtest";
+ * 
+ * // Create a unit test module.
+ * const tests = new Module({ name: "my_module" });
+ * 
+ * // Add a test to it.
+ * tests.add("test_1", "success", () => {
+ *    return 1 + 1; // expected output is 2
+ * });
+ * ```
+ * 
+ * @example
+ * {Configuration}
+ * Creating a configuration file for the unit tests.
+ * ```json ./vtest.json
+ * {
+ *   "$schema": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/ts/assets/schemas/vtest.json",
+ *   "output": "./.unit_tests",
+ *   "include": [
+ *     "unit_tests/**\/*.js"
+ *   ],
+ * }
+ * ```
+ * 
+ * @example
+ * {Running Unit Tests}
+ * Running the unit tests through the CLI in interactive mode.
+ * When interactive mode is enabled, failed unit tests will enter an interactive mode
+ * where the user can inspect the output and decide whether the test actually succeeded or failed.
+ * Succeed unit tests will automatically be marked as succeeded and saved to the cache.
+ * ```bash
+ * vtest --config ./vtest.json --interactive
+ * ```
+ * 
+ * @docs
  */
 export class Module {
 
@@ -131,6 +170,8 @@ export class Module {
      * @param expect The expected result of the unit test. This can be either "error" or "success".
      * @param callback The callback function to execute the unit test. This callback should return the result of the test. Thrown errors will be captured.
      * @note When expecting an error, then also throw an error, the error's message will be used for hash comparisons.
+     * 
+     * @docs
      */
     add(opts: { id: string, expect: Expect, callback: Callback }): this;
     add(id: string, callback: Callback): this;
@@ -496,6 +537,8 @@ export class Module {
 
     /**
      * Run the unit tests of the module
+     * 
+     * @docs
      */
     async run(ctx: Package.Context): Promise<{ status: boolean, failed: number, succeeded: number }> {
 
@@ -642,6 +685,8 @@ export class Module {
      * @param opts.results The path to the module's results file.
      * @param opts.ids The id or ids to reset, supports glob patterns.
      * @param opts.yes Whether to skip the confirmation prompt.
+     * 
+     * @docs
      */
     async reset_unit_tests(opts: {
         results: string | Path,

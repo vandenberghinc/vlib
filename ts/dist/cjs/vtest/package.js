@@ -73,6 +73,7 @@ class Package {
    * Run the unit tests.
    * @param opts Optional context options to override the current configuration options with.
    * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
+   * @docs
    */
   async run(opts) {
     const config = this.config;
@@ -123,6 +124,7 @@ Executed ${mods.length} test modules.`));
   // Other public methods.
   /**
    * List all included files to the console.
+   * @docs
    */
   async list_files() {
     const included = await this.parse_includes();
@@ -135,6 +137,7 @@ Executed ${mods.length} test modules.`));
   }
   /**
    * List all included modules to the console.
+   * @docs
    */
   async list_modules() {
     await this.init_modules();
@@ -152,6 +155,7 @@ Executed ${mods.length} test modules.`));
    * @param module The module name to reset the unit tests for.
    * @param ids The unit test ids to reset. Supports glob patterns.
    * @param yes Automatically answer yes to all prompts.
+   * @docs
    */
   async reset_unit_tests({ module: module2, target, yes = false }) {
     await this.init_modules();

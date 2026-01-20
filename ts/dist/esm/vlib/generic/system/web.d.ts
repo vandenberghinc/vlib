@@ -3,7 +3,6 @@
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
 /**
- * {System Browser}
  * The system module.
  * @nav System
  * @docs

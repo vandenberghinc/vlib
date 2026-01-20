@@ -53,11 +53,27 @@
         "project": "vtest",
         "version": "1.1.1",
         "entry": [
-            "ts/src/vtest/index.ts"
+            "ts/src/vtest/index.ts",
+            "ts/src/vtest/cli.ts"
         ],
         "exclude": [
             "**/*.js"
-        ]
+        ],
+        "icon": {
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png",
+            "height": 30
+        },
+        "theme": {
+            "dark": {
+                "extends": "dark",
+                "primary": "#58B684"
+            },
+            "light": {
+                "extends": "light",
+                "primary": "#58B684"
+            }
+        }
     },
     {
         "project": "vrepo",

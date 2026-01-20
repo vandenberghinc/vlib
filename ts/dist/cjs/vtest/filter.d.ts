@@ -17,7 +17,11 @@ type FilterSchema<T> = {
  * @param visit Allows for defining postprocess visit functions for each key, formatted as an object with function values or nested visit schemas.
  * @param opts.drop_empty Drop all empty values from objects and arrays - such as null, undefined, empty strings, empty arrays and empty objects.
  * @param opts.drop_undef Drop all null and undefined values from objects and arrays.
+ *
  * @example
+ * {Filter Output Example}
+ * Filtering objects to produce a consistent output format.
+ * ```ts
  * import * as vtest from "@vandenberghinc/vlib/vts";
  * const data = {
  *    key1: "value1",
@@ -47,7 +51,10 @@ type FilterSchema<T> = {
  *       key5: { key2: true },
  *    },
  * }); // => { key1: "value1", key5: { key1: undefined } }
+ * ```
  *
+ * @nav Filtering
+ * @docs
  */
 export declare function filter_output<T extends any>(data: T, opts: {
     include?: FilterSchema<boolean>;

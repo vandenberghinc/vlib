@@ -16,8 +16,12 @@ const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
 /**
  * The unit test package class.
  * Responsible for executing managing its included modules and unit tests.
+ * 
+ * @note This class is automatically used when using the `vtest` CLI tool.
+ *       However, it can also be used programmatically.
+ * 
+ * @docs
  */
-
 export class Package {
 
     /**
@@ -64,6 +68,7 @@ export class Package {
      * Run the unit tests.
      * @param opts Optional context options to override the current configuration options with.
      * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
+     * @docs
      */
     async run(opts?: Partial<Package.Context.Opts>): Promise<boolean> {
         const config = this.config;
@@ -131,6 +136,7 @@ export class Package {
 
     /** 
      * List all included files to the console.
+     * @docs
      */
     async list_files(): Promise<void> {
         const included = await this.parse_includes();
@@ -141,6 +147,7 @@ export class Package {
 
     /** 
      * List all included modules to the console.
+     * @docs
      */
     async list_modules(): Promise<void> {
         await this.init_modules();
@@ -159,6 +166,7 @@ export class Package {
      * @param module The module name to reset the unit tests for.
      * @param ids The unit test ids to reset. Supports glob patterns.
      * @param yes Automatically answer yes to all prompts.
+     * @docs
      */
     async reset_unit_tests({
         module,
@@ -389,8 +397,13 @@ export namespace Package {
 // Config.
 
 /**
- * Initialized configuration object.
- * @dev_note that attribute `options` field is kept since this is used for the `extends` field.
+ * The initialized configuration object.
+ * 
+ * Note that the user-input configuration options are defined in the `Config.Opts` interface.
+ * 
+ * @dev_note Attribute `options` field is kept since this is used for the `extends` field.
+ * 
+ * @docs
  */
 export type Config = Merge<
     RequiredExcept<Config.Opts, "exclude" | "env" | "extends">,
@@ -403,11 +416,20 @@ export type Config = Merge<
     }
 >;
 
-/** Configuration options. */
+/**
+ * The unit test configuration module.
+ * 
+ * @docs
+ */
 export namespace Config {
 
     /**
      * Unit test configuration file options.
+     * 
+     * This interface can also be saved as a JSON file under `./vtest.json` or `./.vtest.json` to
+     * be used as the default configuration file for the CLI.
+     * 
+     * @docs
      */
     export interface Opts {
         /**
@@ -495,6 +517,8 @@ export namespace Config {
      *      A system exclude set to ignore already included base paths to prevent infinite recursion.
      *      Do not manually pass this parameter, as it is a system parameter
      * @returns The initialized configuration object, or an object with an `error` field.
+     * 
+     * @docs
      */
     export function load(
         opts: Config.Opts | string | string[] | "__default__" = "__default__",
@@ -603,6 +627,8 @@ export namespace Config {
      * @param override The configuration object that will override the base configuration.
      * @param copy Whether to copy the base context object (true) or update it in place (false).
      * @returns The updated base configuration object.
+     * 
+     * @docs
      */
     export function merge(
         base: Config,

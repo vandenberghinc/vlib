@@ -11,7 +11,11 @@
  * @param visit Allows for defining postprocess visit functions for each key, formatted as an object with function values or nested visit schemas.
  * @param opts.drop_empty Drop all empty values from objects and arrays - such as null, undefined, empty strings, empty arrays and empty objects.
  * @param opts.drop_undef Drop all null and undefined values from objects and arrays.
+ *
  * @example
+ * {Filter Output Example}
+ * Filtering objects to produce a consistent output format.
+ * ```ts
  * import * as vtest from "@vandenberghinc/vlib/vts";
  * const data = {
  *    key1: "value1",
@@ -41,7 +45,10 @@
  *       key5: { key2: true },
  *    },
  * }); // => { key1: "value1", key5: { key1: undefined } }
+ * ```
  *
+ * @nav Filtering
+ * @docs
  */
 export function filter_output(data, opts) {
     const { include, exclude, visit, drop_undef = false, drop_empty = false } = opts;

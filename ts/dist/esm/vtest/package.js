@@ -12,6 +12,11 @@ const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
 /**
  * The unit test package class.
  * Responsible for executing managing its included modules and unit tests.
+ *
+ * @note This class is automatically used when using the `vtest` CLI tool.
+ *       However, it can also be used programmatically.
+ *
+ * @docs
  */
 export class Package {
     /**
@@ -52,6 +57,7 @@ export class Package {
      * Run the unit tests.
      * @param opts Optional context options to override the current configuration options with.
      * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
+     * @docs
      */
     async run(opts) {
         const config = this.config;
@@ -113,6 +119,7 @@ export class Package {
     // Other public methods.
     /**
      * List all included files to the console.
+     * @docs
      */
     async list_files() {
         const included = await this.parse_includes();
@@ -122,6 +129,7 @@ export class Package {
     }
     /**
      * List all included modules to the console.
+     * @docs
      */
     async list_modules() {
         await this.init_modules();
@@ -140,6 +148,7 @@ export class Package {
      * @param module The module name to reset the unit tests for.
      * @param ids The unit test ids to reset. Supports glob patterns.
      * @param yes Automatically answer yes to all prompts.
+     * @docs
      */
     async reset_unit_tests({ module, target, yes = false, }) {
         await this.init_modules();
@@ -297,7 +306,11 @@ export class Package {
         Context.merge = merge;
     })(Context = Package.Context || (Package.Context = {}));
 })(Package || (Package = {}));
-/** Configuration options. */
+/**
+ * The unit test configuration module.
+ *
+ * @docs
+ */
 export var Config;
 (function (Config) {
     ;
@@ -360,6 +373,8 @@ export var Config;
      *      A system exclude set to ignore already included base paths to prevent infinite recursion.
      *      Do not manually pass this parameter, as it is a system parameter
      * @returns The initialized configuration object, or an object with an `error` field.
+     *
+     * @docs
      */
     function load(opts = "__default__", override, _exclude = new Set()) {
         // Load the options from a file path.
@@ -455,6 +470,8 @@ export var Config;
      * @param override The configuration object that will override the base configuration.
      * @param copy Whether to copy the base context object (true) or update it in place (false).
      * @returns The updated base configuration object.
+     *
+     * @docs
      */
     function merge(base, override, copy = true) {
         if (copy)

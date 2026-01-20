@@ -110,7 +110,7 @@ declare namespace State {
     } : Throw extends false ? {
         /**
          * By default, throw is `false`.
-         * When `throw` is `false, the `validate()` function will return a response object with an error or the output data.
+         * When `throw` is `false`, the `validate()` function will return a response object with an error or the output data.
          */
         throw?: Throw;
     } : never);

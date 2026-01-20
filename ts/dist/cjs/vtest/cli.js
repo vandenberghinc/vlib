@@ -28,11 +28,11 @@ const cli = new vlib.cli.CLI({
   version: "1.0.1",
   strict: false,
   options: [
-    { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns." },
-    { id: ["--include", "-i"], type: "string[]", description: "The glob patterns of unit test files to include." },
-    { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The glob patterns of unit test files to exclude." },
-    { id: ["--env"], type: "string[]", description: "The path to one or multiple environment files to import." },
-    { id: ["--output"], type: "string", description: "The unit test results directory used as a cache folder, defaults to './.unit_tests'." }
+    // { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." },
+    // { id: ["--include", "-i"], type: "string[]", description: "The glob patterns of unit test files to include." },
+    // { id: ["--exclude", "-e"], type: "string[]", required: false, description: "The glob patterns of unit test files to exclude." },
+    // { id: ["--env"], type: "string[]", description: "The path to one or multiple environment files to import." },
+    // { id: ["--output"], type: "string", description: "The unit test results directory used as a cache folder, defaults to './.unit_tests'." },        
   ]
 });
 cli.main({
@@ -49,6 +49,7 @@ cli.main({
     "Run": "vtest --include 'dist/**/unit_tests/**/*.js'"
   },
   args: [
+    { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." },
     { id: ["--module", "-m"], type: "string", description: "The module to run, e.g. 'module_1'." },
     { id: ["--target", "-t"], type: "string", required: false, description: "An optional identifier of a module unit test, when defined only the targeted unit test(s) will be executed. Supports wildcard patterns '*'." },
     { id: ["--interactive", "-I"], type: "boolean", description: "Run in interactive mode, allowing you to select which tests to run." },
@@ -61,7 +62,7 @@ cli.main({
     // { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." },
   ],
   async callback(args) {
-    const config = import_package.Config.load(cli.options.config || "__default__");
+    const config = import_package.Config.load(args.config || "__default__");
     if ("error" in config)
       throw cli.error(config.error);
     const pkg = new import_package.Package(config);
@@ -74,11 +75,14 @@ cli.command({
         The --list-files command can be used to list the included files after processing the 'include' and 'exclude' attributes.
         It supports the default CLI options for importing or customizing the configuration file.
         `.dedent(true),
+  args: [
+    { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." }
+  ],
   examples: {
     "List files": "vtest --list-files"
   },
   async callback(args) {
-    const config = await import_package.Config.load(cli.options.config || "__default__");
+    const config = await import_package.Config.load(args.config || "__default__");
     if ("error" in config)
       throw cli.error(config.error);
     const pkg = new import_package.Package(config);
@@ -90,11 +94,14 @@ cli.command({
   description: `
         The --list-modules command can be used to list the available unit test modules.
         `.dedent(true),
+  args: [
+    { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." }
+  ],
   examples: {
     "List modules": "vtest --list-modules"
   },
   async callback(args) {
-    const config = await import_package.Config.load(cli.options.config || "__default__");
+    const config = await import_package.Config.load(args.config || "__default__");
     if ("error" in config)
       throw cli.error(config.error);
     const pkg = new import_package.Package(config);
@@ -110,12 +117,13 @@ cli.command({
     "Reset": "vtest --reset 'dist/**/unit_tests/**/*.js'"
   },
   args: [
+    { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." },
     { id: ["--module", "-m"], type: "string", required: true, description: "The module of the unit test identifier(s), e.g. 'module_1'." },
     { id: ["--target", "-t"], type: "string[]", required: true, description: "The unit test identifier(s) to reset, Supports wildcard patterns '*'." },
     { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." }
   ],
   async callback(args) {
-    const config = await import_package.Config.load(cli.options.config || "__default__");
+    const config = await import_package.Config.load(args.config || "__default__");
     if ("error" in config)
       throw cli.error(config.error);
     const pkg = new import_package.Package(config);

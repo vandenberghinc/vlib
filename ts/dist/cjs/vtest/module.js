@@ -337,6 +337,8 @@ ${res_str.split("\n").map((l) => ` | ${l}`).join("\n")}`);
   }
   /**
    * Run the unit tests of the module
+   *
+   * @docs
    */
   async run(ctx) {
     if (this.override_ctx) {
@@ -410,6 +412,8 @@ Commencing repetition ${i + 1} of unit test ${this.name}.`));
    * @param opts.results The path to the module's results file.
    * @param opts.ids The id or ids to reset, supports glob patterns.
    * @param opts.yes Whether to skip the confirmation prompt.
+   *
+   * @docs
    */
   async reset_unit_tests(opts) {
     if (typeof opts.results === "string") {

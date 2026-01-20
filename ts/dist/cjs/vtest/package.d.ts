@@ -8,6 +8,11 @@ import { Merge, RequiredExcept } from "../vlib/types/types.js";
 /**
  * The unit test package class.
  * Responsible for executing managing its included modules and unit tests.
+ *
+ * @note This class is automatically used when using the `vtest` CLI tool.
+ *       However, it can also be used programmatically.
+ *
+ * @docs
  */
 export declare class Package {
     /**
@@ -27,14 +32,17 @@ export declare class Package {
      * Run the unit tests.
      * @param opts Optional context options to override the current configuration options with.
      * @returns A promise to a boolean indicating whether the unit tests succeeded or not.
+     * @docs
      */
     run(opts?: Partial<Package.Context.Opts>): Promise<boolean>;
     /**
      * List all included files to the console.
+     * @docs
      */
     list_files(): Promise<void>;
     /**
      * List all included modules to the console.
+     * @docs
      */
     list_modules(): Promise<void>;
     /**
@@ -42,6 +50,7 @@ export declare class Package {
      * @param module The module name to reset the unit tests for.
      * @param ids The unit test ids to reset. Supports glob patterns.
      * @param yes Automatically answer yes to all prompts.
+     * @docs
      */
     reset_unit_tests({ module, target, yes, }: {
         module: string;
@@ -173,8 +182,13 @@ export declare namespace Package {
     }
 }
 /**
- * Initialized configuration object.
- * @dev_note that attribute `options` field is kept since this is used for the `extends` field.
+ * The initialized configuration object.
+ *
+ * Note that the user-input configuration options are defined in the `Config.Opts` interface.
+ *
+ * @dev_note Attribute `options` field is kept since this is used for the `extends` field.
+ *
+ * @docs
  */
 export type Config = Merge<RequiredExcept<Config.Opts, "exclude" | "env" | "extends">, {
     include: string[];
@@ -183,10 +197,19 @@ export type Config = Merge<RequiredExcept<Config.Opts, "exclude" | "env" | "exte
     ctx: Package.Context;
     output: Path;
 }>;
-/** Configuration options. */
+/**
+ * The unit test configuration module.
+ *
+ * @docs
+ */
 export declare namespace Config {
     /**
      * Unit test configuration file options.
+     *
+     * This interface can also be saved as a JSON file under `./vtest.json` or `./.vtest.json` to
+     * be used as the default configuration file for the CLI.
+     *
+     * @docs
      */
     interface Opts {
         /**
@@ -367,6 +390,8 @@ export declare namespace Config {
      *      A system exclude set to ignore already included base paths to prevent infinite recursion.
      *      Do not manually pass this parameter, as it is a system parameter
      * @returns The initialized configuration object, or an object with an `error` field.
+     *
+     * @docs
      */
     function load(opts?: Config.Opts | string | string[] | "__default__", override?: Partial<Config.Opts>, _exclude?: Set<string>): Config | {
         error: string;
@@ -378,6 +403,8 @@ export declare namespace Config {
      * @param override The configuration object that will override the base configuration.
      * @param copy Whether to copy the base context object (true) or update it in place (false).
      * @returns The updated base configuration object.
+     *
+     * @docs
      */
     function merge(base: Config, override: Partial<Config.Opts> | Config, copy?: boolean): Config;
 }
