@@ -32,15 +32,15 @@
         },
         "sections": [
             {
-                "text": "vlib Node.js",
+                "text": "VLib Node.js",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
             },
             {
-                "text": "vlib Browser",
+                "text": "VLib Browser",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
             },
             {
-                "text": "vtest",
+                "text": "VTest",
                 "url": "/docs/miF5fmUsvgaEcqLP/vtest/latest"
             }
         ]
