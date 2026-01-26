@@ -85,17 +85,31 @@ export namespace Fuzzy {
                         case_match ? targets[i] : targets[i].toLowerCase(),
                         allow_exceeding_chars
                     );
-
                 } else if (is_obj) {
                     const target = targets[i];
-                    if (key) {
-                        key = key as string[]
+                    if (Array.isArray(key)) {
                         let min_matched: ReturnType<typeof match> = null;
                         for (let k = 0; k < key.length; k++) {
-                            if (target[key[k]] == null) { continue; }
+                            let local_key = key[k];;
+                            let local_target = target;
+                            if (local_key.indexOf('.') !== -1) {
+                                const key_parts = local_key.split('.');
+                                for (let k = 0; k < key_parts.length - 1; k++) {
+                                    local_target = local_target[key_parts[k]];
+                                    if (local_target == null) {
+                                        break;
+                                    }
+                                }
+                                local_key = key_parts[key_parts.length - 1];
+                            }
+                            if (
+                                !local_target
+                                || typeof local_target !== "object"
+                                || typeof local_target[local_key] !== "string"
+                            ) { continue; }
                             matched = match(
                                 query,
-                                case_match ? target[key[k]] : target[key[k]].toLowerCase(),
+                                case_match ? local_target[local_key] : local_target[local_key].toLowerCase(),
                                 allow_exceeding_chars
                             );
                             if (matched != null && (min_matched === null || matched < min_matched)) {
@@ -104,10 +118,26 @@ export namespace Fuzzy {
                         }
                         matched = min_matched;
                     } else {
-                        if (target[key as string] == null) { continue; }
+                        let local_key = key as string;
+                        let local_target = target;
+                        if (local_key.indexOf('.') !== -1) {
+                            const key_parts = local_key.split('.');
+                            for (let k = 0; k < key_parts.length - 1; k++) {
+                                local_target = local_target[key_parts[k]];
+                                if (local_target == null) {
+                                    break;
+                                }
+                            }
+                            local_key = key_parts[key_parts.length - 1];
+                        }
+                        if (
+                            !local_target
+                            || typeof local_target !== "object"
+                            || typeof local_target[local_key] !== "string"
+                        ) { continue; }
                         matched = match(
                             query,
-                            case_match ? target[key as string] : target[key as string].toLowerCase(),
+                            case_match ? local_target[local_key] : local_target[local_key].toLowerCase(),
                             allow_exceeding_chars
                         );
                     }

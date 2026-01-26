@@ -12,6 +12,7 @@ import { Merge, RequiredExcept } from "../vlib/types/types.js";
  * @note This class is automatically used when using the `vtest` CLI tool.
  *       However, it can also be used programmatically.
  *
+ * @nav Unit Tests
  * @docs
  */
 export declare class Package {
@@ -188,6 +189,7 @@ export declare namespace Package {
  *
  * @dev_note Attribute `options` field is kept since this is used for the `extends` field.
  *
+ * @nav Unit Tests
  * @docs
  */
 export type Config = Merge<RequiredExcept<Config.Opts, "exclude" | "env" | "extends">, {
@@ -199,8 +201,6 @@ export type Config = Merge<RequiredExcept<Config.Opts, "exclude" | "env" | "exte
 }>;
 /**
  * The unit test configuration module.
- *
- * @docs
  */
 export declare namespace Config {
     /**

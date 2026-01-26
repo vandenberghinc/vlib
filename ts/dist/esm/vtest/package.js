@@ -16,6 +16,7 @@ const __root = import.meta.dirname.split("vlib/ts/")[0] + "/vlib/ts/";
  * @note This class is automatically used when using the `vtest` CLI tool.
  *       However, it can also be used programmatically.
  *
+ * @nav Unit Tests
  * @docs
  */
 export class Package {
@@ -308,8 +309,6 @@ export class Package {
 })(Package || (Package = {}));
 /**
  * The unit test configuration module.
- *
- * @docs
  */
 export var Config;
 (function (Config) {

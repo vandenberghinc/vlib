@@ -11,6 +11,7 @@ type FilterSchema<T> = {
 /**
  * Filter (output) data based on a simple schema, then sort object key's by defined schema order.
  * This can be useful for producing a consistent output format.
+ *
  * @param data {Record<string, any> | any[]} The input data.
  * @param include Include only a list of keys, all other keys will be excluded, formatted as an object with boolean values or nested include schemas.
  * @param exclude Exclude a list of keys, all other keys will still be included, formatted as an object with boolean values or nested exclude schemas.
@@ -21,6 +22,7 @@ type FilterSchema<T> = {
  * @example
  * {Filter Output Example}
  * Filtering objects to produce a consistent output format.
+ *
  * ```ts
  * import * as vtest from "@vandenberghinc/vlib/vts";
  * const data = {

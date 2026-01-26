@@ -368,15 +368,23 @@ export class Module {
                 // Provide additional info show what has changed based on previous data.
                 if (cached_data && !ctx.no_changes) {
                     const { status, diff } = compute_diff({
-                        new: response,
-                        old: cached_data,
+                        new: ctx.strip_colors ? Color.strip(response) : response,
+                        old: ctx.strip_colors ? Color.strip(cached_data) : cached_data,
                         prefix: " * ",
                     });
                     if (status === "identical") {
                         debug.raw(" * Old and new data are identical. This should not happen.");
                     } else {
+                        // debug.raw(` * Previous unit test output: \n${cached_data.split("\n").map(l => `   | ${Color.gray(l)}`).join("\n")}`);
+                        // debug.raw(` * Current unit test output: \n${response.split("\n").map(l => `   | ${l}`).join("\n")}`);
                         debug.raw(` * Detected changes between old and new data:`);
                         debug.raw(diff);
+
+                        const stripped_cached_data = Color.strip(cached_data);
+                        const stripped_response = Color.strip(response);
+                        if (stripped_cached_data === stripped_response) {
+                            debug.raw(Color.yellow(" * Note: The differences are only in colors."));
+                        }
                     }
                 }
 

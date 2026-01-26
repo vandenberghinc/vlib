@@ -73,6 +73,7 @@ cli.main({
         { id: ["--stop-after", "-a"], type: "string", description: "Stop running tests after a certain number of tests." },
         { id: ["--refresh", "-r"], type: "boolean", required: false, description: "When enabled this bypasses any cached output, forcing the user to re-evaluate the unit tests when in interactive mode, or simply cause a failure in non interactive mode." },
         { id: ["--repeat"], type: "number", required: false, description: "Repeat the tests a certain number of times. By default the tests are only executed once." },
+        { id: ["--strip-colors"], type: "boolean", required: false, description: "Strip colors from the unit test outputs when comparing cached and new data." },
         { id: ["--debug", "-d"], type: "number", description: "Set the debug level, 0 for no debug, 1 for basic debug, 2 for verbose debug." },
         // { id: ["--yes", "-y"], type: "boolean", description: "Automatically answer yes to all prompts." },
     ],

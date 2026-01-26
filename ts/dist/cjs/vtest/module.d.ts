@@ -53,6 +53,7 @@ export type Callback = (args: {
  * vtest --config ./vtest.json --interactive
  * ```
  *
+ * @nav Unit Tests
  * @docs
  */
 export declare class Module {
@@ -68,10 +69,11 @@ export declare class Module {
     private override_ctx?;
     /**
      * Create a unit test module.
-     * @param name The name of the module.
+     * @param opts Options for constructing the module.
+     * @docs
      */
     constructor(opts: {
-        /** The name of the module. */
+        /** The name of the module, this name should be unique accross all unit test modules. */
         name: string;
         /**
          * Optionally strip colors from the unit test outputs, defaults to `false`.

@@ -344,14 +344,23 @@ class Iterator {
   }
   /**
    * Assign the state as stopped.
-   * Basically assigning the position to the end of the source data.
-   * The iterator can choose wether to advance or not.
+   * Basically assigning the position to the end of the source data, unless `advance` is `true`.
+   * @warning When not advancing to the end, the state is simply set to the end position without calling `init()`.
+   *          Therefore some attributes may not be correctly set for the end position.
+   * @param advance Whether to advance to the end by repeatedly calling `advance()`, defaults to `false`.
    * @returns The current state instance for method chaining.
    * @docs
    */
-  stop() {
-    this.reset();
-    this.pos = this.end;
+  stop({ advance = false }) {
+    if (advance) {
+      while (this.avail) {
+        this.advance();
+      }
+    } else {
+      this.reset();
+      this.pos = this.end;
+      this.avail = false;
+    }
     return this;
   }
   /**
@@ -391,13 +400,6 @@ class Iterator {
   scan_opening_lang_patterns() {
     if (this.lang.has_patterns && this.is_not_escaped) {
       if (this.lang.string?.has(this.char)) {
-        if (this.__debug) {
-          console.log("DEBUG: detected string start", {
-            char: this.char,
-            pos: this.pos,
-            line_slice: this.source.data.slice(this.sol_index, this.pos + 1)
-          });
-        }
         this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
         return;
       } else if (this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
@@ -428,13 +430,6 @@ class Iterator {
   scan_closing_lang_patterns() {
     if (this.is_not_escaped && !this.is_code) {
       if (this.is_str && this.is_str.pos !== this.pos && this.char === this.is_str.open) {
-        if (this.__debug) {
-          console.log("DEBUG: detected string end", {
-            char: this.char,
-            pos: this.pos,
-            line_slice: this.source.data.slice(this.sol_index, this.pos + 1)
-          });
-        }
         this.is_str = void 0;
         return;
       } else if (this.is_comment && this.is_comment.type === "block") {
@@ -700,7 +695,7 @@ class Iterator {
     if (n < this.pos)
       throw new Error(`Cannot advance to a past position ${n} < ${this.pos}`);
     if (n >= this.end)
-      this.stop();
+      this.stop({ advance: true });
     else
       while (this.avail && this.pos < n)
         this.advance();
@@ -823,7 +818,7 @@ class Iterator {
     if (this.is_comment.type === "line") {
       const end_idx = this.find_next_eol_fast(this.pos);
       if (end_idx === -1) {
-        this.stop();
+        this.stop({ advance: true });
       } else {
         this.pos = end_idx;
         this.init();
@@ -833,7 +828,7 @@ class Iterator {
       const data_str = this.source.data;
       const idx = data_str.indexOf(close_pattern, this.pos);
       if (idx === -1) {
-        this.stop();
+        this.stop({ advance: true });
       } else {
         this.pos = idx + close_pattern.length;
         this.is_comment = void 0;

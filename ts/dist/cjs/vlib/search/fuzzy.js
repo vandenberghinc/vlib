@@ -51,24 +51,48 @@ var Fuzzy;
           );
         } else if (is_obj) {
           const target = targets2[i];
-          if (key) {
-            key = key;
+          if (Array.isArray(key)) {
             let min_matched = null;
             for (let k = 0; k < key.length; k++) {
-              if (target[key[k]] == null) {
+              let local_key = key[k];
+              ;
+              let local_target = target;
+              if (local_key.indexOf(".") !== -1) {
+                const key_parts = local_key.split(".");
+                for (let k2 = 0; k2 < key_parts.length - 1; k2++) {
+                  local_target = local_target[key_parts[k2]];
+                  if (local_target == null) {
+                    break;
+                  }
+                }
+                local_key = key_parts[key_parts.length - 1];
+              }
+              if (!local_target || typeof local_target !== "object" || typeof local_target[local_key] !== "string") {
                 continue;
               }
-              matched = match(query, case_match ? target[key[k]] : target[key[k]].toLowerCase(), allow_exceeding_chars);
+              matched = match(query, case_match ? local_target[local_key] : local_target[local_key].toLowerCase(), allow_exceeding_chars);
               if (matched != null && (min_matched === null || matched < min_matched)) {
                 min_matched = matched;
               }
             }
             matched = min_matched;
           } else {
-            if (target[key] == null) {
+            let local_key = key;
+            let local_target = target;
+            if (local_key.indexOf(".") !== -1) {
+              const key_parts = local_key.split(".");
+              for (let k = 0; k < key_parts.length - 1; k++) {
+                local_target = local_target[key_parts[k]];
+                if (local_target == null) {
+                  break;
+                }
+              }
+              local_key = key_parts[key_parts.length - 1];
+            }
+            if (!local_target || typeof local_target !== "object" || typeof local_target[local_key] !== "string") {
               continue;
             }
-            matched = match(query, case_match ? target[key] : target[key].toLowerCase(), allow_exceeding_chars);
+            matched = match(query, case_match ? local_target[local_key] : local_target[local_key].toLowerCase(), allow_exceeding_chars);
           }
           if (nested_key !== null && target[nested_key] != null) {
             calc_sims(target[nested_key]);

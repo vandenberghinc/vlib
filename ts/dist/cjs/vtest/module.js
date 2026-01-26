@@ -55,7 +55,8 @@ class Module {
   override_ctx;
   /**
    * Create a unit test module.
-   * @param name The name of the module.
+   * @param opts Options for constructing the module.
+   * @docs
    */
   constructor(opts) {
     if (Modules.find((i) => i.name === opts.name)) {
@@ -213,8 +214,8 @@ ${input.split("\n").map((l) => `   | ${import_vlib.Color.gray(l)}`).join("\n")}`
 ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
         if (cached_data && !ctx.no_changes) {
           const { status, diff } = (0, import_compute_diff.compute_diff)({
-            new: response,
-            old: cached_data,
+            new: ctx.strip_colors ? import_vlib.Color.strip(response) : response,
+            old: ctx.strip_colors ? import_vlib.Color.strip(cached_data) : cached_data,
             prefix: " * "
           });
           if (status === "identical") {
@@ -222,6 +223,11 @@ ${response.split("\n").map((l) => `   | ${l}`).join("\n")}`);
           } else {
             import_vlib.debug.raw(` * Detected changes between old and new data:`);
             import_vlib.debug.raw(diff);
+            const stripped_cached_data = import_vlib.Color.strip(cached_data);
+            const stripped_response = import_vlib.Color.strip(response);
+            if (stripped_cached_data === stripped_response) {
+              import_vlib.debug.raw(import_vlib.Color.yellow(" * Note: The differences are only in colors."));
+            }
           }
         }
         let permission = false;

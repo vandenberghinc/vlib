@@ -37,52 +37,49 @@ function compute_diff({ new: new_data, old, prefix = "", trim = true, trim_keep 
         return acc;
       }
     }
-    if (part.value !== "") {
+    if (part.value !== "")
       acc.push(part);
-    }
     return acc;
   }, []);
-  let line_count = 0;
-  const diff_lines = diffs.map((part) => {
-    const s = part.value.split("\n");
-    line_count += s.length - 1;
-    return s;
-  });
-  const max_line_nr_length = String(line_count).length;
+  const diff_lines = diffs.map((part) => part.value.split(/\r?\n/));
+  const old_total = old.split(/\r?\n/).length - (old.endsWith("\n") || old.endsWith("\r\n") ? 1 : 0);
+  const new_total = new_data.split(/\r?\n/).length - (new_data.endsWith("\n") || new_data.endsWith("\r\n") ? 1 : 0);
+  const max_line_nr_length = String(Math.max(old_total, new_total, 1)).length;
   const whitespace_prefix = " ".repeat(prefix.length > 1 ? prefix.length - 1 : 0);
-  const dumped_lines = [];
   const plus_str = import_vlib.Color.green_bold("+");
   const minus_str = import_vlib.Color.red_bold("-");
-  let line_nr = 0;
-  for (let index = 0; index < diffs.length; ++index) {
-    const part = diffs[index];
+  const dumped_lines = [];
+  let old_nr = 0;
+  let new_nr = 0;
+  for (let part_index = 0; part_index < diffs.length; ++part_index) {
+    const part = diffs[part_index];
     const line_prefix = part.added ? plus_str : part.removed ? minus_str : " ";
-    let local_line_nr = part.removed ? line_nr : void 0;
     let last_dots = false;
-    const iter_diff_lines = diff_lines[index];
-    for (let line_index = 0; index < iter_diff_lines.length; ++index) {
-      const line = iter_diff_lines[line_index];
-      if (local_line_nr != null) {
-        ++local_line_nr;
-      } else {
-        ++line_nr;
-      }
-      if (line_index === iter_diff_lines.length - 1 && line === "")
+    const lines = diff_lines[part_index];
+    for (let line_index = 0; line_index < lines.length; ++line_index) {
+      const line = lines[line_index];
+      if (line_index === lines.length - 1 && line === "")
         continue;
-      if (trim && !part.added && !part.removed && !(line_index < trim_keep || line_index >= iter_diff_lines.length - trim_keep)) {
-        if (!last_dots && (line_index === trim_keep || line_index === iter_diff_lines.length - trim_keep - 1)) {
-          dumped_lines.push(`${whitespace_prefix} ${String().padEnd(max_line_nr_length, " ")} | ${line_prefix} ${import_vlib.Color.italic("... unchanged ...")}`);
+      if (part.added) {
+        ++new_nr;
+      } else if (part.removed) {
+        ++old_nr;
+      } else {
+        ++old_nr;
+        ++new_nr;
+      }
+      if (trim && !part.added && !part.removed && !(line_index < trim_keep || line_index >= lines.length - trim_keep)) {
+        if (!last_dots && (line_index === trim_keep || line_index === lines.length - trim_keep - 1)) {
+          dumped_lines.push(`${whitespace_prefix} ${"".padEnd(max_line_nr_length, " ")} | ${line_prefix} ${import_vlib.Color.italic("... unchanged ...")}`);
           last_dots = true;
         }
         continue;
       }
-      dumped_lines.push(`${whitespace_prefix} ${String(local_line_nr != null ? local_line_nr : line_nr).padEnd(max_line_nr_length, " ")} | ${line_prefix} ${line}`);
+      const display_nr = part.removed ? old_nr : new_nr;
+      dumped_lines.push(`${whitespace_prefix} ${String(display_nr).padEnd(max_line_nr_length, " ")} | ${line_prefix} ${line}`);
       last_dots = false;
     }
-    ;
-    --line_nr;
   }
-  ;
   return { status: "diff", changes: diffs, diff: dumped_lines.join("\n") };
 }
 // Annotate the CommonJS export names for ESM import in node:

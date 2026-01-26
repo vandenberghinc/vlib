@@ -240,12 +240,16 @@ export declare class Iterator<Src extends Source = Source> {
     reset(): this;
     /**
      * Assign the state as stopped.
-     * Basically assigning the position to the end of the source data.
-     * The iterator can choose wether to advance or not.
+     * Basically assigning the position to the end of the source data, unless `advance` is `true`.
+     * @warning When not advancing to the end, the state is simply set to the end position without calling `init()`.
+     *          Therefore some attributes may not be correctly set for the end position.
+     * @param advance Whether to advance to the end by repeatedly calling `advance()`, defaults to `false`.
      * @returns The current state instance for method chaining.
      * @docs
      */
-    stop(): this;
+    stop({ advance }: {
+        advance?: boolean;
+    }): this;
     /**
      * Switch language contexts.
      * @returns If the current context is inside a language dependent option

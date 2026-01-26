@@ -424,15 +424,25 @@ export class Iterator {
     }
     /**
      * Assign the state as stopped.
-     * Basically assigning the position to the end of the source data.
-     * The iterator can choose wether to advance or not.
+     * Basically assigning the position to the end of the source data, unless `advance` is `true`.
+     * @warning When not advancing to the end, the state is simply set to the end position without calling `init()`.
+     *          Therefore some attributes may not be correctly set for the end position.
+     * @param advance Whether to advance to the end by repeatedly calling `advance()`, defaults to `false`.
      * @returns The current state instance for method chaining.
      * @docs
      */
-    stop() {
-        this.reset();
-        this.pos = this.end;
-        /** @warning dont call init() here since that causes issues with previous state attributes. */
+    stop({ advance = false }) {
+        if (advance) {
+            while (this.avail) {
+                this.advance();
+            }
+        }
+        else {
+            this.reset();
+            this.pos = this.end;
+            this.avail = false;
+            /** @warning dont call init() here since that causes issues with previous state attributes. */
+        }
         return this;
     }
     /**
@@ -484,15 +494,20 @@ export class Iterator {
             //     next_next: this.source.data[this.pos + 2],
             //     lang_comment_line: this.lang.comment?.line,
             // });
+            // console.log("SCAN OPENING PATTERNS", {
+            //     pos: this.pos,
+            //     char: this.char,
+            //     at_sol: this.at_sol,
+            // });
             // detect string start
             if (this.lang.string?.has(this.char)) {
-                if (this.__debug) {
-                    console.log("DEBUG: detected string start", {
-                        char: this.char,
-                        pos: this.pos,
-                        line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
-                    });
-                }
+                // if (this.__debug) {
+                //     console.log("DEBUG: detected string start", {
+                //         char: this.char,
+                //         pos: this.pos,
+                //         line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                //     })
+                // }
                 this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
                 return; // stop so we dont match other patterns.
                 // console.log(Color.orange(`Detected string start: ${this.peek} at pos ${this.pos}`));
@@ -502,6 +517,11 @@ export class Iterator {
                 && (this.at_sol || !this.lang.comment.line.sol)
                 && this.char === this.lang.comment.line.open[0]
                 && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
+                // console.log("DEBUG: detected line comment start", {
+                //     char: this.char,
+                //     pos: this.pos,
+                //     line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                // });
                 this.is_comment = { type: 'line', open: this.lang.comment?.line.open, pos: this.pos, line: this.line, col: this.col };
                 return; // stop so we dont match other patterns.
                 // console.log(Color.orange(`Detected line comment at ${this.pos}`));
@@ -542,13 +562,13 @@ export class Iterator {
             if (this.is_str
                 && this.is_str.pos !== this.pos
                 && this.char === this.is_str.open) {
-                if (this.__debug) {
-                    console.log("DEBUG: detected string end", {
-                        char: this.char,
-                        pos: this.pos,
-                        line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
-                    });
-                }
+                // if (this.__debug) {
+                //     console.log("DEBUG: detected string end", {
+                //         char: this.char,
+                //         pos: this.pos,
+                //         line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                //     });
+                // }
                 // console.log(Color.orange(`Found string end: ${this.peek} at pos ${this.pos} - delim ${this.is_str.open} - open pos ${this.is_str.pos} - data: [${this.source.data.slice(this.is_str.pos, this.pos + 1)}]`));
                 this.is_str = undefined;
                 return; // stop so we dont match other patterns.
@@ -889,7 +909,7 @@ export class Iterator {
         if (n < this.pos)
             throw new Error(`Cannot advance to a past position ${n} < ${this.pos}`);
         if (n >= this.end)
-            this.stop();
+            this.stop({ advance: true });
         else
             while (this.avail && this.pos < n)
                 this.advance();
@@ -1005,7 +1025,7 @@ export class Iterator {
         if (this.is_comment.type === "line") {
             const end_idx = this.find_next_eol_fast(this.pos);
             if (end_idx === -1) {
-                this.stop();
+                this.stop({ advance: true });
             }
             else {
                 this.pos = end_idx;
@@ -1017,7 +1037,7 @@ export class Iterator {
             const data_str = this.source.data;
             const idx = data_str.indexOf(close_pattern, this.pos);
             if (idx === -1) {
-                this.stop();
+                this.stop({ advance: true });
             }
             else {
                 this.pos = idx + close_pattern.length;
