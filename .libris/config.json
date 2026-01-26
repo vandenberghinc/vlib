@@ -29,7 +29,21 @@
                     "bg": "#58B684"
                 }
             }
-        }
+        },
+        "sections": [
+            {
+                "text": "vlib Node.js",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
+            },
+            {
+                "text": "vlib Browser",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
+            },
+            {
+                "text": "vtest",
+                "url": "/docs/miF5fmUsvgaEcqLP/vtest/latest"
+            }
+        ]
     },
     {
         "project": "vlib-web",
@@ -60,7 +74,21 @@
                     "bg": "#58B684"
                 }
             }
-        }
+        },
+        "sections": [
+            {
+                "text": "vlib Node.js",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
+            },
+            {
+                "text": "vlib Browser",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
+            },
+            {
+                "text": "vtest",
+                "url": "/docs/miF5fmUsvgaEcqLP/vtest/latest"
+            }
+        ]
     },
     {
         "project": "vtest",
@@ -94,7 +122,21 @@
                     "bg": "#58B684"
                 }
             }
-        }
+        },
+        "sections": [
+            {
+                "text": "vlib Node.js",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
+            },
+            {
+                "text": "vlib Browser",
+                "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
+            },
+            {
+                "text": "vtest",
+                "url": "/docs/miF5fmUsvgaEcqLP/vtest/latest"
+            }
+        ]
     },
     {
         "project": "vrepo",
