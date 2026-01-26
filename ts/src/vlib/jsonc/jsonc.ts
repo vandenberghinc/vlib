@@ -19,6 +19,7 @@ import { Path } from '../generic/path.js';
 /**
  * JSONC - A parser for json5 syntax with comments.
  * This includes a data insertion save function that preserves the original comments and formatting.
+ * @nav System
  * @docs
  */
 export namespace JSONC {
