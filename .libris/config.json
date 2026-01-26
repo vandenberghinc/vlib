@@ -32,11 +32,11 @@
         },
         "sections": [
             {
-                "text": "VLib Node.js",
+                "text": "Node.js",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
             },
             {
-                "text": "VLib Browser",
+                "text": "Browser",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
             },
             {
@@ -77,11 +77,11 @@
         },
         "sections": [
             {
-                "text": "VLib Node.js",
+                "text": "Node.js",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
             },
             {
-                "text": "VLib Browser",
+                "text": "Browser",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
             },
             {
@@ -125,12 +125,8 @@
         },
         "sections": [
             {
-                "text": "VLib Node.js",
+                "text": "VLib",
                 "url": "/docs/miF5fmUsvgaEcqLP/vlib/latest"
-            },
-            {
-                "text": "VLib Browser",
-                "url": "/docs/miF5fmUsvgaEcqLP/vlib-web/latest"
             },
             {
                 "text": "VTest",
