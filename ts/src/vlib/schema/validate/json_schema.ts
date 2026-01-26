@@ -162,6 +162,8 @@ const entry_to_json_schema = (
 
 /**
  * The options for creating a JSON-Schema.
+ * @nav Schema
+ * @docs
  */
 export interface CreateJSONSchemaOpts<S extends Entries.Opts = Entries.Opts> {
     /** The entries schema to convert. */
