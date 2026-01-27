@@ -1259,6 +1259,33 @@ export class Iterator<Src extends Source = Source> {
     }
 
     /**
+     * Consume an optional shebang when at the start of the file.
+     * @note This does not check if we are at the start of the file, that is up to the user.
+     * 
+     * @param slice If true, returns the consumed shebang content.
+     * 
+     * @returns The consumed shebang string when slice is true.
+     *          If no shebang is present, returns an empty string when slice is true.
+     *
+     * @docs
+     */
+    consume_shebang<S extends boolean = false>(
+        slice?: S,
+    ): S extends true ? string : void {
+        type Res = S extends true ? string : void;
+        const start = this.pos;
+        if (this.char === '#' && this.next === '!') {
+            // Jump to the end of the shebang line, without advancing
+            // since it may disrupt the language patterns if we advance.
+            const end_idx = this.find_next_eol_fast(this.pos);
+            this.jump_to(end_idx + 1, { advance: false, line: 2, col: 1 });
+            return (slice ? this.source.data.slice(start, this.pos) : undefined) as Res;
+        }
+        return (slice ? "" : undefined) as Res;
+    }
+
+
+    /**
      * Walk the iterator to the end of a file with a visit callback.
      * The iterator will automatically advance to the next position, if the callback has not advanced the iterator.
      * If iteration will stop if the callback returns exactly `false`, not when a falsy value is returned.

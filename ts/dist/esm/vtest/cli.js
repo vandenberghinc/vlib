@@ -23,16 +23,16 @@ const cli = new vlib.cli.CLI({
 });
 /**
  * Execute the defined VTest modules.
- * When no "--config" option is passed, the CLI will search for a configuration file named 'vtest.json', '.vtest.json', 'vtest.jsonc', or '.vtest.jsonc' in the current working directory or above.
- * Unless the '--config' option is defined as "ignore", in which case no configuration file will be loaded.
+ * When no `--config` option is passed, the CLI will search for a configuration file named `vtest.json`, `.vtest.json`, `vtest.jsonc`, or `.vtest.jsonc` in the current working directory or above.
+ * Unless the `--config` option is defined as `ignore`, in which case no configuration file will be loaded.
  *
  * Any additional options passed will override the options in the loaded configuration.
  *
  * A configuration file must be located at the root of the project.
  *
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
- * @param --module {string} The module to run, e.g. 'module_1'.
- * @param --target {string} An optional identifier of a module unit test, when defined only the targeted unit test(s) will be executed. Supports wildcard patterns '*'.
+ * @param --module {string} The module to run, e.g. `module_1`.
+ * @param --target {string} An optional identifier of a module unit test, when defined only the targeted unit test(s) will be executed. Supports wildcard patterns `*`.
  * @param --interactive {boolean} Run in interactive mode, allowing you to select which tests to run.
  * @param --no-changes {boolean} Do not log any diff changes between cached and new data when in interactive mode.
  * @param --stop-on-failure {boolean} Stop running tests on the first failure.
@@ -96,7 +96,7 @@ cli.main({
  * ```
  *
  * @name List Files
- * @nav CLi
+ * @nav CLI
  * @docs
  */
 cli.command({

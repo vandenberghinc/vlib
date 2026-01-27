@@ -431,6 +431,18 @@ export declare class Iterator<Src extends Source = Source> {
     */
     consume_comment<S extends boolean = false>(slice?: S): S extends true ? string : void;
     /**
+     * Consume an optional shebang when at the start of the file.
+     * @note This does not check if we are at the start of the file, that is up to the user.
+     *
+     * @param slice If true, returns the consumed shebang content.
+     *
+     * @returns The consumed shebang string when slice is true.
+     *          If no shebang is present, returns an empty string when slice is true.
+     *
+     * @docs
+     */
+    consume_shebang<S extends boolean = false>(slice?: S): S extends true ? string : void;
+    /**
      * Walk the iterator to the end of a file with a visit callback.
      * The iterator will automatically advance to the next position, if the callback has not advanced the iterator.
      * If iteration will stop if the callback returns exactly `false`, not when a falsy value is returned.

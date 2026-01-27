@@ -100,7 +100,7 @@ cli.main({
  * ```
  * 
  * @name List Files
- * @nav CLI
+ * @nav CLi
  * @docs
  */
 cli.command({

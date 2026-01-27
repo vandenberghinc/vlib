@@ -9,6 +9,8 @@ import { RequiredKeys } from "../../types/types.js";
 import { Entries } from "../index.m.web.js";
 /**
  * The options for creating a JSON-Schema.
+ * @nav Schema
+ * @docs
  */
 export interface CreateJSONSchemaOpts<S extends Entries.Opts = Entries.Opts> {
     /** The entries schema to convert. */
@@ -26,6 +28,7 @@ export interface CreateJSONSchemaOpts<S extends Entries.Opts = Entries.Opts> {
 }
 /**
  * Generate a draft-07 JSON-Schema for a validator definition.
+ * This can be used with the `$schema` keyword in JSON-Schema based tools.
  * @param opts.schema The object validator schema to convert, see {@link CreateJSONSchemaOpts} for more info.
  * @throws {InvalidUsageError} When the {@link CreateJSONSchemaOpts.schema} option is missing.
  * @nav Schema
