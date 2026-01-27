@@ -48,7 +48,7 @@ const cli = new vlib.cli.CLI({
  * {Run}
  * Execute all unit tests in the `dist/**\/unit_tests/**\/*.js` files.
  * ```bash
- * vtest --include 'dist/**\/unit_tests/**\/*.js
+ * vtest --include 'dist/**\/unit_tests/**\/*.js'
  * ```
  * @name Main
  * @signature $ vtest
