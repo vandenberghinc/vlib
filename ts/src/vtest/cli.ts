@@ -92,7 +92,7 @@ cli.main({
 });
 
 /**
- * The --list-files command, used to list the included files after processing the 'include' and 'exclude' attributes.
+ * The `--list-files` command, used to list the included files after processing the 'include' and 'exclude' attributes.
  * 
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
  * 
@@ -130,7 +130,7 @@ cli.command({
 });
 
 /**
- * The --list-modules command, used to list the included files after processing the 'include' and 'exclude' attributes.
+ * The `--list-modules` command, used to list the included files after processing the 'include' and 'exclude' attributes.
  * 
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
  * 
@@ -167,7 +167,7 @@ cli.command({
 });
 
 /**
- * The --reset command, used to reset the cached result of certain unit tests.
+ * The `--reset` command, used to reset the cached result of certain unit tests.
  * 
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
  * @param --module {string} The module of the unit test identifier(s), e.g. 'module_1'.
