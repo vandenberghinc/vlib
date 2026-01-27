@@ -46,7 +46,7 @@ const cli = new vlib.cli.CLI({
  * 
  * @example
  * ```bash
- * vtest --include 'dist/**\/unit_tests/**\/*.js
+ 
  * ```
  * 
  * @name Main
