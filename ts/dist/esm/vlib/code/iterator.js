@@ -500,7 +500,7 @@ export class Iterator {
             //     at_sol: this.at_sol,
             // });
             // detect string start
-            if (this.lang.string?.has(this.char)) {
+            if (this.is_code && this.lang.string?.has(this.char)) {
                 // if (this.__debug) {
                 //     console.log("DEBUG: detected string start", {
                 //         char: this.char,
@@ -513,7 +513,8 @@ export class Iterator {
                 // console.log(Color.orange(`Detected string start: ${this.peek} at pos ${this.pos}`));
             }
             // detect line comment
-            else if (this.lang.comment?.line
+            else if (this.is_code &&
+                this.lang.comment?.line
                 && (this.at_sol || !this.lang.comment.line.sol)
                 && this.char === this.lang.comment.line.open[0]
                 && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
@@ -527,7 +528,8 @@ export class Iterator {
                 // console.log(Color.orange(`Detected line comment at ${this.pos}`));
             }
             // detect block comment
-            else if (this.lang.comment?.block
+            else if (this.is_code &&
+                this.lang.comment?.block
                 && this.lang.comment.first_block_chars?.has(this.char)) {
                 for (const [open, close] of this.lang.comment.block) {
                     if ((open.length === 1 && this.char === open)
@@ -539,7 +541,8 @@ export class Iterator {
                 // fallthrough
             }
             // detect regex literal
-            if (this.lang.regex &&
+            if (this.is_code &&
+                this.lang.regex &&
                 this.lang.first_regex_chars?.has(this.char)) {
                 for (const [open, close] of this.lang.regex) {
                     if ((open.length === 1 && this.char === open) || (open.length > 1 && this.source.data.startsWith(open, this.pos))) {

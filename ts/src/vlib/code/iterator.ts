@@ -650,7 +650,7 @@ export class Iterator<Src extends Source = Source> {
             // });
 
             // detect string start
-            if (this.lang.string?.has(this.char)) {
+            if (this.is_code && this.lang.string?.has(this.char)) {
                 // if (this.__debug) {
                 //     console.log("DEBUG: detected string start", {
                 //         char: this.char,
@@ -665,6 +665,7 @@ export class Iterator<Src extends Source = Source> {
 
             // detect line comment
             else if (
+                this.is_code &&
                 this.lang.comment?.line
                 && (this.at_sol || !this.lang.comment.line.sol)
                 && this.char === this.lang.comment.line.open[0]
@@ -682,6 +683,7 @@ export class Iterator<Src extends Source = Source> {
 
             // detect block comment
             else if (
+                this.is_code &&
                 this.lang.comment?.block
                 && this.lang.comment.first_block_chars?.has(this.char)
             ) {
@@ -699,6 +701,7 @@ export class Iterator<Src extends Source = Source> {
 
             // detect regex literal
             if (
+                this.is_code &&
                 this.lang.regex &&
                 this.lang.first_regex_chars?.has(this.char)
             ) {
