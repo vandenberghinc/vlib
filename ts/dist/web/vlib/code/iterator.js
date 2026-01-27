@@ -500,7 +500,7 @@ export class Iterator {
             //     at_sol: this.at_sol,
             // });
             // detect string start
-            if (this.is_code && this.lang.string?.has(this.char)) {
+            if (this.lang.string?.has(this.char)) {
                 // if (this.__debug) {
                 //     console.log("DEBUG: detected string start", {
                 //         char: this.char,
@@ -510,11 +510,9 @@ export class Iterator {
                 // }
                 this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
                 return; // stop so we dont match other patterns.
-                // console.log(Color.orange(`Detected string start: ${this.peek} at pos ${this.pos}`));
             }
             // detect line comment
-            else if (this.is_code &&
-                this.lang.comment?.line
+            else if (this.lang.comment?.line
                 && (this.at_sol || !this.lang.comment.line.sol)
                 && this.char === this.lang.comment.line.open[0]
                 && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
@@ -528,12 +526,16 @@ export class Iterator {
                 // console.log(Color.orange(`Detected line comment at ${this.pos}`));
             }
             // detect block comment
-            else if (this.is_code &&
-                this.lang.comment?.block
+            else if (this.lang.comment?.block
                 && this.lang.comment.first_block_chars?.has(this.char)) {
                 for (const [open, close] of this.lang.comment.block) {
                     if ((open.length === 1 && this.char === open)
                         || (open.length > 1 && this.source.data.startsWith(open, this.pos))) {
+                        // console.log("DEBUG: detected block comment start", {
+                        //     char: this.char,
+                        //     pos: this.pos,
+                        //     line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                        // });
                         this.is_comment = { type: 'block', open, close, pos: this.pos, line: this.line, col: this.col };
                         return; // stop so we dont match other patterns.
                     }
@@ -541,11 +543,15 @@ export class Iterator {
                 // fallthrough
             }
             // detect regex literal
-            if (this.is_code &&
-                this.lang.regex &&
+            if (this.lang.regex &&
                 this.lang.first_regex_chars?.has(this.char)) {
                 for (const [open, close] of this.lang.regex) {
                     if ((open.length === 1 && this.char === open) || (open.length > 1 && this.source.data.startsWith(open, this.pos))) {
+                        // console.log("DEBUG: detected regex start", {
+                        //     char: this.char,
+                        //     pos: this.pos,
+                        //     line_slice: this.source.data.slice(this.sol_index, this.pos + 1),
+                        // });
                         this.is_regex = { open, close, pos: this.pos, line: this.line, col: this.col };
                         return; // stop so we dont match other patterns.
                     }
@@ -752,9 +758,13 @@ export class Iterator {
         }
         // Jump to the end of the comment when `exclude_comments` is enabled.
         if (this.exclude_comments && this.is_comment && this.avail) {
+            // if (this.__debug) {
+            //     console.log(`DEBUG: Excluding inside comment at ${this.pos}`, this.debug_cursor());
+            // }
             this.consume_comment();
-            return;
-            // this.advance();
+            // if (this.__debug) {
+            //     console.log(`DEBUG: Finished comment exclusion at ${this.pos}`, this.debug_cursor());
+            // }
         }
         // return;
     }
@@ -820,9 +830,17 @@ export class Iterator {
         // Forward on comment when exclude is requested.
         if (this.exclude_comments && this.is_comment && this.avail) {
             // console.log(Color.yellow(`Excluding inside comment at ${this.pos}`));
+            // if (this.__debug) {
+            //     console.log(`DEBUG: Excluding inside comment at ${this.pos}`, this.debug_cursor());
+            // }
             this.consume_comment();
+            // if (this.__debug) {
+            //     console.log(`DEBUG: Finished comment exclusion at ${this.pos}`, this.debug_cursor());
+            // }
         }
-        // console.log("Visiting char ", this.debug_cursor());
+        // if (this.__debug) {
+        //     console.log("Visiting char ", this.debug_cursor());
+        // }
     }
     /**
      * Perform a minor system advance on a small clone of the iterator,
@@ -1622,11 +1640,13 @@ export class Iterator {
             ch: this.char,
             pos: this.pos,
             loc: `${this.line}:${this.col}`,
+            ...(this.is_escaped ? { is_escaped: this.is_escaped } : {}),
             ...(this.at_sol ? { at_sol: this.at_sol } : {}),
             ...(this.is_eol ? { is_eol: this.is_eol } : {}),
             ...(this.is_comment ? { is_comment: this.is_comment } : {}),
             ...(this.is_str ? { is_str: this.is_str } : {}),
             ...(this.is_regex ? { is_regex: this.is_regex } : {}),
+            ...(this.no_avail ? { no_avail: this.no_avail } : {}),
         };
     }
     /**

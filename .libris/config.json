@@ -8,9 +8,10 @@
         "exclude": [
             "**/*.js"
         ],
+        "favicon": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/favicon.ico",
         "icon": {
-            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
-            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png",
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.dark.png",
             "height": 30
         },
         "theme": {
@@ -54,9 +55,10 @@
         "exclude": [
             "**/*.js"
         ],
+        "favicon": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/favicon.ico",
         "icon": {
-            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
-            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png",
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.dark.png",
             "height": 30
         },
         "theme": {
@@ -103,8 +105,8 @@
             "**/*.js"
         ],
         "icon": {
-            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.png",
-            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon-v5/stroke.dark.png",
+            "dark": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.png",
+            "light": "https://raw.githubusercontent.com/vandenberghinc/vlib/master/dev/media/icon/stroke.dark.png",
             "height": 30
         },
         "theme": {

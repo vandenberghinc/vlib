@@ -399,13 +399,13 @@ class Iterator {
    */
   scan_opening_lang_patterns() {
     if (this.lang.has_patterns && this.is_not_escaped) {
-      if (this.is_code && this.lang.string?.has(this.char)) {
+      if (this.lang.string?.has(this.char)) {
         this.is_str = { open: this.char, pos: this.pos, line: this.line, col: this.col };
         return;
-      } else if (this.is_code && this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
+      } else if (this.lang.comment?.line && (this.at_sol || !this.lang.comment.line.sol) && this.char === this.lang.comment.line.open[0] && this.source.data.startsWith(this.lang.comment.line.open, this.pos)) {
         this.is_comment = { type: "line", open: this.lang.comment?.line.open, pos: this.pos, line: this.line, col: this.col };
         return;
-      } else if (this.is_code && this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
+      } else if (this.lang.comment?.block && this.lang.comment.first_block_chars?.has(this.char)) {
         for (const [open, close] of this.lang.comment.block) {
           if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
             this.is_comment = { type: "block", open, close, pos: this.pos, line: this.line, col: this.col };
@@ -413,7 +413,7 @@ class Iterator {
           }
         }
       }
-      if (this.is_code && this.lang.regex && this.lang.first_regex_chars?.has(this.char)) {
+      if (this.lang.regex && this.lang.first_regex_chars?.has(this.char)) {
         for (const [open, close] of this.lang.regex) {
           if (open.length === 1 && this.char === open || open.length > 1 && this.source.data.startsWith(open, this.pos)) {
             this.is_regex = { open, close, pos: this.pos, line: this.line, col: this.col };
@@ -563,7 +563,6 @@ class Iterator {
     }
     if (this.exclude_comments && this.is_comment && this.avail) {
       this.consume_comment();
-      return;
     }
   }
   /**
@@ -1384,11 +1383,13 @@ class Iterator {
       ch: this.char,
       pos: this.pos,
       loc: `${this.line}:${this.col}`,
+      ...this.is_escaped ? { is_escaped: this.is_escaped } : {},
       ...this.at_sol ? { at_sol: this.at_sol } : {},
       ...this.is_eol ? { is_eol: this.is_eol } : {},
       ...this.is_comment ? { is_comment: this.is_comment } : {},
       ...this.is_str ? { is_str: this.is_str } : {},
-      ...this.is_regex ? { is_regex: this.is_regex } : {}
+      ...this.is_regex ? { is_regex: this.is_regex } : {},
+      ...this.no_avail ? { no_avail: this.no_avail } : {}
     };
   }
   /**
