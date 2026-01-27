@@ -51,7 +51,7 @@ const cli = new vlib.cli.CLI({
  * vtest --include 'dist/**\/unit_tests/**\/*.js
  * ```
  * @name Main
- * @reference $ vtest
+ * @signature $ vtest
  * @nav CLI
  * @docs
  */
@@ -104,7 +104,7 @@ cli.main({
  * ```
  * 
  * @name List Files
- * @reference $ vtest --list-files
+ * @signature $ vtest --list-files
  * @nav CLI
  * @docs
  */
@@ -142,7 +142,7 @@ cli.command({
  * ```
  * 
  * @name List Modules
- * @reference $ vtest --list-modules
+ * @signature $ vtest --list-modules
  * @nav CLI
  * @docs
  */
@@ -182,7 +182,7 @@ cli.command({
  * ```
  * 
  * @name Reset Unit Tests
- * @reference $ vtest --reset
+ * @signature $ vtest --reset
  * @nav CLI
  * @docs
  */

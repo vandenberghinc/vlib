@@ -42,11 +42,13 @@ const cli = new vlib.cli.CLI({
  * @param --debug {number} Set the debug level, 0 for no debug, 1 for basic debug, 2 for verbose debug.
  *
  * @example
+ * {Run}
+ * Execute all unit tests in the `dist/**\/unit_tests/**\/*.js` files.
  * ```bash
  * vtest --include 'dist/**\/unit_tests/**\/*.js
  * ```
- *
  * @name Main
+ * @signature $ vtest
  * @nav CLI
  * @docs
  */
@@ -91,11 +93,14 @@ cli.main({
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
  *
  * @example
+ * {List Files}
+ * List all included files.
  * ```bash
  * vtest --list-files
  * ```
  *
  * @name List Files
+ * @signature $ vtest --list-files
  * @nav CLI
  * @docs
  */
@@ -125,11 +130,14 @@ cli.command({
  * @param --config {string | string[]} The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas.
  *
  * @example
+ * {List Modules}
+ * List all available unit test modules.
  * ```bash
  * vtest --list-modules
  * ```
  *
  * @name List Modules
+ * @signature $ vtest --list-modules
  * @nav CLI
  * @docs
  */
@@ -161,11 +169,14 @@ cli.command({
  * @param --yes {boolean} Automatically answer yes to all prompts.
  *
  * @example
+ * {Reset}
+ * Reset the cached result of all unit tests included in the default vtest configuration.
  * ```bash
- * vtest --reset 'dist/**\/unit_tests/**\/*.js'
+ * vtest --reset
  * ```
  *
  * @name Reset Unit Tests
+ * @signature $ vtest --reset
  * @nav CLI
  * @docs
  */
@@ -175,7 +186,7 @@ cli.command({
         Reset the cached result of specified unit tests from a targeted module.
         `.dedent(true),
     examples: {
-        "Reset": "vtest --reset 'dist/**/unit_tests/**/*.js'",
+        "Reset": "vtest --reset",
     },
     args: [
         { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." },

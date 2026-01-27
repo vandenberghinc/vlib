@@ -115,7 +115,7 @@ cli.command({
         Reset the cached result of specified unit tests from a targeted module.
         `.dedent(true),
   examples: {
-    "Reset": "vtest --reset 'dist/**/unit_tests/**/*.js'"
+    "Reset": "vtest --reset"
   },
   args: [
     { id: ["--config", "-c"], type: "string[]", required: false, description: "The path to the configuration file. By default it will search for any configuration files in the current working directory or above. Supports glob patterns. Multiple paths can be specified by separating them with commas." },
