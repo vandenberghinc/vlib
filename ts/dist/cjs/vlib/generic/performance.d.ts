@@ -37,4 +37,9 @@ export declare class Performance {
      * @docs
      */
     dump(filter?: (ms_performance: number) => boolean): string;
+    /**
+     * Normalize a performance measurement, converting it to `{}ms` format
+     * or `{}s` format if greater than 1000ms, etc.
+     */
+    static normalize(ms_performance: number): string;
 }

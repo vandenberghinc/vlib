@@ -69,5 +69,35 @@ export class Performance {
         });
         return buf.join("\n");
     }
+    /**
+     * Normalize a performance measurement, converting it to `{}ms` format
+     * or `{}s` format if greater than 1000ms, etc.
+     */
+    static normalize(ms_performance) {
+        if (ms_performance < 1000) {
+            return `${ms_performance}ms`;
+        }
+        else if (ms_performance < 60_000) {
+            return `${(ms_performance / 1000).toFixed(2)}s`;
+        }
+        else if (ms_performance < 60_000 * 60) {
+            return `${(ms_performance / 60000).toFixed(2)}min`;
+        }
+        else if (ms_performance < 60_000 * 60 * 24) {
+            return `${(ms_performance / 3600000).toFixed(2)}h`;
+        }
+        else if (ms_performance < 60_000 * 60 * 24 * 7) {
+            return `${(ms_performance / 86400000).toFixed(2)}d`;
+        }
+        else if (ms_performance < 60_000 * 60 * 24 * 30) {
+            return `${(ms_performance / 604800000).toFixed(2)}w`;
+        }
+        else if (ms_performance < 60_000 * 60 * 24 * 365) {
+            return `${(ms_performance / 2592000000).toFixed(2)}mo`;
+        }
+        else {
+            return `${(ms_performance / 31536000000).toFixed(2)}y`;
+        }
+    }
 }
 //# sourceMappingURL=performance.js.map

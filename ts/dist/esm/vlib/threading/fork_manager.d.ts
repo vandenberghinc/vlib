@@ -1,7 +1,3 @@
-/**
- * @author Daan van den Bergh
- * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
- */
 import { FormatErrorOpts } from '../logging/index.m.web.js';
 import { DeepRequired } from '../types/types.js';
 import { ForkOptions } from 'child_process';
@@ -313,15 +309,6 @@ export declare namespace ForkManager {
          * @default undefined
          */
         fork_options?: ForkOptions;
-        /**
-         * Restart configuration used in persistent mode to control how crashed
-         * worker processes are restarted.
-         *
-         * Ignored in ephemeral mode.
-         *
-         * @default undefined
-         */
-        restart?: PersistentRestartOpts;
     }
     /**
      * Options for configuring a persistent ForkManager instance.
@@ -347,14 +334,15 @@ export declare namespace ForkManager {
          * @default 4
          */
         workers?: number;
-        /**
-         * Maximum number of jobs that may run concurrently in separate processes.
-         * Additional jobs are queued.
-         *
-         * This value is ignored in persistent mode, where concurrency is determined
-         * by {@link ForkManager.Opts.workers}.
-         */
+        /** Ignored in persistent mode. */
         max_concurrency?: never;
+        /**
+         * Restart configuration used in persistent mode to control how crashed
+         * worker processes are restarted.
+         *
+         * @default undefined
+         */
+        restart?: PersistentRestartOpts;
     }
     /**
      * Options for configuring an ephemeral ForkManager instance.
@@ -382,12 +370,10 @@ export declare namespace ForkManager {
          * @default undefined
          */
         max_concurrency?: number;
-        /**
-         * Number of worker processes to keep in the persistent pool.
-         *
-         * This value is ignored in ephemeral mode.
-         */
+        /** Ignored in ephemeral mode. */
         workers?: never;
+        /** Ignored in ephemeral mode. */
+        restart?: never;
     }
     /**
      * Options for configuring a ForkManager instance.

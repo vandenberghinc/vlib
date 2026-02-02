@@ -2,6 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
+import { ObjectUtils } from '../primitives/object.js';
 import { format_error, FormatErrorOpts } from '@vlib/logging/index.m.web.js';
 import { DeepRequired } from '@vlib/types/types.js';
 import { fork, ChildProcess, ForkOptions } from 'child_process';
@@ -173,14 +174,22 @@ export class ForkManager<
             const ephemeral_options = options as ForkManager.RunOpts<'ephemeral'> | undefined;
 
             job.unref = ephemeral_options?.unref ?? false;
-            job.fork_options = {
-                ...(this.fork_options ?? {}),
-                silent: ephemeral_options?.silent,
-                stdio: ephemeral_options?.stdio,
-                detached: ephemeral_options?.detached,
-                env: ephemeral_options?.env,
-                ...(ephemeral_options?.fork_options ?? {}),
-            };
+            job.fork_options = { ...(this.fork_options ?? {}),  };
+            if (ephemeral_options?.silent !== undefined) {
+                job.fork_options.silent = ephemeral_options?.silent;
+            }
+            if (ephemeral_options?.stdio !== undefined) {
+                job.fork_options.stdio = ephemeral_options?.stdio;
+            }
+            if (ephemeral_options?.detached !== undefined) {
+                job.fork_options.detached = ephemeral_options?.detached;
+            }
+            if (ephemeral_options?.env !== undefined) {
+                job.fork_options.env = ephemeral_options?.env;
+            }
+            if (ephemeral_options?.fork_options !== undefined) {
+                job.fork_options = { ...job.fork_options, ...ephemeral_options.fork_options };
+            }
         } else {
             // In persistent mode, process-level options are configured at construction time only.
             job.unref = false;
@@ -907,15 +916,6 @@ export namespace ForkManager {
          * @default undefined
          */
         fork_options?: ForkOptions;
-        /**
-         * Restart configuration used in persistent mode to control how crashed
-         * worker processes are restarted.
-         *
-         * Ignored in ephemeral mode.
-         *
-         * @default undefined
-         */
-        restart?: PersistentRestartOpts;
     }
 
     /**
@@ -942,14 +942,15 @@ export namespace ForkManager {
          * @default 4
          */
         workers?: number;
-        /**
-         * Maximum number of jobs that may run concurrently in separate processes.
-         * Additional jobs are queued.
-         *
-         * This value is ignored in persistent mode, where concurrency is determined
-         * by {@link ForkManager.Opts.workers}.
-         */
+        /** Ignored in persistent mode. */
         max_concurrency?: never;
+        /**
+         * Restart configuration used in persistent mode to control how crashed
+         * worker processes are restarted.
+         *
+         * @default undefined
+         */
+        restart?: PersistentRestartOpts;
     }
 
     /**
@@ -978,12 +979,10 @@ export namespace ForkManager {
          * @default undefined
          */
         max_concurrency?: number;
-        /**
-         * Number of worker processes to keep in the persistent pool.
-         *
-         * This value is ignored in ephemeral mode.
-         */
+        /** Ignored in ephemeral mode. */
         workers?: never;
+        /** Ignored in ephemeral mode. */
+        restart?: never;
     }
 
     /**

@@ -86,14 +86,22 @@ class ForkManager {
     if (this.type === "ephemeral") {
       const ephemeral_options = options;
       job.unref = ephemeral_options?.unref ?? false;
-      job.fork_options = {
-        ...this.fork_options ?? {},
-        silent: ephemeral_options?.silent,
-        stdio: ephemeral_options?.stdio,
-        detached: ephemeral_options?.detached,
-        env: ephemeral_options?.env,
-        ...ephemeral_options?.fork_options ?? {}
-      };
+      job.fork_options = { ...this.fork_options ?? {} };
+      if (ephemeral_options?.silent !== void 0) {
+        job.fork_options.silent = ephemeral_options?.silent;
+      }
+      if (ephemeral_options?.stdio !== void 0) {
+        job.fork_options.stdio = ephemeral_options?.stdio;
+      }
+      if (ephemeral_options?.detached !== void 0) {
+        job.fork_options.detached = ephemeral_options?.detached;
+      }
+      if (ephemeral_options?.env !== void 0) {
+        job.fork_options.env = ephemeral_options?.env;
+      }
+      if (ephemeral_options?.fork_options !== void 0) {
+        job.fork_options = { ...job.fork_options, ...ephemeral_options.fork_options };
+      }
     } else {
       job.unref = false;
       job.fork_options = this.fork_options ?? {};

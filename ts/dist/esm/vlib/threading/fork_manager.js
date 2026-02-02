@@ -1,7 +1,3 @@
-/**
- * @author Daan van den Bergh
- * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
- */
 import { format_error } from '../logging/index.m.web.js';
 import { fork } from 'child_process';
 import { fileURLToPath } from 'node:url';
@@ -153,14 +149,22 @@ export class ForkManager {
         if (this.type === 'ephemeral') {
             const ephemeral_options = options;
             job.unref = ephemeral_options?.unref ?? false;
-            job.fork_options = {
-                ...(this.fork_options ?? {}),
-                silent: ephemeral_options?.silent,
-                stdio: ephemeral_options?.stdio,
-                detached: ephemeral_options?.detached,
-                env: ephemeral_options?.env,
-                ...(ephemeral_options?.fork_options ?? {}),
-            };
+            job.fork_options = { ...(this.fork_options ?? {}), };
+            if (ephemeral_options?.silent !== undefined) {
+                job.fork_options.silent = ephemeral_options?.silent;
+            }
+            if (ephemeral_options?.stdio !== undefined) {
+                job.fork_options.stdio = ephemeral_options?.stdio;
+            }
+            if (ephemeral_options?.detached !== undefined) {
+                job.fork_options.detached = ephemeral_options?.detached;
+            }
+            if (ephemeral_options?.env !== undefined) {
+                job.fork_options.env = ephemeral_options?.env;
+            }
+            if (ephemeral_options?.fork_options !== undefined) {
+                job.fork_options = { ...job.fork_options, ...ephemeral_options.fork_options };
+            }
         }
         else {
             // In persistent mode, process-level options are configured at construction time only.

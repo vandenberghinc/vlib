@@ -80,6 +80,29 @@ class Performance {
     });
     return buf.join("\n");
   }
+  /**
+   * Normalize a performance measurement, converting it to `{}ms` format
+   * or `{}s` format if greater than 1000ms, etc.
+   */
+  static normalize(ms_performance) {
+    if (ms_performance < 1e3) {
+      return `${ms_performance}ms`;
+    } else if (ms_performance < 6e4) {
+      return `${(ms_performance / 1e3).toFixed(2)}s`;
+    } else if (ms_performance < 6e4 * 60) {
+      return `${(ms_performance / 6e4).toFixed(2)}min`;
+    } else if (ms_performance < 6e4 * 60 * 24) {
+      return `${(ms_performance / 36e5).toFixed(2)}h`;
+    } else if (ms_performance < 6e4 * 60 * 24 * 7) {
+      return `${(ms_performance / 864e5).toFixed(2)}d`;
+    } else if (ms_performance < 6e4 * 60 * 24 * 30) {
+      return `${(ms_performance / 6048e5).toFixed(2)}w`;
+    } else if (ms_performance < 6e4 * 60 * 24 * 365) {
+      return `${(ms_performance / 2592e6).toFixed(2)}mo`;
+    } else {
+      return `${(ms_performance / 31536e6).toFixed(2)}y`;
+    }
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
