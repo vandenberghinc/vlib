@@ -374,7 +374,6 @@ cli.command({
   ],
   async callback({ source = null, sources = null, on_commits_only = false }) {
     const all_sources = await init_sources(this, source, sources);
-    console.log("All sources:", all_sources);
     for (const source2 of all_sources) {
       const repo = new import_package.Package({
         source: source2,

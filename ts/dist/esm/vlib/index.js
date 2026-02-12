@@ -11,7 +11,7 @@ Error.stackTraceLimit = 25;
  * @warning Expect an error since we should not import any of the `vts/types` files.
  *          Otherwise we would declare these attributes globally also on non vts processed files.
  *          @ts-expect-error */
-export const version = '1.6.43';
+export const version = '1.6.44';
 /** cli/ */
 export * as CLI from "./cli/index.m.js";
 export * as cli from "./cli/index.m.js";
