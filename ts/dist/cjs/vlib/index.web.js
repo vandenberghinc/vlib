@@ -59,7 +59,7 @@ var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.web.js"), module.exports);
 __reExport(stdin_exports, require("./errors/index.uni.js"), module.exports);
 Error.stackTraceLimit = 25;
-const version = "1.6.44";
+const version = "1.6.46";
 const print = (...args) => import_index_m_web2.log.raw(0, ...args);
 const error = (...args) => import_index_m_web2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_web2.log.warn(arg, ...args);

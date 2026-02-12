@@ -1,6 +1,6 @@
 {
     "name": "@vandenberghinc/vlib",
-    "version": "1.6.44",
+    "version": "1.6.46",
     "description": "Generic TypeScript library built for VInc applications.",
     "type": "module",
     "module": "./dist/esm/vlib/index.js",

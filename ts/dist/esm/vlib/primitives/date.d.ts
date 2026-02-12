@@ -115,6 +115,12 @@ export declare class Date extends globalThis.Date {
      */
     msec(): number;
     /**
+     * Get the unix timestamp in milliseconds
+     * @returns {number} The timestamp in milliseconds
+     * @docs
+     */
+    unix(): number;
+    /**
      * Get the unix timestamp in seconds
      * @returns {number} The timestamp in seconds
      * @docs

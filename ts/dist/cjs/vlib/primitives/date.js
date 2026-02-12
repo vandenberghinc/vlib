@@ -371,6 +371,14 @@ class Date extends globalThis.Date {
     return this.getTime();
   }
   /**
+   * Get the unix timestamp in milliseconds
+   * @returns {number} The timestamp in milliseconds
+   * @docs
+   */
+  unix() {
+    return this.getTime();
+  }
+  /**
    * Get the unix timestamp in seconds
    * @returns {number} The timestamp in seconds
    * @docs
