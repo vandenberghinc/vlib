@@ -60,15 +60,26 @@ export type EventResult<M extends EventsMeta, N extends keyof M> = ReturnType<M[
  * @docs
  */
 export declare class Events<M extends EventsMeta> extends Map<EventName<M>, Array<EventCallback<M, EventName<M>>>> {
-    constructor();
+    /** A set of events that should only have a single callback. */
+    private single_events;
+    constructor(opts?: {
+        /**
+         * A list of events that should only have a single callback.
+         * If a callback is added to a single event that already has a callback, it will replace the existing callback.
+         */
+        single_events?: EventName<M>[];
+    });
     /** Check if an event exists. */
     has<N extends keyof M>(name: N): boolean;
     /** Get the number of registered callbacks for an event. */
     count<N extends keyof M>(name: N): number;
-    /** Get an event. */
-    get<N extends keyof M>(name: N): Array<EventCallback<M, N>>;
+    /**
+     * Get the callback(s) for an event.
+     * If the event is a single event, it will always return an array with max 1 callback.
+     */
+    get<N extends keyof M>(name: N): EventCallback<M, N>[];
     /** Set an event. */
-    set<N extends keyof M>(name: N, value: Array<EventCallback<M, N>>): this;
+    set<N extends keyof M>(name: N, value: EventCallback<M, N>[]): this;
     /** Add an event. */
     add<N extends keyof M>(name: N, value: EventCallback<M, N>): this;
     /** Remove an event. */

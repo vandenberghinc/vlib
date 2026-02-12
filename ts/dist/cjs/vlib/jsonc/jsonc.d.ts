@@ -93,6 +93,11 @@ export declare namespace JSONC {
      * @param next_value Value to apply (object or array root).
      * @param options Save/update + formatting options.
      * @returns Updated JSONC text.
+     *
+     * @see {Save} See {@link save} for saving to file directly.
+     * @see {Update} See {@link update} for updating to file directly.
+     *
+     * @docs
      */
     function insert_into_file(file_content: string, next_value: Record<string, any> | any[], options?: SaveOpts): string;
     /**
@@ -104,6 +109,8 @@ export declare namespace JSONC {
      * @param path The path to load
      * @param obj The object to save.
      * @param options The save options.
+     *
+     * @see {@link insert_into_file}
      *
      * @docs
      */

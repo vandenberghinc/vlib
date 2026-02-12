@@ -73,10 +73,10 @@ export var ObjectUtils;
      * @returns True if x and y are deeply equal, false otherwise.
      * @docs
      */
-    function eq(x, y) {
+    function deep_eq(x, y) {
         return obj_eq(x, y);
     }
-    ObjectUtils.eq = eq;
+    ObjectUtils.deep_eq = deep_eq;
     /**
      * Create a partial copy of an object with only the specified keys.
      * @docs

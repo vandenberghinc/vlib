@@ -23,8 +23,11 @@
  * @docs
  */
 export class Events extends Map {
-    constructor() {
+    /** A set of events that should only have a single callback. */
+    single_events;
+    constructor(opts) {
         super();
+        this.single_events = new Set(opts?.single_events ?? []);
     }
     /** Check if an event exists. */
     has(name) {
@@ -34,17 +37,27 @@ export class Events extends Map {
     count(name) {
         return super.get(name)?.length ?? 0;
     }
-    /** Get an event. */
+    /**
+     * Get the callback(s) for an event.
+     * If the event is a single event, it will always return an array with max 1 callback.
+     */
     get(name) {
         return (super.get(name) ?? []);
     }
     /** Set an event. */
     set(name, value) {
+        if (this.single_events.has(name) && value.length > 1) {
+            throw new Error(`Event "${String(name)}" is a single event and cannot have multiple callbacks.`);
+        }
         super.set(name, value);
         return this;
     }
     /** Add an event. */
     add(name, value) {
+        if (this.single_events.has(name)) {
+            super.set(name, [value]);
+            return this;
+        }
         let callbacks = super.get(name);
         if (callbacks === undefined) {
             callbacks = [];
@@ -76,7 +89,7 @@ export class Events extends Map {
     trigger(name, ...args) {
         const callbacks = super.get(name);
         const results = [];
-        if (callbacks !== undefined) {
+        if (callbacks != null) {
             for (const callback of callbacks) {
                 results.push(callback(...args));
             }

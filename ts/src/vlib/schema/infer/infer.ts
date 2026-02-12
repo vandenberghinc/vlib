@@ -192,6 +192,7 @@ test_infer_scheme(
         my_val_scheme_1: { value_schema: "number" }, // ERR - should be have type `object` otherwise it will be an array.
         my_val_scheme_2: { type: "object", value_schema: "number" },
         my_union_1: { type: ["string", "number", "boolean"] },
+        my_bigint: { type: "bigint" },
     },
     (args) => {
         const my_str: string = args.my_str;
@@ -216,6 +217,8 @@ test_infer_scheme(
 
         const X: InferTupleEntries<["string", "number", "boolean"]> = undefined as any;
         const _x: [string, number, boolean] = X; // should be a tuple type
+
+        const my_bigint: bigint = args.my_bigint;
     }
 );
 

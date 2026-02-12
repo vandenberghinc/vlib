@@ -187,6 +187,26 @@ function check_type(state, object, obj_key, entry, type) {
       }
       return true;
     }
+    // Bigint.
+    case "bigint": {
+      if (type !== typeof object[obj_key]) {
+        return false;
+      }
+      if (!entry.allow_empty && isNaN(object[obj_key])) {
+        return "empty";
+      }
+      const min = typeof entry.min === "number" ? BigInt(entry.min) : entry.min;
+      if (typeof min === "bigint" && object[obj_key] < min) {
+        const field = `${state.parent}${obj_key}`;
+        return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid value [${object[obj_key].length}], the minimum is [${entry.min}].`, `Invalid value [${object[obj_key].length}], the minimum is [${entry.min}].`);
+      }
+      const max = typeof entry.max === "number" ? BigInt(entry.max) : entry.max;
+      if (typeof max === "bigint" && object[obj_key] > max) {
+        const field = `${state.parent}${obj_key}`;
+        return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' has an invalid value [${object[obj_key].length}], the maximum is [${entry.max}].`, `Invalid value [${object[obj_key].length}], the maximum is [${entry.max}].`);
+      }
+      return true;
+    }
     // Boolean
     case "boolean": {
       if (type !== typeof object[obj_key]) {
@@ -346,7 +366,7 @@ function validate_object_helper(data, entry, state) {
           if (!entry.schema.has(object_keys[x]) && !aliases.has(object_keys[x])) {
             const field = `${state.parent}${object_keys[x]}`;
             const suggested_key = (0, import_suggest_attr.suggest_attribute)(object_keys[x], Array.from(entry.schema.keys()));
-            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is not allowed` + (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : "."), "Not allowed" + (suggested_key ? `, did you mean '${suggested_key}'?` : "."));
+            return create_error(state, field, `${get_field_type(state, entry, true)} '${field}' is not allowed` + (suggested_key ? `, did you mean ${get_field_type(state, entry, false)} '${suggested_key}'?` : "."), `${get_field_type(state, entry, true)} is not allowed` + (suggested_key ? `, did you mean '${suggested_key}'?` : "."));
           }
         }
       }

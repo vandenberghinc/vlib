@@ -20,6 +20,7 @@ test_infer_scheme({
     my_val_scheme_1: { value_schema: "number" }, // ERR - should be have type `object` otherwise it will be an array.
     my_val_scheme_2: { type: "object", value_schema: "number" },
     my_union_1: { type: ["string", "number", "boolean"] },
+    my_bigint: { type: "bigint" },
 }, (args) => {
     const my_str = args.my_str;
     const my_nr = args.my_nr;
@@ -42,6 +43,7 @@ test_infer_scheme({
     // const my_union_3: string | number | boolean = {} as InferEntry<["string", "number", "boolean"]>;
     const X = undefined;
     const _x = X; // should be a tuple type
+    const my_bigint = args.my_bigint;
 });
 export {};
 //# sourceMappingURL=infer.js.map

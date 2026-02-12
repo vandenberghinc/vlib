@@ -184,6 +184,7 @@ export declare namespace Entry {
         null: null;
         boolean: boolean;
         number: number;
+        bigint: bigint;
         string: string;
         array: string[];
         object: Record<string, any>;

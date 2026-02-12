@@ -1,4 +1,4 @@
-/** vts-version */ const __version="1.6.35"; /** vts-version END */
+/** vts-version */ const __version="1.6.37"; /** vts-version END */
 /**
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.

@@ -8,7 +8,7 @@ export var Entry;
     // ------------------------------------------------------------
     // Generic types.
     const types_set = new Set([
-        "any", "undefined", "null", "boolean", "number", "string", "array", "object"
+        "any", "undefined", "null", "boolean", "number", "bigint", "string", "array", "object"
     ]);
     /** Types for the `Type` namespace. */
     let Type;

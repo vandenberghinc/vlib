@@ -85,7 +85,7 @@ export namespace ObjectUtils {
      * @returns True if x and y are deeply equal, false otherwise.
      * @docs
      */
-    export function eq(x: any, y: any): boolean {
+    export function deep_eq(x: any, y: any): boolean {
         return obj_eq(x, y) as boolean;
     }
 

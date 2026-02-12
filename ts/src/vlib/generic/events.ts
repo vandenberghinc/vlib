@@ -66,8 +66,19 @@ export type EventResult<M extends EventsMeta, N extends keyof M> = ReturnType<M[
  * @docs
  */
 export class Events<M extends EventsMeta> extends Map<EventName<M>, Array<EventCallback<M, EventName<M>>>> {
-    constructor() {
+
+    /** A set of events that should only have a single callback. */
+    private single_events: Set<EventName<M>>;
+
+    constructor(opts?: {
+        /**
+         * A list of events that should only have a single callback.
+         * If a callback is added to a single event that already has a callback, it will replace the existing callback.
+         */
+        single_events?: EventName<M>[];
+    }) {
         super();
+        this.single_events = new Set(opts?.single_events ?? []);
     }
     /** Check if an event exists. */
     has<N extends keyof M>(name: N): boolean {
@@ -77,17 +88,27 @@ export class Events<M extends EventsMeta> extends Map<EventName<M>, Array<EventC
     count<N extends keyof M>(name: N): number {
         return super.get(name)?.length ?? 0;
     }
-    /** Get an event. */
-    get<N extends keyof M>(name: N): Array<EventCallback<M, N>> {
-        return (super.get(name) ?? []) as Array<EventCallback<M, N>>;
+    /**
+     * Get the callback(s) for an event.
+     * If the event is a single event, it will always return an array with max 1 callback.
+     */
+    get<N extends keyof M>(name: N): EventCallback<M, N>[] {
+        return (super.get(name) ?? []) as EventCallback<M, N>[];
     }
     /** Set an event. */
-    set<N extends keyof M>(name: N, value: Array<EventCallback<M, N>>): this {
+    set<N extends keyof M>(name: N, value: EventCallback<M, N>[]): this {
+        if (this.single_events.has(name) && value.length > 1) {
+            throw new Error(`Event "${String(name)}" is a single event and cannot have multiple callbacks.`);
+        }
         super.set(name, value);
         return this;
     }
     /** Add an event. */
     add<N extends keyof M>(name: N, value: EventCallback<M, N>): this {
+        if (this.single_events.has(name)) {
+            super.set(name, [value]);
+            return this;
+        }
         let callbacks = super.get(name);
         if (callbacks === undefined) {
             callbacks = [];
@@ -119,7 +140,7 @@ export class Events<M extends EventsMeta> extends Map<EventName<M>, Array<EventC
     trigger<N extends keyof M>(name: N, ...args: EventParams<M, N>): EventResult<M, N>[] {
         const callbacks = super.get(name);
         const results: EventResult<M, N>[] = [];
-        if (callbacks !== undefined) {
+        if (callbacks != null) {
             for (const callback of callbacks) {
                 results.push(callback(...args));
             }

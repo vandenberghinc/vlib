@@ -109,12 +109,6 @@ export namespace JSONC {
      * - If an array element is an object on both sides, it is merged like a normal object.
      *
      * If root types differ (object vs array vs primitive), the entire document is replaced.
-     * 
-     * | Name        | Role        | Department | Start Date |
-     * |-------------|-------------|------------|------------|
-     * | Alice Chen  | Engineer    | Platform   | 2023-04-12 |
-     * | Marcus Lee  | Designer    | Product    | 2022-09-01 |
-     * | Priya Patel | Manager     | Operations | 2021-01-18 |
      *
      * @note With `options.update:true`, array length is still synced to `next_value` (trailing
      * indices not present in the input are removed). However, object elements inside arrays

@@ -550,6 +550,134 @@ export declare class ValidatorEntries<const S extends Entries.Opts = Entries.Opt
         unknown?: boolean;
         readonly def?: number | ((obj: any) => number) | undefined;
     } | {
+        type?: "bigint" | undefined;
+        default?: bigint | ((parent: any[] | Record<string, any>) => bigint) | undefined;
+        required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+        allow_empty?: boolean;
+        min?: number;
+        max?: number;
+        schema?: Record<string, "bigint" | {
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
+            default?: any;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+            allow_empty?: boolean;
+            min?: number;
+            max?: number;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+            enum?: readonly any[];
+            alias?: string | readonly string[];
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: boolean;
+            } | {
+                preserve?: boolean;
+                strict: true;
+            }, "preserve"> | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: false;
+            } | {
+                preserve?: false;
+                strict: true;
+            }, "preserve"> | undefined;
+            charset?: RegExp | undefined;
+            field_type?: string;
+            unknown?: boolean;
+            readonly def?: any;
+        }> | undefined;
+        value_schema?: "bigint" | {
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
+            default?: any;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+            allow_empty?: boolean;
+            min?: number;
+            max?: number;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+            enum?: readonly any[];
+            alias?: string | readonly string[];
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: boolean;
+            } | {
+                preserve?: boolean;
+                strict: true;
+            }, "preserve"> | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: false;
+            } | {
+                preserve?: false;
+                strict: true;
+            }, "preserve"> | undefined;
+            charset?: RegExp | undefined;
+            field_type?: string;
+            unknown?: boolean;
+            readonly def?: any;
+        } | undefined;
+        tuple?: ("bigint" | {
+            type?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | undefined;
+            default?: any;
+            required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
+            allow_empty?: boolean;
+            min?: number;
+            max?: number;
+            schema?: Record<string, Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+            value_schema?: Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+            tuple?: (Entry.Type.Castable.Base | readonly Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+            enum?: readonly any[];
+            alias?: string | readonly string[];
+            verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+                error: string;
+                raw?: string;
+            }) | undefined;
+            preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+            cast?: boolean | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: boolean;
+            } | {
+                preserve?: boolean;
+                strict: true;
+            }, "preserve"> | import("../../types/types.js").Neverify<{
+                preserve: true;
+                strict?: false;
+            } | {
+                preserve?: false;
+                strict: true;
+            }, "preserve"> | undefined;
+            charset?: RegExp | undefined;
+            field_type?: string;
+            unknown?: boolean;
+            readonly def?: any;
+        })[] | undefined;
+        enum?: readonly any[];
+        alias?: string | readonly string[];
+        verify?: ((attr: bigint, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
+            error: string;
+            raw?: string;
+        }) | undefined;
+        preprocess?: ((attr: bigint, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        postprocess?: ((attr: bigint, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
+        cast?: undefined;
+        charset?: undefined;
+        field_type?: string;
+        unknown?: boolean;
+        readonly def?: bigint | ((obj: any) => bigint) | undefined;
+    } | {
         type?: "boolean" | undefined;
         default?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
         required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;

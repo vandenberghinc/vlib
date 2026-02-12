@@ -22,7 +22,7 @@ export declare namespace ObjectUtils {
      * @returns True if x and y are deeply equal, false otherwise.
      * @docs
      */
-    function eq(x: any, y: any): boolean;
+    function deep_eq(x: any, y: any): boolean;
     /**
      * Create a partial copy of an object with only the specified keys.
      * @docs

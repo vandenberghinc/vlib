@@ -68,10 +68,10 @@ var ObjectUtils;
       return x === y;
     }
   }
-  function eq(x, y) {
+  function deep_eq(x, y) {
     return obj_eq(x, y);
   }
-  ObjectUtils2.eq = eq;
+  ObjectUtils2.deep_eq = deep_eq;
   function partial_copy(obj, keys) {
     const out = {};
     for (const key of keys) {

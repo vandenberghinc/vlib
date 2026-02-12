@@ -312,116 +312,127 @@ cli.command({
 // ---------------------------------------------------------------
 // Git commands.
 // Git Push.
-cli.command({
-    id: vlib.CLI.and("--git", "--push"),
-    description: "Push the current project to one or multiple Git remotes.",
-    examples: {
-        "Git Push": "vrepo --git --push origin --forced",
-    },
-    args: [
-        { id: "--source", type: "string", description: "The source path to the package; defaults to current working directory." },
-        { id: "--sources", type: "array", description: "The source paths to multiple packages; defaults to --source or cwd." },
-        { id: "--git", type: "string[]", def: [], description: "Push to a list of specific Git remotes." },
-        { id: ["--forced", "-f"], type: "boolean", description: "Push with Git in forced mode." },
-        { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a Git push by editing the gitignore safely." },
-        { id: ["--log-level", "-l"], type: "number", description: "The log level." },
-    ],
-    async callback({ source = null, sources = null, git = null, forced = false, ensure_push = false, log_level = 0, }) {
-        // Create sources array.
-        const all_sources = await init_sources(this, source, sources);
-        // Iterate sources array.
-        for (const src of all_sources) {
-            const repo = new Package({ source: src, npm: false });
-            await repo.init();
-            repo.assert_init();
-            // Build Git remotes.
-            let git_remotes = [];
-            if (Array.isArray(git) && git.length > 0) {
-                for (const remote_name of git) {
-                    const found = repo.config.git.remotes.find(item => {
-                        if (item.remote === remote_name) {
-                            git_remotes.push(item);
-                            return true;
-                        }
-                    });
-                    if (!found) {
-                        throw this.error(`Git remote "${remote_name}" does not exist.`);
-                    }
-                }
-            }
-            else {
-                // Add all Git remotes if none specified.
-                git_remotes = repo.config.git.remotes;
-            }
-            // Push all Git remotes.
-            for (const remote of git_remotes) {
-                const spinner = new vlib.logging.Spinner({
-                    message: `Pushing ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
-                    success: `Pushed ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
-                });
-                const err = await repo.git.push({
-                    remote: remote.remote,
-                    dest: remote.destination,
-                    branch: remote.branch,
-                    forced,
-                    ensure_push,
-                    log_level,
-                });
-                if (err) {
-                    spinner.error();
-                    throw this.error(err);
-                }
-                spinner.success();
-            }
-        }
-    }
-});
+// cli.command({
+//     id: vlib.CLI.and("--git", "--push"),
+//     description: "Push the current project to one or multiple Git remotes.",
+//     examples: {
+//         "Git Push": "vrepo --git --push origin --forced",
+//     },
+//     args: [
+//         { id: "--source", type: "string", description: "The source path to the package; defaults to current working directory." },
+//         { id: "--sources", type: "array", description: "The source paths to multiple packages; defaults to --source or cwd." },
+//         { id: "--git", type: "string[]", def: [], description: "Push to a list of specific Git remotes." },
+//         { id: ["--forced", "-f"], type: "boolean", description: "Push with Git in forced mode." },
+//         { id: ["--ensure-push", "-e"], type: "boolean", description: "Ensure a Git push by editing the gitignore safely." },
+//         { id: ["--log-level", "-l"], type: "number", description: "The log level." },
+//     ],
+//     async callback({
+//         source = null,
+//         sources = null,
+//         git = null,
+//         forced = false,
+//         ensure_push = false,
+//         log_level = 0,
+//     }) {
+//         // Create sources array.
+//         const all_sources = await init_sources(this, source, sources);
+//         // Iterate sources array.
+//         for (const src of all_sources) {
+//             const repo: Package = new Package({ source: src, npm: false });
+//             await repo.init();
+//             repo.assert_init();
+//             // Build Git remotes.
+//             let git_remotes: Config['git']['remotes'] = [];
+//             if (Array.isArray(git) && git.length > 0) {
+//                 for (const remote_name of git) {
+//                     const found = repo.config.git.remotes.find(item => {
+//                         if (item.remote === remote_name) {
+//                             git_remotes.push(item);
+//                             return true;
+//                         }
+//                     });
+//                     if (!found) {
+//                         throw this.error(`Git remote "${remote_name}" does not exist.`);
+//                     }
+//                 }
+//             } else {
+//                 // Add all Git remotes if none specified.
+//                 git_remotes = repo.config.git.remotes;
+//             }
+//             // Push all Git remotes.
+//             for (const remote of git_remotes) {
+//                 const spinner = new vlib.logging.Spinner({
+//                     message: `Pushing ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
+//                     success: `Pushed ${vlib.Color.bold(repo.name)} branch "${remote.branch}" to "${remote.remote} ${remote.destination}" (git).`,
+//                 });
+//                 const err = await repo.git!.push({
+//                     remote: remote.remote,
+//                     dest: remote.destination,
+//                     branch: remote.branch,
+//                     forced,
+//                     ensure_push,
+//                     log_level,
+//                 });
+//                 if (err) {
+//                     spinner.error();
+//                     throw this.error(err);
+//                 }
+//                 spinner.success();
+//             }
+//         }
+//     }
+// });
 // Git Pull.
-cli.command({
-    id: vlib.CLI.and("--git", "--pull"),
-    description: "Pull the current project from one or multiple Git remotes.",
-    examples: {
-        "Git Pull": "vrepo --git --pull origin --forced",
-    },
-    args: [
-        { id: "--source", type: "string", description: "The source path to the package; defaults to current working directory." },
-        { id: "--sources", type: "array", description: "The source paths to multiple packages; defaults to --source or cwd." },
-        { id: "--git", type: "string[]", def: [], description: "Pull from a list of specific Git remotes." },
-        { id: ["--forced", "-f"], type: "boolean", description: "Pull with Git in forced mode." },
-    ],
-    async callback({ source = null, sources = null, git = null, forced = false, }) {
-        // Create sources array.
-        const all_sources = await init_sources(this, source, sources);
-        // Iterate sources array.
-        for (const src of all_sources) {
-            const repo = new Package({ source: src, npm: false });
-            await repo.init();
-            repo.assert_init();
-            // Build Git remotes.
-            if (!Array.isArray(git)) {
-                throw this.error(`The git parameter must be an array of Git remotes.`, { docs: true });
-            }
-            for (const remoteName of git) {
-                const remote = repo.config.git.remotes.find(item => item.remote === remoteName);
-                if (!remote) {
-                    throw this.error(`Git remote "${remoteName}" does not exist.`);
-                }
-                const spinner = new vlib.logging.Spinner({
-                    message: `Pulling ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
-                    success: `Pulled ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
-                });
-                console.error(this.error("This feature is disabled  and should be re-activated once tested."));
-                vlib.utils.safe_exit();
-                const err = await repo.git.pull({ remote: remote.remote, dest: remote.destination, branch: remote.branch, forced });
-                if (err) {
-                    spinner.error();
-                    throw this.error(err);
-                }
-                spinner.success();
-            }
-        }
-    }
-});
+// cli.command({
+//     id: vlib.CLI.and("--git", "--pull"),
+//     description: "Pull the current project from one or multiple Git remotes.",
+//     examples: {
+//         "Git Pull": "vrepo --git --pull origin --forced",
+//     },
+//     args: [
+//         { id: "--source", type: "string", description: "The source path to the package; defaults to current working directory." },
+//         { id: "--sources", type: "array", description: "The source paths to multiple packages; defaults to --source or cwd." },
+//         { id: "--git", type: "string[]", def: [], description: "Pull from a list of specific Git remotes." },
+//         { id: ["--forced", "-f"], type: "boolean", description: "Pull with Git in forced mode." },
+//     ],
+//     async callback({
+//         source = null,
+//         sources = null,
+//         git = null,
+//         forced = false,
+//     }) {
+//         // Create sources array.
+//         const all_sources = await init_sources(this, source, sources);
+//         // Iterate sources array.
+//         for (const src of all_sources) {
+//             const repo: Package = new Package({ source: src, npm: false });
+//             await repo.init();
+//             repo.assert_init();
+//             // Build Git remotes.
+//             if (!Array.isArray(git)) {
+//                 throw this.error(`The git parameter must be an array of Git remotes.`, { docs: true });
+//             }
+//             for (const remoteName of git) {
+//                 const remote = repo.config.git.remotes.find(item => item.remote === remoteName);
+//                 if (!remote) {
+//                     throw this.error(`Git remote "${remoteName}" does not exist.`);
+//                 }
+//                 const spinner = new vlib.logging.Spinner({
+//                     message: `Pulling ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
+//                     success: `Pulled ${vlib.Color.bold(repo.name)} branch "${remote.branch}" from "${remote.remote}" "${remote.destination}" (git).`,
+//                 });
+//                 console.error(this.error("This feature is disabled  and should be re-activated once tested."))
+//                 vlib.utils.safe_exit();
+//                 const err = await repo.git!.pull({ remote: remote.remote, dest: remote.destination, branch: remote.branch, forced });
+//                 if (err) {
+//                     spinner.error();
+//                     throw this.error(err);
+//                 }
+//                 spinner.success();
+//             }
+//         }
+//     }
+// });
 // ---------------------------------------------------------------
 // SSH commands.
 // SSH Push.

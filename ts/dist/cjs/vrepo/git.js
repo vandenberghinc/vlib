@@ -73,6 +73,7 @@ class Git {
   }
   // Git preperation.
   async _git_prepare(remote, dest, branch) {
+    throw new Error("This command is deprecated.");
     return new Promise(async (resolve) => {
       let err = "";
       let code = 0;
@@ -186,6 +187,7 @@ class Git {
   }
   // Push through git.
   async push({ remote, dest, branch, forced = false, ensure_push = false, log_level = 0 }) {
+    throw new Error("This command is deprecated.");
     return new Promise(async (resolve, reject) => {
       let restore_readme;
       try {
@@ -336,6 +338,7 @@ class Git {
   }
   // Pull through git.
   async pull({ remote, dest, branch, forced = false }) {
+    throw new Error("This command is deprecated.");
     return new Promise(async (resolve) => {
       let err = "";
       let code = 0;

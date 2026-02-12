@@ -244,12 +244,13 @@ export namespace Entry {
         null: null;
         boolean: boolean;
         number: number;
+        bigint: bigint;
         string: string;
         array: string[];
         object: Record<string, any>;
     };
     const types_set = new Set<keyof Types>([
-        "any", "undefined", "null", "boolean", "number", "string", "array", "object"
+        "any", "undefined", "null", "boolean", "number", "bigint", "string", "array", "object"
     ]);
 
     /** Argument string types. */

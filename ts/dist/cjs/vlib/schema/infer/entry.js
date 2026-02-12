@@ -28,6 +28,7 @@ var Entry;
     "null",
     "boolean",
     "number",
+    "bigint",
     "string",
     "array",
     "object"
