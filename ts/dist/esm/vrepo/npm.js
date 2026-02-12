@@ -2,7 +2,6 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-// Imports.
 import { execSync } from 'child_process';
 import crypto from 'crypto';
 import { Path, Schema, Proc } from "../vlib/index.js";
@@ -119,6 +118,10 @@ export class NPM {
         // Check changes.
         if (only_if_changed && !(await this.has_commits())) {
             return { has_changed: false, live_version: this.pkg.version };
+        }
+        // If the user has a nested `publish` script then throw an error, otherwise `npm publish` will execute the nested `publish` script, potentially causing an infinite loop.
+        if (this.pkg.scripts?.publish !== undefined) {
+            throw new Error(`The package.json file contains a "publish" script, which is not allowed when using the NPM class to publish. Please remove the "publish" script from package.json.`);
         }
         // Log in.
         await this.login();

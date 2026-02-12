@@ -629,6 +629,7 @@ cli.command({
 
         // Create sources array.
         const all_sources = await init_sources(this, source, sources);
+        console.log("All sources:", all_sources);
 
         // Iterate sources array.
         for (const source of all_sources) {

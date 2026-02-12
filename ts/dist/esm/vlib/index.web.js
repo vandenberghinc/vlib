@@ -8,7 +8,7 @@ Error.stackTraceLimit = 25;
  * Version number
  * Inserted by vts after compilation
  * @ts-expect-error */
-export const version = '1.6.37';
+export const version = '1.6.43';
 /** global/ */
 export * from "./primitives/index.uni.js";
 /** scheme/ */

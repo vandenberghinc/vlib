@@ -110,6 +110,9 @@ class NPM {
     if (only_if_changed && !await this.has_commits()) {
       return { has_changed: false, live_version: this.pkg.version };
     }
+    if (this.pkg.scripts?.publish !== void 0) {
+      throw new Error(`The package.json file contains a "publish" script, which is not allowed when using the NPM class to publish. Please remove the "publish" script from package.json.`);
+    }
     await this.login();
     if (this.version_path) {
       const version_export = new import_vlib.Path(this.version_path);

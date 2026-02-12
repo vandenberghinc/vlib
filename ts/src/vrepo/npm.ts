@@ -4,6 +4,7 @@
  */
 
 // Imports.
+import * as vlib from "@vlib";
 import { execSync } from 'child_process';
 import crypto from 'crypto';
 import { Path, Schema, Proc } from "@vlib"
@@ -145,10 +146,15 @@ export class NPM {
     async publish({
         only_if_changed = false,
     }): Promise<{ has_changed: boolean; live_version: string }> {
-        
+
         // Check changes.
         if (only_if_changed && !(await this.has_commits())) {
             return { has_changed: false, live_version: this.pkg.version };
+        }
+
+        // If the user has a nested `publish` script then throw an error, otherwise `npm publish` will execute the nested `publish` script, potentially causing an infinite loop.
+        if (this.pkg.scripts?.publish !== undefined) {
+            throw new Error(`The package.json file contains a "publish" script, which is not allowed when using the NPM class to publish. Please remove the "publish" script from package.json.`);
         }
 
         // Log in.
@@ -185,7 +191,7 @@ export class NPM {
 
         // Replace the {{VERSION}} tag in the README.md.
         const readme = this.source.join(`/README.md`);
-        let readme_data;
+        let readme_data: string | undefined;
         if (readme.exists()) {
             readme_data = await readme.load();
             await readme.save(readme_data.replace(/version-.s*-blue/, `badge/version-${this.pkg.version}-blue`));

@@ -2,7 +2,8 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { Path, Schema } from "../vlib/index.js";
+import * as vlib from "../vlib/index.js";
+import { Path } from "../vlib/index.js";
 export declare class NPM {
     source: Path;
     pkg_path: Path;
@@ -11,7 +12,7 @@ export declare class NPM {
     version_path?: string;
     id: string;
     /** Constructor validator. */
-    static validator: Schema.Validator<any[] | Record<string, any>, true, {
+    static validator: vlib.Schema.Validator<any[] | Record<string, any>, true, {
         readonly source: "string";
         readonly pkg_path: {
             readonly type: "string";
@@ -21,16 +22,16 @@ export declare class NPM {
             readonly type: "string";
             readonly required: false;
         };
-    }, Schema.ValueEntries.Opts<{}>, (Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | {
-        type?: Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | undefined;
+    }, vlib.Schema.ValueEntries.Opts<{}>, (vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | {
+        type?: vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | undefined;
         default?: any;
         required?: boolean | ((parent: any[] | Record<string, any>) => boolean) | undefined;
         allow_empty?: boolean;
         min?: number;
         max?: number;
-        schema?: Record<string, Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
-        value_schema?: Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
-        tuple?: (Schema.Entry.Type.Castable.Base | readonly Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
+        schema?: Record<string, vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any> | undefined;
+        value_schema?: vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any | undefined;
+        tuple?: (vlib.Schema.Entry.Type.Castable.Base | readonly vlib.Schema.Entry.Type.Castable.Base[] | /*elided*/ any)[] | undefined;
         enum?: readonly any[];
         alias?: string | readonly string[];
         verify?: ((attr: any, parent: any[] | Record<string, any>, key?: string | number | undefined) => void | null | undefined | string | {
@@ -39,13 +40,13 @@ export declare class NPM {
         }) | undefined;
         preprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
         postprocess?: ((attr: any, parent: any[] | Record<string, any>, key: string | number) => any) | undefined;
-        cast?: boolean | import("../vlib/types/types.js").Neverify<{
+        cast?: boolean | vlib.Types.Neverify<{
             preserve: true;
             strict?: boolean;
         } | {
             preserve?: boolean;
             strict: true;
-        }, "preserve"> | import("../vlib/types/types.js").Neverify<{
+        }, "preserve"> | vlib.Types.Neverify<{
             preserve: true;
             strict?: false;
         } | {
