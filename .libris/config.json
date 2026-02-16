@@ -29,7 +29,8 @@
                 "note": {
                     "bg": "#58B684"
                 }
-            }
+            },
+            "default": "dark"
         },
         "sections": [
             {
@@ -44,7 +45,12 @@
                 "text": "VTest",
                 "url": "/docs/miF5fmUsvgaEcqLP/vtest/latest"
             }
-        ]
+        ],
+        "$schema": "https://uselibris.io/schemas/project_config.json",
+        "docstrings": {
+            "enrich": true
+        },
+        "title": "VLib Documentation"
     },
     {
         "project": "vlib-web",
