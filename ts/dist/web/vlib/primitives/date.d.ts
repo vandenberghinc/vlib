@@ -127,103 +127,160 @@ export declare class Date extends globalThis.Date {
      */
     sec(): number;
     /**
-     * Get a new date object set to the start of the current minute
-     * @returns {Date} A new date object set to the start of the minute
-     * @docs
-     */
-    minute_start(): Date;
+ * Get a new date object set to the start of the current minute
+ * @returns {Date} A new date object set to the start of the minute
+ * @docs
+ */
+    minute_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current minute
      * @returns {Date} A new date object set to the end of the minute (59 seconds, 999 milliseconds)
      * @docs
      */
-    minute_end(): Date;
+    minute_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current hour
      * @returns {Date} A new date object set to the start of the hour
      * @docs
      */
-    hour_start(): Date;
+    hour_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current hour
      * @returns {Date} A new date object set to the end of the hour (59 minutes, 59 seconds, 999 milliseconds)
      * @docs
      */
-    hour_end(): Date;
+    hour_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current day
      * @returns {Date} A new date object set to the start of the day
      * @docs
      */
-    day_start(): Date;
+    day_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current day
      * @returns {Date} A new date object set to the end of the day (23:59:59.999)
      * @docs
      */
-    day_end(): Date;
+    day_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current week
      * @param {boolean} sunday_start - Whether to use Sunday (true) or Monday (false) as the start of the week
      * @returns {Date} A new date object set to the start of the week
      * @docs
      */
-    week_start(sunday_start?: boolean): Date;
+    week_start(opts?: {
+        /**
+         * Whether to use Sunday (true) or Monday (false) as the start of the week
+         * @default true
+         */
+        sunday_start?: boolean;
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current week
-     * @param {boolean} sunday_start - Whether to use Sunday (true) or Monday (false) as the start of the week
      * @returns {Date} A new date object set to the end of the week (last day at 23:59:59.999)
      * @docs
      */
-    week_end(sunday_start?: boolean): Date;
+    week_end(opts?: {
+        /**
+         * Whether to use Sunday (true) or Monday (false) as the start of the week
+         * @default true
+         */
+        sunday_start?: boolean;
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current month
      * @returns {Date} A new date object set to the start of the month
      * @docs
      */
-    month_start(): Date;
+    month_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current month
      * @returns {Date} A new date object set to the end of the month (last day at 23:59:59.999)
      * @docs
      */
-    month_end(): Date;
+    month_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current quarter
      * @returns {Date} A new date object set to the start of the quarter
      * @docs
      */
-    quarter_year_start(): Date;
+    quarter_year_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current quarter
      * @returns {Date} A new date object set to the end of the quarter (last day at 23:59:59.999)
      * @docs
      */
-    quarter_year_end(): Date;
+    quarter_year_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current half year
      * @returns {Date} A new date object set to the start of the half year
      * @docs
      */
-    half_year_start(): Date;
+    half_year_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current half year
      * @returns {Date} A new date object set to the end of the half year (last day at 23:59:59.999)
      * @docs
      */
-    half_year_end(): Date;
+    half_year_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the start of the current year
      * @returns {Date} A new date object set to the start of the year
      * @docs
      */
-    year_start(): Date;
+    year_start(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Get a new date object set to the end of the current year
      * @returns {Date} A new date object set to the end of the year (December 31st at 23:59:59.999)
      * @docs
      */
-    year_end(): Date;
+    year_end(opts?: {
+        /** Whether to use UTC time */
+        utc?: boolean;
+    }): Date;
     /**
      * Create a new date incremented by the specified amounts
      * @param {Date.IncrementOpts} options - Object containing increment values for various time units

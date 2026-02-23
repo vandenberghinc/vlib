@@ -31,29 +31,50 @@ __export(stdin_exports, {
   websocket: () => WebSocket
 });
 module.exports = __toCommonJS(stdin_exports);
+var import_crypto = require("crypto");
 var http = __toESM(require("http"));
 var https = __toESM(require("https"));
 var bson = __toESM(require("bson"));
-var url = __toESM(require("url"));
 var import_ws = __toESM(require("ws"));
-globalThis.WebSocket = import_ws.default;
+var import_events = require("../generic/events.js");
+var import_errors = require("../errors/errors.js");
 var WebSocket;
 (function(WebSocket2) {
   class Server {
+    /** The server listen port. */
     port;
+    /** The optional server listen ip address. */
     ip;
+    /** The https configuration for the server, or `null` for http. */
     https_config;
+    /** Whether the underlying server uses https. */
+    is_https = false;
+    /** Whether the server has been started. */
+    started = false;
+    /** The underlying http or https server instance. */
     server;
+    /** The list of allowed client API keys. */
     api_keys;
+    /** The rate limit configuration, or `false` when rate limiting is disabled. */
     rate_limit;
+    /** The underlying WebSocket server instance. */
     wss;
+    /** A map of active stream connections keyed by their unique id. */
     streams;
+    /** A map of registered command callbacks keyed by the command name. */
     commands;
+    /** The typed event handler for server events. */
     events;
+    /** A map of pending response resolvers keyed by message id, for instant response resolution. */
+    pending_resolvers;
+    /** A cache of rate limit entries keyed by client ip address. */
     rate_limit_cache;
+    /** The interval timer for periodic cache cleanup. */
     _clear_caches_interval;
     /**
      * Construct a new server instance.
+     * @param opts The server constructor options.
+     *
      * @docs
      */
     constructor({ ip = null, port = 8e3, https: https2 = null, rate_limit = {
@@ -68,43 +89,62 @@ var WebSocket;
       this.rate_limit = rate_limit;
       this.streams = /* @__PURE__ */ new Map();
       this.commands = /* @__PURE__ */ new Map();
-      this.events = /* @__PURE__ */ new Map();
+      this.events = new import_events.Events({
+        single_events: ["listen", "open", "close", "error"]
+      });
+      this.pending_resolvers = /* @__PURE__ */ new Map();
       this.rate_limit_cache = /* @__PURE__ */ new Map();
     }
     /**
-     * Start the server.
+     * Start the server and begin accepting connections.
+     *
      * @docs
      */
     start() {
+      if (this.started) {
+        throw new import_errors.InvalidUsageError("Server.start() has already been called.");
+      }
+      this.started = true;
       if (this.server === null) {
         if (this.https_config != null) {
-          this.server = https.createServer(this.https_config, (req, res) => {
+          this.server = https.createServer(this.https_config, (_req, res) => {
             res.writeHead(426, { "Content-Type": "text/plain" });
             res.end("This service requires WebSocket protocol.");
           });
-          this.server.__is_https = true;
+          this.is_https = true;
         } else {
-          this.server = http.createServer((req, res) => {
+          this.server = http.createServer((_req, res) => {
             res.writeHead(426, { "Content-Type": "text/plain" });
             res.end("This service requires WebSocket protocol.");
           });
         }
       }
+      if (this.server instanceof https.Server) {
+        this.is_https = true;
+      }
+      this.server.on("error", (error) => {
+        this.events.trigger("error", null, error);
+      });
       this.wss = new import_ws.WebSocketServer({ noServer: true });
       this.server.on("upgrade", (request, socket, head) => {
         if (this.rate_limit !== false) {
+          const rl = this.rate_limit;
           const ip = request.socket.remoteAddress;
+          if (!ip) {
+            socket.destroy();
+            return;
+          }
           const now = Date.now();
           if (this.rate_limit_cache.has(ip)) {
             let data = this.rate_limit_cache.get(ip);
             if (now >= data.expiration) {
               data = {
                 count: 0,
-                expiration: now + this.rate_limit.interval * 1e3
+                expiration: now + rl.interval * 1e3
               };
             }
             ++data.count;
-            if (data.count > this.rate_limit.limit) {
+            if (data.count > rl.limit) {
               socket.write(`HTTP/1.1 429 Too Many Requests\r
 \r
 Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 1e3)} seconds.`);
@@ -115,12 +155,21 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
           } else {
             this.rate_limit_cache.set(ip, {
               count: 1,
-              expiration: now + this.rate_limit.interval * 1e3
+              expiration: now + rl.interval * 1e3
             });
           }
         }
-        const { query } = url.parse(request.url, true);
-        if (this.api_keys.length > 0 && !this.api_keys.includes(query.api_key)) {
+        const parsed_url = new URL(request.url, `http://${request.headers.host ?? "localhost"}`);
+        const api_key = parsed_url.searchParams.get("api_key");
+        const api_key_valid = typeof api_key === "string" && this.api_keys.some((key) => {
+          const key_buf = Buffer.from(key);
+          const input_buf = Buffer.from(api_key);
+          if (key_buf.length !== input_buf.length) {
+            return false;
+          }
+          return (0, import_crypto.timingSafeEqual)(key_buf, input_buf);
+        });
+        if (this.api_keys.length > 0 && !api_key_valid) {
           socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
           socket.destroy();
           return;
@@ -130,47 +179,59 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         });
       });
       this.wss.on("connection", (stream) => {
-        stream.id = Math.random().toString(36).substring(2, 16);
+        stream.id = (0, import_crypto.randomUUID)();
+        stream.connected = true;
         this.streams.set(stream.id, stream);
         stream.messages = /* @__PURE__ */ new Map();
         stream.on("message", (message) => {
           try {
-            let parsed = bson.deserialize(message);
+            const buf = Buffer.isBuffer(message) ? message : Array.isArray(message) ? Buffer.concat(message) : Buffer.from(message);
+            const parsed = bson.deserialize(buf);
             if (typeof parsed === "object") {
-              if (!parsed.timestamp) {
+              if (parsed.timestamp == null) {
                 parsed.timestamp = Date.now();
               }
               if (parsed.command && this.commands.has(parsed.command)) {
-                this.commands.get(parsed.command)(stream, parsed.id, parsed.data);
+                const respond_fn = (response_data) => {
+                  if (parsed.id == null) {
+                    return;
+                  }
+                  try {
+                    this.send_helper({ stream, id: parsed.id, data: response_data });
+                  } catch (err) {
+                    this.events.trigger("error", stream, err instanceof Error ? err : new Error(String(err)));
+                  }
+                };
+                this.commands.get(parsed.command)(stream, parsed.id, parsed.data, respond_fn);
               } else if (parsed.id) {
-                stream.messages.set(parsed.id, parsed);
+                const entry = this.pending_resolvers.get(parsed.id);
+                if (entry) {
+                  this.pending_resolvers.delete(parsed.id);
+                  clearTimeout(entry.timer);
+                  entry.resolve(parsed);
+                } else {
+                  stream.messages.set(parsed.id, parsed);
+                }
               }
             }
-          } catch (error) {
+          } catch {
             if (message.toString() === "ping") {
               stream.send("pong");
               return;
             }
           }
         });
-        if (this.events.has("open")) {
-          this.events.get("open")(stream);
-        }
+        this.events.trigger("open", stream);
         stream.on("close", (code, reason) => {
           stream.connected = false;
-          if (this.events.has("close")) {
-            this.events.get("close")(stream, code, reason);
-          }
+          this.events.trigger("close", stream, code, reason.toString());
         });
-        const err_callback = this.events.get("error");
-        if (err_callback) {
-          stream.on("error", (error) => err_callback(stream, error));
-        }
+        stream.on("error", (error) => {
+          this.events.trigger("error", stream, error);
+        });
       });
       const listen_callback = () => {
-        if (this.events.has("listen")) {
-          this.events.get("listen")(`${this.server.__is_https ? "https" : "http"}://${this.ip || "localhost"}:${this.port}`);
-        }
+        this.events.trigger("listen", `${this.is_https ? "https" : "http"}://${this.ip || "localhost"}:${this.port}`);
       };
       if (this.ip) {
         this.server.listen(this.port, this.ip, listen_callback);
@@ -180,41 +241,46 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       this._clear_caches_interval = setInterval(() => this._clear_caches(), 60 * 5 * 1e3);
     }
     /**
-     * Stop the server.
+     * Stop the server and close all active connections.
+     * @returns A promise that resolves when the server has fully stopped.
+     *
      * @docs
      */
     async stop() {
-      return new Promise((resolve) => {
-        clearInterval(this._clear_caches_interval);
-        let closed = 0;
-        this.wss.clients.forEach((client) => {
-          client.close();
-        });
-        this.wss.close(() => {
-          ++closed;
-          if (closed === 2) {
-            resolve();
-          }
-        });
-        this.server.close(() => {
-          ++closed;
-          if (closed === 2) {
-            resolve();
-          }
-        });
+      if (!this.started) {
+        throw new import_errors.InvalidUsageError("Server.stop() called before Server.start().");
+      }
+      clearInterval(this._clear_caches_interval);
+      this.wss.clients.forEach((client) => client.close());
+      this.pending_resolvers.forEach((entry) => {
+        clearTimeout(entry.timer);
+        entry.reject(new Error("Server stopped."));
       });
+      this.pending_resolvers.clear();
+      await Promise.all([
+        new Promise((resolve) => this.wss.close(() => resolve())),
+        new Promise((resolve) => this.server.close(() => resolve()))
+      ]);
+      this.server = null;
+      this.streams.clear();
+      this.rate_limit_cache.clear();
+      this.started = false;
     }
     /**
      * Set an event callback.
+     * @param event The event type to listen for.
+     * @param callback The callback to invoke when the event fires.
+     *
      * @docs
      */
     on_event(event, callback) {
-      this.events.set(event, callback);
+      this.events.add(event, callback);
     }
     /**
      * Set a command callback.
      * Will be called when an incoming message has the specified command type.
-     * The function can take the following arguments: `(stream, id, data) => {}`.
+     * @param command The command identifier to listen for.
+     * @param callback The callback invoked with `(stream, id, data, respond)` when the command is received.
      *
      * @docs
      */
@@ -222,49 +288,59 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       this.commands.set(command, callback);
     }
     /**
-     * Wait for a message to be filled out.
+     * Wait for a response message matching the specified id.
+     * Uses an instant resolver pattern instead of polling for optimal performance at scale.
+     * @param opts The await response options.
+     * @returns The matching response message.
      * @note This only works when there is a single response message, any more response messages will be lost.
      *
      * @docs
      */
-    async await_response({ stream, id, timeout = 6e4, step = 10 }) {
-      let elapsed = 0;
+    async await_response({ stream, id, timeout = 6e4 }) {
+      if (stream.messages.has(id)) {
+        const data = stream.messages.get(id);
+        stream.messages.delete(id);
+        return data;
+      }
       return new Promise((resolve, reject) => {
-        const wait = () => {
-          if (stream.messages.has(id)) {
-            const data = stream.messages.get(id);
-            stream.messages.delete(id);
-            resolve(data);
-          } else {
-            elapsed += step;
-            if (elapsed > timeout) {
-              reject(new Error("Operation timed out."));
-            } else {
-              setTimeout(wait, step);
-            }
-          }
-        };
-        wait();
+        const timer = setTimeout(() => {
+          this.pending_resolvers.delete(id);
+          reject(new import_errors.TimeoutError("Operation timed out."));
+        }, timeout);
+        this.pending_resolvers.set(id, { resolve, reject, timer });
       });
     }
     /**
      * Send a command and expect a single response.
+     * @param opts The request options.
+     * @returns The typed response message.
+     *
      * @docs
      */
     async request({ stream, command, data, timeout = 6e4 }) {
-      const id = await this.send_helper({ stream, command, data });
+      const id = this.send_helper({ stream, command, data });
       return await this.await_response({ stream, id, timeout });
     }
     /**
      * Send a response to a received command.
+     * @param opts The response options.
+     *
      * @docs
      */
-    async respond({ stream, id, data }) {
-      await this.send_helper({ stream, id, data });
+    respond({ stream, id, data }) {
+      this.send_helper({ stream, id, data });
     }
-    /** Clear all caches. */
+    /**
+     * Clear expired rate limit entries, remove disconnected streams,
+     * and purge messages older than 1 hour from connected streams.
+     */
     _clear_caches() {
       const now = Date.now();
+      this.rate_limit_cache.forEach((entry, ip) => {
+        if (now >= entry.expiration) {
+          this.rate_limit_cache.delete(ip);
+        }
+      });
       this.streams.forEach((client, id) => {
         if (client.connected) {
           client.messages.forEach((msg, msg_id) => {
@@ -279,12 +355,15 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send data through the websocket.
-     * Either a request command when `command` is defined,
+     * Sends a request command when `command` is defined,
      * or a response when `command` is undefined and `id` is defined.
-     * Note that `id` should always be defined in a sent response,
-     * but it can be auto generated when sending a request command.
+     * @param opts The send options.
+     * @returns The message id used for the sent message.
      */
-    async send_helper({ stream, command, id = Math.random().toString(36).substring(2, 32), data }) {
+    send_helper({ stream, command, id = (0, import_crypto.randomUUID)(), data }) {
+      if (stream.readyState !== import_ws.default.OPEN) {
+        throw new Error("Stream is no longer connected.");
+      }
       stream.send(bson.serialize({
         command,
         id,
@@ -295,35 +374,54 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
   }
   WebSocket2.Server = Server;
   class Client {
+    /** The websocket server URL. */
     url;
+    /** The API key for authentication, or `null` when no authentication is required. */
     api_key;
+    /** The reconnection configuration, or `false` when auto-reconnect is disabled. */
     reconnect;
+    /** The auto-ping interval in milliseconds, or `false` when auto-ping is disabled. */
     auto_ping;
+    /** A map of registered command callbacks keyed by the command name. */
     commands;
+    /** The typed event handler for client events. */
     events;
+    /** A map of pending response messages keyed by their message id. */
     messages;
+    /** A map of pending response resolvers keyed by message id, for instant response resolution. */
+    pending_resolvers;
+    /** The current underlying WebSocket stream. */
     stream;
+    /** Whether the client is currently connected to the server. */
     connected = false;
+    /** Whether to attempt reconnection on connection close. */
     try_reconnect = true;
+    /** The timer for the next auto-ping. */
     auto_ping_timeout;
+    /** The timer for the next reconnection attempt. */
+    reconnect_timer;
     /**
      * Construct a new client instance.
+     * @param opts The client constructor options.
+     *
      * @docs
      */
-    constructor({ url: url2 = "wss://localhost:8080", api_key = null, reconnect = {
+    constructor({ url = "wss://localhost:8080", api_key = null, reconnect = {
       interval: 10,
       max_interval: 3e4
     }, ping = true }) {
-      this.url = url2;
+      this.url = url;
       this.api_key = api_key;
       if (reconnect === false) {
         this.reconnect = false;
+      } else if (reconnect === true || typeof reconnect !== "object") {
+        this.reconnect = { interval: 10, max_interval: 3e4, attempts: 0 };
       } else {
-        this.reconnect = reconnect;
-        if (typeof this.reconnect !== "object") {
-          this.reconnect = {};
-        }
-        this.reconnect.interval ??= 10, this.reconnect.max_interval ??= 3e4, this.reconnect.attempts ??= 0;
+        this.reconnect = {
+          interval: reconnect.interval ?? 10,
+          max_interval: reconnect.max_interval ?? 3e4,
+          attempts: reconnect.attempts ?? 0
+        };
       }
       if (ping === true) {
         this.auto_ping = 3e4;
@@ -333,39 +431,80 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         this.auto_ping = false;
       }
       this.commands = /* @__PURE__ */ new Map();
-      this.events = /* @__PURE__ */ new Map();
+      this.events = new import_events.Events({
+        single_events: ["open", "error", "reconnect", "close"]
+      });
       this.messages = /* @__PURE__ */ new Map();
+      this.pending_resolvers = /* @__PURE__ */ new Map();
     }
     /**
-     * Connect the websocket
+     * Connect the websocket to the server.
+     * @returns A promise that resolves when the connection is established, or rejects on error.
+     *
      * @docs
      */
     async connect() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
+        let settled = false;
         this.try_reconnect = true;
-        this.stream = new import_ws.default(this.api_key ? `${this.url}?api_key=${this.api_key}` : this.url);
+        if (this.stream) {
+          this.try_reconnect = false;
+          this.stream.removeAllListeners();
+          this.stream.close();
+          this.try_reconnect = true;
+        }
+        this.stream = new import_ws.default(this.api_key ? `${this.url}?api_key=${encodeURIComponent(this.api_key)}` : this.url);
         this.stream.on("open", () => {
           this.connected = true;
-          if (this.try_reconnect && this.reconnect !== false) {
+          if (this.reconnect !== false) {
             this.reconnect.attempts = 0;
           }
-          if (this.events.has("open")) {
-            this.events.get("open")();
+          this.events.trigger("open");
+          if (this.auto_ping !== false) {
+            clearTimeout(this.auto_ping_timeout);
+            const ping_interval = this.auto_ping;
+            const auto_ping = () => {
+              if (this.connected && this.stream) {
+                this.stream.send("ping");
+                this.auto_ping_timeout = setTimeout(auto_ping, ping_interval);
+              }
+            };
+            this.auto_ping_timeout = setTimeout(auto_ping, ping_interval);
           }
-          resolve();
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
         });
         this.stream.on("message", (message) => {
           try {
-            let parsed = bson.deserialize(message);
+            const buf = Buffer.isBuffer(message) ? message : Array.isArray(message) ? Buffer.concat(message) : Buffer.from(message);
+            const parsed = bson.deserialize(buf);
             if (parsed.command != null && this.commands.has(parsed.command)) {
-              this.commands.get(parsed.command)(parsed.id, parsed.data);
+              const respond_fn = (response_data) => {
+                if (parsed.id == null) {
+                  return;
+                }
+                this.stream?.send(bson.serialize({
+                  id: parsed.id,
+                  data: response_data
+                }));
+              };
+              this.commands.get(parsed.command)(parsed.id, parsed.data, respond_fn);
             } else if (parsed.id) {
               if (parsed.timestamp == null) {
                 parsed.timestamp = Date.now();
               }
-              this.messages.set(parsed.id, parsed);
+              const entry = this.pending_resolvers.get(parsed.id);
+              if (entry) {
+                this.pending_resolvers.delete(parsed.id);
+                clearTimeout(entry.timer);
+                entry.resolve(parsed);
+              } else {
+                this.messages.set(parsed.id, parsed);
+              }
             }
-          } catch (error) {
+          } catch {
             if (message.toString() === "pong") {
               return;
             }
@@ -374,57 +513,67 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
         this.stream.on("close", (code, reason) => {
           this.connected = false;
           if (this.try_reconnect && this.reconnect !== false) {
-            if (this.events.has("reconnect")) {
-              this.events.get("reconnect")(code, reason);
-            }
-            const timeout = Math.min(this.reconnect.interval * Math.pow(2, this.reconnect.attempts), this.reconnect.max_interval);
-            this.reconnect.attempts++;
-            setTimeout(() => this.connect(), timeout);
-          } else if (this.events.has("close")) {
-            this.events.get("close")(code, reason);
+            const rc = this.reconnect;
+            this.events.trigger("reconnect", code, reason.toString());
+            const timeout = Math.min(rc.interval * Math.pow(2, rc.attempts), rc.max_interval);
+            rc.attempts++;
+            this.reconnect_timer = setTimeout(() => {
+              this.reconnect_timer = void 0;
+              this.connect().catch((err) => {
+                this.events.trigger("error", err);
+              });
+            }, timeout);
+          } else {
+            this.events.trigger("close", code, reason.toString());
           }
         });
         this.stream.on("error", (error) => {
           this.stream?.close();
-          if (this.events.has("error")) {
-            this.events.get("error")(error);
+          if (!settled) {
+            settled = true;
+            reject(error);
           }
+          this.events.trigger("error", error);
         });
-        if (this.auto_ping !== false) {
-          clearTimeout(this.auto_ping_timeout);
-          const auto_ping = () => {
-            if (this.connected && this.stream) {
-              this.stream.send("ping");
-              this.auto_ping_timeout = setTimeout(auto_ping, typeof this.auto_ping === "number" ? this.auto_ping : 3e4);
-            }
-          };
-          this.auto_ping_timeout = setTimeout(auto_ping, typeof this.auto_ping === "number" ? this.auto_ping : 3e4);
-        }
       });
     }
     /**
      * Disconnect from the server.
-     * Automatically calls `close()`.
+     * Disables auto-reconnect, closes the underlying stream, and cleans up pending state.
+     *
      * @docs
      */
     disconnect() {
       this.try_reconnect = false;
-      this.stream?.close();
-      if (this.auto_ping_timeout) {
-        clearTimeout(this.auto_ping_timeout);
+      clearTimeout(this.reconnect_timer);
+      clearTimeout(this.auto_ping_timeout);
+      if (this.stream) {
+        this.stream.removeAllListeners();
+        this.stream.close();
       }
+      this.messages.clear();
+      this.pending_resolvers.forEach((entry) => {
+        clearTimeout(entry.timer);
+        entry.reject(new Error("Client disconnected."));
+      });
+      this.pending_resolvers.clear();
     }
     /**
      * Set an event callback.
+     * @param event The event type to listen for.
+     * @param callback The callback to invoke when the event fires.
+     *
      * @docs
      */
     on_event(event, callback) {
-      this.events.set(event, callback);
+      this.events.add(event, callback);
     }
     /**
      * Set a command callback.
      * Will be called when an incoming message has the specified command type.
-     * The function can take the following arguments: `(stream, id, data) => {}`.
+     * @param command The command identifier to listen for.
+     * @param callback The callback invoked with `(id, data, respond)` when the command is received.
+     *
      * @docs
      */
     on(command, callback) {
@@ -432,6 +581,8 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send raw data through the websocket.
+     * @param data The raw string or buffer data to send.
+     *
      * @docs
      */
     async send_raw(data) {
@@ -439,7 +590,10 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       this.stream?.send(data);
     }
     /**
-     * Await till the stream is connected.
+     * Await until the stream is connected.
+     * @param timeout The timeout in milliseconds before rejecting.
+     * @returns A promise that resolves when the connection is established.
+     *
      * @docs
      */
     async await_till_connected(timeout = 6e4) {
@@ -455,7 +609,7 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
           } else {
             elapsed += step;
             if (elapsed > timeout) {
-              reject(new Error("Timeout."));
+              reject(new import_errors.TimeoutError("Connection timed out."));
             } else {
               setTimeout(is_connected, step);
             }
@@ -465,32 +619,33 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
       });
     }
     /**
-     * Wait for a message to be filled out.
+     * Wait for a response message matching the specified id.
+     * Uses an instant resolver pattern instead of polling for optimal performance at scale.
+     * @param opts The await response options.
+     * @returns The matching response message.
      * @note This only works when there is a single response message, any more response messages will be lost.
+     *
      * @docs
      */
-    async await_response({ id, timeout = 6e4, step = 10 }) {
-      let elapsed = 0;
+    async await_response({ id, timeout = 6e4 }) {
+      if (this.messages.has(id)) {
+        const data = this.messages.get(id);
+        this.messages.delete(id);
+        return data;
+      }
       return new Promise((resolve, reject) => {
-        const wait = () => {
-          if (this.messages.has(id)) {
-            const data = this.messages.get(id);
-            this.messages.delete(id);
-            resolve(data);
-          } else {
-            elapsed += step;
-            if (elapsed > timeout) {
-              reject(new Error("Operation timed out."));
-            } else {
-              setTimeout(wait, step);
-            }
-          }
-        };
-        wait();
+        const timer = setTimeout(() => {
+          this.pending_resolvers.delete(id);
+          reject(new import_errors.TimeoutError("Operation timed out."));
+        }, timeout);
+        this.pending_resolvers.set(id, { resolve, reject, timer });
       });
     }
     /**
      * Send a command and expect a single response.
+     * @param opts The request options.
+     * @returns The typed response message.
+     *
      * @docs
      */
     async request({ command, data, timeout = 6e4 }) {
@@ -499,6 +654,8 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send a response to a received command.
+     * @param opts The response options.
+     *
      * @docs
      */
     async respond({ id, data }) {
@@ -506,12 +663,12 @@ Rate limit exceeded, please try again in ${Math.floor((data.expiration - now) / 
     }
     /**
      * Send data through the websocket.
-     * Either a request command when `command` is defined,
+     * Sends a request command when `command` is defined,
      * or a response when `command` is undefined and `id` is defined.
-     * Note that `id` should always be defined in a sent response,
-     * but it can be auto generated when sending a request command.
+     * @param opts The send options.
+     * @returns The message id used for the sent message.
      */
-    async send_helper({ command, id = Math.random().toString(36).substring(2, 32), data }) {
+    async send_helper({ command, id = (0, import_crypto.randomUUID)(), data }) {
       await this.await_till_connected();
       this.stream?.send(bson.serialize({
         command,

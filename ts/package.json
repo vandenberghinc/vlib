@@ -1,6 +1,6 @@
 {
     "name": "@vandenberghinc/vlib",
-    "version": "1.6.46",
+    "version": "1.6.47",
     "description": "Generic TypeScript library built for VInc applications.",
     "type": "module",
     "module": "./dist/esm/vlib/index.js",
@@ -86,7 +86,7 @@
         "glob": "^11.1.0",
         "https": "^1.0.0",
         "ignore": "^5.3.2",
-        "js-beautify": "^1.15.4",
+        "js-beautify": "^1.8.8",
         "json5": "^2.2.3",
         "jsonc-parser": "^3.3.1",
         "minimatch": "^10.0.1",
@@ -99,6 +99,7 @@
     "devDependencies": {
         "@types/archiver": "^6.0.3",
         "@types/diff": "^7.0.2",
-        "@types/node": "^22.13.14"
+        "@types/node": "^22.13.14",
+        "@types/ws": "^8.18.1"
     }
 }

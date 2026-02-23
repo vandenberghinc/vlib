@@ -35,6 +35,7 @@ __export(stdin_exports, {
   Logger: () => import_index_m_node.Logger,
   Logging: () => Logging,
   Schema: () => Schema,
+  Threading: () => Threading,
   cli: () => cli,
   code: () => code,
   crypto: () => crypto,
@@ -44,6 +45,7 @@ __export(stdin_exports, {
   logging: () => logging,
   print: () => print,
   schema: () => schema,
+  threading: () => threading,
   version: () => version,
   warn: () => warn,
   warning: () => warning
@@ -70,10 +72,11 @@ var Code = __toESM(require("./code/index.m.uni.js"));
 var code = __toESM(require("./code/index.m.uni.js"));
 __reExport(stdin_exports, require("./clipboard/index.js"), module.exports);
 __reExport(stdin_exports, require("./generic/zip.js"), module.exports);
-__reExport(stdin_exports, require("./threading/index.node.js"), module.exports);
+var Threading = __toESM(require("./threading/index.node.js"));
+var threading = __toESM(require("./threading/index.node.js"));
 __reExport(stdin_exports, require("./errors/index.uni.js"), module.exports);
 Error.stackTraceLimit = 25;
-const version = "1.6.46";
+const version = "1.6.47";
 const print = (...args) => import_index_m_node2.log.raw(0, ...args);
 const error = (...args) => import_index_m_node2.log.error(...args);
 const warn = (arg, ...args) => import_index_m_node2.log.warn(arg, ...args);
@@ -87,6 +90,7 @@ const warning = warn;
   Logger,
   Logging,
   Schema,
+  Threading,
   cli,
   code,
   crypto,
@@ -96,6 +100,7 @@ const warning = warn;
   logging,
   print,
   schema,
+  threading,
   version,
   warn,
   warning,
@@ -108,6 +113,5 @@ const warning = warn;
   ...require("./generic/utils.js"),
   ...require("./clipboard/index.js"),
   ...require("./generic/zip.js"),
-  ...require("./threading/index.node.js"),
   ...require("./errors/index.uni.js")
 });

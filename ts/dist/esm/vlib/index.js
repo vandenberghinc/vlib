@@ -11,7 +11,7 @@ Error.stackTraceLimit = 25;
  * @warning Expect an error since we should not import any of the `vts/types` files.
  *          Otherwise we would declare these attributes globally also on non vts processed files.
  *          @ts-expect-error */
-export const version = '1.6.46';
+export const version = '1.6.47';
 /** cli/ */
 export * as CLI from "./cli/index.m.js";
 export * as cli from "./cli/index.m.js";
@@ -51,7 +51,8 @@ export * from "./clipboard/index.js";
 /** zip/ */
 export * from "./generic/zip.js";
 /** threading/ */
-export * from "./threading/index.node.js";
+export * as Threading from "./threading/index.node.js";
+export * as threading from "./threading/index.node.js";
 /** errors/ */
 export * from "./errors/index.uni.js";
 //# sourceMappingURL=index.js.map

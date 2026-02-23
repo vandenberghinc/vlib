@@ -72,7 +72,8 @@ export * from "./clipboard/index.js"
 export * from "./generic/zip.js"
 
 /** threading/ */
-export * from "./threading/index.node.js"
+export * as Threading from "./threading/index.node.js"
+export * as threading from "./threading/index.node.js"
 
 /** errors/ */
 export * from "./errors/index.uni.js"
