@@ -42,6 +42,8 @@ export namespace WebSocket {
     /**
      * A type map defining the request and response data types for each command.
      * @example
+     * {Type Map}
+     * Create a type map of commands by defining an interface that extends `WebSocket.CommandsMeta`.
      * ```ts
      * type MyCommands: WebSocket.CommandsMeta = {
      *     get_user: {
@@ -171,6 +173,8 @@ export namespace WebSocket {
      * @experimental
      * @param opts The server constructor options.
      * @example
+     * {Server Example}
+     * Create a WebSocket server with typed command handling and event listeners.
      * ```ts
      * type Commands = {
      *     get_user: {
@@ -773,6 +777,8 @@ export namespace WebSocket {
      * @experimental
      * @param opts The client constructor options.
      * @example
+     * {Client Example}
+     * Create a WebSocket client with typed command handling and event listeners.
      * ```ts
      * type Commands = {
      *     get_user: {

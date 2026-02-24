@@ -277,7 +277,7 @@ export var ObjectUtils;
      * @docs
      */
     function merge(ref, override) {
-        for (const key in Object.keys(override)) {
+        for (const key of Object.keys(override)) {
             if (Object.prototype.hasOwnProperty.call(override, key)) {
                 ref[key] = override[key];
             }
@@ -290,7 +290,7 @@ export var ObjectUtils;
      * @docs
      */
     function merge_missing(ref, override) {
-        for (const key in Object.keys(override)) {
+        for (const key of Object.keys(override)) {
             if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === undefined)) {
                 ref[key] = override[key];
             }

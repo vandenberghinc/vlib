@@ -95,7 +95,7 @@ class NPM {
     if (version === void 0) {
       version = "1.0.0";
     } else {
-      const split = version.split(".").map((x) => parseInt(x));
+      const split = version.split(".").map((x) => parseInt(x, 10));
       split[split.length - 1] += 1;
       version = split.join(".");
     }
@@ -182,7 +182,7 @@ class NPM {
     }
     let npm_pack_output;
     try {
-      npm_pack_output = (0, import_child_process.execSync)(`npm pack --silent ${this.pkg_base}`, { cwd: tmp_dir });
+      npm_pack_output = (0, import_child_process.execFileSync)("npm", ["pack", "--silent", this.pkg_base.str()], { cwd: tmp_dir });
     } catch (error) {
       throw new Error("Error during npm pack execution");
     }
@@ -192,15 +192,15 @@ class NPM {
       throw new Error(`Error: Tarball ${tarball_name} was not found at ${tarball_path.str()}`);
     }
     const tarball_buffer = await tarball_path.load({ type: "buffer" });
-    const local_hash = import_crypto.default.createHash("sha1").update(tarball_buffer).digest("hex");
+    const local_hash = "sha512-" + import_crypto.default.createHash("sha512").update(tarball_buffer).digest("base64");
     if (log_level > 0) {
-      console.log(`Local tarball SHA-1: ${local_hash}`);
+      console.log(`Local tarball integrity: ${local_hash}`);
     }
     let published_hash;
     try {
-      published_hash = (0, import_child_process.execSync)(`npm view ${pkg.name}@${pkg.version} dist.shasum`, { stdio: "pipe" }).toString().trim();
+      published_hash = (0, import_child_process.execFileSync)("npm", ["view", `${pkg.name}@${pkg.version}`, "dist.integrity"], { stdio: "pipe" }).toString().trim();
       if (log_level > 0) {
-        console.log(`Published tarball SHA-1: ${published_hash}`);
+        console.log(`Published tarball integrity: ${published_hash}`);
       }
     } catch (error) {
       return true;

@@ -107,7 +107,7 @@ query = true, json = false, reject_unauthorized = true, delay = null, http2: use
                 try {
                     body = JSON.parse(body);
                 }
-                catch (e) { }
+                catch (_) { /* body remains as raw string when JSON parsing fails */ }
             }
             // Resolve.
             const response = {

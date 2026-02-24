@@ -1,14 +1,17 @@
 /**
  * @author Daan van den Bergh
- * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
+ * @copyright © 2024 - 2026 Daan van den Bergh. All rights reserved.
  */
 import * as fs from 'fs';
+import { GlobPatternList } from './glob_pattern.js';
 /**
  * The path class.
  * @nav System
  * @docs
  */
 export declare class Path {
+    /** Create a PathError with a message and optional cause. */
+    private static _throw;
     path: string;
     private _stat?;
     private _full_name?;
@@ -342,7 +345,8 @@ export declare class Path {
      */
     touch(): Promise<void>;
     /**
-     * Relative.
+     * Get the relative path from this path to another absolute path.
+     * @param child The target path to compute the relative path to.
      * @docs
      */
     relative(child: string | Path): Path;
@@ -403,13 +407,13 @@ export declare class Path {
     paths(opts?: {
         recursive?: boolean;
         absolute?: boolean;
-        exclude?: Path.ExcludeList | string[];
+        exclude?: GlobPatternList | string[];
         string?: false;
     }): Promise<Path[]>;
     paths(opts: {
         recursive?: boolean;
         absolute?: boolean;
-        exclude?: Path.ExcludeList | string[];
+        exclude?: GlobPatternList | string[];
         string: true;
     }): Promise<string[]>;
     /**
@@ -469,6 +473,29 @@ type CastLoadSaveType<T extends LoadSaveTypeName, Never = never> = T extends key
  */
 export declare namespace Path {
     /**
+     * A custom error class for all errors thrown by the {@link Path} module.
+     * Preserves `code`, `errno`, and `path` from the original `cause` when wrapping fs errors.
+     * @docs
+     */
+    class PathError extends Error {
+        /** The error code, e.g. `ENOENT`, `EACCES`. */
+        code?: string;
+        /** The numeric errno value. */
+        errno?: number;
+        /** The file path associated with the error. */
+        path?: string;
+        /**
+         * Construct a new PathError.
+         * @param opts The error options.
+         */
+        constructor(opts: {
+            /** The error message. */
+            message: string;
+            /** The original error that caused this error. */
+            cause?: unknown;
+        });
+    }
+    /**
      * Types for glob methods.
      */
     namespace glob {
@@ -487,31 +514,6 @@ export declare namespace Path {
             stats?: boolean;
             string?: boolean;
         };
-    }
-    /**
-     * A glob / regex path exclude list class.
-     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
-     */
-    class ExcludeList {
-        /** Size to keep uniform with `Set`. */
-        size: number;
-        /** The internal exclude list. */
-        private exclude_list;
-        /** An internal cache. */
-        private cache;
-        /** The constructor. */
-        constructor(...exclude_list: (string | RegExp)[]);
-        /**
-         * Normalize a path.
-         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
-         */
-        normalize(input: string): string;
-        /**
-         * Check if a path is excluded.
-         * @returns True if the path is matched by the exclude list.
-         * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
-         */
-        has(input: string): boolean;
     }
 }
 export {};

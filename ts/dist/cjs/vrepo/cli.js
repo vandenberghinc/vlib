@@ -435,7 +435,7 @@ cli.command({
         message: `Linking ${dependencies.length} dependencies to "${source2}".`,
         success: `Linked ${dependencies.length} dependencies to "${source2}".`
       });
-      let cmd = "npm --silent link";
+      const link_args = ["--silent", "link"];
       let edits = 0;
       for (const dependency of dependencies) {
         const abs_dependency = vlib.Path.abs(dependency);
@@ -449,7 +449,7 @@ cli.command({
           spinner.error();
           throw this.error(`The dependency package.json file does not contain a name or version field.`);
         }
-        cmd += " " + pkg.name;
+        link_args.push(pkg.name);
         if (repo.config.npm.links[pkg.name] == null) {
           repo.config.npm.links[pkg.name] = [dependency];
           ++edits;
@@ -469,7 +469,7 @@ cli.command({
           }
         }
       }
-      (0, import_node_child_process.execSync)(cmd, { cwd: repo.source.path, stdio: "inherit" });
+      (0, import_node_child_process.execFileSync)("npm", link_args, { cwd: repo.source.path, stdio: "inherit" });
       if (edits) {
         try {
           repo.config_path.save(repo.config, { type: "jsonc" });
@@ -512,7 +512,7 @@ cli.command({
         message: `Unlinking ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`,
         success: `Unlinked ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`
       });
-      let cmd = "npm --silent unlink";
+      const unlink_args = ["--silent", "unlink"];
       let npm_publishes = 0;
       if (Object.keys(links).length === 0) {
         throw this.error(`No linked libraries found in "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`);
@@ -537,7 +537,7 @@ cli.command({
         if (config.links?.length) {
           await unlink(dependency);
         }
-        cmd += " " + name;
+        unlink_args.push(name);
         const repo = new import_package.Package({
           source: dpcy_package,
           git: false,
@@ -554,7 +554,7 @@ cli.command({
         }
         src_pkg.npm.pkg.dependencies[repo.npm.pkg.name] = "^" + repo.npm.pkg.version;
       }
-      (0, import_node_child_process.execSync)(cmd, { cwd: src_pkg.source.str(), stdio: "inherit" });
+      (0, import_node_child_process.execFileSync)("npm", unlink_args, { cwd: src_pkg.source.str(), stdio: "inherit" });
       src_pkg.save();
       if (npm_publishes && install) {
         await new Promise((resolve) => setTimeout(resolve, 2500));

@@ -293,7 +293,7 @@ export namespace ObjectUtils {
      * @docs
      */
     export function merge<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
-        for (const key in Object.keys(override)) {
+        for (const key of Object.keys(override)) {
             if (Object.prototype.hasOwnProperty.call(override, key)) {
                 (ref as any)[key] = override[key];
             }
@@ -306,7 +306,7 @@ export namespace ObjectUtils {
      * @docs
      */
     export function merge_missing<T extends object, U extends object>(ref: T, override: U): Omit<T, keyof U> & U {
-        for (const key in Object.keys(override)) {
+        for (const key of Object.keys(override)) {
             if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === undefined)) {
                 (ref as any)[key] = override[key];
             }

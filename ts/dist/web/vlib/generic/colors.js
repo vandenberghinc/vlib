@@ -424,7 +424,7 @@ export var Color;
                             }
                             // Handle 256 colors (38;5;n for foreground, 48;5;n for background)
                             else if (codes.length >= 3 && (codes[0] === '38' || codes[0] === '48') && codes[1] === '5') {
-                                const color_index = parseInt(codes[2]);
+                                const color_index = parseInt(codes[2], 10);
                                 if (color_index >= 0 && color_index < 256) {
                                     style = codes[0] === '38'
                                         ? `color:${color_256_palette[color_index]}`

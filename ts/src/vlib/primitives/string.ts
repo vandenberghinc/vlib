@@ -266,18 +266,20 @@ namespace StringUtils {
     }
 
     /**
-     * Generates a random alphanumeric string of the given length.
+     * Generates a cryptographically secure random alphanumeric string of the given length.
+     * Uses `crypto.getRandomValues()` which is available in both Node.js and browser environments.
      * @param length The length of the random string, default is 32.
      * @param charset Optional custom character set to use, default is alphanumeric.
      *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
      * @docs
-    */
-   export function random(length = 32, charset?: string): string {
-       let result = '';
-       if (charset) {
-           for (let i = 0; i < length; i++) result += charset.charAt(Math.floor(Math.random() * charset.length));
-        } else {
-            for (let i = 0; i < length; i++) result += default_random_charset.charAt(Math.floor(Math.random() * default_random_charset.length));
+     */
+    export function random(length = 32, charset?: string): string {
+        const chars = charset ?? default_random_charset;
+        const random_bytes = new Uint8Array(length);
+        globalThis.crypto.getRandomValues(random_bytes);
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(random_bytes[i] % chars.length);
         }
         return result;
     }

@@ -184,13 +184,12 @@ var StringUtils;
   }
   StringUtils2.reverse = reverse;
   function random(length = 32, charset) {
+    const chars = charset ?? default_random_charset;
+    const random_bytes = new Uint8Array(length);
+    globalThis.crypto.getRandomValues(random_bytes);
     let result = "";
-    if (charset) {
-      for (let i = 0; i < length; i++)
-        result += charset.charAt(Math.floor(Math.random() * charset.length));
-    } else {
-      for (let i = 0; i < length; i++)
-        result += default_random_charset.charAt(Math.floor(Math.random() * default_random_charset.length));
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(random_bytes[i] % chars.length);
     }
     return result;
   }

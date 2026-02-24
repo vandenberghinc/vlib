@@ -2,7 +2,7 @@
  * @author Daan van den Bergh
  * @copyright © 2024 - 2025 Daan van den Bergh. All rights reserved.
  */
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import crypto from 'crypto';
 import { Path, Schema, Proc } from "../vlib/index.js";
 // ---------------------------------------------------------
@@ -87,7 +87,7 @@ export class NPM {
             version = "1.0.0";
         }
         else {
-            const split = version.split(".").map((x) => parseInt(x));
+            const split = version.split(".").map((x) => parseInt(x, 10));
             // Only increase the last digit from the version.
             split[split.length - 1] += 1;
             // Increase the version and continue one digit to the left when a digit has reached 9.
@@ -206,7 +206,7 @@ export class NPM {
         }
         let npm_pack_output;
         try {
-            npm_pack_output = execSync(`npm pack --silent ${this.pkg_base}`, { cwd: tmp_dir });
+            npm_pack_output = execFileSync('npm', ['pack', '--silent', this.pkg_base.str()], { cwd: tmp_dir });
         }
         catch (error) {
             throw new Error("Error during npm pack execution");
@@ -216,20 +216,20 @@ export class NPM {
         if (!tarball_path.exists()) {
             throw new Error(`Error: Tarball ${tarball_name} was not found at ${tarball_path.str()}`);
         }
-        // Compute the SHA-1 checksum of the local tarball
+        // Compute the SHA-512 integrity hash of the local tarball (matching npm's dist.integrity format).
         const tarball_buffer = await tarball_path.load({ type: 'buffer' });
-        const local_hash = crypto.createHash('sha1').update(tarball_buffer).digest('hex');
+        const local_hash = "sha512-" + crypto.createHash('sha512').update(tarball_buffer).digest('base64');
         if (log_level > 0) {
-            console.log(`Local tarball SHA-1: ${local_hash}`);
+            console.log(`Local tarball integrity: ${local_hash}`);
         }
-        // Retrieve the published tarball's shasum from the npm registry
+        // Retrieve the published tarball's integrity hash from the npm registry.
         let published_hash;
         try {
-            published_hash = execSync(`npm view ${pkg.name}@${pkg.version} dist.shasum`, { stdio: 'pipe' })
+            published_hash = execFileSync('npm', ['view', `${pkg.name}@${pkg.version}`, 'dist.integrity'], { stdio: 'pipe' })
                 .toString()
                 .trim();
             if (log_level > 0) {
-                console.log(`Published tarball SHA-1: ${published_hash}`);
+                console.log(`Published tarball integrity: ${published_hash}`);
             }
         }
         catch (error) {

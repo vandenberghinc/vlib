@@ -36,10 +36,10 @@ var os = __toESM(require("os"));
 var pathlib = __toESM(require("path"));
 var diskusage = __toESM(require("diskusage"));
 var readline = __toESM(require("readline"));
-var import_minimatch = require("minimatch");
 var import_json5 = __toESM(require("json5"));
 var import_jsonc = require("../jsonc/jsonc.js");
 var import_string = require("../primitives/string.js");
+var import_glob_pattern = require("./glob_pattern.js");
 var import_fast_glob = __toESM(require("fast-glob"));
 const multi_dot_extensions = /* @__PURE__ */ new Set([
   // Compressed archives
@@ -134,8 +134,12 @@ const multi_dot_extensions_suffixes = new Set(Array.from(multi_dot_extensions).r
     acc.push(add);
   return acc;
 }, []));
-const multi_dot_extensions_regex = new RegExp(`(${Array.from(multi_dot_extensions_suffixes).map((ext) => ext.replaceAll(".", "\\.")).join("|")})$`, "g");
+const multi_dot_extensions_regex = new RegExp(`(${Array.from(multi_dot_extensions_suffixes).map((ext) => ext.replaceAll(".", "\\.")).join("|")})$`);
 class Path {
+  /** Create a PathError with a message and optional cause. */
+  static _throw(message, cause) {
+    throw new Path.PathError({ message, cause });
+  }
   // Attributes.
   path;
   // internal file path, keep public.
@@ -154,14 +158,14 @@ class Path {
    */
   constructor(path, clean = true, stats) {
     if (path == null) {
-      throw Error(`Invalid path "${path}".`);
+      Path._throw(`Invalid path "${path}".`);
     } else if (path instanceof Path) {
       this.path = path.path;
     } else if (typeof path !== "string") {
-      throw Error(`Invalid path "${path}". Expected a string or Path instance.`);
+      Path._throw(`Invalid path "${path}". Expected a string or Path instance.`);
     } else {
       if (path.length === 0) {
-        throw Error(`Invalid path, cannot create a path from an empty string.`);
+        Path._throw(`Invalid path, cannot create a path from an empty string.`);
       }
       if (clean) {
         this.path = "";
@@ -212,7 +216,7 @@ class Path {
       this.path = this.path.substring(start, end - start);
     }
     if (this.path.length === 0) {
-      throw Error(`Invalid path "${this.path}".`);
+      Path._throw(`Invalid path "${this.path}".`);
     }
   }
   /**
@@ -292,7 +296,7 @@ class Path {
     if (paths.length === 1) {
       return new Path(paths[0]).base()?.toString();
     }
-    const separator = paths[0].includes("\\\\") ? "\\\\" : "/";
+    const separator = paths[0].includes("\\") ? "\\" : "/";
     const split_first_path = paths[0].split(separator);
     let common_length = split_first_path.length;
     for (let i = 1; i < paths.length; i++) {
@@ -325,7 +329,7 @@ class Path {
   static ensure_exists_err(path, err_prefix = "") {
     path = new Path(path);
     if (!path.exists()) {
-      throw new Error(`${err_prefix}Path "${path.str()}" does not exist.`);
+      Path._throw(`${err_prefix}Path "${path.str()}" does not exist.`);
     }
   }
   // ---------------------------------------------------------
@@ -356,9 +360,13 @@ class Path {
     if (this._stat !== void 0) {
       return this._stat;
     }
-    this._stat = fs.statSync(this.path);
+    try {
+      this._stat = fs.statSync(this.path);
+    } catch (e) {
+      Path._throw(`Failed to stat "${this.path}".`, e);
+    }
     if (this._stat == null) {
-      throw new Error(`Path "${this.path}" does not exist or cannot be accessed.`);
+      Path._throw(`Path "${this.path}" does not exist or cannot be accessed.`);
     }
     return this._stat;
   }
@@ -426,11 +434,22 @@ class Path {
   get size() {
     if (this.stat.isDirectory()) {
       let calc = function(path) {
-        const stat = fs.statSync(path);
+        let stat;
+        try {
+          stat = fs.statSync(path);
+        } catch (e) {
+          Path._throw(`Failed to stat "${path}".`, e);
+        }
         if (stat.isFile()) {
           size += stat.size;
         } else if (stat.isDirectory()) {
-          fs.readdirSync(path).forEach((file) => calc(`${path}/${file}`));
+          let children;
+          try {
+            children = fs.readdirSync(path);
+          } catch (e) {
+            Path._throw(`Failed to read directory "${path}".`, e);
+          }
+          children.forEach((file) => calc(`${path}/${file}`));
         }
       };
       let size = 0;
@@ -496,17 +515,13 @@ class Path {
    */
   async disk_usage() {
     if (!this.is_dir()) {
-      throw new Error(`File path "${this.path}" is not a directory.`);
+      Path._throw(`File path "${this.path}" is not a directory.`);
     }
-    return new Promise((resolve, reject) => {
-      diskusage.check(this.path, (err, info) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(info);
-      });
-    });
+    try {
+      return await diskusage.check(this.path);
+    } catch (e) {
+      Path._throw(`Failed to check disk usage for "${this.path}".`, e);
+    }
   }
   /**
    * Get available disk space for the directory.
@@ -516,17 +531,14 @@ class Path {
    */
   async available_space() {
     if (!this.is_dir()) {
-      throw new Error(`File path "${this.path}" is not a directory.`);
+      Path._throw(`File path "${this.path}" is not a directory.`);
     }
-    return new Promise((resolve, reject) => {
-      diskusage.check(this.path, (err, info) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(info?.available);
-      });
-    });
+    try {
+      const info = await diskusage.check(this.path);
+      return info?.available;
+    } catch (e) {
+      Path._throw(`Failed to check available space for "${this.path}".`, e);
+    }
   }
   // ---------------------------------------------------------
   // Functions.
@@ -571,7 +583,11 @@ class Path {
     if (path instanceof Path) {
       return path.is_file();
     }
-    return fs.statSync(path).isFile();
+    try {
+      return fs.statSync(path).isFile();
+    } catch (e) {
+      Path._throw(`Failed to stat "${path}".`, e);
+    }
   }
   /**
    * Check if the path is a directory.
@@ -671,7 +687,7 @@ class Path {
         if (m)
           this._extension = m[0];
       }
-      this._name = basename.substring(0, last_dot);
+      this._name = basename.substring(0, basename.length - this._extension.length);
     } else {
       this._name = basename;
       this._extension = "";
@@ -731,21 +747,17 @@ class Path {
    * @docs
    */
   async cp(destination) {
-    return new Promise((resolve, reject) => {
-      if (destination == null) {
-        return reject(new Error('Define parameter "destination".'));
-      }
-      if (destination instanceof Path) {
-        destination = destination.path;
-      }
-      fs_extra.copy(this.path, destination, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    if (destination == null) {
+      Path._throw('Define parameter "destination".');
+    }
+    if (destination instanceof Path) {
+      destination = destination.path;
+    }
+    try {
+      await fs_extra.copy(this.path, destination);
+    } catch (e) {
+      Path._throw(`Failed to copy "${this.path}" to "${destination}".`, e);
+    }
   }
   /**
    * Copy the path to another location synchronously.
@@ -753,63 +765,53 @@ class Path {
    */
   cp_sync(destination) {
     if (destination == null) {
-      throw new Error('Define parameter "destination".');
+      Path._throw('Define parameter "destination".');
     }
     if (destination instanceof Path) {
       destination = destination.path;
     }
-    fs_extra.copySync(this.path, destination);
+    try {
+      fs_extra.copySync(this.path, destination);
+    } catch (e) {
+      Path._throw(`Failed to copy "${this.path}" to "${destination}".`, e);
+    }
   }
   /**
    * Move the path to another location
    * @docs
    */
   async mv(destination) {
-    return new Promise((resolve, reject) => {
-      if (destination instanceof Path) {
-        destination = destination.path;
-      }
-      if (fs.existsSync(destination)) {
-        return reject(new Error("Destination path already exists."));
-      }
-      fs_extra.move(this.path, destination, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          this._stat = void 0;
-          resolve();
-        }
-      });
-    });
+    if (destination instanceof Path) {
+      destination = destination.path;
+    }
+    if (fs.existsSync(destination)) {
+      Path._throw(`Destination path "${destination}" already exists.`);
+    }
+    try {
+      await fs_extra.move(this.path, destination);
+      this._stat = void 0;
+    } catch (e) {
+      Path._throw(`Failed to move "${this.path}" to "${destination}".`, e);
+    }
   }
   /**
    * Delete the path
    * @docs
    */
   async del({ recursive = false } = {}) {
-    return new Promise((resolve, reject) => {
-      if (this.exists()) {
-        if (this.is_dir()) {
-          fs.rm(this.path, { recursive }, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              this._stat = void 0;
-              resolve();
-            }
-          });
-        } else {
-          fs.unlink(this.path, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              this._stat = void 0;
-              resolve();
-            }
-          });
-        }
+    if (!this.exists()) {
+      return;
+    }
+    try {
+      if (this.is_dir()) {
+        await fs.promises.rm(this.path, { recursive });
+      } else {
+        await fs.promises.unlink(this.path);
       }
-    });
+      this._stat = void 0;
+    } catch (e) {
+      Path._throw(`Failed to delete "${this.path}".`, e);
+    }
   }
   /**
    * Delete the path synchronously.
@@ -817,10 +819,14 @@ class Path {
    */
   del_sync({ recursive = false } = {}) {
     if (this.exists()) {
-      if (this.is_dir()) {
-        fs.rmSync(this.path, { recursive });
-      } else {
-        fs.unlinkSync(this.path);
+      try {
+        if (this.is_dir()) {
+          fs.rmSync(this.path, { recursive });
+        } else {
+          fs.unlinkSync(this.path);
+        }
+      } catch (e) {
+        Path._throw(`Failed to delete "${this.path}".`, e);
       }
     }
     return this;
@@ -830,37 +836,29 @@ class Path {
    * @docs
    */
   async trash() {
-    return new Promise(async (resolve, reject) => {
-      const full_name = this.full_name();
-      let trash;
-      switch (os.platform()) {
-        case "darwin":
-          trash = pathlib.join(os.homedir(), ".Trash");
-          break;
-        case "linux":
-          const xdg_data_home = process.env.XDG_DATA_HOME || pathlib.join(os.homedir(), ".local", "share");
-          trash = pathlib.join(xdg_data_home, "Trash");
-          break;
-        default:
-          return reject(new Error("Unsupported platform."));
-      }
-      if (trash == null) {
-        return reject(new Error("Unsupported platform."));
-      }
-      let destination;
-      try {
-        destination = `${trash}/${full_name}`;
-        let counts = 0;
-        while (fs.existsSync(destination)) {
-          ++counts;
-          destination = `${trash}/${full_name}-${counts}`;
-        }
-        await this.mv(destination);
-      } catch (err) {
-        return reject(err);
-      }
-      resolve();
-    });
+    const full_name = this.full_name();
+    let trash;
+    switch (os.platform()) {
+      case "darwin":
+        trash = pathlib.join(os.homedir(), ".Trash");
+        break;
+      case "linux":
+        const xdg_data_home = process.env.XDG_DATA_HOME || pathlib.join(os.homedir(), ".local", "share");
+        trash = pathlib.join(xdg_data_home, "Trash");
+        break;
+      default:
+        Path._throw(`Unsupported platform "${os.platform()}" for trash.`);
+    }
+    if (trash == null) {
+      Path._throw(`Unsupported platform "${os.platform()}" for trash.`);
+    }
+    let destination = `${trash}/${full_name}`;
+    let counts = 0;
+    while (fs.existsSync(destination)) {
+      ++counts;
+      destination = `${trash}/${full_name}-${counts}`;
+    }
+    await this.mv(destination);
   }
   /**
    * Create a directory
@@ -869,19 +867,15 @@ class Path {
    * @docs
    */
   async mkdir(opts) {
-    return new Promise((resolve, reject) => {
-      if (this.exists()) {
-        return resolve();
-      }
-      fs.mkdir(this.path, { recursive: opts?.recursive }, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          this._stat = void 0;
-          resolve();
-        }
-      });
-    });
+    if (this.exists()) {
+      return;
+    }
+    try {
+      await fs.promises.mkdir(this.path, { recursive: opts?.recursive });
+      this._stat = void 0;
+    } catch (e) {
+      Path._throw(`Failed to create directory "${this.path}".`, e);
+    }
   }
   /**
    * Create a directory synchronously.
@@ -893,7 +887,11 @@ class Path {
     if (this.exists()) {
       return this;
     }
-    fs.mkdirSync(this.path, { recursive: opts?.recursive });
+    try {
+      fs.mkdirSync(this.path, { recursive: opts?.recursive });
+    } catch (e) {
+      Path._throw(`Failed to create directory "${this.path}".`, e);
+    }
     return this;
   }
   /**
@@ -904,7 +902,8 @@ class Path {
     return this.save("");
   }
   /**
-   * Relative.
+   * Get the relative path from this path to another absolute path.
+   * @param child The target path to compute the relative path to.
    * @docs
    */
   relative(child) {
@@ -919,10 +918,10 @@ class Path {
       return void 0;
     }
     if (def === "") {
-      throw new Error("Default value cannot be an empty string.");
+      Path._throw("Default value cannot be an empty string.");
     }
     if (res === "") {
-      throw new Error("Operation resulted in an empty string, which is not allowed.");
+      Path._throw("Operation resulted in an empty string, which is not allowed.");
     }
     return new Path(res, false);
   }
@@ -945,46 +944,12 @@ class Path {
    * @docs
    */
   async load({ type = "string", encoding = void 0 } = {}) {
-    return new Promise((resolve, reject) => {
-      fs.readFile(this.path, encoding, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          if (type == null || type === "buffer" || type === "undefined") {
-            resolve(data);
-          } else if (type === "string") {
-            resolve(data.toString());
-          } else if (type === "array" || type === "object" || type === "json") {
-            resolve(JSON.parse(typeof data === "string" ? data : data.toString()));
-          } else if (type === "json5") {
-            resolve(import_json5.default.parse(typeof data === "string" ? data : data.toString()));
-          } else if (type === "jsonc") {
-            resolve(import_jsonc.JSONC.parse(typeof data === "string" ? data : data.toString()));
-          } else if (type === "number") {
-            resolve(parseFloat(data.toString()));
-          } else if (type === "boolean") {
-            const str = data.toString();
-            resolve(str === "1" || str === "true" || str === "TRUE" || str === "True");
-          } else {
-            throw Error(`Invalid type "${type.toString()}".`);
-          }
-        }
-      });
-    });
-  }
-  // load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
-  // load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
-  // load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
-  // load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
-  // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
-  // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
-  // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
-  /**
-   * Load the data from the path synchronously.
-   * @docs
-   */
-  load_sync({ type = "string", encoding = void 0 } = {}) {
-    const data = fs.readFileSync(this.path, encoding);
+    let data;
+    try {
+      data = await fs.promises.readFile(this.path, encoding);
+    } catch (e) {
+      Path._throw(`Failed to read "${this.path}".`, e);
+    }
     if (type == null || type === "buffer" || type === "undefined") {
       return data;
     } else if (type === "string") {
@@ -1001,7 +966,44 @@ class Path {
       const str = data.toString();
       return str === "1" || str === "true" || str === "TRUE" || str === "True";
     } else {
-      throw Error(`Invalid type "${type.toString()}".`);
+      Path._throw(`Invalid type "${type.toString()}".`);
+    }
+  }
+  // load_sync<R extends Buffer = Buffer>(opts: { type: undefined | "buffer", encoding?: BufferEncoding }): R;
+  // load_sync<R extends boolean = boolean>(opts: { type: "boolean", encoding?: BufferEncoding }): R;
+  // load_sync<R extends number = number>(opts: { type: "number", encoding?: BufferEncoding }): R;
+  // load_sync<R extends string = string>(opts?: { type?: "string", encoding?: BufferEncoding }): R;
+  // load_sync<R extends any[] = any[]>(opts: { type: "array", encoding?: BufferEncoding }): R;
+  // load_sync<R extends Record<string, any> = Record<string, any>>(opts: { type: "object", encoding?: BufferEncoding }): R;
+  // load_sync<R extends any[] | Record<string, any> = any[] | Record<string, any>>(opts: { type: "json" | "json5" | "jsonc", encoding?: BufferEncoding }): R;
+  /**
+   * Load the data from the path synchronously.
+   * @docs
+   */
+  load_sync({ type = "string", encoding = void 0 } = {}) {
+    let data;
+    try {
+      data = fs.readFileSync(this.path, encoding);
+    } catch (e) {
+      Path._throw(`Failed to read "${this.path}".`, e);
+    }
+    if (type == null || type === "buffer" || type === "undefined") {
+      return data;
+    } else if (type === "string") {
+      return data.toString();
+    } else if (type === "array" || type === "object" || type === "json") {
+      return JSON.parse(typeof data === "string" ? data : data.toString());
+    } else if (type === "json5") {
+      return import_json5.default.parse(typeof data === "string" ? data : data.toString());
+    } else if (type === "jsonc") {
+      return import_jsonc.JSONC.parse(typeof data === "string" ? data : data.toString());
+    } else if (type === "number") {
+      return parseFloat(data.toString());
+    } else if (type === "boolean") {
+      const str = data.toString();
+      return str === "1" || str === "true" || str === "TRUE" || str === "True";
+    } else {
+      Path._throw(`Invalid type "${type.toString()}".`);
     }
   }
   /**
@@ -1022,19 +1024,15 @@ class Path {
       } else if (opts.type === "boolean") {
         data = data.toString();
       } else {
-        throw Error(`Invalid type parameter "${opts.type.toString()}".`);
+        Path._throw(`Invalid type parameter "${opts.type.toString()}".`);
       }
     }
-    return new Promise((resolve, reject) => {
-      fs.writeFile(this.path, data, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          this._stat = void 0;
-          resolve();
-        }
-      });
-    });
+    try {
+      await fs.promises.writeFile(this.path, data);
+      this._stat = void 0;
+    } catch (e) {
+      Path._throw(`Failed to write "${this.path}".`, e);
+    }
   }
   /**
    * Save data to the path synchronously.
@@ -1047,16 +1045,20 @@ class Path {
       } else if (opts.type === "array" || opts.type === "object" || opts.type === "json" || opts.type === "json5") {
         data = JSON.stringify(data);
       } else if (opts.type === "jsonc") {
-        throw new Error("JSONC is not supported in sync mode.");
+        Path._throw("JSONC is not supported in sync mode.");
       } else if (opts.type === "number") {
         data = data.toString();
       } else if (opts.type === "boolean") {
         data = data.toString();
       } else {
-        throw Error(`Invalid type parameter "${opts.type.toString()}".`);
+        Path._throw(`Invalid type parameter "${opts.type.toString()}".`);
       }
     }
-    fs.writeFileSync(this.path, data);
+    try {
+      fs.writeFileSync(this.path, data);
+    } catch (e) {
+      Path._throw(`Failed to write "${this.path}".`, e);
+    }
     return this;
   }
   /**
@@ -1078,100 +1080,102 @@ class Path {
       crlfDelay: Infinity
     });
     let index = 0;
-    for await (const line of rl) {
-      if (callback) {
-        callback(line, index);
+    try {
+      for await (const line of rl) {
+        if (callback) {
+          callback(line, index);
+        }
+        lines.push(line);
+        index++;
       }
-      lines.push(line);
-      index++;
+    } catch (e) {
+      Path._throw(`Failed to read lines from "${this.path}".`, e);
     }
     return lines;
   }
   /**
-  * Get the child paths of a directory
-  * @throws An error when the path is not a directory
-  * @param recursive Get all paths recursively.
-  * @param exclude A list of exclude paths, an exact match will be checked when a `string[]` array is provided.
-  *                However, glob- and regex patterns can be utilized as well by providing an `ExcludeList` class.
-  * @param absolute Get the absolute paths instead of relative paths.
-  * @param string Get all paths as raw strings instead of Path objects
-  *
-  * @docs
-  */
+   * Get the child paths of a directory.
+   *
+   * Each child path is matched against the exclude list using its absolute path.
+   *
+   * When a `string[]` is provided, each entry can be either an absolute path
+   * or a path relative to this directory. Each entry is resolved to an
+   * absolute path before matching.
+   *
+   * When a {@link GlobPatternList} is provided, its patterns are matched
+   * directly against the absolute path of each child, so ensure the patterns
+   * are written for absolute paths (e.g. `/home/user/project/node_modules`).
+   *
+   * @param opts Options.
+   * @param opts.recursive Get all paths recursively.
+   * @param opts.exclude A list of paths to exclude. When a `string[]` is provided,
+   *        each entry is resolved to an absolute path and matched exactly.
+   *        When a {@link GlobPatternList} is provided, its glob patterns are
+   *        matched against each child's absolute path.
+   * @param opts.absolute Get absolute paths instead of relative paths.
+   * @param opts.string Get all paths as raw strings instead of Path objects.
+   * @throws {PathError} When the path is not a directory.
+   *
+   * @docs
+   */
   async paths({ recursive = false, absolute = true, exclude, string = false } = {}) {
-    const exclude_list = exclude instanceof Path.ExcludeList ? exclude : Array.isArray(exclude) ? /* @__PURE__ */ new Set() : void 0;
+    const exclude_list = exclude instanceof import_glob_pattern.GlobPatternList ? exclude : Array.isArray(exclude) && exclude.length > 0 ? new import_glob_pattern.GlobPatternList(exclude.map((e) => {
+      let path = new Path(e);
+      if (path.exists()) {
+        path = path.abs();
+      } else {
+        const joined = this.join(e, false);
+        if (joined.exists()) {
+          path = joined.abs();
+        }
+      }
+      return path.str();
+    })) : void 0;
     if (typeof arguments[0] === "boolean") {
       recursive = arguments[0];
       absolute = true;
     }
-    if (exclude_list instanceof Set && Array.isArray(exclude)) {
-      for (let i = 0; i < exclude.length; i++) {
-        let path = new Path(exclude[i]);
-        if (path.exists()) {
-          path = path.abs();
-        } else {
-          if (this.join(exclude[i], false).exists()) {
-            path = this.join(exclude[i], false).abs();
-          }
-        }
-        exclude_list.add(path.str());
-      }
+    if (!this.is_dir()) {
+      Path._throw(`Path "${this.path}" is not a directory.`);
     }
-    return new Promise(async (resolve, reject) => {
-      if (!this.is_dir()) {
-        return reject(new Error(`Path "${this.path}" is not a directory.`));
+    if (!recursive) {
+      let entries;
+      try {
+        entries = await fs.promises.readdir(this.path);
+      } catch (e) {
+        Path._throw(`Failed to read directory "${this.path}".`, e);
       }
-      if (!recursive) {
-        fs.readdir(this.path, (err, files) => {
-          if (err) {
-            reject(err);
-          } else {
-            const list = [];
-            files.forEach((name) => {
-              const path = this.join(name);
-              if (exclude_list == null || exclude_list.size === 0 || !exclude_list.has(path.str())) {
-                list.push(absolute ? string ? path.str() : path : string ? name : new Path(name, false));
-              }
-            });
-            resolve(list);
-          }
-        });
-      } else {
-        const files = [];
-        const traverse = (path, relative_path) => {
-          return new Promise((resolve2, reject2) => {
-            fs.readdir(path.path, async (err, children) => {
-              if (err) {
-                reject2(err);
-              } else {
-                try {
-                  for (const child of children) {
-                    const child_path = path.join(child);
-                    if (exclude_list != null && (exclude_list.size === 0 || !exclude_list.has(path.str()))) {
-                      continue;
-                    }
-                    const relative_child = absolute ? void 0 : relative_path ? relative_path.join(child) : new Path(child, false);
-                    files.push(absolute ? string ? child_path.str() : child_path : string ? relative_child?.str() : relative_child);
-                    if (child_path.is_dir()) {
-                      await traverse(child_path, relative_child);
-                    }
-                  }
-                  resolve2();
-                } catch (e) {
-                  reject2(e);
-                }
-              }
-            });
-          });
-        };
-        try {
-          await traverse(this, void 0);
-          resolve(files);
-        } catch (err) {
-          reject(err);
+      const list = [];
+      entries.forEach((name) => {
+        const path = this.join(name);
+        if (exclude_list == null || !exclude_list.match(path.str())) {
+          list.push(absolute ? string ? path.str() : path : string ? name : new Path(name, false));
+        }
+      });
+      return list;
+    }
+    const files = [];
+    const traverse = async (dir, relative_path) => {
+      let children;
+      try {
+        children = await fs.promises.readdir(dir.path);
+      } catch (e) {
+        Path._throw(`Failed to read directory "${dir.path}".`, e);
+      }
+      for (const child of children) {
+        const child_path = dir.join(child);
+        if (exclude_list != null && exclude_list.match(child_path.str())) {
+          continue;
+        }
+        const relative_child = absolute ? void 0 : relative_path ? relative_path.join(child) : new Path(child, false);
+        files.push(absolute ? string ? child_path.str() : child_path : string ? relative_child?.str() : relative_child);
+        if (child_path.is_dir()) {
+          await traverse(child_path, relative_child);
         }
       }
-    });
+    };
+    await traverse(this, void 0);
+    return files;
   }
   /**
    * Asynchronously match file paths using glob patterns.
@@ -1227,55 +1231,31 @@ class Path {
   }
 }
 (function(Path2) {
-  class ExcludeList {
-    /** Size to keep uniform with `Set`. */
-    size = 0;
-    /** The internal exclude list. */
-    exclude_list = [];
-    /** An internal cache. */
-    cache = /* @__PURE__ */ new Map();
-    /** The constructor. */
-    constructor(...exclude_list) {
-      for (const item of exclude_list) {
-        if (item instanceof RegExp) {
-          this.exclude_list.push(item);
-        } else {
-          this.exclude_list.push(new import_minimatch.Minimatch(this.normalize(item), {
-            dot: true,
-            // allow matches on dot-files/dirs
-            matchBase: false
-          }));
-        }
-      }
-      this.size = this.exclude_list.length;
-    }
+  class PathError extends Error {
+    /** The error code, e.g. `ENOENT`, `EACCES`. */
+    code;
+    /** The numeric errno value. */
+    errno;
+    /** The file path associated with the error. */
+    path;
     /**
-     * Normalize a path.
-     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
+     * Construct a new PathError.
+     * @param opts The error options.
      */
-    normalize(input) {
-      let normalized = pathlib.normalize(input);
-      if (normalized.indexOf("\\") !== -1) {
-        normalized = normalized.split(pathlib.sep).join("/");
+    constructor(opts) {
+      super(opts.message, opts.cause != null ? { cause: opts.cause } : {});
+      const cause = opts.cause;
+      if (cause && typeof cause === "object") {
+        if ("code" in cause)
+          this.code = cause.code;
+        if ("errno" in cause)
+          this.errno = cause.errno;
+        if ("path" in cause)
+          this.path = cause.path;
       }
-      return normalized;
-    }
-    /**
-     * Check if a path is excluded.
-     * @returns True if the path is matched by the exclude list.
-     * @deprecated Use {@link GlobPattern} and {@link GlobPatternList} instead.
-     */
-    has(input) {
-      if (this.cache.has(input)) {
-        return this.cache.get(input);
-      }
-      const normalized = this.normalize(input);
-      const res = this.exclude_list.some((item) => item instanceof RegExp && item.test(normalized) || item instanceof import_minimatch.Minimatch && item.match(normalized));
-      this.cache.set(input, res);
-      return res;
     }
   }
-  Path2.ExcludeList = ExcludeList;
+  Path2.PathError = PathError;
 })(Path || (Path = {}));
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

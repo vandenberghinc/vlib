@@ -227,7 +227,7 @@ export class Daemon {
      */
     async load_h() {
         if (process.platform === 'darwin') {
-            const status = await this.proc.start({ command: `launchctl load ${this.path.str()}` });
+            const status = await this.proc.start({ command: `launchctl load ${this.path.str()}`, interactive: true });
             if (status != 0) {
                 throw new Error("Failed to reload the daemon.");
             }
@@ -245,7 +245,8 @@ export class Daemon {
     async reload_h() {
         if (process.platform === 'darwin') {
             const status = await this.proc.start({
-                command: `launchctl unload ${this.path.str()} && launchctl load ${this.path.str()}`
+                command: `launchctl unload ${this.path.str()} && launchctl load ${this.path.str()}`,
+                interactive: true,
             });
             if (status != 0) {
                 throw new Error("Failed to reload the daemon.");
@@ -253,7 +254,8 @@ export class Daemon {
         }
         else if (process.platform === 'linux') {
             const status = await this.proc.start({
-                command: `systemctl daemon-reload`
+                command: `systemctl daemon-reload`,
+                interactive: true,
             });
             if (status != 0) {
                 throw new Error("Failed to reload the daemon.");
@@ -340,7 +342,7 @@ export class Daemon {
         else if (process.platform === 'darwin') {
             command = `launchctl start ${this.name}`;
         }
-        const status = await this.proc.start({ command });
+        const status = await this.proc.start({ command, interactive: true });
         if (status != 0) {
             throw new Error("Failed to start the daemon.");
         }
@@ -364,7 +366,7 @@ export class Daemon {
         else if (process.platform === 'darwin') {
             command = `launchctl stop ${this.name}`;
         }
-        const status = await this.proc.start({ command });
+        const status = await this.proc.start({ command, interactive: true });
         if (status != 0) {
             throw new Error("Failed to stop the daemon.");
         }
@@ -388,7 +390,7 @@ export class Daemon {
         else if (process.platform === 'darwin') {
             command = `launchctl stop ${this.name} && launchctl start ${this.name}`;
         }
-        const status = await this.proc.start({ command });
+        const status = await this.proc.start({ command, interactive: true });
         if (status != 0) {
             throw new Error("Failed to restart the daemon.");
         }
@@ -413,7 +415,7 @@ export class Daemon {
         else {
             throw new Error("Failed to restart the daemon.");
         }
-        const status = await this.proc.start({ command });
+        const status = await this.proc.start({ command, interactive: true });
         // On Linux, systemctl returns an error if the service is not active.
         if (status != 0) {
             return false;
@@ -444,7 +446,7 @@ export class Daemon {
         else if (process.platform === 'darwin') {
             command = `sudo journalctl -u ${this.name}.service --no-pager  -n ${lines}`;
         }
-        const status = await this.proc.start({ command });
+        const status = await this.proc.start({ command, interactive: true });
         if (status != 0) {
             throw new DaemonError("Failed to tail the daemon.");
         }

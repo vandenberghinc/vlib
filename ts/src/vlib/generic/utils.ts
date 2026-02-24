@@ -39,7 +39,7 @@ export namespace Utils {
         return function (...args) {
             clearTimeout(timeout);
             // timeout = setTimeout(() => func.apply(this, args), delay);
-            timeout = setTimeout(() => func(args), delay);
+            timeout = setTimeout(() => func(...args), delay);
         };
     }
 

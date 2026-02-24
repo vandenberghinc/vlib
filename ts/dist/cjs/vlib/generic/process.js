@@ -60,21 +60,21 @@ class Proc {
    */
   on_exit(code) {
   }
-  // @todo add @experimental to interactive parameter
   /**
    * Start a command.
    * @param command The command program.
    * @param args The command arguments.
    *     @desc The command arguments.
    * @param working_directory The working directory path.
-   * @param interactive Enable interactive mode (experimental).
+   * @param interactive Enable interactive mode, which sets `shell: true` on the spawned process.
+   * @warning When `interactive` is `true`, the command and arguments are passed through a shell interpreter, making them susceptible to shell injection if they contain untrusted input.
    * @param detached Enable detached mode.
    * @param env The environment variables.
    * @param colors Enable colors.
    *
    * @docs
   */
-  start({ command = "", args = [], working_directory = void 0, interactive = true, detached = false, env = void 0, colors = false, opts = {} }) {
+  start({ command = "", args = [], working_directory = void 0, interactive = false, detached = false, env = void 0, colors = false, opts = {} }) {
     this.out = void 0;
     this.err = void 0;
     this.exit_status = void 0;
@@ -141,7 +141,7 @@ class Proc {
           this.on_exit(code);
         }
         ++closed;
-        if (closed == 2) {
+        if (closed === 2) {
           resolve(code);
         }
       });
@@ -150,8 +150,8 @@ class Proc {
           console.log(`Child process exited with code ${code}.`);
         }
         ++closed;
-        if (closed == 2) {
-          resolve(code);
+        if (closed === 2) {
+          resolve(code ?? this.exit_status ?? 1);
         }
       });
     });

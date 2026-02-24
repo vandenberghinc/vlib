@@ -607,7 +607,7 @@ var Color;
                   style = `color:${ansi_to_hex[code]}`;
                 }
               } else if (codes.length >= 3 && (codes[0] === "38" || codes[0] === "48") && codes[1] === "5") {
-                const color_index = parseInt(codes[2]);
+                const color_index = parseInt(codes[2], 10);
                 if (color_index >= 0 && color_index < 256) {
                   style = codes[0] === "38" ? `color:${color_256_palette[color_index]}` : `background-color:${color_256_palette[color_index]}`;
                 }

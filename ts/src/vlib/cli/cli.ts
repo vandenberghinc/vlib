@@ -28,7 +28,6 @@ Error.stackTraceLimit = 100;
  * @param notes {array[string]} The cli's notes.
  * @param commands {array[object]} Array of command objects.
  * 
- * @nav CLI
  * @docs
 */
 export class CLI<

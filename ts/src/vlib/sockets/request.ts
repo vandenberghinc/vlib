@@ -64,7 +64,7 @@ export async function request({
     delay = null,
     http2: use_http2 = false,
 }: RequestOpts): Promise<RequestResponse> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         // Uppercase method.
         method = method.toUpperCase();
         
@@ -159,7 +159,9 @@ export async function request({
             // Parse json.
             if (body.length > 0 && json) {
                 try { body = JSON.parse(body); }
-                catch (e) {}
+                catch (e) {
+                    error = Error(`Failed to parse JSON response body.`, { cause: e });
+                }
             }
 
             // Resolve.

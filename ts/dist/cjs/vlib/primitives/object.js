@@ -197,7 +197,7 @@ var ObjectUtils;
   }
   ObjectUtils2.expand = expand;
   function merge(ref, override) {
-    for (const key in Object.keys(override)) {
+    for (const key of Object.keys(override)) {
       if (Object.prototype.hasOwnProperty.call(override, key)) {
         ref[key] = override[key];
       }
@@ -206,7 +206,7 @@ var ObjectUtils;
   }
   ObjectUtils2.merge = merge;
   function merge_missing(ref, override) {
-    for (const key in Object.keys(override)) {
+    for (const key of Object.keys(override)) {
       if (Object.prototype.hasOwnProperty.call(override, key) && (!(key in ref) || ref[key] === void 0)) {
         ref[key] = override[key];
       }

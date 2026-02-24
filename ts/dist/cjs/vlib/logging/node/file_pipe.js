@@ -194,11 +194,11 @@ class FilePipe extends import_pipe.Pipe {
     }
     if (this.err_stream)
       this.err_stream.close();
-    if (log_path) {
-      this.log_path = new import_path.Path(log_path);
-      this.err_stream = fs.createWriteStream(this.log_path.str(), { flags: "a" });
+    if (error_path) {
+      this.error_path = new import_path.Path(error_path);
+      this.err_stream = fs.createWriteStream(this.error_path.str(), { flags: "a" });
     } else {
-      this.log_path = void 0;
+      this.error_path = void 0;
       this.err_stream = void 0;
     }
   }
@@ -273,7 +273,7 @@ class FilePipe extends import_pipe.Pipe {
             const holder = { stack: "" };
             Error.captureStackTrace(holder, import_source_loc.SourceLoc);
             console.error("Stack trace:", holder.stack);
-            console.error("Failed to truncate file:");
+            console.error("Failed to truncate file:", e);
           });
         }
       });

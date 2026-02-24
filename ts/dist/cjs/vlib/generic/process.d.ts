@@ -40,7 +40,8 @@ export declare class Proc {
      * @param args The command arguments.
      *     @desc The command arguments.
      * @param working_directory The working directory path.
-     * @param interactive Enable interactive mode (experimental).
+     * @param interactive Enable interactive mode, which sets `shell: true` on the spawned process.
+     * @warning When `interactive` is `true`, the command and arguments are passed through a shell interpreter, making them susceptible to shell injection if they contain untrusted input.
      * @param detached Enable detached mode.
      * @param env The environment variables.
      * @param colors Enable colors.

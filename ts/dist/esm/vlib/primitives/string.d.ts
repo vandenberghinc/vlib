@@ -127,12 +127,13 @@ declare namespace StringUtils {
      */
     function reverse(data: string | String): string;
     /**
-     * Generates a random alphanumeric string of the given length.
+     * Generates a cryptographically secure random alphanumeric string of the given length.
+     * Uses `crypto.getRandomValues()` which is available in both Node.js and browser environments.
      * @param length The length of the random string, default is 32.
      * @param charset Optional custom character set to use, default is alphanumeric.
      *                Defaults to `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`.
      * @docs
-    */
+     */
     function random(length?: number, charset?: string): string;
     /**
      * Returns true if the string contains only digits.

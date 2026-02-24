@@ -221,13 +221,13 @@ export class FilePipe extends Pipe<false, true> {
             this.log_stream = undefined;
         }
 
-        // Init or reset log stream.
+        // Init or reset error stream.
         if (this.err_stream) this.err_stream.close();
-        if (log_path) {
-            this.log_path = new Path(log_path);
-            this.err_stream = fs.createWriteStream(this.log_path.str(), { flags: 'a' });
+        if (error_path) {
+            this.error_path = new Path(error_path);
+            this.err_stream = fs.createWriteStream(this.error_path.str(), { flags: 'a' });
         } else {
-            this.log_path = undefined;
+            this.error_path = undefined;
             this.err_stream = undefined;
         }
     }
@@ -355,7 +355,7 @@ export class FilePipe extends Pipe<false, true> {
                         const holder = { stack: "" };
                         Error.captureStackTrace(holder, SourceLoc);
                         console.error("Stack trace:", holder.stack);
-                        console.error("Failed to truncate file:", )
+                        console.error("Failed to truncate file:", e)
 
                     });
                 }

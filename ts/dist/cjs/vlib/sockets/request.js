@@ -74,7 +74,7 @@ async function request({
       if (body.length > 0 && json) {
         try {
           body = JSON.parse(body);
-        } catch (e) {
+        } catch (_) {
         }
       }
       const response = {

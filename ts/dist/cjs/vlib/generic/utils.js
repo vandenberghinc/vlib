@@ -47,7 +47,7 @@ var Utils;
     let timeout;
     return function(...args) {
       clearTimeout(timeout);
-      timeout = setTimeout(() => func(args), delay);
+      timeout = setTimeout(() => func(...args), delay);
     };
   }
   Utils2.debounce = debounce;

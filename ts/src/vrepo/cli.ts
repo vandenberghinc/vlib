@@ -12,7 +12,7 @@ import { promisify } from 'util';
 import { glob } from 'glob';
 import fs from 'fs';
 import path from 'path';
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import * as vlib from "@vlib";
 
 // Imports.
@@ -702,7 +702,7 @@ cli.command({
                 success: `Linked ${dependencies.length} dependencies to "${source}".`,
             });
 
-            let cmd = "npm --silent link";
+            const link_args = ["--silent", "link"];
             let edits = 0;
             for (const dependency of dependencies) {
                 const abs_dependency = vlib.Path.abs(dependency); // use relative path mainly.
@@ -716,7 +716,7 @@ cli.command({
                     spinner.error();
                     throw this.error(`The dependency package.json file does not contain a name or version field.`);
                 }
-                cmd += " " + pkg.name;
+                link_args.push(pkg.name);
                 if (repo.config.npm.links[pkg.name] == null) {
                     repo.config.npm.links[pkg.name] = [dependency];
                     ++edits;
@@ -737,7 +737,7 @@ cli.command({
                     }
                 }
             }
-            execSync(cmd, { cwd: repo.source.path, stdio: "inherit" });
+            execFileSync("npm", link_args, { cwd: repo.source.path, stdio: "inherit" });
 
             // Save.
             if (edits) {
@@ -799,7 +799,7 @@ cli.command({
                 success: `Unlinked ${Object.keys(links ?? {}).length} libraries from "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`,
             });
 
-            let cmd = "npm --silent unlink";
+            const unlink_args = ["--silent", "unlink"];
             let npm_publishes = 0;
             if (Object.keys(links).length === 0) {
                 throw this.error(`No linked libraries found in "${src_pkg.npm.pkg.name}@${src_pkg.npm.pkg.version}".`);
@@ -828,7 +828,7 @@ cli.command({
                     // Recursively unlink.
                     await unlink(dependency);
                 }
-                cmd += " " + name;
+                unlink_args.push(name);
 
                 // Publish to npm when changed.
                 const repo: Package = new Package({
@@ -846,7 +846,7 @@ cli.command({
                 }
                 src_pkg.npm.pkg.dependencies[repo.npm!.pkg.name] = "^" + repo.npm!.pkg.version;
             }
-            execSync(cmd, { cwd: src_pkg.source.str(), stdio: "inherit" });
+            execFileSync("npm", unlink_args, { cwd: src_pkg.source.str(), stdio: "inherit" });
 
             // Save.
             src_pkg.save();
